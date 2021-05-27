@@ -3,6 +3,8 @@
 
 > 本文分析了 Chia Network 的全链数据，并做了将全链数据导入图数据库：Nebula Graph 之中的尝试，从而可视化地探索了 Chia 图中数据之间的关联关系。
 
+<!--more-->
+
 ## 1. What is Chia Network?
 
 Chia Network 是由 BitTorrent 的作者 Bram Cohen 的团队在 2017 年创建的区块链项目。
