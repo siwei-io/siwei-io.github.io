@@ -566,4 +566,5 @@ Nebula-Chia 我也开源在 https://github.com/wey-gu/nebula-chia
 - https://www.chia.net/assets/ChiaGreenPaper.pdf
 - https://docs.nebula-graph.com.cn
 
+> Banner Picture Credit: [Icons8 Team](https://unsplash.com/photos/Ph5_4TnXXYE?utm_source=unsplash&utm_medium=referral&utm_content=creditShareLink) 
 
