@@ -1,6 +1,6 @@
 # Nebula-Up，一键拉起一个 Nebula 测试环境
 
-> A PoC utility for the newcomers or developers to bootstrap a nebula-graph playground in a oneliner command on Windows, Linux, and macOS(x86_64 and aarch64), w/o dealing with dependencies.
+> Nebula-up 可以一键拉起一个 Nebula 测试环境，支持 mscOS，Windows 10，CentOS 和 Ubuntu。
 
 <!--more-->
 [![nebula-up demo](https://github.com/wey-gu/nebula-up/raw/main/images/nebula-up-demo.svg)](https://asciinema.org/a/407151 "Nebula Up Demo")
