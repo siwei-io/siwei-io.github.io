@@ -14,7 +14,7 @@ macOS and Linux with Shell:
 ```bash
 curl -fsSL https://github.com/wey-gu/nebula-up/raw/main/install.sh | bash
 ```
-![nebula-up-demo-shell](./images/nebula-up-demo-shell.png)
+![nebula-up-demo-shell](https://github.com/wey-gu/nebula-up/raw/main/images/nebula-up-demo-shell.png)
 
 Windows with PowerShell(Working In Progress):
 
