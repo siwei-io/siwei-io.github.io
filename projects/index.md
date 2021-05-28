@@ -1,4 +1,4 @@
-# Projects
+# 个人项目
 
 
 {{< showcase "Nebula-Up" "Nebula-up，一键拉起一个 Nebula 测试环境，支持 mscOS，Windows 10，CentOS 和 Ubuntu。" "/nebula-up/featured-image.webp" "/nebula-up" >}}

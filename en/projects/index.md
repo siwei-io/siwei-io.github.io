@@ -1,4 +1,4 @@
-# Projects
+# Side Projects
 
 
 {{< showcase "Nebula-Up" "A PoC utility for the newcomers or developers to bootstrap a nebula-graph playground in a oneliner command on Windows, Linux, and macOS(x86_64 and aarch64), w/o dealing with dependencies." "/nebula-up/featured-image.webp" "/nebula-up" >}}
