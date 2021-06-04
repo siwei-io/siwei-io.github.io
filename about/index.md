@@ -30,10 +30,17 @@
 我曾在 [note.siwei.info](https://note.siwei.info/archives/) 记录一些想法和笔记，从2021年春天开始，我会把想法记录下来留在 [siwei.io](https://siwei.io)
 
 
-### 注释
-
 [^1]: 我和 Ahmet Alp Balkan 的 [这个推文]( https://twitter.com/ahmetb/status/1362855715367313412) 感同身受
 [^2]: Ericsson's Telco. Infrastructure as a Service product offerring: [Cloud Execution Environment](https://www.ericsson.com/en/portfolio/digital-services/cloud-infrastructure/cloud-execution-environment)
 [^3]: System Manager, PDU Cloud: [工作描述]( https://www.linkedin.com/jobs/view/2541281375)
 
+## 联系我
+
+您最好通过 [twitter](https://twitter.com/wey_gu)，邮箱 [wey.gu@vesoft.com](mailto:wey.gu@vesoft.com)找到我。
+
+如果必须，您也可以通过微信找到我，微信 ID 如下，请添加注明您的来意。
+
+```bash
+echo c2l2dmVpCg== | base64 -d
+```
 

@@ -2,7 +2,7 @@
 
 
 
-# Hi，this is Wey :)
+# Hi, this is Wey :)
 
 I am a developer @***[vesoft](https://vesoft.com)*** working as Developer Advocate of [Nebula Graph](https://nebula-graph.com.cn/), the open source distributed Graph Database
 
@@ -29,10 +29,11 @@ I am also responsible for Ericsson CEE evangelism (internal and external) in Chi
 I used to share my notes and thoughts on [note.siwei.info](https://note.siwei.info/archives/), while from 2021, I will leave more ideas on [siwei.io](https://siwei.io) instead.
 
 
-### Footnotes
-
-[^1]: I share the same idea with Ahmet Alp Balkan's [tweet]( https://twitter.com/ahmetb/status/1362855715367313412)
+[^1]: I share the same idea with Ahmet Alp Balkan's [tweet](https://twitter.com/ahmetb/status/1362855715367313412)
 [^2]: Ericsson's Telco. Infrastructure as a Service product offerring: [Cloud Execution Environment](https://www.ericsson.com/en/portfolio/digital-services/cloud-infrastructure/cloud-execution-environment)
-[^3]: System Manager, PDU Cloud: [Job Description]( https://www.linkedin.com/jobs/view/2541281375)
+[^3]: System Manager, PDU Cloud: [Job Description](https://www.linkedin.com/jobs/view/2541281375)
 
 
+## Contact
+
+You can DM me via [twitter](https://twitter.com/wey_gu), or [wey.gu@vesoft.com](mailto:wey.gu@vesoft.com).
