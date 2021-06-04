@@ -4,9 +4,7 @@
 
 # Hi，this is Wey :)
 
-{{< style "strong{color:#26357c;}" >}}
-I am a developer @ ***[vesoft](https://vesoft.com)*** working as Developer Advocate of [Nebula Graph](https://nebula-graph.com.cn/), the open source distributed Graph Database
-{{< /style >}}
+I am a developer @***[vesoft](https://vesoft.com)*** working as Developer Advocate of [Nebula Graph](https://nebula-graph.com.cn/), the open source distributed Graph Database
 
 I create toolings and contents for [Nebula Graph Database](https://github.com/vesoft-inc) to help Developers in the open source community.
 

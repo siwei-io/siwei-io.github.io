@@ -5,9 +5,7 @@
 
 # 您好，我是古思为。
 
-{{< style "strong{color:#26357c;}" >}}
 我是一个在上海的软件工程师，我在 ***[vesoft](https://vesoft.com)*** 担任 [Nebula Graph](https://nebula-graph.com.cn/)（开源的分布式图数据库） 的社区开发者布道师。
-{{< /style >}}
 
 我的工作是围绕 [Nebula Graph Database](https://github.com/vesoft-inc) 做周边工具，创作内容来改善开发者的学习、开发、社区参与体验。
 
