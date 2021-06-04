@@ -5,9 +5,9 @@
 
 # 您好，我是古思为。
 
-我是一个在上海的软件工程师，我在 ***[vesoft](https://vesoft.com)*** 担任 [Nebula Graph](https://nebula-graph.com.cn/)（开源的分布式图数据库） 的社区开发者布道师。
+我是一个在上海的软件工程师，我在 ***[vesoft](https://vesoft.com)*** 担任 [Nebula Graph](https://nebula-graph.com.cn/)（开源的分布式图数据库）的社区开发者布道师。
 
-我的工作是围绕 [Nebula Graph Database](https://github.com/vesoft-inc) 做周边工具，创作内容来改善开发者的学习、开发、社区参与体验。
+我的工作是通过围绕 [Nebula Graph Database](https://github.com/vesoft-inc) 创作内容，构建工具来改善开发者的学习、开发、社区参与体验。
 
 我在开源社区开放的工作，并（花了职业生涯中的前些年意识到）热爱用自己的思想和学到的技术帮助到别人，我认为*这是一种的荣幸和宝贵的机遇*。[^1]
 
