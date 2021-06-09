@@ -1,6 +1,8 @@
 # Side Projects
 
 
+{{< showcase "Nebula-KIND" "Nebula-Kind, one-liner command to try K8S Operator based Nebula Graph Cluster on your machine, with the help of KIND(K8S in Docker)" "/nebula-operator-kind/featured-image.webp" "/nebula-operator-kind/" >}}
+
 {{< showcase "Nebula-Up" "A PoC utility for the newcomers or developers to bootstrap a nebula-graph playground in a oneliner command on Windows, Linux, and macOS(x86_64 and aarch64), w/o dealing with dependencies." "/nebula-up/featured-image.webp" "/nebula-up/" >}}
 
 {{< showcase "VSCode-nGQL" "nGQL extension VSCode is built to integrate the Nebula Graph with VSCode for an awesome developer experience." "/vscode-ngql/featured-image.webp" "/vscode-ngql/" >}}
