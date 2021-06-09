@@ -1,4 +1,4 @@
-# VSCode-nGQL，nGQL extension for VSCode
+# VSCode-nGQL, nGQL extension for VSCode
 
 > nGQL extension VSCode is built to integrate the Nebula Graph with VSCode for an awesome developer experience.
 

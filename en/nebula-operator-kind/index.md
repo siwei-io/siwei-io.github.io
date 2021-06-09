@@ -1,4 +1,4 @@
-# Nebula Operator Kind
+# Nebula Operator Kind, oneliner installer for Nebula K8S Operator Playground 
 
 
 > Nebula-Kind, an one-liner command to try K8S Operator based Nebula Graph Cluster on your machine, with the help of KIND (K8S in Docker)
