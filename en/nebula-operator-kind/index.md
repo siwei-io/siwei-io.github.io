@@ -1,19 +1,19 @@
-# Nebula Operator Kind, oneliner installer for Nebula K8S Operator Playground 
+# Nebula Operator Kind, oneliner installer for Nebula K8s Operator Playground 
 
 
-> Nebula-Kind, an one-liner command to try K8S Operator based Nebula Graph Cluster on your machine, with the help of KIND (K8S in Docker)
+> Nebula-Kind, an one-liner command to try K8s Operator based Nebula Graph Cluster on your machine, with the help of KIND (K8s in Docker)
 
 <!--more-->
 
 ## Nebula-Operator-Kind
 
-As a Cloud Native Distributed Database, Nebula Graph comes with an open-source [K8S Operator](https://github.com/vesoft-inc/nebula-operator) to enable boostrap and maintain Nebula Graph Cluster from a K8S CRD.
+As a Cloud Native Distributed Database, Nebula Graph comes with an open-source [K8s Operator](https://github.com/vesoft-inc/nebula-operator) to enable boostrap and maintain Nebula Graph Cluster from a K8s CRD.
 
 Normally it takes you some time to setup all the dependencies and control plane resources of the Nebula Operator. If you are as lazy as I am, this Nebula-Operator-Kind is made for you to quick start and play with Nebula Graph in [KIND](https://kind.sigs.k8s.io/).
 
 Nebula-Operator-Kind is the one-liner for setup everything for you including:
 - Docker
-- K8S(KIND)
+- K8s(KIND)
 - PV Provider
 - Nebula-Operator
 - Nebula-Console
