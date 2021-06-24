@@ -13,7 +13,7 @@ Nebula Graph 作为云原生的分布式开源图数据库，有开源的 [K8s O
 
 对于手头没有方便的 K8s 环境的同学，如果想尝鲜、学习 Nebula Graph 的 K8s Operator 的话，可能需要耗费一些精力才能搭起来一整套的控制平面的依赖。
 
-作为一个懒人，我做利用 K8s in Docker([KIND](https://kind.sigs.k8s.io/))，和之前做 [Nebula-Up](https://github.com/wey-gu/nebula-up) 的 shell 脚本架子，快速的搞了一个一键安装工具：Nebula-Operator-Kind
+作为一个懒人，我做利用 K8s in Docker([KIND](https://kind.sigs.K8s.io/))，和之前做 [Nebula-Up](https://github.com/wey-gu/nebula-up) 的 shell 脚本架子，快速的搞了一个一键安装工具：Nebula-Operator-Kind
 
 它能直接帮我们：
 - 安装 Docker
