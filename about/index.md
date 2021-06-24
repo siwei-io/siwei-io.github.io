@@ -9,7 +9,7 @@
 
 我的工作是通过围绕 [Nebula Graph Database](https://github.com/vesoft-inc) 创作内容，构建工具来改善开发者的学习、开发、社区参与体验。
 
-我在开源社区开放的工作，并（花了职业生涯中的前些年意识到）热爱用自己的思想和学到的技术帮助到别人，我认为*这是一种的荣幸和宝贵的机遇*。[^1]
+我在开源社区开放的工作，并（花了职业生涯中的前些年意识到）热爱用自己的思想和学到的技术帮助到别人，我认为*这是一种的荣幸和宝贵的机遇*。 [^1]
 
 ## 最近的开源项目
 
@@ -24,7 +24,7 @@
 ## 过往的经历
 
 我曾在爱立信工作了近十年：2011 年到 2021 年。
-我是云计算产品 Cloud Execution Envrioment (CEE) [^2] 研发团队的系统经理[^3]，我大部分的工作是通过设计开发 20 多个 CEE 6.6.2 和 CEE 10 的功能与改进，涵盖计算、存储、网络、生命周期管理和安全等领域，来帮助爱立信 IaaS 产品与解决方案不断进化。
+我是云计算产品 Cloud Execution Envrioment (CEE) [^2] 研发团队的系统经理 [^3]，我大部分的工作是通过设计开发 20 多个 CEE 6.6.2 和 CEE 10 的功能与改进，涵盖计算、存储、网络、生命周期管理和安全等领域，来帮助爱立信 IaaS 产品与解决方案不断进化。
 同时，我也负责 CEE 产品在中国区的布道（面向外部与内部）。
 
 我曾在 [note.siwei.info](https://note.siwei.info/archives/) 记录一些想法和笔记，从2021年春天开始，我会把想法记录下来留在 [siwei.io](https://siwei.io)
@@ -36,7 +36,7 @@
 
 ## 联系我
 
-您最好通过 [twitter](https://twitter.com/wey_gu)，邮箱 [wey.gu@vesoft.com](mailto:wey.gu@vesoft.com)找到我。
+您最好通过 [twitter](https://twitter.com/wey_gu)，邮箱 [wey.gu@vesoft.com](mailto:wey.gu@vesoft.com) 找到我。
 
 如果必须，您也可以通过微信找到我，微信 ID 如下，请添加注明您的来意。
 
