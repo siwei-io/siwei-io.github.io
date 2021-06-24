@@ -3,63 +3,2071 @@
         <title>siwei.io</title>
         <link>https://siwei.io/en/</link>
         <description>From Cloud to Nebula</description>
-        <generator>Hugo -- gohugo.io</generator><language>en</language><managingEditor>weyl.gu@gmail.com (Wey Gu | 古思为)</managingEditor>
-            <webMaster>weyl.gu@gmail.com (Wey Gu | 古思为)</webMaster><lastBuildDate>Wed, 09 Jun 2021 19:27:00 &#43;0800</lastBuildDate>
+        <generator>Hugo -- gohugo.io</generator><language>en</language><managingEditor>weyl.gu@gmail.com (Wey(Siwei) Gu | 古思为)</managingEditor>
+            <webMaster>weyl.gu@gmail.com (Wey(Siwei) Gu | 古思为)</webMaster><lastBuildDate>Wed, 09 Jun 2021 19:27:00 &#43;0800</lastBuildDate>
             <atom:link href="https://siwei.io/en/index.xml" rel="self" type="application/rss+xml" />
         <item>
     <title>Nebula Operator Kind, oneliner installer for Nebula K8s Operator Playground </title>
     <link>https://siwei.io/en/nebula-operator-kind/</link>
     <pubDate>Wed, 09 Jun 2021 19:27:00 &#43;0800</pubDate><author>
-        <name>Wey Gu | 古思为</name>
+        <name>Wey(Siwei) Gu | 古思为</name>
     </author><guid>https://siwei.io/en/nebula-operator-kind/</guid>
     <description><![CDATA[<blockquote>
 <p>Nebula-Kind, an one-liner command to try K8s Operator based Nebula Graph Cluster on your machine, with the help of KIND (K8s in Docker)</p>
+</blockquote>
+<h2 id="nebula-operator-kind">Nebula-Operator-Kind</h2>
+<p>As a Cloud Native Distributed Database, Nebula Graph comes with an open-source <a href="https://github.com/vesoft-inc/nebula-operator" target="_blank" rel="noopener noreffer">K8s Operator</a> to enable boostrap and maintain Nebula Graph Cluster from a K8s CRD.</p>
+<p>Normally it takes you some time to setup all the dependencies and control plane resources of the Nebula Operator. If you are as lazy as I am, this Nebula-Operator-Kind is made for you to quick start and play with Nebula Graph in <a href="https://kind.sigs.k8s.io/" target="_blank" rel="noopener noreffer">KIND</a>.</p>
+<p>Nebula-Operator-Kind is the one-liner for setup everything for you including:</p>
+<ul>
+<li>Docker</li>
+<li>K8s(KIND)</li>
+<li>PV Provider</li>
+<li>Nebula-Operator</li>
+<li>Nebula-Console</li>
+<li>nodePort for accessing the Cluster</li>
+<li>Kubectl for playing with KIND and Nebula Operator</li>
+</ul>
+<h2 id="how-to-use">How To Use</h2>
+<p>Install Nebula-Operator-Kind:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash">curl -sL nebula-kind.siwei.io/install.sh <span class="p">|</span> bash
+</code></pre></td></tr></table>
+</div>
+</div><p>You will see this after it&rsquo;s done
+</p>
+<p>You can connect to the cluster via <code>~/.nebula-kind/bin/console</code> as below:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash">~/.nebula-kind/bin/console -u user -p password --address<span class="o">=</span>127.0.0.1 --port<span class="o">=</span><span class="m">30000</span>
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="more">More</h2>
+<p>It&rsquo;s in GitHub with more information you may be intrested in ;-), please try and feedback there~
+<a href="https://github.com/wey-gu/nebula-operator-kind">https://github.com/wey-gu/nebula-operator-kind</a></p>
+<blockquote>
+<p>Banner Picture Credit: <a href="https://unsplash.com/photos/a4Gz2DD4dX0" target="_blank" rel="noopener noreffer">Maik Hankemann</a></p>
 </blockquote>]]></description>
 </item><item>
     <title>Explore Chia Network in a Visualized Way</title>
     <link>https://siwei.io/en/nebula-chia/</link>
     <pubDate>Wed, 26 May 2021 21:17:04 &#43;0800</pubDate><author>
-        <name>Wey Gu | 古思为</name>
+        <name>Wey(Siwei) Gu | 古思为</name>
     </author><guid>https://siwei.io/en/nebula-chia/</guid>
     <description><![CDATA[<blockquote>
 <p>本文分析了 Chia Network 的全链数据，并做了将全链数据导入图数据库：Nebula Graph 之中的尝试，从而可视化地探索了 Chia 图中数据之间的关联关系。</p>
 <p>我把涉及的代码开源在了这里：https://github.com/wey-gu/nebula-chia</p>
+</blockquote>
+<h2 id="1-what-is-chia-network">1. What is Chia Network?</h2>
+<p>Chia Network 是由 BitTorrent 的作者 Bram Cohen 的团队在 2017 年创建的区块链项目。</p>
+<h3 id="11-why-yet-another-blockchain-为什么再搞一个区块链">1.1 Why yet another Blockchain? 为什么再搞一个区块链?</h3>
+<p>Chia 用了全新的中本聪共识算法，这个算法通过不允许并行计算，让挖矿（Proof of Work）所需算力和能耗降到非常低，这使得超大组织、玩家没法像在其他的区块链项目那样有算力的绝对优势，也一定程度上规避了能源的浪费。</p>
+<h3 id="12-how-can-i-access-chia-network-如何连接chia">1.2 How Can I access Chia Network? 如何连接Chia?</h3>
+<p>我们可以通过 Chia Network 的客户端来访问它，这个客户端是 Electron + Python 的程序，天然跨平台，既有 GUI 又有 CLI 的方式。</p>
+<h4 id="安装">安装</h4>
+<p>只需要按照官方的 Guide 来下载安装就好， <a href="https://github.com/Chia-Network/chia-blockchain/wiki/INSTALL">https://github.com/Chia-Network/chia-blockchain/wiki/INSTALL</a>，我在 M1 Mac 下安装的时候脚本出了点小问题，大概是因为拉取二进制 wheel 文件网络出问题走到了编译 wheel的逻辑，而那里是依赖 <code>cargo</code>的，如果大家遇到了这个问题，可以提前手动安装一下 rust，或者 cherry-pick 我的这个 <a href="https://github.com/Chia-Network/chia-blockchain/pull/3789" target="_blank" rel="noopener noreffer">PR</a> 。</p>
+<h4 id="运行">运行</h4>
+<ul>
+<li>按照官方 guide，比如 macOS 来说，最后一步执行<code>npm run electron &amp;</code> 就是运行它的GUI客户端。</li>
+<li>如果大家像我一样喜欢 CLI，直接在执行完 <code>. ./activate</code> 之后就可以 <code>chia --help</code>了哈☺，里边有只启动部分服务的方式（相比 GUI 启动所有来说)。</li>
+</ul>
+<p>在运行之后，如果你的网络不是多层 NAT 的那种，理论上您可以连到 <code>mainnet</code> 并且自动和主链同步数据了，如果您是第二次运行，连接主链，一开始可能有一阵子同步的<code>block</code> 数是不变的，也没有 <code>peer</code> 连过来，不必惊慌，等一下就好了。</p>
+<blockquote>
+<p>Tips:</p>
+<ul>
+<li>第一次连到 Chia Network 的同学们，客户端会自动生成一个钱包，及的保存那一串词，它们就是你的私钥哦。</li>
+<li>万一，如果真的连不上的话，可能需要在路由上配置，<a href="https://www.homenethowto.com/ports-and-nat/upnp-automatic-port-forward/" target="_blank" rel="noopener noreffer">UPnP</a>，防火墙要允许 8444。</li>
+</ul>
+</blockquote>
+<h4 id="访问-chia-的数据">访问 Chia 的数据</h4>
+<p>Chia 的客户端把数据存在了几个 SQLite 数据库里，它们的路径是我们安装客户端的用户的家目录：<code>~/.chia/mainnet</code></p>
+<p>下边就是运行起来 Chia 之后生成的主要的两个数据库的二进制文件：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">~/.chia/mainnet/db 
+❯ ll -h
+total 4350416
+-rw-r--r--  1 weyl  staff   2.0G May  6 12:06 blockchain_v1_mainnet.sqlite
+-rw-r--r--  1 weyl  staff    64K May  6 11:17 blockchain_v1_mainnet.sqlite-shm
+-rw-r--r--  1 weyl  staff    20M May  6 12:10 blockchain_v1_mainnet.sqlite-wal
+-rw-r--r--  1 weyl  staff   1.8M May  6 11:46 peer_table_node.sqlite
+-rw-r--r--  1 weyl  staff    32K May  5 17:30 peer_table_node.sqlite-shm
+-rw-r--r--  1 weyl  staff   5.4M May  6 11:46 peer_table_node.sqlite-wal
+
+~/.chia/mainnet/wallet/db
+❯ ll -h 
+total 3055848
+-rw-r--r--  1 weyl  staff   1.4G May  7 15:32 blockchain_wallet_v1_mainnet_903996200.sqlite
+-rw-r--r--  1 weyl  staff    32K May  7 15:24 blockchain_wallet_v1_mainnet_903996200.sqlite-shm
+-rw-r--r--  1 weyl  staff   4.0M May  7 15:32 blockchain_wallet_v1_mainnet_903996200.sqlite-wal
+-rw-r--r--  1 weyl  staff    16K May  7 15:24 wallet_peers.sqlite
+</code></pre></td></tr></table>
+</div>
+</div><p>然后，我们可以先用 SQLite Browser，一个 SQlite 数据库（文件）的浏览器来看看它。</p>
+<p>SQlite 浏览器的官网是 <a href="https://sqlitebrowser.org/">https://sqlitebrowser.org/</a> 。在下载，安装之后，我们可以通过点击 <code>Open Database/打开数据库</code> 选择浏览上边列出来的两个 <code>.sqlite</code> 扩展名的数据库文件。</p>
+<p>打开数据库之后，我们可以选择第一个标签 <code>Database Schema</code> 来看看表的结构。</p>
+<p></p>
+<p>我们还能像类似于 Excel 一样去看表的数据，还可以 Filter/过滤、Sort/排序任意列。</p>
+<p></p>
+<p>下一部分，我们来简单看看表里的数据。</p>
+<blockquote>
+<p>Tips:</p>
+<ul>
+<li>这里边，<code>~/.chia/mainnet/wallet</code> 和裸目录 <code>~/.chia/mainnet </code> 下边的 <code>db</code> 里分别都有表文件，他们的信息是有重复的，大家可以分别打开看看哦，即使是相同的表的名字，比如 <code>block_record</code> 内里的信息也略有差别，如果大家知道为什么有这样的差别，欢迎浏览告诉大家哈，可能要仔细研究一下客户端、钱包等代码才行，幸运的是，它们相对比较好阅读，是 Python 写的： <a href="https://github.com/Chia-Network/chia-blockchain">https://github.com/Chia-Network/chia-blockchain</a> 。</li>
+</ul>
+</blockquote>
+<h2 id="2-inspect-the-chia-network-分析-chia-的数据">2. Inspect the Chia Network, 分析 Chia 的数据</h2>
+<p>如果大家仔细看了上边表结构定义的截图，就能注意到一些表的主要信息是嵌套二进制 KV Byte，所以只从 SQLite 并不能看到所有 Chia 的数据，所以我们需要（用一个编程语言来）读取表里的 Byte。</p>
+<p>幸运的是，这件事儿因为 Chia 是开源的，而且是 Python 的代码，使得我们可以直接交互式的做。</p>
+<p>我花了一点点时间在 Chia 客户端代码里找到了需要的封装类，借助它，可以比较方便的分析 Chia 客户端在本地的全链数据。</p>
+<p>如果您不感兴趣细节，可以直接看我分析的结论。</p>
+<p>结论之后，我也给大家演示一下是怎么读取它们的。</p>
+<h3 id="20-tldr-结论">2.0 TL;DR, 结论</h3>
+<p>我们可以从表中读取到区块链记录（Block Record ），Chia 币记录（Coin Record）。</p>
+<p>从区块记录中，我们可以看到关键的涉及交易的信息：</p>
+<ul>
+<li>关联的 Coin ，关联的 Puzzle（地址），Coin 的值(Amount)</li>
+</ul>
+<p>从币记录中，我们可以看到关键的涉及区块的信息：</p>
+<ul>
+<li>生成这个 Coin 所在区块链里的索引高度（Confirmed Index）</li>
+<li>如果这个记录是花费 Coin 的，花费它的索引高度（Spent Index）</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">                                                   ┌──────────────────────┐
+┌────────────────────────────────────────┐         │                      │
+│                                        │         │    Coin Record       │
+│   Block Record                         │         │                      │
+│                                        │         │     Coin Name        │
+│    Height ◄────────────────────────────┼─┐       │                      │
+│                                        │ │     ┌─┼───► Puzzle           │
+│    Header                              │ │     │ │                      │
+│                                        │ │     ├─┼───► Coin Parent      │
+│    Prev Header                         │ │     │ │                      │
+│                                        │ │     ├─┼───► Amount           │
+│    Block Body                          │ │     │ │                      │
+│      farmer_puzzle_hash                │ │     │ │     Time Stamp       │
+│      fees                              │ │     │ │                      │
+│      pool_puzzle_hash                  │ └─────┼─┼─┬─  Confirmed Index  │
+│      prev_transaction_block_hash       │       │ │ │                    │
+│      prev_transaction_block_height     │       │ │ └─  Spent Index      │
+│      transactions_info  ───────────────┼───────┘ │                      │
+│ ┌─── is_transaction_block              │         │     Coinbase         │
+│ │    sub_epoch_summary ────────────────┼───────┐ │                      │
+│ │                                      │       │ └─ ────────────────────┘
+│ │  is Peak                             │       │
+│ └──is Block                            │       │ ┌─────────────────────┐
+│                                        │       │ │                     │
+└────────────────────────────────────────┘       └─┼─► Sub Epoch Segment │
+                                                   │                     │
+                                                   └─────────────────────┘
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="21-preperation-准备">2.1 Preperation, 准备</h3>
+<p>因为安装客户端之后，我们本地实际上已经有了相关的 Python 环境和依赖，只需要在里边跑起来就好。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="c1"># 注意，我们要 cd 到之前安装客户端时候克隆的仓库。</span>
+<span class="nb">cd</span> chia-blockchain
+<span class="c1"># source activate 脚本来切换到仓库安装时候创建的 Python 虚拟环境，并进到 IPython 里。</span>
+<span class="nb">source</span> venv/bin/activate <span class="o">&amp;&amp;</span> pip install ipython <span class="o">&amp;&amp;</span> ipython
+</code></pre></td></tr></table>
+</div>
+</div><p>然后试着导入客户端里边带有的 Python 的 Chia 的封装类试试看。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-python" data-lang="python"><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="kn">import</span> <span class="nn">sqlite3</span>
+   <span class="o">...</span><span class="p">:</span> <span class="kn">from</span> <span class="nn">chia.consensus.block_record</span> <span class="kn">import</span> <span class="n">BlockRecord</span>
+<span class="c1"># 导入成功，没有报错</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="err">!</span><span class="n">pwd</span>
+<span class="c1"># 我的安装克隆目录</span>
+<span class="o">/</span><span class="n">Users</span><span class="o">/</span><span class="n">weyl</span><span class="o">/</span><span class="n">chia</span><span class="o">-</span><span class="n">blockchain</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>恭喜你做好了准备，我们看看 Block Record 里都有什么。</p>
+<h3 id="block-record-chain区块记录">Block Record Chain，区块记录</h3>
+<p>在上一步的 <code>IPython</code> 窗口下。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-python" data-lang="python"><span class="c1"># 注意，这里的路径的前缀是我们自己的家目录，不同操作系统，不同的用户都会有所不同。</span>
+<span class="n">chia_db_path</span> <span class="o">=</span> <span class="s2">&#34;/Users/weyl/.chia/mainnet/db/blockchain_v1_mainnet.sqlite&#34;</span>
+
+<span class="n">cur</span> <span class="o">=</span> <span class="n">con</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+<span class="c1"># 这里我们取第 201645 高的区块</span>
+<span class="n">rows</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;SELECT * FROM block_records WHERE height = 201645&#39;</span><span class="p">))</span>
+<span class="c1"># 这里 0 表示 SELECT 结果的第一行，3 表示在 BlockRecord 这个表里边，Block 的二进制 BLOB 是第四列，参考本章底部的表定义部分</span>
+<span class="n">block_records_201645</span> <span class="o">=</span> <span class="n">BlockRecord</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">rows</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">3</span><span class="p">])</span>
+<span class="nb">dir</span><span class="p">(</span><span class="n">block_records_201645</span><span class="p">)</span>
+<span class="c1"># 可以查看一些属性 is_transaction_block，timestamp，reward_claims_incorporated</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">174</span><span class="p">]:</span> <span class="n">block_records_201645</span><span class="o">.</span><span class="n">is_transaction_block</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">174</span><span class="p">]:</span> <span class="bp">True</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">182</span><span class="p">]:</span> <span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">183</span><span class="p">]:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">fromtimestamp</span><span class="p">(</span><span class="n">block_records_201645</span><span class="o">.</span><span class="n">timestamp</span><span class="p">)</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">183</span><span class="p">]:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2021</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">29</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">190</span><span class="p">]:</span> <span class="n">block_records_201645</span><span class="o">.</span><span class="n">reward_claims_incorporated</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">to_json_dict</span><span class="p">()</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">190</span><span class="p">]:</span>
+<span class="p">{</span><span class="s1">&#39;parent_coin_info&#39;</span><span class="p">:</span> <span class="s1">&#39;0xccd5bb71183532bff220ba46c268991a000000000000000000000000000313ab&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;puzzle_hash&#39;</span><span class="p">:</span> <span class="s1">&#39;0xbbb014f41d88c74b78501b36e4863d3382bfda9ae3c4d30a1b6df72b962502b6&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;amount&#39;</span><span class="p">:</span> <span class="mi">1750000000000</span><span class="p">}</span>
+
+<span class="c1"># 可以快速 print 看大部分信息</span>
+<span class="k">print</span><span class="p">(</span><span class="n">block_records_201645</span><span class="p">)</span>
+</code></pre></td></tr></table>
+</div>
+</div><p><code>block_records_201645</code> 的打印结果如下。</p>
+<blockquote>
+<p>这里我截断了一些数据</p>
+</blockquote>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span><span class="err">&#39;challenge_block_info_hash&#39;:</span> <span class="err">&#39;0x4a562f1ffa7a06fe76b1df74dbdd6bdcfbf63139a6f1fc3291c606d7c976abf6&#39;,</span>
+ <span class="err">&#39;challenge_vdf_output&#39;:</span> <span class="err">{&#39;data&#39;:</span> <span class="err">&#39;0x0200a6b38d6b58d17129d71737088772561f22a44ef302fe45a70a763b878f998abfe35946df720bcb5d78e214b667bce801d597b46c867928c4b8926c342375a961f36cd63ec698bc25e5ce48c45d9a2074eded0e42d24dd1b50a59e699f671f0900100&#39;</span><span class="p">}</span><span class="err">,</span>
+ <span class="err">&#39;deficit&#39;:</span> <span class="mi">16</span><span class="err">,</span>
+ <span class="err">&#39;farmer_puzzle_hash&#39;:</span> <span class="err">&#39;</span><span class="mi">0</span><span class="err">x</span><span class="mi">4</span><span class="err">bc</span><span class="mi">6435</span><span class="err">b</span><span class="mi">409</span><span class="err">bcbabe</span><span class="mi">53870</span><span class="err">dae</span><span class="mi">0</span><span class="err">f</span><span class="mi">03755</span><span class="err">f</span><span class="mi">6</span><span class="err">aabb</span><span class="mi">4594</span><span class="err">c</span><span class="mi">5915</span><span class="err">ec</span><span class="mi">983</span><span class="err">acf</span><span class="mi">12</span><span class="err">a</span><span class="mi">5</span><span class="err">d</span><span class="mi">1</span><span class="err">fba&#39;,</span>
+ <span class="err">&#39;fees&#39;:</span> <span class="mi">0</span><span class="err">,</span>
+ <span class="err">&#39;finished_challenge_slot_hashes&#39;:</span> <span class="p">[</span><span class="err">&#39;</span><span class="mi">0</span><span class="err">x</span><span class="mi">2</span><span class="err">b</span><span class="mi">1</span><span class="err">a</span><span class="mi">7</span><span class="err">b</span><span class="mi">4859</span><span class="err">a</span><span class="mi">8</span><span class="err">d</span><span class="mi">3597</span><span class="err">b</span><span class="mf">8e6</span><span class="err">cbe</span><span class="mi">3</span><span class="err">b</span><span class="mi">27</span><span class="err">ab</span><span class="mi">97212</span><span class="err">be</span><span class="mi">8</span><span class="err">b</span><span class="mf">19e6867</span><span class="err">f</span><span class="mi">2</span><span class="err">a</span><span class="mi">4</span><span class="err">d</span><span class="mi">0</span><span class="err">eef</span><span class="mi">26</span><span class="err">c</span><span class="mi">36340</span><span class="err">f&#39;</span><span class="p">]</span><span class="err">,</span>
+ <span class="err">&#39;finished_infused_challenge_slot_hashes&#39;:</span> <span class="p">[</span><span class="err">&#39;</span><span class="mi">0</span><span class="err">xd</span><span class="mi">0185</span><span class="err">a</span><span class="mi">6493</span><span class="err">b</span><span class="mi">10</span><span class="err">d</span><span class="mf">84e696</span><span class="err">c</span><span class="mi">6</span><span class="err">fc</span><span class="mi">55</span><span class="err">ec</span><span class="mf">1920e8</span><span class="err">a</span><span class="mi">96791</span><span class="err">a</span><span class="mi">604</span><span class="err">dedfe</span><span class="mi">77635</span><span class="err">da</span><span class="mi">460</span><span class="err">f</span><span class="mi">354</span><span class="err">d&#39;</span><span class="p">]</span><span class="err">,</span>
+ <span class="err">&#39;finished_reward_slot_hashes&#39;:</span> <span class="p">[</span><span class="err">&#39;</span><span class="mi">0</span><span class="err">xe</span><span class="mi">2</span><span class="err">bcbf</span><span class="mi">560471131</span><span class="err">a</span><span class="mi">7</span><span class="err">fb</span><span class="mi">87</span><span class="err">ffe</span><span class="mi">3</span><span class="err">f</span><span class="mi">9</span><span class="err">ddde</span><span class="mi">03166</span><span class="err">a</span><span class="mi">9</span><span class="err">b</span><span class="mi">0092</span><span class="err">a</span><span class="mi">50</span><span class="err">f</span><span class="mi">1</span><span class="err">ed</span><span class="mi">1599715857</span><span class="err">c</span><span class="mi">365</span><span class="err">&#39;</span><span class="p">]</span><span class="err">,</span>
+ <span class="err">&#39;header_hash&#39;:</span> <span class="err">&#39;</span><span class="mi">0</span><span class="err">x</span><span class="mf">2791729e1</span><span class="err">c</span><span class="mi">914</span><span class="err">f</span><span class="mi">9</span><span class="err">c</span><span class="mi">3908</span><span class="err">a</span><span class="mi">0</span><span class="err">ad</span><span class="mi">895</span><span class="err">b</span><span class="mi">5846</span><span class="err">c</span><span class="mi">86</span><span class="err">fc</span><span class="mf">4e207</span><span class="err">cc</span><span class="mf">463820123e9</span><span class="err">a</span><span class="mi">299</span><span class="err">c</span><span class="mi">39</span><span class="err">f</span><span class="mi">3</span><span class="err">&#39;,</span>
+ <span class="err">&#39;height&#39;:</span> <span class="mi">201645</span><span class="err">,</span>
+ <span class="err">&#39;infused_challenge_vdf_output&#39;:</span> <span class="err">None,</span>
+ <span class="err">&#39;overflow&#39;:</span> <span class="err">True,</span>
+ <span class="err">&#39;pool_puzzle_hash&#39;:</span> <span class="err">&#39;</span><span class="mi">0</span><span class="err">x</span><span class="mi">4</span><span class="err">bc</span><span class="mi">6435</span><span class="err">b</span><span class="mi">409</span><span class="err">bcbabe</span><span class="mi">53870</span><span class="err">dae</span><span class="mi">0</span><span class="err">f</span><span class="mi">03755</span><span class="err">f</span><span class="mi">6</span><span class="err">aabb</span><span class="mi">4594</span><span class="err">c</span><span class="mi">5915</span><span class="err">ec</span><span class="mi">983</span><span class="err">acf</span><span class="mi">12</span><span class="err">a</span><span class="mi">5</span><span class="err">d</span><span class="mi">1</span><span class="err">fba&#39;,</span>
+ <span class="err">&#39;prev_hash&#39;:</span> <span class="err">&#39;</span><span class="mi">0</span><span class="err">xf</span><span class="mi">126</span><span class="err">ecf</span><span class="mi">64473</span><span class="err">beb</span><span class="mi">9</span><span class="err">ae</span><span class="mi">5</span><span class="err">b</span><span class="mi">84137788100</span><span class="err">feb</span><span class="mi">9</span><span class="err">d</span><span class="mi">731</span><span class="err">c</span><span class="mi">604877</span><span class="err">c</span><span class="mi">0744</span><span class="err">cdc</span><span class="mi">6025</span><span class="err">f</span><span class="mi">4</span><span class="err">cbeb&#39;,</span>
+ <span class="err">&#39;prev_transaction_block_hash&#39;:</span> <span class="err">&#39;</span><span class="mi">0</span><span class="err">x</span><span class="mi">7103</span><span class="err">fe</span><span class="mi">2</span><span class="err">f</span><span class="mi">1</span><span class="err">aa</span><span class="mi">96998</span><span class="err">f</span><span class="mi">9</span><span class="err">ccf</span><span class="mi">6</span><span class="err">fc</span><span class="mi">98561</span><span class="err">b</span><span class="mi">64</span><span class="err">c</span><span class="mi">5</span><span class="err">f</span><span class="mi">7</span><span class="err">a</span><span class="mi">98</span><span class="err">cf</span><span class="mi">942335</span><span class="err">c</span><span class="mi">4</span><span class="err">c</span><span class="mi">927</span><span class="err">fb</span><span class="mi">2</span><span class="err">eaa</span><span class="mi">9325</span><span class="err">a&#39;,</span>
+ <span class="err">&#39;prev_transaction_block_height&#39;:</span> <span class="mi">201643</span><span class="err">,</span>
+ <span class="err">&#39;required_iters&#39;:</span> <span class="mi">95752</span><span class="err">,</span>
+ <span class="err">&#39;reward_claims_incorporated&#39;:</span> <span class="p">[{</span><span class="err">&#39;amount&#39;:</span> <span class="err">1750000000000,</span>
+                                 <span class="err">&#39;parent_coin_info&#39;:</span> <span class="err">&#39;0xccd5bb71183532bff220ba46c268991a000000000000000000000000000313ab&#39;,</span>
+                                 <span class="err">&#39;puzzle_hash&#39;:</span> <span class="err">&#39;0xbbb014f41d88c74b78501b36e4863d3382bfda9ae3c4d30a1b6df72b962502b6&#39;</span><span class="p">},</span>
+                                <span class="p">{</span><span class="err">&#39;amount&#39;:</span> <span class="err">250000000000,</span>
+                                 <span class="err">&#39;parent_coin_info&#39;:</span> <span class="err">&#39;0x3ff07eb358e8255a65c30a2dce0e5fbb000000000000000000000000000313ab&#39;,</span>
+                                 <span class="err">&#39;puzzle_hash&#39;:</span> <span class="err">&#39;0xbbb014f41d88c74b78501b36e4863d3382bfda9ae3c4d30a1b6df72b962502b6&#39;</span><span class="p">},</span>
+                                <span class="p">{</span><span class="err">&#39;amount&#39;:</span> <span class="err">1750000000000,</span>
+                                 <span class="err">&#39;parent_coin_info&#39;:</span> <span class="err">&#39;0xccd5bb71183532bff220ba46c268991a000000000000000000000000000313aa&#39;,</span>
+                                 <span class="err">&#39;puzzle_hash&#39;:</span> <span class="err">&#39;0x4bc6435b409bcbabe53870dae0f03755f6aabb4594c5915ec983acf12a5d1fba&#39;</span><span class="p">},</span>
+                                <span class="p">{</span><span class="err">&#39;amount&#39;:</span> <span class="err">250000000000,</span>
+                                 <span class="err">&#39;parent_coin_info&#39;:</span> <span class="err">&#39;0x3ff07eb358e8255a65c30a2dce0e5fbb000000000000000000000000000313a8&#39;,</span>
+                                 <span class="err">&#39;puzzle_hash&#39;:</span> <span class="err">&#39;0xcf178071f6aa6cb1c92f00943424bcc8cb774449bd60058fc08e9894f49a1ca4&#39;</span><span class="p">}]</span><span class="err">,</span>
+ <span class="err">&#39;reward_infusion_new_challenge&#39;:</span> <span class="err">&#39;</span><span class="mi">0</span><span class="err">x</span><span class="mi">660886</span><span class="err">f</span><span class="mi">4</span><span class="err">ab</span><span class="mi">030</span><span class="err">c</span><span class="mi">07755</span><span class="err">f</span><span class="mi">53362</span><span class="err">ae</span><span class="mi">4253</span><span class="err">dfa</span><span class="mi">93</span><span class="err">ea</span><span class="mi">853</span><span class="err">cbc</span><span class="mi">321218</span><span class="err">f</span><span class="mi">58</span><span class="err">f</span><span class="mi">159</span><span class="err">c</span><span class="mi">75</span><span class="err">adaa&#39;,</span>
+ <span class="err">&#39;signage_point_index&#39;:</span> <span class="mi">63</span><span class="err">,</span>
+ <span class="err">&#39;sub_epoch_summary_included&#39;:</span> <span class="err">None,</span>
+ <span class="err">&#39;sub_slot_iters&#39;:</span> <span class="mi">99614720</span><span class="err">,</span>
+ <span class="err">&#39;timestamp&#39;:</span> <span class="mi">1619662081</span><span class="err">,</span>
+ <span class="err">&#39;total_iters&#39;:</span> <span class="mi">660123219464</span><span class="err">,</span>
+ <span class="err">&#39;weight&#39;:</span> <span class="mi">4121254</span><span class="err">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>另外，我们取的这个表的定义如下。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-mysql" data-lang="mysql"><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="nf">block_records</span><span class="p">(</span><span class="w">
+</span><span class="w">  </span><span class="n">header_hash</span><span class="w"> </span><span class="kt">text</span><span class="w"> </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="p">,</span><span class="w"> 
+</span><span class="w">  </span><span class="n">prev_hash</span><span class="w"> </span><span class="kt">text</span><span class="p">,</span><span class="w"> 
+</span><span class="w">  </span><span class="n">height</span><span class="w"> </span><span class="kt">bigint</span><span class="p">,</span><span class="w">
+</span><span class="w">  </span><span class="n">block</span><span class="w"> </span><span class="kt">blob</span><span class="p">,</span><span class="w"> </span><span class="c1">#&lt;----
+</span><span class="c1"></span><span class="w">  </span><span class="n">sub_epoch_summary</span><span class="w"> </span><span class="kt">blob</span><span class="p">,</span><span class="w"> 
+</span><span class="w">  </span><span class="n">is_peak</span><span class="w"> </span><span class="kt">tinyint</span><span class="p">,</span><span class="w"> 
+</span><span class="w">  </span><span class="n">is_block</span><span class="w"> </span><span class="kt">tinyint</span><span class="p">)</span><span class="w">
+</span></code></pre></td></tr></table>
+</div>
+</div><h3 id="coin-record-chainchia-币记录">Coin Record Chain，Chia 币记录</h3>
+<p>类似的，我们可以获取一个 Coin 的记录，这里边，从表的定义可以看到，唯一二进制（不能直接从数据库查询中被人读懂）的字段就是是币值，不存在嵌套的结构，所以也并不需要封装的类才能看清楚里边的信息。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-mysql" data-lang="mysql"><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="nf">coin_record</span><span class="p">(</span><span class="w">
+</span><span class="w">  </span><span class="n">coin_name</span><span class="w"> </span><span class="kt">text</span><span class="w"> </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="p">,</span><span class="w">
+</span><span class="w">  </span><span class="n">confirmed_index</span><span class="w"> </span><span class="kt">bigint</span><span class="p">,</span><span class="w">
+</span><span class="w">  </span><span class="n">spent_index</span><span class="w"> </span><span class="kt">bigint</span><span class="p">,</span><span class="w">
+</span><span class="w">  </span><span class="n">spent</span><span class="w"> </span><span class="kt">int</span><span class="p">,</span><span class="w">
+</span><span class="w">  </span><span class="n">coinbase</span><span class="w"> </span><span class="kt">int</span><span class="p">,</span><span class="w">
+</span><span class="w">  </span><span class="n">puzzle_hash</span><span class="w"> </span><span class="kt">text</span><span class="p">,</span><span class="w">
+</span><span class="w">  </span><span class="n">coin_parent</span><span class="w"> </span><span class="kt">text</span><span class="p">,</span><span class="w">
+</span><span class="w">  </span><span class="n">amount</span><span class="w"> </span><span class="kt">blob</span><span class="p">,</span><span class="w">
+</span><span class="w">  </span><span class="kt">timestamp</span><span class="w"> </span><span class="kt">bigint</span><span class="p">)</span><span class="w">
+</span></code></pre></td></tr></table>
+</div>
+</div><p>这里值得注意的信息主要是 <code>spent_index</code> 和 <code>confirmed_index</code>。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">chia.util.ints</span> <span class="kn">import</span> <span class="n">uint64</span>
+
+<span class="n">chia_db_path</span> <span class="o">=</span> <span class="s2">&#34;/Users/weyl/.chia/mainnet/db/blockchain_v1_mainnet.sqlite&#34;</span>
+<span class="n">con</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">chia_db_path</span><span class="p">)</span>
+<span class="n">cur</span> <span class="o">=</span> <span class="n">con</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+<span class="n">rows</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;SELECT * FROM coin_record WHERE confirmed_index = 201645&#39;</span><span class="p">))</span>
+<span class="n">coin_amount</span> <span class="o">=</span> <span class="n">uint64</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">rows</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">7</span><span class="p">])</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">201</span><span class="p">]:</span> <span class="n">rows</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">201</span><span class="p">]:</span>
+<span class="p">(</span><span class="s1">&#39;cf35da0f595b49dde626d676b511ee62bce886f2216751aa51bb8ff851563d35&#39;</span><span class="p">,</span> <span class="c1"># coin_name</span>
+ <span class="mi">201645</span><span class="p">,</span> <span class="c1"># confirmed_index</span>
+ <span class="mi">0</span><span class="p">,</span> <span class="c1"># spent_index，这里没有spent，所以值无效</span>
+ <span class="mi">0</span><span class="p">,</span> <span class="c1"># spent，其实是 bool</span>
+ <span class="mi">1</span><span class="p">,</span> <span class="c1"># coinbase，bool</span>
+ <span class="s1">&#39;bbb014f41d88c74b78501b36e4863d3382bfda9ae3c4d30a1b6df72b962502b6&#39;</span><span class="p">,</span> <span class="c1"># puzzle_hash 对应到地址</span>
+ <span class="s1">&#39;ccd5bb71183532bff220ba46c268991a000000000000000000000000000313ab&#39;</span><span class="p">,</span>
+ <span class="sa">b</span><span class="s1">&#39;</span><span class="se">\x00\x00\x01\x97</span><span class="s1">t </span><span class="se">\xdc\x00</span><span class="s1">&#39;</span><span class="p">,</span> <span class="c1"># uint64</span>
+ <span class="mi">1619662081</span><span class="p">)</span>
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="puzzles-address地址">Puzzles/ Address，地址</h3>
+<p>我们可以把 Chia 中的 Puzzle 理解成为交易中的地址，为了方便使用，通常会把 Puzzle 的 hash 用<a href="https://github.com/bitcoin/bips/blob/master/bip-0173.mediawiki" target="_blank" rel="noopener noreffer">bech32m</a> 转换成地址。</p>
+<blockquote>
+<p>Tips:</p>
+<p>这里有一个在线双向转换的在线工具推荐一下: <a href="https://www.chiaexplorer.com/tools/address-puzzlehash-converter">https://www.chiaexplorer.com/tools/address-puzzlehash-converter</a></p>
+</blockquote>
+<h2 id="3-how-to-explore-chia-network-如何探索-chia-链">3. How to explore Chia Network? 如何探索 Chia 链</h2>
+<p>随着我们之前分析的信息，自然地，我们可以把 Chia 区块链中的信息取出来，用图（Graph）来表示，这里的图并不是（Graphic）图形、图画的意思，是数学、图论中的图。</p>
+<p>在图的语境下，最主要的两个元素就是顶点（Vertex）和边（Edge）。</p>
+<p>顶点表示一个实体，而边表示实体之间的某种关系，这种关系可以是对等的（无方向的）也可以是有方向的。</p>
+<p>这里我们可以把这里的信息抽象映射到如图的图模型里：</p>
+<ul>
+<li>Block 顶点</li>
+<li>Coin 顶点</li>
+<li>Puzzle 顶点</li>
+<li>spends 边（Block 到 Coin）</li>
+<li>confirms 边 （Block 到 Coin）</li>
+<li>belongs_to 边（Coin 到 Puzzle）</li>
+</ul>
+<p></p>
+<p>这里，我们应用的图是一种叫做属性图的形式，除了点和边的关系之外。这两种实体（点、边）还有其他信息只和它们的一个实例相关，所以再定义为顶点、边就不是很适合，这些信息就作为点、边的属性（preperty）存在。</p>
+<p>这种为了处理实体之间关联、涉及实体、关联的属性信息的，也就是&quot;属性图&quot;的存储信息的方式在计算机领域越来越流行，甚至有专门为此结构而原生开发的数据库——图数据库（Graph Database）。</p>
+<p>这里，我们用的就是一个叫做 Nebula Graph 的图数据库，它是一个现代的、为超大规模分部署架构设计的、原生存储、查询、计算图数据的项目，更棒的是，它是产生于社区的开源产品。</p>
+<blockquote>
+<p>Tips:</p>
+<p><strong>安装 Nebula Graph</strong></p>
+<p>一般来说，面向超大规模数据的分布式系统，天然的都是不容易轻量部署的，大家如果第一次使用的话可以试试我写的一个叫做 nebula-up 的小工具，可以一行指令部署一个用来试用、学习的 Nebula Graph 集群，地址在这里： <a href="https://github.com/wey-gu/nebula-up/">https://github.com/wey-gu/nebula-up/</a> 。</p>
+</blockquote>
+<h3 id="31-import-the-chia-to-a-graph-database-nebula-graph-导入-chia-数据到图数据库">3.1 Import the Chia to a Graph Database, Nebula Graph 导入 Chia 数据到图数据库</h3>
+<p>我们分两步走，第一步这把 Chia Network 数据转换成 CSV 文件，第二步使用 Nebula 的 <a href="https://github.com/vesoft-inc/nebula-importer/" target="_blank" rel="noopener noreffer">Nebula-Importer</a> 把数据导入 Nebula Graph。</p>
+<h4 id="311-data-conversion-数据转换">3.1.1 Data conversion 数据转换</h4>
+<p>这部分的代码我开源在这里了:</p>
+<p><a href="https://github.com/wey-gu/nebula-chia">https://github.com/wey-gu/nebula-chia</a></p>
+<p>使用它只需要在 Chia Network 的 python venv 下安装它:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash">python3 -m pip install nebula-chia
+</code></pre></td></tr></table>
+</div>
+</div><p>然后调用 <code>ChaiBatchConvertor</code> 就可以在当前目录下生成两个 CSV 文件。</p>
+<p>这里边有一些可以配置的参数，具体可以参考代码 <code>nebulachia/convertor.py</code></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">nebulachia.convertor</span> <span class="kn">import</span> <span class="n">ChiaBatchConvertor</span>
+<span class="n">c</span> <span class="o">=</span> <span class="n">ChaiBatchConvertor</span><span class="p">(</span>
+    <span class="n">block_record_limit</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">coin_record_limit</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">write_batch_size</span><span class="o">=</span><span class="mi">10000</span><span class="p">)</span>
+<span class="n">c</span><span class="o">.</span><span class="n">convert_block_record</span><span class="p">()</span>
+<span class="n">c</span><span class="o">.</span><span class="n">convert_coin_record</span><span class="p">()</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>生成的文件：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash">$ ls -lth
+
+-rw-r--r--   <span class="m">1</span> weyl  staff   173M May <span class="m">19</span> 13:01 coin_record.csv
+-rw-r--r--   <span class="m">1</span> weyl  staff    77M May <span class="m">19</span> 12:59 block_record.csv
+</code></pre></td></tr></table>
+</div>
+</div><p>这里边字段的含义和类型，可以参考代码中 <code>block_record_row</code> 和 <code>coin_record_row</code> 的 <code>__doc__</code></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span><span class="lnt">67
+</span><span class="lnt">68
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-python" data-lang="python"><span class="n">In</span> <span class="p">[</span><span class="mi">466</span><span class="p">]:</span> <span class="k">print</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">coin_record_row</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
+
+        <span class="n">Parse</span> <span class="n">row</span> <span class="ow">and</span> <span class="k">return</span> <span class="n">a</span> <span class="n">CSV</span> <span class="n">block</span> <span class="n">coin</span> <span class="n">row</span> <span class="nb">list</span><span class="o">.</span>
+
+        <span class="n">CREATE</span> <span class="n">TABLE</span> <span class="n">coin_record</span><span class="p">(</span>
+          <span class="n">coin_name</span> <span class="n">text</span> <span class="n">PRIMARY</span> <span class="n">KEY</span><span class="p">,</span>
+          <span class="n">confirmed_index</span> <span class="n">bigint</span><span class="p">,</span>
+          <span class="n">spent_index</span> <span class="n">bigint</span><span class="p">,</span>
+          <span class="n">spent</span> <span class="nb">int</span><span class="p">,</span>
+          <span class="n">coinbase</span> <span class="nb">int</span><span class="p">,</span>
+          <span class="n">puzzle_hash</span> <span class="n">text</span><span class="p">,</span>
+          <span class="n">coin_parent</span> <span class="n">text</span><span class="p">,</span>
+          <span class="n">amount</span> <span class="n">blob</span><span class="p">,</span>
+          <span class="n">timestamp</span> <span class="n">bigint</span><span class="p">)</span>
+
+        <span class="n">Coin</span> <span class="n">Record</span> <span class="n">CSV</span> <span class="n">Head</span><span class="p">:</span>
+            <span class="mi">0</span>         <span class="mi">1</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>          <span class="mi">2</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>      <span class="mi">3</span><span class="p">(</span><span class="nb">bool</span><span class="p">)</span>
+            <span class="n">coin_name</span><span class="o">|</span><span class="n">confirmed_index</span><span class="o">|</span><span class="n">spent_index</span><span class="o">|</span><span class="n">spent</span><span class="o">|</span>
+
+            <span class="mi">4</span><span class="p">(</span><span class="nb">bool</span><span class="p">)</span>  <span class="mi">5</span>           <span class="mi">6</span>           <span class="mi">7</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+            <span class="n">coinbase</span><span class="o">|</span><span class="n">puzzle_hash</span><span class="o">|</span><span class="n">coin_parent</span><span class="o">|</span><span class="n">amount</span><span class="o">|</span>
+
+            <span class="mi">8</span><span class="p">(</span><span class="n">timestamp</span><span class="p">)</span>
+            <span class="n">timestamp</span><span class="o">|</span>
+
+            <span class="mi">9</span>              <span class="mi">10</span>
+            <span class="n">confirmed_hash</span><span class="o">|</span><span class="n">spent_hash</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">467</span><span class="p">]:</span> <span class="k">print</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">block_record_row</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
+
+        <span class="n">Parse</span> <span class="n">row</span> <span class="ow">and</span> <span class="k">return</span> <span class="n">a</span> <span class="n">CSV</span> <span class="n">block</span> <span class="n">record</span> <span class="n">row</span> <span class="nb">list</span><span class="o">.</span>
+
+        <span class="n">CREATE</span> <span class="n">TABLE</span> <span class="n">block_records</span><span class="p">(</span>
+          <span class="n">header_hash</span> <span class="n">text</span> <span class="n">PRIMARY</span> <span class="n">KEY</span><span class="p">,</span>
+          <span class="n">prev_hash</span> <span class="n">text</span><span class="p">,</span>
+          <span class="n">height</span> <span class="n">bigint</span><span class="p">,</span>
+          <span class="n">block</span> <span class="n">blob</span><span class="p">,</span>
+          <span class="n">sub_epoch_summary</span> <span class="n">blob</span><span class="p">,</span>
+          <span class="n">is_peak</span> <span class="n">tinyint</span><span class="p">,</span>
+          <span class="n">is_block</span> <span class="n">tinyint</span><span class="p">)</span>
+
+        <span class="n">Block</span> <span class="n">Record</span> <span class="n">CSV</span> <span class="n">Head</span><span class="p">:</span>
+            <span class="mi">0</span>           <span class="mi">1</span>         <span class="mi">2</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span> <span class="mi">3</span><span class="p">(</span><span class="nb">bool</span><span class="p">)</span> <span class="mi">4</span><span class="p">(</span><span class="nb">bool</span><span class="p">)</span>
+            <span class="n">header_hash</span><span class="o">|</span><span class="n">prev_hash</span><span class="o">|</span><span class="n">height</span><span class="o">|</span><span class="n">is_peak</span><span class="o">|</span><span class="n">is_block</span><span class="o">|</span>
+
+            <span class="mi">5</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+            <span class="n">deficit</span><span class="o">|</span>
+
+            <span class="mi">6</span>
+            <span class="n">challenge_block_info_hash</span><span class="o">|</span>
+
+            <span class="mi">7</span>
+            <span class="n">farmer_puzzle_hash</span><span class="o">|</span>
+
+            <span class="mi">8</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+            <span class="n">fees</span><span class="o">|</span>
+
+            <span class="mi">9</span>
+            <span class="n">prev_transaction_block_hash</span><span class="o">|</span>
+
+            <span class="mi">10</span>
+            <span class="n">prev_transaction_block_height</span><span class="o">|</span>
+
+            <span class="mi">11</span>             <span class="mi">12</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+            <span class="n">required_iters</span><span class="o">|</span><span class="n">signage_point_index</span><span class="o">|</span>
+
+            <span class="mi">13</span><span class="p">(</span><span class="n">timestamp</span><span class="p">)</span>
+            <span class="n">timestamp</span>
+</code></pre></td></tr></table>
+</div>
+</div><h4 id="311-data-import-数据导入">3.1.1 Data import 数据导入</h4>
+<p>有了 CSV 文件，我们可以借助 <a href="https://github.com/vesoft-inc/nebula-importer/" target="_blank" rel="noopener noreffer">Nebula-Importer</a> 导入数据到图数据库中。</p>
+<p>这里，我们写好了 nebula-importer 的配置文件，其中包涵了如下信息:</p>
+<ul>
+<li>在 Nebula Graph 中创建需要的数据模型 Schema，这和我们前边做的图映射的信息是等价的</li>
+<li>描述 CSV 文件之中的 Column 的数据到图模型（点，边，点或边的属性）映射关系</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="c1"># 这里，我的 csv 文件和 配置文件都放在 /home/wei.gu/chia 之下</span>
+<span class="c1"># 我使用 docker-compose 默认配置部署的 Nebula Graph,</span>
+<span class="c1"># 它创建了叫 nebula-docker-compose_nebula-net 的 docker 网络</span>
+docker run --rm -ti <span class="se">\
+</span><span class="se"></span>    --network<span class="o">=</span>nebula-docker-compose_nebula-net <span class="se">\
+</span><span class="se"></span>    -v /home/wei.gu/chia/nebula-chia.yaml:/root/nebula-chia.yaml <span class="se">\
+</span><span class="se"></span>    -v /home/wei.gu/chia:/root <span class="se">\
+</span><span class="se"></span>    vesoft/nebula-importer:v2 <span class="se">\
+</span><span class="se"></span>    --config /root/nebula-chia.yaml
+</code></pre></td></tr></table>
+</div>
+</div><p>这里我展示一个导入的结果示例，我在单机部署的 Nebula Graph 里导入了我一两周之前取的全量 Chia Network 数据的结果。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash">...
+2021/05/19 09:55:09 <span class="o">[</span>INFO<span class="o">]</span> reader.go:180: Total lines of file<span class="o">(</span>/root/coin_record.csv<span class="o">)</span> is: 547557, error lines: <span class="m">0</span>
+2021/05/19 09:55:09 <span class="o">[</span>INFO<span class="o">]</span> statsmgr.go:61: Done<span class="o">(</span>/root/coin_record.csv<span class="o">)</span>: Time<span class="o">(</span>4385.88s<span class="o">)</span>, Finished<span class="o">(</span>4512927<span class="o">)</span>, Failed<span class="o">(</span>0<span class="o">)</span>, Latency AVG<span class="o">(</span>1305us<span class="o">)</span>, Batches Req AVG<span class="o">(</span>2015us<span class="o">)</span>, Rows AVG<span class="o">(</span>1028.42/s<span class="o">)</span>
+2021/05/19 09:55:10 --- END OF NEBULA IMPORTER ---
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="32-explore-the-chia-graph-探索-chia-的数据">3.2 Explore the Chia Graph 探索 Chia 的数据</h3>
+<h4 id="graph-db-queries">Graph DB Queries</h4>
+<p>导入 Chia 链的网络到 Nebula Graph 之后，我们可以在里边快速查询数据之间的关联。</p>
+<p>比如这个查询表示从区块 <code>524aa2013781ff4cd9d2b5dc...</code> 查起，经过三种边 <code>farmer_puzzle, spends, confirms</code> 双向遍历的结果。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql"><span class="k">GO</span><span class="w"> </span><span class="mi">5</span><span class="w"> </span><span class="n">STEPS</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span><span class="w">   </span><span class="s2">&#34;524aa2013781ff4cd9d2b5dce40647b670d722e2de25bd2e2b79970a8ec435ee&#34;</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span><span class="w">   </span><span class="n">OVER</span><span class="w"> </span><span class="n">farmer_puzzle</span><span class="p">,</span><span class="n">spends</span><span class="p">,</span><span class="n">confirms</span><span class="w"> </span><span class="n">BIDIRECT</span><span class="w">
+</span><span class="w"></span><span class="p">...</span><span class="w">
+</span><span class="w"></span><span class="n">Got</span><span class="w"> </span><span class="mi">419437</span><span class="w"> </span><span class="k">rows</span><span class="w"> </span><span class="p">(</span><span class="n">time</span><span class="w"> </span><span class="n">spent</span><span class="w"> </span><span class="mi">735120</span><span class="o">/</span><span class="mi">1170946</span><span class="w"> </span><span class="n">us</span><span class="p">)</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="n">Wed</span><span class="p">,</span><span class="w"> </span><span class="mi">19</span><span class="w"> </span><span class="n">May</span><span class="w"> </span><span class="mi">2021</span><span class="w"> </span><span class="mi">10</span><span class="p">:</span><span class="mi">11</span><span class="p">:</span><span class="mi">28</span><span class="w"> </span><span class="n">UTC</span><span class="w">
+</span></code></pre></td></tr></table>
+</div>
+</div><p>再比如，计算一个 Puzzle 地址上的余额（所有 coin 的总价值）比如这个puzzle <code>bbe39134ccc32c08fdeff...</code></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql"><span class="k">GO</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="n">STEP</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="s2">&#34;bbe39134ccc32c08fdeff4d2c19d1d1f4f7e48cdaf79d37397bc3136ce9b3cb7&#34;</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span><span class="w">   </span><span class="n">OVER</span><span class="w"> </span><span class="n">belongs_to</span><span class="w"> </span><span class="n">REVERSELY</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span><span class="w">   </span><span class="n">YIELD</span><span class="w"> </span><span class="k">CASE</span><span class="w"> </span><span class="err">$$</span><span class="p">.</span><span class="n">coin</span><span class="p">.</span><span class="n">is_spent</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span><span class="w">         </span><span class="k">WHEN</span><span class="w"> </span><span class="k">true</span><span class="w"> </span><span class="k">THEN</span><span class="w"> </span><span class="err">$$</span><span class="p">.</span><span class="n">coin</span><span class="p">.</span><span class="n">amount</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span><span class="w">         </span><span class="k">WHEN</span><span class="w"> </span><span class="k">false</span><span class="w"> </span><span class="k">THEN</span><span class="w"> </span><span class="o">-</span><span class="err">$$</span><span class="p">.</span><span class="n">coin</span><span class="p">.</span><span class="n">amount</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span><span class="w">         </span><span class="k">END</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">Amount</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">YIELD</span><span class="w"> </span><span class="k">sum</span><span class="p">(</span><span class="err">$</span><span class="o">-</span><span class="p">.</span><span class="n">Amount</span><span class="p">)</span><span class="w">
+</span></code></pre></td></tr></table>
+</div>
+</div><h4 id="the-visulized-way-with-nebula-studio">The Visulized way with Nebula Studio</h4>
+<p>Nebula Graph 为我们提供了图形化界面，有了它，我们可以用更符合人脑的方式地查看 Chia Network 中的数据。</p>
+<p>比如，我们还是回到上边的那个区块，从这里查询。</p>
+<p></p>
+<p>我们就获得了这个 block 类型的一个点/ vertex。我们可以从他开始进一步探索，先鼠标单击这个点，在拓展条件里把方向选择双向，默认的边类型是所有的边类型，这样我们就可以把所有 <code>步数</code>内相关联的数据一下子全都找出来。</p>
+<p>选择好拓展条件之后，点击拓展就可以。</p>
+<p></p>
+<p>这里，我们选择了步数为 <code>1</code>，点击拓展（或者双击要拓展的点），之后，我们可以快速双击其他的点继续拓展，这是我鼠标点了几次之后看到的样子：</p>
+<p></p>
+<p>我们接下来再试试拓展的步数为 <code>2</code>，点击拓展（或者双击要拓展的点），看起来找到了有意思的信息。</p>
+<p>我们看到了一个有很多边的黑色的点。</p>
+<p></p>
+<p>通过查看这个点和我们开始查看的 block 之间的边，我们知道这个点正是 farm 这个 block 的地址，这个地址下边有非常多的 coin。</p>
+<p></p>
+<p>这只是一个开始，有了这个导入到 Nebula Graph 图数据的基础，我们可以做很多有意思的分析和洞察，大家可以自己试试看，得到更有意思的结果分享给其他同学。</p>
+<h2 id="4-summary-总结">4. Summary 总结</h2>
+<p>这篇文章里，在我们简单介绍了 Chia Network 之后，我们首次的带大家一起从安装一个 Chia 终端，到分析终端同步到本地的 Chia 全网数据，借助于 Chia 终端开源的 Python 代码库，我们分析了全网数据里的重要信息。</p>
+<p>之后，我们开源了一个小工具 Nebula-Chia，有了它，就可以把 Chia 的全网数据转换成 CSV 格式，这样，就可以借助 nebula-importer 把所有的数据导入到一个先进的图数据库（Nebula Graph）中。</p>
+<p>Nebula Graph 的项目地址是 <a href="https://github.com/vesoft-inc/nebula-graph">https://github.com/vesoft-inc/nebula-graph</a></p>
+<p>Nebula-Chia 我也开源在 <a href="https://github.com/wey-gu/nebula-chia">https://github.com/wey-gu/nebula-chia</a></p>
+<p>在图数据库中，我们展示了做基本 Query 的例子和借助图数据库自带的可视化工具，我们可以轻易地获取 Chia 全网数据之间关联关系，有了这个作为基础，这些数据中洞察的潜力和可以尝试的有意思事情可以比较直观和高效地进一步探索了！</p>
+<p>是不是很酷？</p>
+<p></p>
+<h2 id="5-references">5. References</h2>
+<ul>
+<li><a href="https://www.chia.net/faq/">https://www.chia.net/faq/</a></li>
+<li><a href="https://chialisp.com/docs/">https://chialisp.com/docs/</a></li>
+<li><a href="https://www.chiaexplorer.com/chia-coins">https://www.chiaexplorer.com/chia-coins</a></li>
+<li><a href="https://docs.google.com/document/d/1tmRIb7lgi4QfKkNaxuKOBHRmwbVlGL4f7EsBDr_5xZE">https://docs.google.com/document/d/1tmRIb7lgi4QfKkNaxuKOBHRmwbVlGL4f7EsBDr_5xZE</a></li>
+<li><a href="https://github.com/sipa/bech32/tree/master/ref/python">https://github.com/sipa/bech32/tree/master/ref/python</a></li>
+<li><a href="https://github.com/Chia-Network/chia-blockchain/blob/main/README.md">https://github.com/Chia-Network/chia-blockchain/blob/main/README.md</a></li>
+<li><a href="https://www.chia.net/assets/ChiaGreenPaper.pdf">https://www.chia.net/assets/ChiaGreenPaper.pdf</a></li>
+<li><a href="https://docs.nebula-graph.com.cn">https://docs.nebula-graph.com.cn</a></li>
+</ul>
+<blockquote>
+<p>Banner Picture Credit: <a href="https://unsplash.com/photos/Ph5_4TnXXYE?utm_source=unsplash&amp;utm_medium=referral&amp;utm_content=creditShareLink" target="_blank" rel="noopener noreffer">Icons8 Team</a></p>
 </blockquote>]]></description>
 </item><item>
     <title>VSCode-nGQL, nGQL extension for VSCode</title>
     <link>https://siwei.io/en/vscode-ngql/</link>
     <pubDate>Wed, 05 May 2021 21:11:04 &#43;0800</pubDate><author>
-        <name>Wey Gu | 古思为</name>
+        <name>Wey(Siwei) Gu | 古思为</name>
     </author><guid>https://siwei.io/en/vscode-ngql/</guid>
     <description><![CDATA[<blockquote>
 <p>nGQL extension VSCode is built to integrate the Nebula Graph with VSCode for an awesome developer experience.</p>
-</blockquote>]]></description>
+</blockquote>
+<h1 id="vs-code-ngql-syntax-highlight">VS Code nGQL Syntax Highlight</h1>
+<p></p>
+<h2 id="download">Download</h2>
+<p>Search ngql from the market or click <a href="https://marketplace.visualstudio.com/items?itemName=wey-gu.vscode-ngql" target="_blank" rel="noopener noreffer">here</a>.</p>
+<h2 id="features">Features</h2>
+<ul>
+<li>Highlighting all Keywords, Functions of a given <code>.ngql</code> file</li>
+</ul>
+<h2 id="release-notes">Release Notes</h2>
+<h3 id="001">0.0.1</h3>
+<p>Initial release, only <code>.ngql</code> Syntax is supported.</p>
+<h3 id="002">0.0.2</h3>
+<p>Lower supported vscode version till <code>^1.50.1</code></p>
+<h2 id="reference">Reference</h2>
+<ul>
+<li><a href="https://docs.nebula-graph.io/">https://docs.nebula-graph.io/</a></li>
+<li><a href="https://github.com/vesoft-inc/nebula-graph/blob/master/src/parser/scanner.lex">https://github.com/vesoft-inc/nebula-graph/blob/master/src/parser/scanner.lex</a></li>
+</ul>]]></description>
 </item><item>
     <title>Nebula-Insights, How we leverage Serverless Cloud infra to setup Data Pipeline for Nebula Graph Community Insights</title>
     <link>https://siwei.io/en/nebula-insights/</link>
     <pubDate>Mon, 03 May 2021 21:11:04 &#43;0800</pubDate><author>
-        <name>Wey Gu | 古思为</name>
+        <name>Wey(Siwei) Gu | 古思为</name>
     </author><guid>https://siwei.io/en/nebula-insights/</guid>
     <description><![CDATA[<blockquote>
 <p>How we leverage Serverless Cloud infra to setup Data Pipeline for Nebula Graph Community Insights. We used Google Cloud Scheduler, Google Cloud Functions, BigQuery, and codes are shared in GitHub</p>
-</blockquote>]]></description>
+</blockquote>
+<blockquote>
+<p>这是我首发在 Datawhale 的<a href="http://datawhale.club/t/topic/2089" target="_blank" rel="noopener noreffer">文章</a>，介绍我们如何用公有云 Serverless 技术：Google Cloud Scheduler，Google Cloud Functions 和 BigQuery 搭建数据管道，收集探索开源社区洞察。并将全部代码开源在 GitHub。</p>
+</blockquote>
+<blockquote>
+<p>引子
+我们想要收集一些帮助 Nebula Graph 社区运营的 metrics，希望能从不同来源的数据自动化周期性收集、处理、并方便地展现出来做数据驱动分析的基础设施。</p>
+</blockquote>
+<blockquote>
+<p>Nebula Graph 是一个现代的开源分布式图数据库(Graph Database)，欢迎同学们从:</p>
+<ul>
+<li>官网: <a href="https://nebula-graph.com.cn" target="_blank" rel="noopener noreffer">https://nebula-graph.com.cn </a></li>
+<li>Bilibili: <a href="https://space.bilibili.com/472621355">https://space.bilibili.com/472621355</a></li>
+<li>GitHub:https://github.com/vesoft-inc/nebula-graph
+了解我们哈。</li>
+</ul>
+</blockquote>
+<h2 id="需求">需求</h2>
+<ol>
+<li>方便增加新的数据</li>
+<li>数据收集无需人为触发（自动、周期性）</li>
+<li>每天数据量不超过1000条</li>
+<li>数据可以生成 dashboard，也可以支持统计分期 query</li>
+<li>高可用，数据安全</li>
+<li>低预算，尽可能不需要运维人力</li>
+</ol>
+<h3 id="需求分析">需求分析</h3>
+<p>我们需要搭建一个系统能实现</p>
+<ul>
+<li>一个能周期性触发获取数据的事件的服务: scheduler</li>
+<li>一个触发之后，把数据 ETL 到数据库中的服务: ETL worker</li>
+<li>一个数据仓库</li>
+<li>一个能够把数据库作为源，允许用户 query，展示数据的界面: Data-UI</li>
+</ul>
+<p>这个需求的特点是虽然数据量很小、但是要求服务高可用、安全。因为这种情况下自建服务器还需要保证HA和数据安全会一定会消耗昂贵运维人力，所以我们应该尽量避免在自己维护的服务器中搭建 scheduler, 和数据库。</p>
+<p>最终，我们选择了尽量使用公有云的 aaS 的方案:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">┌──────────────────────────┐
+│                          │
+│  Google Cloud Scheduler  │
+│                          │
+└────────────┬─────────────┘
+             │                             ┌─────────────────────┐
+             │                             │                     │
+┌────────────▼─────────────┐   ┌───────────►  GitHub API Server  │
+│                          │   │           │                     │
+│  Google Cloud Functions  ├───┤           └─────────────────────┘
+│                          │   │
+└────────────┬─────────────┘   │           ┌─────────────────────────┐
+             │                 │           │                         │
+             │                 ├───────────►  Docker Hub API Server  │
+   ┌─────────▼─────────┐       │           │                         │
+   │                   │       │           │                         │
+   │  Google BigQuery  │       │           └─────────────────────────┘
+   │                   │       ├───────────► ...                   
+   └─────────▲─────────┘       │           ┌──────────────────┐
+             │                 │           │                  │
+             │                 └───────────►  Aliyun OSS API  │
+  ┌──────────┴───────────┐                 │                  │
+  │                      │                 └──────────────────┘
+  │  Google Data Studio  │
+  │       ┌──┐           │
+  │  ┌──┐ │  │ ┌──┐      │
+  │  │  │ │  │ │  │      │
+  │  │  │ │  │ │  │      │
+  └──┴──┴─┴──┴─┴──┴──────┘
+</code></pre></td></tr></table>
+</div>
+</div><p>因为我个人比较熟悉 Google Cloud Platform(GCP)的原因，加上GCP在大数据处理上比较领先，再加上Google提供的 free tier额度非常大方，以至于在我们这个数据量下，所有workload都会是免费的。
+这个方案最后选择了全栈 Google Cloud，然而，这实际上只是一个参考，同学们完全可以在其他公有云提供商那里找到对应的服务。</p>
+<p>这里我简单介绍一下， Google Cloud Scheduler是自解释的，不用多介绍了。
+而 Google Cloud Functions是GCP的无服务器(serverless)的 Function as a Service服务，它的好处是我们可以把无状态的 event-driven 的 workload 代码放上去，它是按需付费（pay as you go)的，类似的服务还有 Google Cloud Run，后者的区别在于我们提供的是一个docker/container（这使得能支持的运行环境可以使任何能跑在容器里的东西），而 Cloud Functions是把我们的代码文件放上去。他们的效果是类似的，因为我准备用Python来做 ETL的东西，Clouf Functions已经支持了，我就直接选择它了。</p>
+<p>在scheduler里边，我定义了每一天它发一个 pub/sub（类似于kafka，这里google可以保证至少发成功一次）消息给 Cloud Functions，然后 Cloud Functions会去做 ETL的工作。</p>
+<p>这里，实际上我的设计里这个触发的函数调会把数据从API那里获取下来，在内存里处理好之后，存储到在对象存储里为 <code>JSON</code> 文件，然后再调用 Google BigQuery 的 API让 BigQuery直接从对对象存储里拉取 <code>JSON</code> 文件，导入记录到相应的表之中。</p>
+<p><code>Google BigQuery</code> 作为GCP 特别有竞争力的一个产品，是它数据仓库，BigQuery 可以无限扩容，支持海量数据导入，支持 SQL-like 的 query，还自带ML算法，通过SQL就能调用这些算法。它可以和很多GCP以及第三方的组件可以集成起来。</p>
+<p><code>Google Data Studio</code> 是GCP的数据 Insights产品，如果大家用过 Google Analytics 应该已经用过它了。</p>
+<h3 id="数据的获取api">数据的获取，API</h3>
+<p>我们第一阶段想要收集的数据来源是 GitHub 上，社区项目的统计数据、Docker Hub上，社区镜像的拉取计数，之后，会增加更多维度的数据。</p>
+<ul>
+<li>Github API, ref: <a href="https://pygithub.readthedocs.io">https://pygithub.readthedocs.io</a>
+这里我们利用了一个Github API的一个 Python 封装，下边是在 IDLE/iPython/Jupyter 里尝试的例子</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span><span class="lnt">67
+</span><span class="lnt">68
+</span><span class="lnt">69
+</span><span class="lnt">70
+</span><span class="lnt">71
+</span><span class="lnt">72
+</span><span class="lnt">73
+</span><span class="lnt">74
+</span><span class="lnt">75
+</span><span class="lnt">76
+</span><span class="lnt">77
+</span><span class="lnt">78
+</span><span class="lnt">79
+</span><span class="lnt">80
+</span><span class="lnt">81
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback"># 实例化一个client
+g = Github(login_or_token=token, timeout=60, retry=Retry(
+           total=10, status_forcelist=(500, 502, 504), backoff_factor=0.3))
+# 配置好要获取的repo的信息
+org_str = &#34;vesoft-inc&#34;
+org = g.get_organization(org_str)
+repos = org.get_repos()
+
+# 这里repos是一个迭代器，方便看到里边的东西，我们把它 list 一下可以看到所有的repo:
+list(repos)
+[Repository(full_name=&#34;vesoft-inc/nebula&#34;),
+ Repository(full_name=&#34;vesoft-inc/nebula-docs&#34;),
+ Repository(full_name=&#34;vesoft-inc/nebula-dev-docker&#34;),
+ Repository(full_name=&#34;vesoft-inc/github-statistics&#34;),
+ Repository(full_name=&#34;vesoft-inc/nebula-docker-compose&#34;),
+ Repository(full_name=&#34;vesoft-inc/nebula-go&#34;),
+ Repository(full_name=&#34;vesoft-inc/nebula-java&#34;),
+ Repository(full_name=&#34;vesoft-inc/nebula-python&#34;),
+ Repository(full_name=&#34;vesoft-inc/nebula-importer&#34;),
+ Repository(full_name=&#34;vesoft-inc/nebula-third-party&#34;),
+ Repository(full_name=&#34;vesoft-inc/nebula-storage&#34;),
+ Repository(full_name=&#34;vesoft-inc/nebula-graph&#34;),
+ Repository(full_name=&#34;vesoft-inc/nebula-common&#34;),
+ Repository(full_name=&#34;vesoft-inc/nebula-stats-exporter&#34;),
+ Repository(full_name=&#34;vesoft-inc/nebula-web-docker&#34;),
+ Repository(full_name=&#34;vesoft-inc/nebula-bench&#34;),
+ Repository(full_name=&#34;vesoft-inc/nebula-console&#34;),
+ Repository(full_name=&#34;vesoft-inc/nebula-docs-cn&#34;),
+ Repository(full_name=&#34;vesoft-inc/nebula-chaos&#34;),
+ Repository(full_name=&#34;vesoft-inc/nebula-clients&#34;),
+ Repository(full_name=&#34;vesoft-inc/nebula-spark-utils&#34;),
+ Repository(full_name=&#34;vesoft-inc/nebula-node&#34;),
+ Repository(full_name=&#34;vesoft-inc/nebula-rust&#34;),
+ Repository(full_name=&#34;vesoft-inc/nebula-cpp&#34;),
+ Repository(full_name=&#34;vesoft-inc/nebula-http-gateway&#34;),
+ Repository(full_name=&#34;vesoft-inc/nebula-flink-connector&#34;),
+ Repository(full_name=&#34;vesoft-inc/nebula-community&#34;),
+ Repository(full_name=&#34;vesoft-inc/nebula-br&#34;),
+ Repository(full_name=&#34;vesoft-inc/.github&#34;)]
+
+# repo0 是 vesoft-inc/nebula 这个repo，我们可以通过 get_clones_traffic，get_views_traffic 来获取过去十几天的 clone，view 统计
+
+In [16]: repo0.get_clones_traffic()
+Out[16]:
+{&#39;count&#39;: 362,
+ &#39;uniques&#39;: 150,
+ &#39;clones&#39;: [Clones(uniques=5, timestamp=2021-04-06 00:00:00, count=16),
+  Clones(uniques=8, timestamp=2021-04-07 00:00:00, count=23),
+  Clones(uniques=13, timestamp=2021-04-08 00:00:00, count=30),
+  Clones(uniques=33, timestamp=2021-04-09 00:00:00, count=45),
+  Clones(uniques=2, timestamp=2021-04-10 00:00:00, count=13),
+  Clones(uniques=6, timestamp=2021-04-11 00:00:00, count=19),
+  Clones(uniques=15, timestamp=2021-04-12 00:00:00, count=28),
+  Clones(uniques=40, timestamp=2021-04-13 00:00:00, count=54),
+  Clones(uniques=9, timestamp=2021-04-14 00:00:00, count=21),
+  Clones(uniques=10, timestamp=2021-04-15 00:00:00, count=34),
+  Clones(uniques=10, timestamp=2021-04-16 00:00:00, count=23),
+  Clones(uniques=5, timestamp=2021-04-17 00:00:00, count=17),
+  Clones(uniques=2, timestamp=2021-04-18 00:00:00, count=13),
+  Clones(uniques=9, timestamp=2021-04-19 00:00:00, count=23),
+  Clones(uniques=3, timestamp=2021-04-20 00:00:00, count=3)]}
+
+In [17]: repo0.get_views_traffic()
+Out[17]:
+{&#39;count&#39;: 6019,
+ &#39;uniques&#39;: 1134,
+ &#39;views&#39;: [View(uniques=52, timestamp=2021-04-06 00:00:00, count=169),
+  View(uniques=143, timestamp=2021-04-07 00:00:00, count=569),
+  View(uniques=152, timestamp=2021-04-08 00:00:00, count=635),
+  View(uniques=134, timestamp=2021-04-09 00:00:00, count=648),
+  View(uniques=81, timestamp=2021-04-10 00:00:00, count=318),
+  View(uniques=42, timestamp=2021-04-11 00:00:00, count=197),
+  View(uniques=127, timestamp=2021-04-12 00:00:00, count=515),
+  View(uniques=149, timestamp=2021-04-13 00:00:00, count=580),
+  View(uniques=134, timestamp=2021-04-14 00:00:00, count=762),
+  View(uniques=141, timestamp=2021-04-15 00:00:00, count=385),
+  View(uniques=113, timestamp=2021-04-16 00:00:00, count=284),
+  View(uniques=48, timestamp=2021-04-17 00:00:00, count=168),
+  View(uniques=35, timestamp=2021-04-18 00:00:00, count=135),
+  View(uniques=124, timestamp=2021-04-19 00:00:00, count=492),
+  View(uniques=59, timestamp=2021-04-20 00:00:00, count=162)]}
+</code></pre></td></tr></table>
+</div>
+</div><p>除了repo的 <code>clone</code>, <code>view</code>数据，我们还可以获取到 release的数据:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">In [31]: for rel in repo0.get_releases():
+    ...:     print(rel)
+GitRelease(title=&#34;Nebula Graph v1.2.1&#34;)
+GitRelease(title=&#34;Nebula Graph v1.2.0&#34;)
+GitRelease(title=&#34;Nebula Graph V1.1.0&#34;)
+GitRelease(title=&#34;Nebula Graph v1.0.1&#34;)
+GitRelease(title=&#34;V1.0.0 GA&#34;)
+GitRelease(title=&#34;Nebula Graph v1.0.0-RC4&#34;)
+GitRelease(title=&#34;Nebula Graph v1.0.0-RC3&#34;)
+GitRelease(title=&#34;Nebula Graph Release v1.0.0-RC2&#34;)
+GitRelease(title=&#34;Nebula Graph v1.0.0-rc1&#34;)
+GitRelease(title=&#34;Nebula Graph v1.0.0-beta&#34;)
+GitRelease(title=&#34;Nebula Graph v0.1.0&#34;)
+
+# 每一个 release 对应一个 git tag，其中会有一个或者多个供下载的 asset
+In [33]: release_v121 = rels[0]
+
+In [34]: release_v121.tag_name
+Out[34]: &#39;v1.2.1&#39;
+
+In [35]: list(release_121.get_assets())
+Out[35]:
+[GitReleaseAsset(url=&#34;https://api.github.com/repos/vesoft-inc/nebula/releases/assets/35056357&#34;),
+ GitReleaseAsset(url=&#34;https://api.github.com/repos/vesoft-inc/nebula/releases/assets/35056361&#34;),
+...
+ GitReleaseAsset(url=&#34;https://api.github.com/repos/vesoft-inc/nebula/releases/assets/35056456&#34;)]
+
+# 每一个assset 的下载量和其他metadata也是可以获取的
+
+In [40]: assets[0].browser_download_url
+Out[40]: &#39;https://github.com/vesoft-inc/nebula/releases/download/v1.2.1/nebula-1.2.1.el6-5.x86_64.rpm&#39;
+
+In [41]: assets[0].download_count
+Out[41]: 45
+
+In [43]: assets[0].name
+Out[43]: &#39;nebula-1.2.1.el6-5.x86_64.rpm&#39;
+</code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>Docker Hub API, ref <a href="https://github.com/amalfra/docker-hub/blob/master/src/libs/docker_hub_client.py">https://github.com/amalfra/docker-hub/blob/master/src/libs/docker_hub_client.py</a>
+这里我们服用了 docker-hub 这个开源小项目中的一个库 <code>docker_hub_client.py</code> 来作为 Docker Hub API的 python wrapper</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback"># 实例化 client
+In [47]: dh_client = DockerHubClient()
+
+# 获取 `vesoft`之下的repo
+In [48]: dh_r = dh_client.get_repos(&#34;vesoft&#34;)
+  
+In [54]: dh_r[&#39;code&#39;]
+Out[54]: 200
+
+In [55]: dh_r[&#39;content&#39;].keys()
+Out[55]: dict_keys([&#39;count&#39;, &#39;next&#39;, &#39;previous&#39;, &#39;results&#39;])
+
+# 可以看到这一个返回的API里就有所有（如果多的话是需要翻页的）的 image的 start_count, pull_count的数据
+In [58]: dh_r[&#39;content&#39;][&#39;results&#39;][0]
+Out[58]:
+{&#39;user&#39;: &#39;vesoft&#39;,
+ &#39;name&#39;: &#39;nebula-graphd&#39;,
+ &#39;namespace&#39;: &#39;vesoft&#39;,
+ &#39;repository_type&#39;: &#39;image&#39;,
+ &#39;status&#39;: 1,
+ &#39;description&#39;: &#39;Nebula Graph Graphd Service Image. https://github.com/vesoft-inc/nebula&#39;,
+ &#39;is_private&#39;: False,
+ &#39;is_automated&#39;: False,
+ &#39;can_edit&#39;: False,
+ &#39;star_count&#39;: 2,
+ &#39;pull_count&#39;: 223494,
+ &#39;last_updated&#39;: &#39;2021-04-19T19:04:20.324010Z&#39;,
+ &#39;is_migrated&#39;: False,
+ &#39;collaborator_count&#39;: 0,
+ &#39;affiliation&#39;: None,
+ &#39;hub_user&#39;: &#39;vesoft&#39;}
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="实现">实现</h2>
+<h3 id="计划任务调度-with-cloud-scheduler">计划任务调度 with Cloud Scheduler</h3>
+<p>前边提到，<code>Scheduler --&gt; Functions</code> 中间是通过消息队列实现的可靠事件触发，我们需要在 Google Cloud Pub/Sub里创建一个订阅消息，后边我们会把这个订阅消息从 Scheduler 定期发送，并且在 Function创建的时候定义为触发条件。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">$ gcloud pubsub topics create nebula-insights-cron-topic
+$ gcloud pubsub subscriptions create cron-sub --topic nebula-insights-cron-topic
+</code></pre></td></tr></table>
+</div>
+</div><p>任务的创建非常直接，在 <a href="https://console.cloud.google.com/cloudscheduler" target="_blank" rel="noopener noreffer">Scheduler Web Console</a> 上直接图形化操作就可以了，记得要选择触发 Pub/Sub 消息为 <code>cron-sub</code>，消息主题为 <code>nebula-insights-cron-topic</code></p>
+<h3 id="etl-worker-with-python--google-functions">ETL Worker with Python + Google Functions</h3>
+<p>当 Scheduler 每天定时发送消息之后，接收方就是我们要定义的 Google Functions了，它的定义如图
+第一步，选择它的触发类型为 Pub/Sub，同时要定义消息的主题和名字。</p>
+<p></p>
+<p>第二步就是把代码放进去:</p>
+<p></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">                                              ┌─────────────────────┐
+                                              │                     │
+   ┌──────────────────────────┐   ┌───────────►  GitHub API Server  │
+   │                          │   │           │                     │
+   │  Google Cloud Functions  ◄───►           └─────────────────────┘
+   │                          │   │
+   └────────────▲─────────────┘   │           ┌─────────────────────────┐
+                │                 │           │                         │
+                │                 ├───────────►  Docker Hub API Server  │
+   ┌────────────▼────────────┐    │           │                         │
+   │                         │    │           │                         │
+   │  Google Cloud Storage   │    │           └─────────────────────────┘
+   │                         │    ...
+   └────────────┬────────────┘    │           ┌──────────────────┐
+                │                 │           │                  │
+                │                 └───────────►  Aliyun OSS API  │
+      ┌─────────▼─────────┐                   │                  │
+      │                   │                   └──────────────────┘
+      │  Google BigQuery  │
+      │                   │
+      └───────────────────┘
+</code></pre></td></tr></table>
+</div>
+</div><p>这部分的逻辑就是通过前边分析了的API取得信息，然后组装成需要的格式存到 Cloud Storage(对象存储），然后再导入到 BigQuery（数仓）之中，全部代码在GitHub上:
+<a href="https://github.com/wey-gu/nebula-insights/blob/main/functions/data-fetching-0/main.py">https://github.com/wey-gu/nebula-insights/blob/main/functions/data-fetching-0/main.py</a>
+另外，可以参考这个官方教程 <a href="https://cloud.google.com/scheduler/docs/tut-pub-sub">https://cloud.google.com/scheduler/docs/tut-pub-sub</a></p>
+<h3 id="数仓表结构定义">数仓表结构定义</h3>
+<p>数仓的表结构比较直接，schema的图贴在下边了，值得注意的是，BigQuery支持嵌套的表结构（而不像一般关系型数据库那样需要把这样的逻辑结构用辅助表来表示），在我们这个场景下非常方便，比如release表中的 assets的三个嵌套字段。
+</p>
+<p>更详细的信息可以参考GitHub上的介绍和代码: <a href="https://github.com/wey-gu/nebula-insights#data-etl-bigquery-and-gcs">https://github.com/wey-gu/nebula-insights#data-etl-bigquery-and-gcs</a></p>
+<h3 id="数据可视化">数据可视化</h3>
+<p>到这里，我们就可以自动在BigQuery里存有每天收集的不同来源的统计数据啦，有了它，我们可以借助 Data Studio 来生成各式各样的可视化表示。</p>
+<p>参考 <a href="https://cloud.google.com/bigquery/docs/visualize-data-studio">https://cloud.google.com/bigquery/docs/visualize-data-studio</a></p>
+<h2 id="总结">总结</h2>
+<p>这样，我们实际上不需要任何认为维护的成本和投入，就搭建了一整个数据的流水线，并且只需要按照数据用量付费，在我们的数据量下，及时考虑未来增加数十个新的量度的收集，我们依然没有达到需要付费的用量，是不是很Cool？
+因为数据同时存在于对象存储与数仓里，我们可以方便随时把数据导入任意其他平台上。</p>
+<p>BigQuery还有一些非常常用的，自带的机器学习的功能，只需要写一个SQL-Like的query就能触发然后获得预测结果，如果我们用到这些功能的话也会回到 datawhale 为同学们继续分享哈。</p>
+<p>第一次做数据工程方面的分享，如果有错误的地方欢迎大家不吝指出哈~~</p>
+<p>谢谢！</p>]]></description>
 </item><item>
     <title>Nebula-Up, oneliner installer for Nebula Graph Playground</title>
     <link>https://siwei.io/en/nebula-up/</link>
     <pubDate>Mon, 26 Apr 2021 11:11:04 &#43;0800</pubDate><author>
-        <name>Wey Gu | 古思为</name>
+        <name>Wey(Siwei) Gu | 古思为</name>
     </author><guid>https://siwei.io/en/nebula-up/</guid>
     <description><![CDATA[<blockquote>
 <p>A PoC utility for the newcomers or developers to bootstrap a nebula-graph playground in a oneliner command on Windows, Linux, and macOS(x86_64 and aarch64), w/o dealing with dependencies.</p>
-</blockquote>]]></description>
+</blockquote>
+<p><a href="https://asciinema.org/a/407151" title="Nebula Up Demo" target="_blank" rel="noopener noreffer"></a></p>
+<p><code>Nebula-Up</code> is PoC utility to enable developer to bootstrap an nebula-graph cluster with nebula-graph-studio(Web UI) + nebula-graph-console(Command UI) ready out of box in an oneliner run. All required packages will handled with <code>nebula-up</code> as well, including Docker on Linux(Ubuntu/CentOS), Docker Desktop on macOS(including both Intel and M1 chip based), and Docker Desktop Windows.</p>
+<p>Also, it&rsquo;s optimized to leverage China Repo Mirrors(docker, brew, gitee, etc&hellip;) in case needed enable a smooth deployment for both Mainland China users and others.</p>
+<p>macOS and Linux with Shell:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash">curl -fsSL nebula-up.siwei.io/install.sh <span class="p">|</span> bash
+</code></pre></td></tr></table>
+</div>
+</div><p></p>
+<p>Windows with PowerShell(Working In Progress):</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-powershell" data-lang="powershell"><span class="nb">iwr nebula-up</span><span class="p">.</span><span class="n">siwei</span><span class="p">.</span><span class="n">io</span><span class="p">/</span><span class="n">install</span><span class="p">.</span><span class="n">ps1</span> <span class="n">-useb</span> <span class="p">|</span> <span class="nb">iex
+</span></code></pre></td></tr></table>
+</div>
+</div><p>TBD:</p>
+<ul>
+<li><i class="far fa-square fa-fw"></i> Finished Windows(Docker Desktop instead of the WSL 1&amp;2 in initial phase) part, leveraging chocolatey package manager as homebrew was used in macOS</li>
+<li><i class="far fa-square fa-fw"></i> Fully optimized for CN users, for now, git/apt/yum repo were not optimised, newly installed docker repo, brew repo were automatically optimised for CN internet access</li>
+<li><i class="far fa-square fa-fw"></i> With nebula-graph version specification support, now it&rsquo;s hardcoded in 2.0.0-GA</li>
+<li><i class="far fa-check-square fa-fw"></i> With uninstall/cleanup support</li>
+<li><i class="far fa-square fa-fw"></i> Packaging similar content into homebrew/chocolatey?</li>
+<li><i class="far fa-square fa-fw"></i> CI/UT</li>
+</ul>]]></description>
 </item><item>
     <title>IPython-nGQL, Nebula Graph Jupyter Plugin</title>
     <link>https://siwei.io/en/ipython-ngql/</link>
     <pubDate>Sun, 07 Mar 2021 11:17:04 &#43;0800</pubDate><author>
-        <name>Wey Gu | 古思为</name>
+        <name>Wey(Siwei) Gu | 古思为</name>
     </author><guid>https://siwei.io/en/ipython-ngql/</guid>
     <description><![CDATA[<blockquote>
 <p><code>ipython-ngql</code> is a python package to extend the ability to connect Nebula Graph from your Jupyter Notebook or iPython. It&rsquo;s easier for data scientists to create, debug and share reusable and all-in-one Jupyter Notebooks with Nebula Graph interaction embedded.</p>
-</blockquote>]]></description>
+</blockquote>
+<p><code>ipython-ngql</code> is inspired by <a href="https://github.com/catherinedevlin/ipython-sql" target="_blank" rel="noopener noreffer">ipython-sql</a> created by <a href="https://catherinedevlin.blogspot.com/" target="_blank" rel="noopener noreffer">Catherine Devlin</a></p>
+<p></p>
+<h2 id="get-started">Get Started</h2>
+<h3 id="installation">Installation</h3>
+<p><code>ipython-ngql</code> could be installed either via pip or from this git repo itself.</p>
+<blockquote>
+<p>Install via pip</p>
+</blockquote>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash">pip install ipython-ngql
+</code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>Install inside the repo</p>
+</blockquote>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-bash" data-lang="bash">git clone git@github.com:wey-gu/ipython-ngql.git
+<span class="nb">cd</span> ipython-ngql
+python setup.py install
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="load-it-in-jupyter-notebook-or-ipython">Load it in Jupyter Notebook or iPython</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-python" data-lang="python"><span class="o">%</span><span class="n">load_ext</span> <span class="n">ngql</span>
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="connect-to-nebula-graph">Connect to Nebula Graph</h3>
+<p>Arguments as below are needed to connect a Nebula Graph DB instance:</p>
+<table>
+<thead>
+<tr>
+<th>Argument</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--address</code> or <code>-addr</code></td>
+<td>IP address of the Nebula Graph Instance</td>
+</tr>
+<tr>
+<td><code>--port</code> or <code>-P</code></td>
+<td>Port number of the Nebula Graph Instance</td>
+</tr>
+<tr>
+<td><code>--user</code> or <code>-u</code></td>
+<td>User name</td>
+</tr>
+<tr>
+<td><code>--password</code> or <code>-p</code></td>
+<td>Password</td>
+</tr>
+</tbody>
+</table>
+<p>Below is an exmple on connecting to <code>127.0.0.1:9669</code> with username: &ldquo;user&rdquo; and password: &ldquo;password&rdquo;.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-python" data-lang="python"><span class="o">%</span><span class="n">ngql</span> <span class="o">--</span><span class="n">address</span> <span class="mf">127.0</span><span class="o">.</span><span class="mf">0.1</span> <span class="o">--</span><span class="n">port</span> <span class="mi">9669</span> <span class="o">--</span><span class="n">user</span> <span class="n">user</span> <span class="o">--</span><span class="n">password</span> <span class="n">password</span>
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="make-queries">Make Queries</h3>
+<p>Now two kind of iPtython Magics are supported:</p>
+<p>Option 1: The one line stype with <code>%ngql</code>:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-python" data-lang="python"><span class="o">%</span><span class="n">ngql</span> <span class="n">GO</span> <span class="n">FROM</span> <span class="s2">&#34;Tom&#34;</span> <span class="n">OVER</span> <span class="n">owns_pokemon</span> <span class="n">YIELD</span> <span class="n">owns_pokemon</span><span class="o">.</span><span class="n">_dst</span> <span class="k">as</span> <span class="n">pokemon_id</span><span class="p">;</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>Option 2: The multiple lines stype with <code>%%ngql </code></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-python" data-lang="python"><span class="o">%%</span><span class="n">ngql</span>
+<span class="n">USE</span> <span class="n">pokemon_club</span><span class="p">;</span>
+<span class="n">SHOW</span> <span class="n">TAGS</span><span class="p">;</span>
+<span class="n">SHOW</span> <span class="n">HOSTS</span><span class="p">;</span>
+</code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>There will be other options in future, i.e. from a <code>.ngql</code> file.</p>
+</blockquote>
+<h3 id="query-string-with-variables">Query String with Variables</h3>
+<p><code>ipython-ngql</code> supports taking variables from the local namespace, with the help of <a href="https://jinja.palletsprojects.com/" target="_blank" rel="noopener noreffer">Jinja2</a> template framework, it&rsquo;s supported to have queries like the below example.</p>
+<p>The actual query string should be <code>GO FROM &quot;Sue&quot; OVER owns_pokemon ...</code>, and <code>&quot;{{ trainer }}&quot;</code> was renderred as <code>&quot;Sue&quot;</code> by consuming the local variable <code>trainer</code>:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-python" data-lang="python"><span class="n">In</span> <span class="p">[</span><span class="mi">8</span><span class="p">]:</span> <span class="n">trainer</span> <span class="o">=</span> <span class="s2">&#34;Sue&#34;</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">9</span><span class="p">]:</span> <span class="o">%%</span><span class="n">ngql</span>
+   <span class="o">...</span><span class="p">:</span> <span class="n">GO</span> <span class="n">FROM</span> <span class="s2">&#34;{{ trainer }}&#34;</span> <span class="n">OVER</span> <span class="n">owns_pokemon</span> <span class="n">YIELD</span> <span class="n">owns_pokemon</span><span class="o">.</span><span class="n">_dst</span> <span class="k">as</span> <span class="n">pokemon_id</span> <span class="o">|</span> <span class="n">GO</span> <span class="n">FROM</span> <span class="err">$</span><span class="o">-.</span><span class="n">pokemon_id</span> <span class="n">OVER</span> <span class="n">owns_pokemon</span> <span class="n">REVERSELY</span> <span class="n">YIELD</span> <span class="n">owns_pokemon</span><span class="o">.</span><span class="n">_dst</span> <span class="n">AS</span> <span class="n">Trainer_Name</span><span class="p">;</span>
+   <span class="o">...</span><span class="p">:</span>
+
+<span class="n">Out</span><span class="p">[</span><span class="mi">9</span><span class="p">]:</span>
+  <span class="n">Trainer_Name</span>
+<span class="mi">0</span>        <span class="n">Jerry</span>
+<span class="mi">1</span>          <span class="n">Sue</span>
+<span class="mi">2</span>          <span class="n">Tom</span>
+<span class="mi">3</span>          <span class="n">Wey</span>
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="configure-ngql_result_style">Configure <code>ngql_result_style</code></h3>
+<p>By default, <code>ipython-ngql</code> will use pandas dataframe as output style to enable more human readable output, while it&rsquo;s supported to use the raw thrift data format comes from the <code>nebula2-python</code> itself.</p>
+<p>This can be done ad-hoc with below one line:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-python" data-lang="python"><span class="o">%</span><span class="n">config</span> <span class="n">IPythonNGQL</span><span class="o">.</span><span class="n">ngql_result_style</span><span class="o">=</span><span class="s2">&#34;raw&#34;</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>After above line being executed, the output will be like:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-python" data-lang="python"><span class="n">ResultSet</span><span class="p">(</span><span class="n">ExecutionResponse</span><span class="p">(</span>
+    <span class="n">error_code</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">latency_in_us</span><span class="o">=</span><span class="mi">2844</span><span class="p">,</span>
+    <span class="n">data</span><span class="o">=</span><span class="n">DataSet</span><span class="p">(</span>
+        <span class="n">column_names</span><span class="o">=</span><span class="p">[</span><span class="sa">b</span><span class="s1">&#39;Trainer_Name&#39;</span><span class="p">],</span>
+        <span class="n">rows</span><span class="o">=</span><span class="p">[</span><span class="n">Row</span><span class="p">(</span>
+            <span class="n">values</span><span class="o">=</span><span class="p">[</span><span class="n">Value</span><span class="p">(</span>
+                <span class="n">sVal</span><span class="o">=</span><span class="sa">b</span><span class="s1">&#39;Tom&#39;</span><span class="p">)]),</span>
+        <span class="n">Row</span><span class="p">(</span>
+            <span class="n">values</span><span class="o">=</span><span class="p">[</span><span class="n">Value</span><span class="p">(</span>
+                <span class="n">sVal</span><span class="o">=</span><span class="sa">b</span><span class="s1">&#39;Jerry&#39;</span><span class="p">)]),</span>
+        <span class="n">Row</span><span class="p">(</span>
+            <span class="n">values</span><span class="o">=</span><span class="p">[</span><span class="n">Value</span><span class="p">(</span>
+                <span class="n">sVal</span><span class="o">=</span><span class="sa">b</span><span class="s1">&#39;Sue&#39;</span><span class="p">)]),</span>
+        <span class="n">Row</span><span class="p">(</span>
+            <span class="n">values</span><span class="o">=</span><span class="p">[</span><span class="n">Value</span><span class="p">(</span>
+                <span class="n">sVal</span><span class="o">=</span><span class="sa">b</span><span class="s1">&#39;Tom&#39;</span><span class="p">)]),</span>
+        <span class="n">Row</span><span class="p">(</span>
+            <span class="n">values</span><span class="o">=</span><span class="p">[</span><span class="n">Value</span><span class="p">(</span>
+                <span class="n">sVal</span><span class="o">=</span><span class="sa">b</span><span class="s1">&#39;Wey&#39;</span><span class="p">)])]),</span>
+    <span class="n">space_name</span><span class="o">=</span><span class="sa">b</span><span class="s1">&#39;pokemon_club&#39;</span><span class="p">))</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>The result are always stored in variable <code>_</code> in Jupyter Notebook, thus, to tweak the result, just refer a new var to it like:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-python" data-lang="python"><span class="n">In</span> <span class="p">[</span><span class="mi">10</span><span class="p">]:</span> <span class="o">%</span><span class="n">config</span> <span class="n">IPythonNGQL</span><span class="o">.</span><span class="n">ngql_result_style</span><span class="o">=</span><span class="s2">&#34;raw&#34;</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">11</span><span class="p">]:</span> <span class="o">%%</span><span class="n">ngql</span> <span class="n">USE</span> <span class="n">pokemon_club</span><span class="p">;</span>
+    <span class="o">...</span><span class="p">:</span> <span class="n">GO</span> <span class="n">FROM</span> <span class="s2">&#34;Tom&#34;</span> <span class="n">OVER</span> <span class="n">owns_pokemon</span> <span class="n">YIELD</span> <span class="n">owns_pokemon</span><span class="o">.</span><span class="n">_dst</span> <span class="k">as</span> <span class="n">pokemon_id</span>
+    <span class="o">...</span><span class="p">:</span> <span class="o">|</span> <span class="n">GO</span> <span class="n">FROM</span> <span class="err">$</span><span class="o">-.</span><span class="n">pokemon_id</span> <span class="n">OVER</span> <span class="n">owns_pokemon</span> <span class="n">REVERSELY</span> <span class="n">YIELD</span> <span class="n">owns_pokemon</span><span class="o">.</span><span class="n">_dst</span> <span class="n">AS</span> <span class="n">Trainer_Name</span><span class="p">;</span>
+    <span class="o">...</span><span class="p">:</span>
+    <span class="o">...</span><span class="p">:</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">11</span><span class="p">]:</span>
+<span class="n">ResultSet</span><span class="p">(</span><span class="n">ExecutionResponse</span><span class="p">(</span>
+    <span class="n">error_code</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">latency_in_us</span><span class="o">=</span><span class="mi">3270</span><span class="p">,</span>
+    <span class="n">data</span><span class="o">=</span><span class="n">DataSet</span><span class="p">(</span>
+        <span class="n">column_names</span><span class="o">=</span><span class="p">[</span><span class="sa">b</span><span class="s1">&#39;Trainer_Name&#39;</span><span class="p">],</span>
+        <span class="n">rows</span><span class="o">=</span><span class="p">[</span><span class="n">Row</span><span class="p">(</span>
+            <span class="n">values</span><span class="o">=</span><span class="p">[</span><span class="n">Value</span><span class="p">(</span>
+                <span class="n">sVal</span><span class="o">=</span><span class="sa">b</span><span class="s1">&#39;Tom&#39;</span><span class="p">)]),</span>
+        <span class="n">Row</span><span class="p">(</span>
+            <span class="n">values</span><span class="o">=</span><span class="p">[</span><span class="n">Value</span><span class="p">(</span>
+                <span class="n">sVal</span><span class="o">=</span><span class="sa">b</span><span class="s1">&#39;Jerry&#39;</span><span class="p">)]),</span>
+        <span class="n">Row</span><span class="p">(</span>
+            <span class="n">values</span><span class="o">=</span><span class="p">[</span><span class="n">Value</span><span class="p">(</span>
+                <span class="n">sVal</span><span class="o">=</span><span class="sa">b</span><span class="s1">&#39;Sue&#39;</span><span class="p">)]),</span>
+        <span class="n">Row</span><span class="p">(</span>
+            <span class="n">values</span><span class="o">=</span><span class="p">[</span><span class="n">Value</span><span class="p">(</span>
+                <span class="n">sVal</span><span class="o">=</span><span class="sa">b</span><span class="s1">&#39;Tom&#39;</span><span class="p">)]),</span>
+        <span class="n">Row</span><span class="p">(</span>
+            <span class="n">values</span><span class="o">=</span><span class="p">[</span><span class="n">Value</span><span class="p">(</span>
+                <span class="n">sVal</span><span class="o">=</span><span class="sa">b</span><span class="s1">&#39;Wey&#39;</span><span class="p">)])]),</span>
+    <span class="n">space_name</span><span class="o">=</span><span class="sa">b</span><span class="s1">&#39;pokemon_club&#39;</span><span class="p">))</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">12</span><span class="p">]:</span> <span class="n">r</span> <span class="o">=</span> <span class="n">_</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">13</span><span class="p">]:</span> <span class="n">r</span><span class="o">.</span><span class="n">column_values</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s1">&#39;Trainer_Name&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">_value</span><span class="o">.</span><span class="n">value</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">13</span><span class="p">]:</span> <span class="sa">b</span><span class="s1">&#39;Tom&#39;</span>
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="get-help">Get Help</h3>
+<p>Don&rsquo;t remember anything or even relying on the cheatsheet here, oen takeaway for you: the help!</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-python" data-lang="python"><span class="n">In</span> <span class="p">[</span><span class="mi">7</span><span class="p">]:</span> <span class="o">%</span><span class="n">ngql</span> <span class="n">help</span>
+
+
+        <span class="n">Supported</span> <span class="n">Configurations</span><span class="p">:</span>
+        <span class="o">------------------------</span>
+
+        <span class="o">&gt;</span> <span class="n">How</span> <span class="n">to</span> <span class="n">config</span> <span class="n">ngql_result_style</span> <span class="ow">in</span> <span class="s2">&#34;raw&#34;</span><span class="p">,</span> <span class="s2">&#34;pandas&#34;</span>
+        <span class="o">%</span><span class="n">config</span> <span class="n">IPythonNGQL</span><span class="o">.</span><span class="n">ngql_result_style</span><span class="o">=</span><span class="s2">&#34;raw&#34;</span>
+        <span class="o">%</span><span class="n">config</span> <span class="n">IPythonNGQL</span><span class="o">.</span><span class="n">ngql_result_style</span><span class="o">=</span><span class="s2">&#34;pandas&#34;</span>
+
+        <span class="o">&gt;</span> <span class="n">How</span> <span class="n">to</span> <span class="n">config</span> <span class="n">ngql_verbose</span> <span class="ow">in</span> <span class="bp">True</span><span class="p">,</span> <span class="bp">False</span>
+        <span class="o">%</span><span class="n">config</span> <span class="n">IPythonNGQL</span><span class="o">.</span><span class="n">ngql_verbose</span><span class="o">=</span><span class="bp">True</span>
+
+        <span class="o">&gt;</span> <span class="n">How</span> <span class="n">to</span> <span class="n">config</span> <span class="n">max_connection_pool_size</span>
+        <span class="o">%</span><span class="n">config</span> <span class="n">IPythonNGQL</span><span class="o">.</span><span class="n">max_connection_pool_size</span><span class="o">=</span><span class="mi">10</span>
+
+        <span class="n">Quick</span> <span class="n">Start</span><span class="p">:</span>
+        <span class="o">-----------</span>
+
+        <span class="o">&gt;</span> <span class="n">Connect</span> <span class="n">to</span> <span class="n">Neubla</span> <span class="n">Graph</span>
+        <span class="o">%</span><span class="n">ngql</span> <span class="o">--</span><span class="n">address</span> <span class="mf">127.0</span><span class="o">.</span><span class="mf">0.1</span> <span class="o">--</span><span class="n">port</span> <span class="mi">9669</span> <span class="o">--</span><span class="n">user</span> <span class="n">user</span> <span class="o">--</span><span class="n">password</span> <span class="n">password</span>
+
+        <span class="o">&gt;</span> <span class="n">Use</span> <span class="n">Space</span>
+        <span class="o">%</span><span class="n">ngql</span> <span class="n">USE</span> <span class="n">nba</span>
+
+        <span class="o">&gt;</span> <span class="n">Query</span>
+        <span class="o">%</span><span class="n">ngql</span> <span class="n">SHOW</span> <span class="n">TAGS</span><span class="p">;</span>
+
+        <span class="o">&gt;</span> <span class="n">Multile</span> <span class="n">Queries</span>
+        <span class="o">%%</span><span class="n">ngql</span>
+        <span class="n">SHOW</span> <span class="n">TAGS</span><span class="p">;</span>
+        <span class="n">SHOW</span> <span class="n">HOSTS</span><span class="p">;</span>
+
+        <span class="n">Reload</span> <span class="n">ngql</span> <span class="n">Magic</span>
+        <span class="o">%</span><span class="n">reload_ext</span> <span class="n">ngql</span>
+
+        <span class="o">&gt;</span> <span class="n">Variables</span> <span class="ow">in</span> <span class="n">query</span><span class="p">,</span> <span class="n">we</span> <span class="n">are</span> <span class="n">using</span> <span class="n">Jinja2</span> <span class="n">here</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="s2">&#34;nba&#34;</span>
+        <span class="o">%</span><span class="n">ngql</span> <span class="n">USE</span> <span class="s2">&#34;{{ name }}&#34;</span>
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="examples">Examples</h3>
+<h4 id="jupyter-notebook">Jupyter Notebook</h4>
+<p>Please refer here:https://github.com/wey-gu/ipython-ngql/blob/main/examples/get_started.ipynb</p>
+<h4 id="ipython">iPython</h4>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">  1
+</span><span class="lnt">  2
+</span><span class="lnt">  3
+</span><span class="lnt">  4
+</span><span class="lnt">  5
+</span><span class="lnt">  6
+</span><span class="lnt">  7
+</span><span class="lnt">  8
+</span><span class="lnt">  9
+</span><span class="lnt"> 10
+</span><span class="lnt"> 11
+</span><span class="lnt"> 12
+</span><span class="lnt"> 13
+</span><span class="lnt"> 14
+</span><span class="lnt"> 15
+</span><span class="lnt"> 16
+</span><span class="lnt"> 17
+</span><span class="lnt"> 18
+</span><span class="lnt"> 19
+</span><span class="lnt"> 20
+</span><span class="lnt"> 21
+</span><span class="lnt"> 22
+</span><span class="lnt"> 23
+</span><span class="lnt"> 24
+</span><span class="lnt"> 25
+</span><span class="lnt"> 26
+</span><span class="lnt"> 27
+</span><span class="lnt"> 28
+</span><span class="lnt"> 29
+</span><span class="lnt"> 30
+</span><span class="lnt"> 31
+</span><span class="lnt"> 32
+</span><span class="lnt"> 33
+</span><span class="lnt"> 34
+</span><span class="lnt"> 35
+</span><span class="lnt"> 36
+</span><span class="lnt"> 37
+</span><span class="lnt"> 38
+</span><span class="lnt"> 39
+</span><span class="lnt"> 40
+</span><span class="lnt"> 41
+</span><span class="lnt"> 42
+</span><span class="lnt"> 43
+</span><span class="lnt"> 44
+</span><span class="lnt"> 45
+</span><span class="lnt"> 46
+</span><span class="lnt"> 47
+</span><span class="lnt"> 48
+</span><span class="lnt"> 49
+</span><span class="lnt"> 50
+</span><span class="lnt"> 51
+</span><span class="lnt"> 52
+</span><span class="lnt"> 53
+</span><span class="lnt"> 54
+</span><span class="lnt"> 55
+</span><span class="lnt"> 56
+</span><span class="lnt"> 57
+</span><span class="lnt"> 58
+</span><span class="lnt"> 59
+</span><span class="lnt"> 60
+</span><span class="lnt"> 61
+</span><span class="lnt"> 62
+</span><span class="lnt"> 63
+</span><span class="lnt"> 64
+</span><span class="lnt"> 65
+</span><span class="lnt"> 66
+</span><span class="lnt"> 67
+</span><span class="lnt"> 68
+</span><span class="lnt"> 69
+</span><span class="lnt"> 70
+</span><span class="lnt"> 71
+</span><span class="lnt"> 72
+</span><span class="lnt"> 73
+</span><span class="lnt"> 74
+</span><span class="lnt"> 75
+</span><span class="lnt"> 76
+</span><span class="lnt"> 77
+</span><span class="lnt"> 78
+</span><span class="lnt"> 79
+</span><span class="lnt"> 80
+</span><span class="lnt"> 81
+</span><span class="lnt"> 82
+</span><span class="lnt"> 83
+</span><span class="lnt"> 84
+</span><span class="lnt"> 85
+</span><span class="lnt"> 86
+</span><span class="lnt"> 87
+</span><span class="lnt"> 88
+</span><span class="lnt"> 89
+</span><span class="lnt"> 90
+</span><span class="lnt"> 91
+</span><span class="lnt"> 92
+</span><span class="lnt"> 93
+</span><span class="lnt"> 94
+</span><span class="lnt"> 95
+</span><span class="lnt"> 96
+</span><span class="lnt"> 97
+</span><span class="lnt"> 98
+</span><span class="lnt"> 99
+</span><span class="lnt">100
+</span><span class="lnt">101
+</span><span class="lnt">102
+</span><span class="lnt">103
+</span><span class="lnt">104
+</span><span class="lnt">105
+</span><span class="lnt">106
+</span><span class="lnt">107
+</span><span class="lnt">108
+</span><span class="lnt">109
+</span><span class="lnt">110
+</span><span class="lnt">111
+</span><span class="lnt">112
+</span><span class="lnt">113
+</span><span class="lnt">114
+</span><span class="lnt">115
+</span><span class="lnt">116
+</span><span class="lnt">117
+</span><span class="lnt">118
+</span><span class="lnt">119
+</span><span class="lnt">120
+</span><span class="lnt">121
+</span><span class="lnt">122
+</span><span class="lnt">123
+</span><span class="lnt">124
+</span><span class="lnt">125
+</span><span class="lnt">126
+</span><span class="lnt">127
+</span><span class="lnt">128
+</span><span class="lnt">129
+</span><span class="lnt">130
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-python" data-lang="python"><span class="n">venv</span> <span class="err">❯</span> <span class="n">ipython</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="o">%</span><span class="n">load_ext</span> <span class="n">ngql</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="o">%</span><span class="n">ngql</span> <span class="o">--</span><span class="n">address</span> <span class="mf">127.0</span><span class="o">.</span><span class="mf">0.1</span> <span class="o">--</span><span class="n">port</span> <span class="mi">9669</span> <span class="o">--</span><span class="n">user</span> <span class="n">user</span> <span class="o">--</span><span class="n">password</span> <span class="n">password</span>
+<span class="n">Connection</span> <span class="n">Pool</span> <span class="n">Created</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">2</span><span class="p">]:</span>
+           <span class="n">Name</span>
+<span class="mi">0</span>  <span class="n">pokemon_club</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">3</span><span class="p">]:</span> <span class="o">%</span><span class="n">ngql</span> <span class="n">GO</span> <span class="n">FROM</span> <span class="s2">&#34;Tom&#34;</span> <span class="n">OVER</span> <span class="n">owns_pokemon</span> <span class="n">YIELD</span> <span class="n">owns_pokemon</span><span class="o">.</span><span class="n">_dst</span> <span class="k">as</span> <span class="n">pokemon_id</span> <span class="o">|</span> <span class="n">GO</span> <span class="n">FROM</span> <span class="err">$</span><span class="o">-.</span><span class="n">pokemon_id</span> <span class="n">OVER</span> <span class="n">owns_pokemon</span> <span class="n">REVERSELY</span> <span class="n">YIELD</span> <span class="n">owns_pokemon</span><span class="o">.</span><span class="n">_dst</span> <span class="n">AS</span> <span class="n">Trainer_Name</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">3</span><span class="p">]:</span>
+  <span class="n">Trainer_Name</span>
+<span class="mi">0</span>          <span class="n">Tom</span>
+<span class="mi">1</span>        <span class="n">Jerry</span>
+<span class="mi">2</span>          <span class="n">Sue</span>
+<span class="mi">3</span>          <span class="n">Tom</span>
+<span class="mi">4</span>          <span class="n">Wey</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">4</span><span class="p">]:</span> <span class="o">%%</span><span class="n">ngql</span>
+   <span class="o">...</span><span class="p">:</span> <span class="n">SHOW</span> <span class="n">TAGS</span><span class="p">;</span>
+   <span class="o">...</span><span class="p">:</span> <span class="n">SHOW</span> <span class="n">HOSTS</span><span class="p">;</span>
+   <span class="o">...</span><span class="p">:</span>
+   <span class="o">...</span><span class="p">:</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">4</span><span class="p">]:</span>
+        <span class="n">Host</span>    <span class="n">Port</span>  <span class="n">Status</span>  <span class="n">Leader</span> <span class="n">count</span> <span class="n">Leader</span> <span class="n">distribution</span> <span class="n">Partition</span> <span class="n">distribution</span>
+<span class="mi">0</span>  <span class="n">storaged0</span>  <span class="mf">9779.0</span>  <span class="n">ONLINE</span>             <span class="mi">0</span>  <span class="n">No</span> <span class="n">valid</span> <span class="n">partition</span>     <span class="n">No</span> <span class="n">valid</span> <span class="n">partition</span>
+<span class="mi">1</span>  <span class="n">storaged1</span>  <span class="mf">9779.0</span>  <span class="n">ONLINE</span>             <span class="mi">1</span>      <span class="n">pokemon_club</span><span class="p">:</span><span class="mi">1</span>         <span class="n">pokemon_club</span><span class="p">:</span><span class="mi">1</span>
+<span class="mi">2</span>  <span class="n">storaged2</span>  <span class="mf">9779.0</span>  <span class="n">ONLINE</span>             <span class="mi">0</span>  <span class="n">No</span> <span class="n">valid</span> <span class="n">partition</span>     <span class="n">No</span> <span class="n">valid</span> <span class="n">partition</span>
+<span class="mi">3</span>      <span class="n">Total</span>     <span class="n">NaN</span>    <span class="bp">None</span>             <span class="mi">1</span>      <span class="n">pokemon_club</span><span class="p">:</span><span class="mi">1</span>         <span class="n">pokemon_club</span><span class="p">:</span><span class="mi">1</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">5</span><span class="p">]:</span> <span class="n">trainer</span> <span class="o">=</span> <span class="s2">&#34;Sue&#34;</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">6</span><span class="p">]:</span> <span class="o">%%</span><span class="n">ngql</span>
+   <span class="o">...</span><span class="p">:</span> <span class="n">GO</span> <span class="n">FROM</span> <span class="s2">&#34;{{ trainer }}&#34;</span> <span class="n">OVER</span> <span class="n">owns_pokemon</span> <span class="n">YIELD</span> <span class="n">owns_pokemon</span><span class="o">.</span><span class="n">_dst</span> <span class="k">as</span> <span class="n">pokemon_id</span> <span class="o">|</span> <span class="n">GO</span> <span class="n">FROM</span> <span class="err">$</span><span class="o">-.</span><span class="n">pokemon_id</span> <span class="n">OVER</span> <span class="n">owns_pokemon</span> <span class="n">REVERSELY</span> <span class="n">YIELD</span> <span class="n">owns_pokemon</span><span class="o">.</span><span class="n">_dst</span> <span class="n">AS</span> <span class="n">Trainer_Name</span><span class="p">;</span>
+   <span class="o">...</span><span class="p">:</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">6</span><span class="p">]:</span>
+  <span class="n">Trainer_Name</span>
+<span class="mi">0</span>        <span class="n">Jerry</span>
+<span class="mi">1</span>          <span class="n">Sue</span>
+<span class="mi">2</span>          <span class="n">Tom</span>
+<span class="mi">3</span>          <span class="n">Wey</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">7</span><span class="p">]:</span> <span class="o">%</span><span class="n">ngql</span> <span class="n">help</span>
+
+
+        <span class="n">Supported</span> <span class="n">Configurations</span><span class="p">:</span>
+        <span class="o">------------------------</span>
+
+        <span class="o">&gt;</span> <span class="n">How</span> <span class="n">to</span> <span class="n">config</span> <span class="n">ngql_result_style</span> <span class="ow">in</span> <span class="s2">&#34;raw&#34;</span><span class="p">,</span> <span class="s2">&#34;pandas&#34;</span>
+        <span class="o">%</span><span class="n">config</span> <span class="n">IPythonNGQL</span><span class="o">.</span><span class="n">ngql_result_style</span><span class="o">=</span><span class="s2">&#34;raw&#34;</span>
+        <span class="o">%</span><span class="n">config</span> <span class="n">IPythonNGQL</span><span class="o">.</span><span class="n">ngql_result_style</span><span class="o">=</span><span class="s2">&#34;pandas&#34;</span>
+
+        <span class="o">&gt;</span> <span class="n">How</span> <span class="n">to</span> <span class="n">config</span> <span class="n">ngql_verbose</span> <span class="ow">in</span> <span class="bp">True</span><span class="p">,</span> <span class="bp">False</span>
+        <span class="o">%</span><span class="n">config</span> <span class="n">IPythonNGQL</span><span class="o">.</span><span class="n">ngql_verbose</span><span class="o">=</span><span class="bp">True</span>
+
+        <span class="o">&gt;</span> <span class="n">How</span> <span class="n">to</span> <span class="n">config</span> <span class="n">max_connection_pool_size</span>
+        <span class="o">%</span><span class="n">config</span> <span class="n">IPythonNGQL</span><span class="o">.</span><span class="n">max_connection_pool_size</span><span class="o">=</span><span class="mi">10</span>
+
+        <span class="n">Quick</span> <span class="n">Start</span><span class="p">:</span>
+        <span class="o">-----------</span>
+
+        <span class="o">&gt;</span> <span class="n">Connect</span> <span class="n">to</span> <span class="n">Neubla</span> <span class="n">Graph</span>
+        <span class="o">%</span><span class="n">ngql</span> <span class="o">--</span><span class="n">address</span> <span class="mf">127.0</span><span class="o">.</span><span class="mf">0.1</span> <span class="o">--</span><span class="n">port</span> <span class="mi">9669</span> <span class="o">--</span><span class="n">user</span> <span class="n">user</span> <span class="o">--</span><span class="n">password</span> <span class="n">password</span>
+
+        <span class="o">&gt;</span> <span class="n">Use</span> <span class="n">Space</span>
+        <span class="o">%</span><span class="n">ngql</span> <span class="n">USE</span> <span class="n">nba</span>
+
+        <span class="o">&gt;</span> <span class="n">Query</span>
+        <span class="o">%</span><span class="n">ngql</span> <span class="n">SHOW</span> <span class="n">TAGS</span><span class="p">;</span>
+
+        <span class="o">&gt;</span> <span class="n">Multile</span> <span class="n">Queries</span>
+        <span class="o">%%</span><span class="n">ngql</span>
+        <span class="n">SHOW</span> <span class="n">TAGS</span><span class="p">;</span>
+        <span class="n">SHOW</span> <span class="n">HOSTS</span><span class="p">;</span>
+
+        <span class="n">Reload</span> <span class="n">ngql</span> <span class="n">Magic</span>
+        <span class="o">%</span><span class="n">reload_ext</span> <span class="n">ngql</span>
+
+        <span class="o">&gt;</span> <span class="n">Variables</span> <span class="ow">in</span> <span class="n">query</span><span class="p">,</span> <span class="n">we</span> <span class="n">are</span> <span class="n">using</span> <span class="n">Jinja2</span> <span class="n">here</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="s2">&#34;nba&#34;</span>
+        <span class="o">%</span><span class="n">ngql</span> <span class="n">USE</span> <span class="s2">&#34;{{ name }}&#34;</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">8</span><span class="p">]:</span> <span class="n">trainer</span> <span class="o">=</span> <span class="s2">&#34;Sue&#34;</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">9</span><span class="p">]:</span> <span class="o">%%</span><span class="n">ngql</span>
+   <span class="o">...</span><span class="p">:</span> <span class="n">GO</span> <span class="n">FROM</span> <span class="s2">&#34;{{ trainer }}&#34;</span> <span class="n">OVER</span> <span class="n">owns_pokemon</span> <span class="n">YIELD</span> <span class="n">owns_pokemon</span><span class="o">.</span><span class="n">_dst</span> <span class="k">as</span> <span class="n">pokemon_id</span> <span class="o">|</span> <span class="n">GO</span> <span class="n">FROM</span> <span class="err">$</span><span class="o">-.</span><span class="n">pokemon_id</span> <span class="n">OVER</span> <span class="n">owns_pokemon</span> <span class="n">REVERSELY</span> <span class="n">YIELD</span> <span class="n">owns_pokemon</span><span class="o">.</span><span class="n">_dst</span> <span class="n">AS</span> <span class="n">Trainer_Name</span><span class="p">;</span>
+   <span class="o">...</span><span class="p">:</span>
+   <span class="o">...</span><span class="p">:</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">9</span><span class="p">]:</span>
+  <span class="n">Trainer_Name</span>
+<span class="mi">0</span>        <span class="n">Jerry</span>
+<span class="mi">1</span>          <span class="n">Sue</span>
+<span class="mi">2</span>          <span class="n">Tom</span>
+<span class="mi">3</span>          <span class="n">Wey</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">10</span><span class="p">]:</span> <span class="o">%</span><span class="n">config</span> <span class="n">IPythonNGQL</span><span class="o">.</span><span class="n">ngql_result_style</span><span class="o">=</span><span class="s2">&#34;raw&#34;</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">11</span><span class="p">]:</span> <span class="o">%%</span><span class="n">ngql</span> <span class="n">USE</span> <span class="n">pokemon_club</span><span class="p">;</span>
+    <span class="o">...</span><span class="p">:</span> <span class="n">GO</span> <span class="n">FROM</span> <span class="s2">&#34;Tom&#34;</span> <span class="n">OVER</span> <span class="n">owns_pokemon</span> <span class="n">YIELD</span> <span class="n">owns_pokemon</span><span class="o">.</span><span class="n">_dst</span> <span class="k">as</span> <span class="n">pokemon_id</span>
+    <span class="o">...</span><span class="p">:</span> <span class="o">|</span> <span class="n">GO</span> <span class="n">FROM</span> <span class="err">$</span><span class="o">-.</span><span class="n">pokemon_id</span> <span class="n">OVER</span> <span class="n">owns_pokemon</span> <span class="n">REVERSELY</span> <span class="n">YIELD</span> <span class="n">owns_pokemon</span><span class="o">.</span><span class="n">_dst</span> <span class="n">AS</span> <span class="n">Trainer_Name</span><span class="p">;</span>
+    <span class="o">...</span><span class="p">:</span>
+    <span class="o">...</span><span class="p">:</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">11</span><span class="p">]:</span>
+<span class="n">ResultSet</span><span class="p">(</span><span class="n">ExecutionResponse</span><span class="p">(</span>
+    <span class="n">error_code</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">latency_in_us</span><span class="o">=</span><span class="mi">3270</span><span class="p">,</span>
+    <span class="n">data</span><span class="o">=</span><span class="n">DataSet</span><span class="p">(</span>
+        <span class="n">column_names</span><span class="o">=</span><span class="p">[</span><span class="sa">b</span><span class="s1">&#39;Trainer_Name&#39;</span><span class="p">],</span>
+        <span class="n">rows</span><span class="o">=</span><span class="p">[</span><span class="n">Row</span><span class="p">(</span>
+            <span class="n">values</span><span class="o">=</span><span class="p">[</span><span class="n">Value</span><span class="p">(</span>
+                <span class="n">sVal</span><span class="o">=</span><span class="sa">b</span><span class="s1">&#39;Tom&#39;</span><span class="p">)]),</span>
+        <span class="n">Row</span><span class="p">(</span>
+            <span class="n">values</span><span class="o">=</span><span class="p">[</span><span class="n">Value</span><span class="p">(</span>
+                <span class="n">sVal</span><span class="o">=</span><span class="sa">b</span><span class="s1">&#39;Jerry&#39;</span><span class="p">)]),</span>
+        <span class="n">Row</span><span class="p">(</span>
+            <span class="n">values</span><span class="o">=</span><span class="p">[</span><span class="n">Value</span><span class="p">(</span>
+                <span class="n">sVal</span><span class="o">=</span><span class="sa">b</span><span class="s1">&#39;Sue&#39;</span><span class="p">)]),</span>
+        <span class="n">Row</span><span class="p">(</span>
+            <span class="n">values</span><span class="o">=</span><span class="p">[</span><span class="n">Value</span><span class="p">(</span>
+                <span class="n">sVal</span><span class="o">=</span><span class="sa">b</span><span class="s1">&#39;Tom&#39;</span><span class="p">)]),</span>
+        <span class="n">Row</span><span class="p">(</span>
+            <span class="n">values</span><span class="o">=</span><span class="p">[</span><span class="n">Value</span><span class="p">(</span>
+                <span class="n">sVal</span><span class="o">=</span><span class="sa">b</span><span class="s1">&#39;Wey&#39;</span><span class="p">)])]),</span>
+    <span class="n">space_name</span><span class="o">=</span><span class="sa">b</span><span class="s1">&#39;pokemon_club&#39;</span><span class="p">))</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">12</span><span class="p">]:</span> <span class="n">r</span> <span class="o">=</span> <span class="n">_</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">13</span><span class="p">]:</span> <span class="n">r</span><span class="o">.</span><span class="n">column_values</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s1">&#39;Trainer_Name&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">_value</span><span class="o">.</span><span class="n">value</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">13</span><span class="p">]:</span> <span class="sa">b</span><span class="s1">&#39;Tom&#39;</span>
+</code></pre></td></tr></table>
+</div>
+</div>]]></description>
 </item></channel>
 </rss>
