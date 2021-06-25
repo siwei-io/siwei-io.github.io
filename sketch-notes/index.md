@@ -1,4 +1,4 @@
-# 手稿笔记
+# 手绘笔记
 
 
 {{< showcase "Nebula Import Options" "Nebula Graph 提供了好多种数据导入的工具，我们应该如何选择呢？" "/sketches/nebula-data-import-options/data_import_options.webp" "/sketches/nebula-data-import-options/" 3 >}}
