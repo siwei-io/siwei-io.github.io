@@ -23,6 +23,14 @@
 
 {{< showcase "nebula-insights" "本文介绍我们如何用公有云 Serverless 技术：Google Cloud Scheduler，Google Cloud Functions 和 BigQuery 搭建数据管道，收集探索开源社区洞察。并将全部代码开源在 GitHub。" "/nebula-insights/featured-image.webp" "/nebula-insights/" >}}
 
+## 我的手绘
+
+{{< showcase "Nebula Import Options" "Nebula Graph 提供了好多种数据导入的工具，我们应该如何选择呢？" "/sketches/nebula-data-import-options/data_import_options.webp" "/sketches/nebula-data-import-options/" 3 >}}
+
+{{< showcase "Nebula Deployment Options" "Nebula Graph 有很多种分发、部署方式，我们应该如何选择它们呢？" "/sketches/nebula-deployment-options/deployment_options.webp" "/sketches/nebula-deployment-options/" 3 >}}
+
+{{< showcase "Nebula Intro" "新手玩转 Nebula Graph 系列开篇。" "/sketches/nebula-core-arch/arch_nebula.webp" "/sketches/nebula-core-arch/" 3 >}}
+
 ## 过往的经历
 
 我曾在爱立信工作了近十年：2011 年到 2021 年。
