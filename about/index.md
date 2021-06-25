@@ -32,7 +32,9 @@
 我曾在 [note.siwei.info](https://note.siwei.info/archives/) 记录一些想法和笔记，从2021年春天开始，我会把想法记录下来留在 [siwei.io](https://siwei.io)
 
 
-[^1]: 我和 Ahmet Alp Balkan 的 [这个推文]( https://twitter.com/ahmetb/status/1362855715367313412) 感同身受
+[^1]: 我和 Ahmet Alp Balkan 的 [这个推文]( https://twitter.com/ahmetb/status/1362855715367313412) 感同身受：
+{{< tweet 1362855715367313412 >}}
+
 [^2]: Ericsson's Telco. Infrastructure as a Service product offerring: [Cloud Execution Environment](https://www.ericsson.com/en/portfolio/digital-services/cloud-infrastructure/cloud-execution-environment)
 [^3]: System Manager, PDU Cloud: [工作描述]( https://www.linkedin.com/jobs/view/2541281375)
 
