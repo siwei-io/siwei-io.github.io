@@ -7,6 +7,8 @@
 
 {{< showcase "VSCode-nGQL" "VSCode-nGQL，Nebula Graph 的 VS Code 插件，ngql 语法高亮。" "/vscode-ngql/featured-image.webp" "/vscode-ngql/" >}}
 
+{{< showcase "Nebula-Chia" "Nebula-Chia，将 Chia Network 全链导入 Nebula Graph 中的探索分享和转换工具（一并开源出来）。" "/nebula-chia/featured-image.webp" "/nebula-chia/" >}}
+
 {{< showcase "IPython-nGQL" "Nebula Graph 的 Jupyter Notebook 和 IPython 插件，方便在 Notebook 之中嵌入 nGQL 的 query 和 结果的调试。" "/ipython-ngql/featured-image.webp" "/ipython-ngql/" >}}
 
 {{< showcase "nebula-insights" "本文介绍我们如何用公有云 Serverless 技术：Google Cloud Scheduler，Google Cloud Functions 和 BigQuery 搭建数据管道，收集探索开源社区洞察。并将全部代码开源在 GitHub。" "/nebula-insights/featured-image.webp" "/nebula-insights/" >}}
