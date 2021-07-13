@@ -7,7 +7,7 @@
 
 ## Bilibili
 
-> 上传中...
+{{< bilibili BV1nh41167kj >}}
 
 ## Youtube
 

@@ -8,7 +8,9 @@
 
 ## Bilibili
 
-> 上传中...
+BV1vy4y1K7S5
+
+{{< bilibili BV1vy4y1K7S5 >}}
 
 ## Youtube
 

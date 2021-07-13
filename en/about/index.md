@@ -24,6 +24,8 @@ I am working in open source and consider it is a privilege [^1]. It took me a co
 
 ## Sketches
 
+{{< showcase "Nebula Index Demystified" "Nebula Graph Native Index Demystified" "/sketches/nebula-index-demystified/nebula-index-demystified.webp" "/sketches/nebula-index-demystified/" 3 >}}
+
 
 {{< showcase "Nebula Data Import Options" "Nebula Graph comes with multiple Data Import utils, how should we choose from them?" "/sketches/nebula-data-import-options/data_import_options.webp" "/sketches/nebula-data-import-options/" 3 >}}
 
