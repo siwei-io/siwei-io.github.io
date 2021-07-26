@@ -2,7 +2,6 @@
 
 
 
-
 # 您好，我是古思为。
 
 我是一个在上海的软件工程师，我在 ***[vesoft](https://vesoft.com)*** 担任 [Nebula Graph](https://nebula-graph.com.cn/)（开源的分布式图数据库）的社区开发者布道师。
@@ -24,6 +23,8 @@
 {{< showcase "nebula-insights" "本文介绍我们如何用公有云 Serverless 技术：Google Cloud Scheduler，Google Cloud Functions 和 BigQuery 搭建数据管道，收集探索开源社区洞察。并将全部代码开源在 GitHub。" "/nebula-insights/featured-image.webp" "/nebula-insights/" >}}
 
 ## 我的手绘
+
+{{< showcase "Nebula Config Explained" "Nebula Graph 配置详解" "/sketches/nebula-config-explained/nebula-config-explained.webp" "/sketches/nebula-config-explained/" 3 >}}
 
 {{< showcase "Nebula Index Demystified" "Nebula Graph 原生索引解谜" "/sketches/nebula-index-demystified/nebula-index-demystified.webp" "/sketches/nebula-index-demystified/" 3 >}}
 

@@ -1,6 +1,8 @@
 # 手绘笔记
 
 
+{{< showcase "Nebula Config Explained" "Nebula Graph 配置详解" "/sketches/nebula-config-explained/nebula-config-explained.webp" "/sketches/nebula-config-explained/" 3 >}}
+
 {{< showcase "Nebula Index Demystified" "Nebula Graph 原生索引解谜" "/sketches/nebula-index-demystified/nebula-index-demystified.webp" "/sketches/nebula-index-demystified/" 3 >}}
 
 {{< showcase "Nebula Data Import Options" "Nebula Graph 提供了好多种数据导入的工具，我们应该如何选择呢？" "/sketches/nebula-data-import-options/data_import_options.webp" "/sketches/nebula-data-import-options/" 3 >}}

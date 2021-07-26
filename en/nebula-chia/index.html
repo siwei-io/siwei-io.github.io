@@ -10,8 +10,8 @@
 <meta property="og:description" content="本文分析了 Chia Network 的全链数据，并做了将全链数据导入图数据库：Nebula Graph 之中的尝试，从而可视化地探索了 Chia 图中数据之间的关联关系。" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://siwei.io/en/nebula-chia/" /><meta property="og:image" content="https://siwei.io/en/nebula-chia/featured-image.png"/><meta property="article:section" content="posts" />
-<meta property="article:published_time" content="2021-05-26T21:17:04&#43;08:00" />
-<meta property="article:modified_time" content="2021-05-26T21:17:04&#43;08:00" /><meta property="og:site_name" content="siwei.io" />
+<meta property="article:published_time" content="2021-05-26T21:17:04+08:00" />
+<meta property="article:modified_time" content="2021-05-26T21:17:04+08:00" /><meta property="og:site_name" content="siwei.io" />
 
 <meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:image" content="https://siwei.io/en/nebula-chia/featured-image.png"/>
@@ -209,7 +209,7 @@
 <h3 id="12-how-can-i-access-chia-network-如何连接chia">1.2 How Can I access Chia Network? 如何连接Chia?</h3>
 <p>我们可以通过 Chia Network 的客户端来访问它，这个客户端是 Electron + Python 的程序，天然跨平台，既有 GUI 又有 CLI 的方式。</p>
 <h4 id="安装">安装</h4>
-<p>只需要按照官方的 Guide 来下载安装就好， <a href="https://github.com/Chia-Network/chia-blockchain/wiki/INSTALL">https://github.com/Chia-Network/chia-blockchain/wiki/INSTALL</a>，我在 M1 Mac 下安装的时候脚本出了点小问题，大概是因为拉取二进制 wheel 文件网络出问题走到了编译 wheel的逻辑，而那里是依赖 <code>cargo</code>的，如果大家遇到了这个问题，可以提前手动安装一下 rust，或者 cherry-pick 我的这个 <a href="https://github.com/Chia-Network/chia-blockchain/pull/3789" target="_blank" rel="noopener noreffer">PR</a> 。</p>
+<p>只需要按照官方的 Guide 来下载安装就好， <a href="https://github.com/Chia-Network/chia-blockchain/wiki/INSTALL" target="_blank" rel="noopener noreffer">https://github.com/Chia-Network/chia-blockchain/wiki/INSTALL</a>，我在 M1 Mac 下安装的时候脚本出了点小问题，大概是因为拉取二进制 wheel 文件网络出问题走到了编译 wheel的逻辑，而那里是依赖 <code>cargo</code>的，如果大家遇到了这个问题，可以提前手动安装一下 rust，或者 cherry-pick 我的这个 <a href="https://github.com/Chia-Network/chia-blockchain/pull/3789" target="_blank" rel="noopener noreffer">PR</a> 。</p>
 <h4 id="运行">运行</h4>
 <ul>
 <li>按照官方 guide，比如 macOS 来说，最后一步执行<code>npm run electron &amp;</code> 就是运行它的GUI客户端。</li>
@@ -228,7 +228,7 @@
 <p>下边就是运行起来 Chia 之后生成的主要的两个数据库的二进制文件：</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -247,7 +247,7 @@
 </span><span class="lnt">17
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-fallback" data-lang="fallback">~/.chia/mainnet/db 
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">~/.chia/mainnet/db 
 ❯ ll -h
 total 4350416
 -rw-r--r--  1 weyl  staff   2.0G May  6 12:06 blockchain_v1_mainnet.sqlite
@@ -267,7 +267,7 @@ total 3055848
 </code></pre></td></tr></table>
 </div>
 </div><p>然后，我们可以先用 SQLite Browser，一个 SQlite 数据库（文件）的浏览器来看看它。</p>
-<p>SQlite 浏览器的官网是 <a href="https://sqlitebrowser.org/">https://sqlitebrowser.org/</a> 。在下载，安装之后，我们可以通过点击 <code>Open Database/打开数据库</code> 选择浏览上边列出来的两个 <code>.sqlite</code> 扩展名的数据库文件。</p>
+<p>SQlite 浏览器的官网是 <a href="https://sqlitebrowser.org/" target="_blank" rel="noopener noreffer">https://sqlitebrowser.org/</a> 。在下载，安装之后，我们可以通过点击 <code>Open Database/打开数据库</code> 选择浏览上边列出来的两个 <code>.sqlite</code> 扩展名的数据库文件。</p>
 <p>打开数据库之后，我们可以选择第一个标签 <code>Database Schema</code> 来看看表的结构。</p>
 <p><img
         class="lazyload"
@@ -290,7 +290,7 @@ total 3055848
 <blockquote>
 <p>Tips:</p>
 <ul>
-<li>这里边，<code>~/.chia/mainnet/wallet</code> 和裸目录 <code>~/.chia/mainnet </code> 下边的 <code>db</code> 里分别都有表文件，他们的信息是有重复的，大家可以分别打开看看哦，即使是相同的表的名字，比如 <code>block_record</code> 内里的信息也略有差别，如果大家知道为什么有这样的差别，欢迎浏览告诉大家哈，可能要仔细研究一下客户端、钱包等代码才行，幸运的是，它们相对比较好阅读，是 Python 写的： <a href="https://github.com/Chia-Network/chia-blockchain">https://github.com/Chia-Network/chia-blockchain</a> 。</li>
+<li>这里边，<code>~/.chia/mainnet/wallet</code> 和裸目录 <code>~/.chia/mainnet </code> 下边的 <code>db</code> 里分别都有表文件，他们的信息是有重复的，大家可以分别打开看看哦，即使是相同的表的名字，比如 <code>block_record</code> 内里的信息也略有差别，如果大家知道为什么有这样的差别，欢迎浏览告诉大家哈，可能要仔细研究一下客户端、钱包等代码才行，幸运的是，它们相对比较好阅读，是 Python 写的： <a href="https://github.com/Chia-Network/chia-blockchain" target="_blank" rel="noopener noreffer">https://github.com/Chia-Network/chia-blockchain</a> 。</li>
 </ul>
 </blockquote>
 <h2 id="2-inspect-the-chia-network-分析-chia-的数据">2. Inspect the Chia Network, 分析 Chia 的数据</h2>
@@ -312,7 +312,7 @@ total 3055848
 </ul>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -341,7 +341,7 @@ total 3055848
 </span><span class="lnt">27
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-fallback" data-lang="fallback">                                                   ┌──────────────────────┐
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">                                                   ┌──────────────────────┐
 ┌────────────────────────────────────────┐         │                      │
 │                                        │         │    Coin Record       │
 │   Block Record                         │         │                      │
@@ -374,13 +374,13 @@ total 3055848
 <p>因为安装客户端之后，我们本地实际上已经有了相关的 Python 环境和依赖，只需要在里边跑起来就好。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
 </span><span class="lnt">3
 </span><span class="lnt">4
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="c1"># 注意，我们要 cd 到之前安装客户端时候克隆的仓库。</span>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="c1"># 注意，我们要 cd 到之前安装客户端时候克隆的仓库。</span>
 <span class="nb">cd</span> chia-blockchain
 <span class="c1"># source activate 脚本来切换到仓库安装时候创建的 Python 虚拟环境，并进到 IPython 里。</span>
 <span class="nb">source</span> venv/bin/activate <span class="o">&amp;&amp;</span> pip install ipython <span class="o">&amp;&amp;</span> ipython
@@ -389,7 +389,7 @@ total 3055848
 </div><p>然后试着导入客户端里边带有的 Python 的 Chia 的封装类试试看。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
 </span><span class="lnt">3
 </span><span class="lnt">4
@@ -397,7 +397,7 @@ total 3055848
 </span><span class="lnt">6
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-python" data-lang="python"><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="kn">import</span> <span class="nn">sqlite3</span>
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="kn">import</span> <span class="nn">sqlite3</span>
    <span class="o">...</span><span class="p">:</span> <span class="kn">from</span> <span class="nn">chia.consensus.block_record</span> <span class="kn">import</span> <span class="n">BlockRecord</span>
 <span class="c1"># 导入成功，没有报错</span>
 <span class="n">In</span> <span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="err">!</span><span class="n">pwd</span>
@@ -410,7 +410,7 @@ total 3055848
 <p>在上一步的 <code>IPython</code> 窗口下。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -437,7 +437,7 @@ total 3055848
 </span><span class="lnt">25
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-python" data-lang="python"><span class="c1"># 注意，这里的路径的前缀是我们自己的家目录，不同操作系统，不同的用户都会有所不同。</span>
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="c1"># 注意，这里的路径的前缀是我们自己的家目录，不同操作系统，不同的用户都会有所不同。</span>
 <span class="n">chia_db_path</span> <span class="o">=</span> <span class="s2">&#34;/Users/weyl/.chia/mainnet/db/blockchain_v1_mainnet.sqlite&#34;</span>
 
 <span class="n">cur</span> <span class="o">=</span> <span class="n">con</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
@@ -448,7 +448,7 @@ total 3055848
 <span class="nb">dir</span><span class="p">(</span><span class="n">block_records_201645</span><span class="p">)</span>
 <span class="c1"># 可以查看一些属性 is_transaction_block，timestamp，reward_claims_incorporated</span>
 <span class="n">In</span> <span class="p">[</span><span class="mi">174</span><span class="p">]:</span> <span class="n">block_records_201645</span><span class="o">.</span><span class="n">is_transaction_block</span>
-<span class="n">Out</span><span class="p">[</span><span class="mi">174</span><span class="p">]:</span> <span class="bp">True</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">174</span><span class="p">]:</span> <span class="kc">True</span>
 
 <span class="n">In</span> <span class="p">[</span><span class="mi">182</span><span class="p">]:</span> <span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
 <span class="n">In</span> <span class="p">[</span><span class="mi">183</span><span class="p">]:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">fromtimestamp</span><span class="p">(</span><span class="n">block_records_201645</span><span class="o">.</span><span class="n">timestamp</span><span class="p">)</span>
@@ -461,7 +461,7 @@ total 3055848
  <span class="s1">&#39;amount&#39;</span><span class="p">:</span> <span class="mi">1750000000000</span><span class="p">}</span>
 
 <span class="c1"># 可以快速 print 看大部分信息</span>
-<span class="k">print</span><span class="p">(</span><span class="n">block_records_201645</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">block_records_201645</span><span class="p">)</span>
 </code></pre></td></tr></table>
 </div>
 </div><p><code>block_records_201645</code> 的打印结果如下。</p>
@@ -470,7 +470,7 @@ total 3055848
 </blockquote>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -508,7 +508,7 @@ total 3055848
 </span><span class="lnt">36
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span><span class="err">&#39;challenge_block_info_hash&#39;:</span> <span class="err">&#39;0x4a562f1ffa7a06fe76b1df74dbdd6bdcfbf63139a6f1fc3291c606d7c976abf6&#39;,</span>
+<pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span><span class="err">&#39;challenge_block_info_hash&#39;:</span> <span class="err">&#39;0x4a562f1ffa7a06fe76b1df74dbdd6bdcfbf63139a6f1fc3291c606d7c976abf6&#39;,</span>
  <span class="err">&#39;challenge_vdf_output&#39;:</span> <span class="err">{&#39;data&#39;:</span> <span class="err">&#39;0x0200a6b38d6b58d17129d71737088772561f22a44ef302fe45a70a763b878f998abfe35946df720bcb5d78e214b667bce801d597b46c867928c4b8926c342375a961f36cd63ec698bc25e5ce48c45d9a2074eded0e42d24dd1b50a59e699f671f0900100&#39;</span><span class="p">}</span><span class="err">,</span>
  <span class="err">&#39;deficit&#39;:</span> <span class="mi">16</span><span class="err">,</span>
  <span class="err">&#39;farmer_puzzle_hash&#39;:</span> <span class="err">&#39;</span><span class="mi">0</span><span class="err">x</span><span class="mi">4</span><span class="err">bc</span><span class="mi">6435</span><span class="err">b</span><span class="mi">409</span><span class="err">bcbabe</span><span class="mi">53870</span><span class="err">dae</span><span class="mi">0</span><span class="err">f</span><span class="mi">03755</span><span class="err">f</span><span class="mi">6</span><span class="err">aabb</span><span class="mi">4594</span><span class="err">c</span><span class="mi">5915</span><span class="err">ec</span><span class="mi">983</span><span class="err">acf</span><span class="mi">12</span><span class="err">a</span><span class="mi">5</span><span class="err">d</span><span class="mi">1</span><span class="err">fba&#39;,</span>
@@ -549,7 +549,7 @@ total 3055848
 </div><p>另外，我们取的这个表的定义如下。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
 </span><span class="lnt">3
 </span><span class="lnt">4
@@ -559,7 +559,7 @@ total 3055848
 </span><span class="lnt">8
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-mysql" data-lang="mysql"><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="nf">block_records</span><span class="p">(</span><span class="w">
+<pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="nf">block_records</span><span class="p">(</span><span class="w">
 </span><span class="w">  </span><span class="n">header_hash</span><span class="w"> </span><span class="kt">text</span><span class="w"> </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="p">,</span><span class="w"> 
 </span><span class="w">  </span><span class="n">prev_hash</span><span class="w"> </span><span class="kt">text</span><span class="p">,</span><span class="w"> 
 </span><span class="w">  </span><span class="n">height</span><span class="w"> </span><span class="kt">bigint</span><span class="p">,</span><span class="w">
@@ -573,7 +573,7 @@ total 3055848
 <p>类似的，我们可以获取一个 Coin 的记录，这里边，从表的定义可以看到，唯一二进制（不能直接从数据库查询中被人读懂）的字段就是是币值，不存在嵌套的结构，所以也并不需要封装的类才能看清楚里边的信息。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -585,7 +585,7 @@ total 3055848
 </span><span class="lnt">10
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-mysql" data-lang="mysql"><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="nf">coin_record</span><span class="p">(</span><span class="w">
+<pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="nf">coin_record</span><span class="p">(</span><span class="w">
 </span><span class="w">  </span><span class="n">coin_name</span><span class="w"> </span><span class="kt">text</span><span class="w"> </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="p">,</span><span class="w">
 </span><span class="w">  </span><span class="n">confirmed_index</span><span class="w"> </span><span class="kt">bigint</span><span class="p">,</span><span class="w">
 </span><span class="w">  </span><span class="n">spent_index</span><span class="w"> </span><span class="kt">bigint</span><span class="p">,</span><span class="w">
@@ -600,7 +600,7 @@ total 3055848
 </div><p>这里值得注意的信息主要是 <code>spent_index</code> 和 <code>confirmed_index</code>。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -621,7 +621,7 @@ total 3055848
 </span><span class="lnt">19
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">chia.util.ints</span> <span class="kn">import</span> <span class="n">uint64</span>
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">chia.util.ints</span> <span class="kn">import</span> <span class="n">uint64</span>
 
 <span class="n">chia_db_path</span> <span class="o">=</span> <span class="s2">&#34;/Users/weyl/.chia/mainnet/db/blockchain_v1_mainnet.sqlite&#34;</span>
 <span class="n">con</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">chia_db_path</span><span class="p">)</span>
@@ -646,7 +646,7 @@ total 3055848
 <p>我们可以把 Chia 中的 Puzzle 理解成为交易中的地址，为了方便使用，通常会把 Puzzle 的 hash 用<a href="https://github.com/bitcoin/bips/blob/master/bip-0173.mediawiki" target="_blank" rel="noopener noreffer">bech32m</a> 转换成地址。</p>
 <blockquote>
 <p>Tips:</p>
-<p>这里有一个在线双向转换的在线工具推荐一下: <a href="https://www.chiaexplorer.com/tools/address-puzzlehash-converter">https://www.chiaexplorer.com/tools/address-puzzlehash-converter</a></p>
+<p>这里有一个在线双向转换的在线工具推荐一下: <a href="https://www.chiaexplorer.com/tools/address-puzzlehash-converter" target="_blank" rel="noopener noreffer">https://www.chiaexplorer.com/tools/address-puzzlehash-converter</a></p>
 </blockquote>
 <h2 id="3-how-to-explore-chia-network-如何探索-chia-链">3. How to explore Chia Network? 如何探索 Chia 链</h2>
 <p>随着我们之前分析的信息，自然地，我们可以把 Chia 区块链中的信息取出来，用图（Graph）来表示，这里的图并不是（Graphic）图形、图画的意思，是数学、图论中的图。</p>
@@ -675,34 +675,34 @@ total 3055848
 <blockquote>
 <p>Tips:</p>
 <p><strong>安装 Nebula Graph</strong></p>
-<p>一般来说，面向超大规模数据的分布式系统，天然的都是不容易轻量部署的，大家如果第一次使用的话可以试试我写的一个叫做 nebula-up 的小工具，可以一行指令部署一个用来试用、学习的 Nebula Graph 集群，地址在这里： <a href="https://github.com/wey-gu/nebula-up/">https://github.com/wey-gu/nebula-up/</a> 。</p>
+<p>一般来说，面向超大规模数据的分布式系统，天然的都是不容易轻量部署的，大家如果第一次使用的话可以试试我写的一个叫做 nebula-up 的小工具，可以一行指令部署一个用来试用、学习的 Nebula Graph 集群，地址在这里： <a href="https://github.com/wey-gu/nebula-up/" target="_blank" rel="noopener noreffer">https://github.com/wey-gu/nebula-up/</a> 。</p>
 </blockquote>
 <h3 id="31-import-the-chia-to-a-graph-database-nebula-graph-导入-chia-数据到图数据库">3.1 Import the Chia to a Graph Database, Nebula Graph 导入 Chia 数据到图数据库</h3>
 <p>我们分两步走，第一步这把 Chia Network 数据转换成 CSV 文件，第二步使用 Nebula 的 <a href="https://github.com/vesoft-inc/nebula-importer/" target="_blank" rel="noopener noreffer">Nebula-Importer</a> 把数据导入 Nebula Graph。</p>
 <h4 id="311-data-conversion-数据转换">3.1.1 Data conversion 数据转换</h4>
 <p>这部分的代码我开源在这里了:</p>
-<p><a href="https://github.com/wey-gu/nebula-chia">https://github.com/wey-gu/nebula-chia</a></p>
+<p><a href="https://github.com/wey-gu/nebula-chia" target="_blank" rel="noopener noreffer">https://github.com/wey-gu/nebula-chia</a></p>
 <p>使用它只需要在 Chia Network 的 python venv 下安装它:</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-bash" data-lang="bash">python3 -m pip install nebula-chia
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">python3 -m pip install nebula-chia
 </code></pre></td></tr></table>
 </div>
 </div><p>然后调用 <code>ChaiBatchConvertor</code> 就可以在当前目录下生成两个 CSV 文件。</p>
 <p>这里边有一些可以配置的参数，具体可以参考代码 <code>nebulachia/convertor.py</code></p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
 </span><span class="lnt">3
 </span><span class="lnt">4
 </span><span class="lnt">5
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">nebulachia.convertor</span> <span class="kn">import</span> <span class="n">ChiaBatchConvertor</span>
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">nebulachia.convertor</span> <span class="kn">import</span> <span class="n">ChiaBatchConvertor</span>
 <span class="n">c</span> <span class="o">=</span> <span class="n">ChaiBatchConvertor</span><span class="p">(</span>
     <span class="n">block_record_limit</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">coin_record_limit</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">write_batch_size</span><span class="o">=</span><span class="mi">10000</span><span class="p">)</span>
 <span class="n">c</span><span class="o">.</span><span class="n">convert_block_record</span><span class="p">()</span>
@@ -712,13 +712,13 @@ total 3055848
 </div><p>生成的文件：</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
 </span><span class="lnt">3
 </span><span class="lnt">4
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-bash" data-lang="bash">$ ls -lth
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ ls -lth
 
 -rw-r--r--   <span class="m">1</span> weyl  staff   173M May <span class="m">19</span> 13:01 coin_record.csv
 -rw-r--r--   <span class="m">1</span> weyl  staff    77M May <span class="m">19</span> 12:59 block_record.csv
@@ -727,7 +727,7 @@ total 3055848
 </div><p>这里边字段的含义和类型，可以参考代码中 <code>block_record_row</code> 和 <code>coin_record_row</code> 的 <code>__doc__</code></p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt"> 1
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -797,7 +797,7 @@ total 3055848
 </span><span class="lnt">68
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-python" data-lang="python"><span class="n">In</span> <span class="p">[</span><span class="mi">466</span><span class="p">]:</span> <span class="k">print</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">coin_record_row</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">In</span> <span class="p">[</span><span class="mi">466</span><span class="p">]:</span> <span class="nb">print</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">coin_record_row</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
 
         <span class="n">Parse</span> <span class="n">row</span> <span class="ow">and</span> <span class="k">return</span> <span class="n">a</span> <span class="n">CSV</span> <span class="n">block</span> <span class="n">coin</span> <span class="n">row</span> <span class="nb">list</span><span class="o">.</span>
 
@@ -825,7 +825,7 @@ total 3055848
             <span class="mi">9</span>              <span class="mi">10</span>
             <span class="n">confirmed_hash</span><span class="o">|</span><span class="n">spent_hash</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">467</span><span class="p">]:</span> <span class="k">print</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">block_record_row</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">467</span><span class="p">]:</span> <span class="nb">print</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">block_record_row</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
 
         <span class="n">Parse</span> <span class="n">row</span> <span class="ow">and</span> <span class="k">return</span> <span class="n">a</span> <span class="n">CSV</span> <span class="n">block</span> <span class="n">record</span> <span class="n">row</span> <span class="nb">list</span><span class="o">.</span>
 
@@ -876,7 +876,7 @@ total 3055848
 </ul>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
 </span><span class="lnt">3
 </span><span class="lnt">4
@@ -887,7 +887,7 @@ total 3055848
 </span><span class="lnt">9
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-bash" data-lang="bash"><span class="c1"># 这里，我的 csv 文件和 配置文件都放在 /home/wei.gu/chia 之下</span>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="c1"># 这里，我的 csv 文件和 配置文件都放在 /home/wei.gu/chia 之下</span>
 <span class="c1"># 我使用 docker-compose 默认配置部署的 Nebula Graph,</span>
 <span class="c1"># 它创建了叫 nebula-docker-compose_nebula-net 的 docker 网络</span>
 docker run --rm -ti <span class="se">\
@@ -901,13 +901,13 @@ docker run --rm -ti <span class="se">\
 </div><p>这里我展示一个导入的结果示例，我在单机部署的 Nebula Graph 里导入了我一两周之前取的全量 Chia Network 数据的结果。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
 </span><span class="lnt">3
 </span><span class="lnt">4
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-bash" data-lang="bash">...
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">...
 2021/05/19 09:55:09 <span class="o">[</span>INFO<span class="o">]</span> reader.go:180: Total lines of file<span class="o">(</span>/root/coin_record.csv<span class="o">)</span> is: 547557, error lines: <span class="m">0</span>
 2021/05/19 09:55:09 <span class="o">[</span>INFO<span class="o">]</span> statsmgr.go:61: Done<span class="o">(</span>/root/coin_record.csv<span class="o">)</span>: Time<span class="o">(</span>4385.88s<span class="o">)</span>, Finished<span class="o">(</span>4512927<span class="o">)</span>, Failed<span class="o">(</span>0<span class="o">)</span>, Latency AVG<span class="o">(</span>1305us<span class="o">)</span>, Batches Req AVG<span class="o">(</span>2015us<span class="o">)</span>, Rows AVG<span class="o">(</span>1028.42/s<span class="o">)</span>
 2021/05/19 09:55:10 --- END OF NEBULA IMPORTER ---
@@ -919,7 +919,7 @@ docker run --rm -ti <span class="se">\
 <p>比如这个查询表示从区块 <code>524aa2013781ff4cd9d2b5dc...</code> 查起，经过三种边 <code>farmer_puzzle, spends, confirms</code> 双向遍历的结果。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
 </span><span class="lnt">3
 </span><span class="lnt">4
@@ -928,7 +928,7 @@ docker run --rm -ti <span class="se">\
 </span><span class="lnt">7
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-sql" data-lang="sql"><span class="k">GO</span><span class="w"> </span><span class="mi">5</span><span class="w"> </span><span class="n">STEPS</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="err">\</span><span class="w">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="k">GO</span><span class="w"> </span><span class="mi">5</span><span class="w"> </span><span class="n">STEPS</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="err">\</span><span class="w">
 </span><span class="w">   </span><span class="s2">&#34;524aa2013781ff4cd9d2b5dce40647b670d722e2de25bd2e2b79970a8ec435ee&#34;</span><span class="w"> </span><span class="err">\</span><span class="w">
 </span><span class="w">   </span><span class="n">OVER</span><span class="w"> </span><span class="n">farmer_puzzle</span><span class="p">,</span><span class="n">spends</span><span class="p">,</span><span class="n">confirms</span><span class="w"> </span><span class="n">BIDIRECT</span><span class="w">
 </span><span class="w"></span><span class="p">...</span><span class="w">
@@ -940,7 +940,7 @@ docker run --rm -ti <span class="se">\
 </div><p>再比如，计算一个 Puzzle 地址上的余额（所有 coin 的总价值）比如这个puzzle <code>bbe39134ccc32c08fdeff...</code></p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code><span class="lnt">1
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
 </span><span class="lnt">3
 </span><span class="lnt">4
@@ -948,7 +948,7 @@ docker run --rm -ti <span class="se">\
 </span><span class="lnt">6
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-sql" data-lang="sql"><span class="k">GO</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="n">STEP</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="s2">&#34;bbe39134ccc32c08fdeff4d2c19d1d1f4f7e48cdaf79d37397bc3136ce9b3cb7&#34;</span><span class="w"> </span><span class="err">\</span><span class="w">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="k">GO</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="n">STEP</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="s2">&#34;bbe39134ccc32c08fdeff4d2c19d1d1f4f7e48cdaf79d37397bc3136ce9b3cb7&#34;</span><span class="w"> </span><span class="err">\</span><span class="w">
 </span><span class="w">   </span><span class="n">OVER</span><span class="w"> </span><span class="n">belongs_to</span><span class="w"> </span><span class="n">REVERSELY</span><span class="w"> </span><span class="err">\</span><span class="w">
 </span><span class="w">   </span><span class="n">YIELD</span><span class="w"> </span><span class="k">CASE</span><span class="w"> </span><span class="err">$$</span><span class="p">.</span><span class="n">coin</span><span class="p">.</span><span class="n">is_spent</span><span class="w"> </span><span class="err">\</span><span class="w">
 </span><span class="w">         </span><span class="k">WHEN</span><span class="w"> </span><span class="k">true</span><span class="w"> </span><span class="k">THEN</span><span class="w"> </span><span class="err">$$</span><span class="p">.</span><span class="n">coin</span><span class="p">.</span><span class="n">amount</span><span class="w"> </span><span class="err">\</span><span class="w">
@@ -1009,8 +1009,8 @@ docker run --rm -ti <span class="se">\
 <h2 id="4-summary-总结">4. Summary 总结</h2>
 <p>这篇文章里，在我们简单介绍了 Chia Network 之后，我们首次的带大家一起从安装一个 Chia 终端，到分析终端同步到本地的 Chia 全网数据，借助于 Chia 终端开源的 Python 代码库，我们分析了全网数据里的重要信息。</p>
 <p>之后，我们开源了一个小工具 Nebula-Chia，有了它，就可以把 Chia 的全网数据转换成 CSV 格式，这样，就可以借助 nebula-importer 把所有的数据导入到一个先进的图数据库（Nebula Graph）中。</p>
-<p>Nebula Graph 的项目地址是 <a href="https://github.com/vesoft-inc/nebula-graph">https://github.com/vesoft-inc/nebula-graph</a></p>
-<p>Nebula-Chia 我也开源在 <a href="https://github.com/wey-gu/nebula-chia">https://github.com/wey-gu/nebula-chia</a></p>
+<p>Nebula Graph 的项目地址是 <a href="https://github.com/vesoft-inc/nebula-graph" target="_blank" rel="noopener noreffer">https://github.com/vesoft-inc/nebula-graph</a></p>
+<p>Nebula-Chia 我也开源在 <a href="https://github.com/wey-gu/nebula-chia" target="_blank" rel="noopener noreffer">https://github.com/wey-gu/nebula-chia</a></p>
 <p>在图数据库中，我们展示了做基本 Query 的例子和借助图数据库自带的可视化工具，我们可以轻易地获取 Chia 全网数据之间关联关系，有了这个作为基础，这些数据中洞察的潜力和可以尝试的有意思事情可以比较直观和高效地进一步探索了！</p>
 <p>是不是很酷？</p>
 <p><img
@@ -1023,14 +1023,14 @@ docker run --rm -ti <span class="se">\
     /></p>
 <h2 id="5-references">5. References</h2>
 <ul>
-<li><a href="https://www.chia.net/faq/">https://www.chia.net/faq/</a></li>
-<li><a href="https://chialisp.com/docs/">https://chialisp.com/docs/</a></li>
-<li><a href="https://www.chiaexplorer.com/chia-coins">https://www.chiaexplorer.com/chia-coins</a></li>
-<li><a href="https://docs.google.com/document/d/1tmRIb7lgi4QfKkNaxuKOBHRmwbVlGL4f7EsBDr_5xZE">https://docs.google.com/document/d/1tmRIb7lgi4QfKkNaxuKOBHRmwbVlGL4f7EsBDr_5xZE</a></li>
-<li><a href="https://github.com/sipa/bech32/tree/master/ref/python">https://github.com/sipa/bech32/tree/master/ref/python</a></li>
-<li><a href="https://github.com/Chia-Network/chia-blockchain/blob/main/README.md">https://github.com/Chia-Network/chia-blockchain/blob/main/README.md</a></li>
-<li><a href="https://www.chia.net/assets/ChiaGreenPaper.pdf">https://www.chia.net/assets/ChiaGreenPaper.pdf</a></li>
-<li><a href="https://docs.nebula-graph.com.cn">https://docs.nebula-graph.com.cn</a></li>
+<li><a href="https://www.chia.net/faq/" target="_blank" rel="noopener noreffer">https://www.chia.net/faq/</a></li>
+<li><a href="https://chialisp.com/docs/" target="_blank" rel="noopener noreffer">https://chialisp.com/docs/</a></li>
+<li><a href="https://www.chiaexplorer.com/chia-coins" target="_blank" rel="noopener noreffer">https://www.chiaexplorer.com/chia-coins</a></li>
+<li><a href="https://docs.google.com/document/d/1tmRIb7lgi4QfKkNaxuKOBHRmwbVlGL4f7EsBDr_5xZE" target="_blank" rel="noopener noreffer">https://docs.google.com/document/d/1tmRIb7lgi4QfKkNaxuKOBHRmwbVlGL4f7EsBDr_5xZE</a></li>
+<li><a href="https://github.com/sipa/bech32/tree/master/ref/python" target="_blank" rel="noopener noreffer">https://github.com/sipa/bech32/tree/master/ref/python</a></li>
+<li><a href="https://github.com/Chia-Network/chia-blockchain/blob/main/README.md" target="_blank" rel="noopener noreffer">https://github.com/Chia-Network/chia-blockchain/blob/main/README.md</a></li>
+<li><a href="https://www.chia.net/assets/ChiaGreenPaper.pdf" target="_blank" rel="noopener noreffer">https://www.chia.net/assets/ChiaGreenPaper.pdf</a></li>
+<li><a href="https://docs.nebula-graph.com.cn" target="_blank" rel="noopener noreffer">https://docs.nebula-graph.com.cn</a></li>
 </ul>
 <blockquote>
 <p>Banner Picture Credit: <a href="https://unsplash.com/photos/Ph5_4TnXXYE?utm_source=unsplash&amp;utm_medium=referral&amp;utm_content=creditShareLink" target="_blank" rel="noopener noreffer">Icons8 Team</a></p>
@@ -1066,7 +1066,7 @@ docker run --rm -ti <span class="se">\
                 Please enable JavaScript to view the comments powered by <a href="https://waline.js.org/">Waline</a>.
             </noscript></div></article></div>
         </main><footer class="footer">
-        <div class="footer-container"><div class="footer-line">Powered by <a href="https://gohugo.io/" target="_blank" rel="noopener noreffer" title="Hugo 0.83.1">Hugo</a> | Theme - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreffer" title="DoIt 0.2.10"><i class="far fa-edit fa-fw"></i> DoIt</a>
+        <div class="footer-container"><div class="footer-line">Powered by <a href="https://gohugo.io/" target="_blank" rel="noopener noreffer" title="Hugo 0.86.0">Hugo</a> | Theme - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreffer" title="DoIt 0.2.10"><i class="far fa-edit fa-fw"></i> DoIt</a>
                 </div><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2018 - 2021</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="https://siwei.io" target="_blank" rel="noopener noreferrer">Wey(Siwei) Gu | 古思为</a></span>&nbsp;|&nbsp;<span class="license"><a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">CC BY-NC 4.0</a></span></div>
         </div></footer></div>
 
