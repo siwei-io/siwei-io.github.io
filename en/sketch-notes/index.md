@@ -1,6 +1,8 @@
 # Sketch Notes
 
 
+{{< showcase "Nebula Operator Explained" "Nebula Graph K8s Operator Explained" "/sketches/nebula-operator-explained/nebula-operator-explained.webp" "/sketches/nebula-operator-explained/" 3 >}}
+
 {{< showcase "Nebula Config Explained" "Nebula Graph Config Explained" "/sketches/nebula-config-explained/nebula-config-explained.webp" "/sketches/nebula-config-explained/" 3 >}}
 
 {{< showcase "Nebula Index Demystified" "Nebula Graph Native Index Demystified" "/sketches/nebula-index-demystified/nebula-index-demystified.webp" "/sketches/nebula-index-demystified/" 3 >}}
