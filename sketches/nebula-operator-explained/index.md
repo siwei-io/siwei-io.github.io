@@ -22,7 +22,7 @@ ref: https://github.com/vesoft-inc/nebula-operator
 
 ## Bilibili
 
-> 上传中...
+{{< bilibili BV1rP4y1x7fX >}}
 
 ## Youtube
 

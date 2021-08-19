@@ -18,7 +18,7 @@ This note explained nebula graph configurations:
 
 ## Bilibili
 
-> 上传中...
+{{< bilibili BV11g411L7Cj >}}
 
 ## Youtube
 
