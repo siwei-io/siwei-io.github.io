@@ -304,7 +304,7 @@ docker cp sst nebula-docker-compose_storaged1_1:/data/storage/nebula/49/download
 docker cp sst nebula-docker-compose_storaged2_1:/data/storage/nebula/49/download/
 ```
 
-### 2. SST 文件注入
+### 2. SST 文件导入
 
 - 进入 Nebula-Console 所在的容器
 
@@ -322,7 +322,7 @@ docker cp sst nebula-docker-compose_storaged2_1:/data/storage/nebula/49/download
 Welcome to Nebula Graph!
 ```
 
-- 执行 `INGEST` 注入 SST 文件
+- 执行 `INGEST` 开始让 StorageD 读取 SST 文件
 
 ```bash
 (root@nebula) [(none)]> use sst
@@ -335,7 +335,7 @@ Welcome to Nebula Graph!
 tail -f ~/.nebula-up/nebula-docker-compose/logs/*/*
 ```
 
-成功的注入日志：
+成功的 INGEST 日志：
 
 ```bash
 I0817 08:03:28.611877   169 EventListner.h:96] Ingest external SST file: column family default, the external file path /data/storage/nebula/49/download/8/8-6.sst, the internal file path /data/storage/nebula/49/data/000023.sst, the properties of the table: # data blocks=1; # entries=1; # deletions=0; # merge operands=0; # range deletions=0; raw key size=48; raw average key size=48.000000; raw value size=40; raw average value size=40.000000; data block size=75; index block size (user-key? 0, delta-value? 0)=66; filter block size=0; (estimated) table size=141; filter policy name=N/A; prefix extractor name=nullptr; column family ID=N/A; column family name=N/A; comparator name=leveldb.BytewiseComparator; merge operator name=nullptr; property collectors names=[]; SST file compression algo=Snappy; SST file compression options=window_bits=-14; level=32767; strategy=0; max_dict_bytes=0; zstd_max_train_bytes=0; enabled=0; ; creation time=0; time stamp of earliest key=0; file creation time=0;
