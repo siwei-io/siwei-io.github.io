@@ -42,6 +42,20 @@ curl -sL nebula-kind.siwei.io/install.sh | bash
 Repo 的地址是：https://github.com/wey-gu/nebula-operator-kind ，里边有更多的信息，欢迎大家试用、反馈、PR 哈！
 
 
+> Updated Sept. 2021
+
+如果在 KubeSphere All-in-one 环境安装：
+
+```bash
+curl -sL nebula-kind.siwei.io/install-ks-1.sh | bash
+```
+
+如果在 Minikube、其他 K8s 之中安装
+
+```bash
+curl -sL nebula-kind.siwei.io/install-on-k8s.sh | bash
+```
+
 
 > 题图版权：[Maik Hankemann](https://unsplash.com/photos/a4Gz2DD4dX0) 
 

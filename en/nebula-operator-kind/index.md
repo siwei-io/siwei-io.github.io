@@ -38,6 +38,19 @@ You can connect to the cluster via `~/.nebula-kind/bin/console` as below:
 It's in GitHub with more information you may be intrested in ;-), please try and feedback there~
 https://github.com/wey-gu/nebula-operator-kind
 
+> Updated Sept. 2021
+
+Install on KubeSphere all-in-on cluster：
+
+```bash
+curl -sL nebula-kind.siwei.io/install-ks-1.sh | bash
+```
+
+Install on existing K8s cluster:
+
+```bash
+curl -sL nebula-kind.siwei.io/install-on-k8s.sh | bash
+```
 
 > Banner Picture Credit: [Maik Hankemann](https://unsplash.com/photos/a4Gz2DD4dX0) 
 
