@@ -36,6 +36,18 @@
 
 {{< showcase "Nebula Intro" "新手玩转 Nebula Graph 系列开篇。" "/sketches/nebula-core-arch/arch_nebula.webp" "/sketches/nebula-core-arch/" 3 >}}
 
+## 我的上手课程
+
+{{< showcase "股权穿透教程" "上手实战股权用图数据库关系穿透" "/learn/nebula-101-shareholding/shareholding.webp" "/learn/nebula-101-shareholding/" 2>}}
+
+{{< showcase "Siwi" "上手实战从 0 制作一个基于图谱的语音智能助手" "/learn/nebula-101-siwi-kgqa/siwi.webp" "/learn/nebula-101-siwi-kgqa/" 2>}}
+
+## 我的演讲
+
+{{< showcase "K8s 上的图数据库" "Nebula K8s Operator 的实现解析，图数据库应用在 K8s + OpenFunction 上的落地演示" "https://siwei.io/talks/2021-09-kubesphere/images/cover.webp" "https://siwei.io/talks/2021-09-kubesphere/" 3 >}}
+
+{{< showcase "nMeetup: Nebula 应用上手实操" "从头实操 Nebula 的部署，股权穿透，图算法运算，语音智能助手。" "https://siwei.io/talks/2021-nMeetup/images/cover.webp" "https://siwei.io/talks/2021-nMeetup/" 3 >}}
+
 ## 过往的经历
 
 我曾在爱立信工作了近十年：2011 年到 2021 年。

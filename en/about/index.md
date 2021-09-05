@@ -30,12 +30,23 @@ I am working in open source and consider it is a privilege [^1]. It took me a co
 
 {{< showcase "Nebula Index Demystified" "Nebula Graph Native Index Demystified" "/sketches/nebula-index-demystified/nebula-index-demystified.webp" "/sketches/nebula-index-demystified/" 3 >}}
 
-
 {{< showcase "Nebula Data Import Options" "Nebula Graph comes with multiple Data Import utils, how should we choose from them?" "/sketches/nebula-data-import-options/data_import_options.webp" "/sketches/nebula-data-import-options/" 3 >}}
 
 {{< showcase "Nebula Deployment Options" "Nebula Graph is distributed and deployed in different options, here is which deployment option should I use?" "/sketches/nebula-deployment-options/deployment_options.webp" "/sketches/nebula-deployment-options/" 3 >}}
 
 {{< showcase "Nebula Intro" "Intro session for Nebula Graph for beginners." "/sketches/nebula-core-arch/arch_nebula.webp" "/sketches/nebula-core-arch/" 3 >}}
+
+## Hands-on Cources
+
+{{< showcase "How to Analysis shareholding ownership" "Hands-on Course: Breakdown multistage relationship of Persons and Corporations leverating the Nebula Graph Database." "/learn/nebula-101-shareholding/shareholding.webp" "/learn/nebula-101-shareholding/" 2>}}
+
+{{< showcase "How I built Siwi, the Voice assistant" "Hands-on Course: Setup a KGQA system from scratch with Nebula Graph, VueJS, Flask on K8s." "/learn/nebula-101-siwi-kgqa/siwi.webp" "/learn/nebula-101-siwi-kgqa/" 2>}}
+
+## Talks
+
+{{< showcase "K8s 上的图数据库" "Nebula K8s Operator 的实现解析，图数据库应用在 K8s + OpenFunction 上的落地演示" "https://siwei.io/talks/2021-09-kubesphere/images/cover.webp" "https://siwei.io/talks/2021-09-kubesphere/" 3 >}}
+
+{{< showcase "nMeetup: Nebula 应用上手实操" "从头实操 Nebula 的部署，股权穿透，图算法运算，语音智能助手。" "https://siwei.io/talks/2021-nMeetup/images/cover.webp" "https://siwei.io/talks/2021-nMeetup/" 3 >}}
 
 ## Previous work
 
