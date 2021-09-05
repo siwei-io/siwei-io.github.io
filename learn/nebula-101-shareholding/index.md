@@ -1,4 +1,4 @@
-# 上手实战股权用图数据库关系穿透
+# 上手实战图数据库股权关系穿透
 
 
 Walk you through in actions to do below sections exercises!

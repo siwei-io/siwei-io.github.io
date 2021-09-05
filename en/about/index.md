@@ -6,7 +6,7 @@
 
 I am a developer @***[vesoft](https://vesoft.com)*** working as Developer Advocate of [Nebula Graph](https://nebula-graph.com.cn/), the open source distributed Graph Database
 
-I create toolings and contents for [Nebula Graph Database](https://github.com/vesoft-inc) to help Developers in the open source community.
+I create toolings and content for [Nebula Graph Database](https://github.com/vesoft-inc) to help Developers in the open source community.
 
 I am working in open source and consider it is a privilege [^1]. It took me a couple of my early career years to figure out that my passion lies in *helping others with my thoughts & the tech/magic I have learned*.
 
