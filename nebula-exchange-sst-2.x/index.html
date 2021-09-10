@@ -1,199 +1,259 @@
-<!doctype html><html lang=zh-cn>
+<!DOCTYPE html>
+<html lang="zh-CN">
+
 <head>
-<meta charset=utf-8>
-<meta name=viewport content="width=device-width,initial-scale=1">
-<meta name=robots content="noodp">
-<title class=pjax-title>Nebula Exchange SST 2.x Hands-on Guide - siwei.io</title><meta name=Description content="这篇文章带大家以最小方式，快速趟一下 Nebula Exchange 中 SST 写入方式的步骤。"><meta property="og:title" content="Nebula Exchange SST 2.x Hands-on Guide">
-<meta property="og:description" content="这篇文章带大家以最小方式，快速趟一下 Nebula Exchange 中 SST 写入方式的步骤。">
-<meta property="og:type" content="article">
-<meta property="og:url" content="https://siwei.io/nebula-exchange-sst-2.x/"><meta property="og:image" content="https://siwei.io/nebula-exchange-sst-2.x/featured-image.png"><meta property="article:section" content="posts">
-<meta property="article:published_time" content="2021-08-18T15:21:00+08:00">
-<meta property="article:modified_time" content="2021-08-18T15:21:00+08:00"><meta property="og:site_name" content="siwei.io">
-<meta name=twitter:card content="summary_large_image">
-<meta name=twitter:image content="https://siwei.io/nebula-exchange-sst-2.x/featured-image.png">
-<meta name=twitter:title content="Nebula Exchange SST 2.x Hands-on Guide">
-<meta name=twitter:description content="这篇文章带大家以最小方式，快速趟一下 Nebula Exchange 中 SST 写入方式的步骤。">
-<meta name=application-name content="siwei.io">
-<meta name=apple-mobile-web-app-title content="siwei.io">
-<meta name=theme-color content="#ffffff"><meta name=msapplication-TileColor content="#da532c"><link rel="shortcut icon" type=image/x-icon href=/favicon.ico>
-<link rel=icon type=image/png sizes=32x32 href=/favicon-32x32.png>
-<link rel=icon type=image/png sizes=16x16 href=/favicon-16x16.png><link rel=apple-touch-icon sizes=180x180 href=/apple-touch-icon.png><link rel=mask-icon href=/safari-pinned-tab.svg color=#5bbad5><link rel=canonical href=https://siwei.io/nebula-exchange-sst-2.x/><link rel=prev href=https://siwei.io/nebula-operator-kind/><link rel=stylesheet href=/lib/normalize/normalize.min.css><link rel=stylesheet href=/css/style.min.css><link rel=preload as=style onload="this.onload=null,this.rel='stylesheet'" href=/lib/fontawesome-free/all.min.css>
-<noscript><link rel=stylesheet href=/lib/fontawesome-free/all.min.css></noscript><link rel=preload as=style onload="this.onload=null,this.rel='stylesheet'" href=/lib/animate/animate.min.css>
-<noscript><link rel=stylesheet href=/lib/animate/animate.min.css></noscript><meta name=baidu-site-verification content="code-4R67zl7SwH"><script type=application/ld+json>{"@context":"http://schema.org","@type":"BlogPosting","headline":"Nebula Exchange SST 2.x Hands-on Guide","inLanguage":"zh-CN","mainEntityOfPage":{"@type":"WebPage","@id":"https:\/\/siwei.io\/nebula-exchange-sst-2.x\/"},"image":["https:\/\/siwei.io\/images\/site-feature-image.webp"],"genre":"posts","keywords":"Nebula Graph, Nebula Exchange, SST","wordcount":3536,"url":"https:\/\/siwei.io\/nebula-exchange-sst-2.x\/","datePublished":"2021-08-18T15:21:00+08:00","dateModified":"2021-08-18T15:21:00+08:00","publisher":{"@type":"Organization","name":""},"author":{"@type":"Person","name":"Wey Gu"},"description":"这篇文章带大家以最小方式，快速趟一下 Nebula Exchange 中 SST 写入方式的步骤。"}</script></head>
-<body header-desktop=fixed header-mobile=auto><script type=text/javascript>function setTheme(a){document.body.setAttribute('theme',a)}function saveTheme(a){window.localStorage&&localStorage.setItem('theme',a)}function getMeta(b){const a=document.getElementsByTagName('meta');for(let c=0;c<a.length;c++)if(a[c].getAttribute('name')===b)return a[c];return''}if(window.localStorage&&localStorage.getItem('theme')){let a=localStorage.getItem('theme');a==='light'||a==='dark'||a==='black'?setTheme(a):window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?setTheme('dark'):setTheme('light')}else'auto'==='light'||'auto'==='dark'||'auto'==='black'?(setTheme('auto'),saveTheme('auto')):(saveTheme('auto'),window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?setTheme('dark'):setTheme('light'));let themeColorMeta=getMeta('theme-color');document.body.getAttribute('theme')!='light'&&(themeColorMeta.content='#000000')</script>
-<div id=back-to-top></div>
-<div id=mask></div><div class=wrapper><header class=desktop id=header-desktop>
-<div class=header-wrapper>
-<div class=header-title>
-<a href=/ title=siwei.io><span class=header-title-pre><i class="fas fa-code-branch"></i></span>siwei.io</a>
-</div>
-<div class=menu>
-<div class=menu-inner><a class=menu-item href=/about/> 关于 </a><a class=menu-item href=/projects/> 项目 </a><a class=menu-item href=/sketch-notes/> 手绘 </a><a class=menu-item href=/posts/> 博客 </a><a class=menu-item href=/talk/> 演讲 </a><a class=menu-item href=/cources/> 课程 </a><a class=menu-item href=https://vesoft.com/cn/careers/ rel="noopener noreffer" target=_blank> 招聘 </a><a class=menu-item href=/about/#%E8%81%94%E7%B3%BB%E6%88%91> 联系 </a><span class="menu-item delimiter"></span><a href=# onclick=return!1 class="menu-item language" title=选择语言>简体中文<i class="fas fa-chevron-right fa-fw"></i>
-<select class=language-select title="Select Language" id=language-select-desktop onchange="location=this.value"><option value=/nebula-exchange-sst-2.x/ selected>简体中文</option></select>
-</a><span class="menu-item search" id=search-desktop>
-<input type=text placeholder=搜索文章标题或内容... id=search-input-desktop>
-<a href=# onclick=return!1 class="search-button search-toggle" id=search-toggle-desktop title=搜索>
-<i class="fas fa-search fa-fw"></i>
-</a>
-<a href=# onclick=return!1 class="search-button search-clear" id=search-clear-desktop title=清空>
-<i class="fas fa-times-circle fa-fw"></i>
-</a>
-<span class="search-button search-loading" id=search-loading-desktop>
-<i class="fas fa-spinner fa-fw fa-spin"></i>
-</span>
-</span><a href=# onclick=return!1 class="menu-item theme-select" title=切换主题>
-<i class="fas fa-adjust fa-fw"></i>
-<select class=color-theme-select id=theme-select-desktop title=切换主题><option value=light>浅色</option><option value=dark>深色</option><option value=black>黑色</option><option value=auto>跟随系统</option></select>
-</a></div>
-</div>
-</div>
-</header><header class=mobile id=header-mobile>
-<div class=header-container>
-<div class=header-wrapper>
-<div class=header-title>
-<a href=/ title=siwei.io><span class=header-title-pre><i class="fas fa-code-branch"></i></span>siwei.io</a>
-</div>
-<div class=menu-toggle id=menu-toggle-mobile>
-<span></span><span></span><span></span>
-</div>
-</div>
-<div class=menu id=menu-mobile><div class=search-wrapper>
-<div class="search mobile" id=search-mobile>
-<input type=text placeholder=搜索文章标题或内容... id=search-input-mobile>
-<a href=# onclick=return!1 class="search-button search-toggle" id=search-toggle-mobile title=搜索>
-<i class="fas fa-search fa-fw"></i>
-</a>
-<a href=# onclick=return!1 class="search-button search-clear" id=search-clear-mobile title=清空>
-<i class="fas fa-times-circle fa-fw"></i>
-</a>
-<span class="search-button search-loading" id=search-loading-mobile>
-<i class="fas fa-spinner fa-fw fa-spin"></i>
-</span>
-</div>
-<a href=# onclick=return!1 class=search-cancel id=search-cancel-mobile>
-取消
-</a>
-</div><a class=menu-item href=/about/ title>关于</a><a class=menu-item href=/projects/ title>项目</a><a class=menu-item href=/sketch-notes/ title>手绘</a><a class=menu-item href=/posts/ title>博客</a><a class=menu-item href=/talk/ title>演讲</a><a class=menu-item href=/cources/ title>课程</a><a class=menu-item href=https://vesoft.com/cn/careers/ title rel="noopener noreffer" target=_blank>招聘</a><a class=menu-item href=/about/#%E8%81%94%E7%B3%BB%E6%88%91 title>联系</a><a href=# onclick=return!1 class="menu-item theme-select" title=切换主题>
-<i class="fas fa-adjust fa-fw"></i>
-<select class=color-theme-select id=theme-select-mobile title=切换主题><option value=light>浅色</option><option value=dark>深色</option><option value=black>黑色</option><option value=auto>跟随系统</option></select>
-</a><a href=# onclick=return!1 class=menu-item title=选择语言>简体中文<i class="fas fa-chevron-right fa-fw"></i>
-<select class=language-select title="Select Language" onchange="location=this.value"><option value=/nebula-exchange-sst-2.x/ selected>简体中文</option></select>
-</a></div>
-</div>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noodp" />
+    <title class="pjax-title">Nebula Exchange SST 2.x Hands-on Guide - siwei.io</title><meta name="Description" content="这篇文章带大家以最小方式，快速趟一下 Nebula Exchange 中 SST 写入方式的步骤。"><meta property="og:title" content="Nebula Exchange SST 2.x Hands-on Guide" />
+<meta property="og:description" content="这篇文章带大家以最小方式，快速趟一下 Nebula Exchange 中 SST 写入方式的步骤。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://siwei.io/nebula-exchange-sst-2.x/" /><meta property="og:image" content="https://siwei.io/nebula-exchange-sst-2.x/featured-image.png"/><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2021-08-18T15:21:00+08:00" />
+<meta property="article:modified_time" content="2021-08-18T15:21:00+08:00" /><meta property="og:site_name" content="siwei.io" />
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://siwei.io/nebula-exchange-sst-2.x/featured-image.png"/>
+<meta name="twitter:title" content="Nebula Exchange SST 2.x Hands-on Guide"/>
+<meta name="twitter:description" content="这篇文章带大家以最小方式，快速趟一下 Nebula Exchange 中 SST 写入方式的步骤。"/>
+<meta name="application-name" content="siwei.io">
+<meta name="apple-mobile-web-app-title" content="siwei.io">
+
+<meta name="theme-color" content="#ffffff"><meta name="msapplication-TileColor" content="#da532c"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="canonical" href="https://siwei.io/nebula-exchange-sst-2.x/" /><link rel="prev" href="https://siwei.io/nebula-operator-kind/" /><link rel="stylesheet" href="/lib/normalize/normalize.min.css"><link rel="stylesheet" href="/css/style.min.css"><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/fontawesome-free/all.min.css">
+    <noscript><link rel="stylesheet" href="/lib/fontawesome-free/all.min.css"></noscript><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/animate/animate.min.css">
+    <noscript><link rel="stylesheet" href="/lib/animate/animate.min.css"></noscript><meta name="baidu-site-verification" content="code-4R67zl7SwH" /><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "Nebula Exchange SST 2.x Hands-on Guide",
+        "inLanguage": "zh-CN",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "https:\/\/siwei.io\/nebula-exchange-sst-2.x\/"
+        },"image": ["https:\/\/siwei.io\/images\/site-feature-image.webp"],"genre": "posts","keywords": "Nebula Graph, Nebula Exchange, SST","wordcount":  3536 ,
+        "url": "https:\/\/siwei.io\/nebula-exchange-sst-2.x\/","datePublished": "2021-08-18T15:21:00+08:00","dateModified": "2021-08-18T15:21:00+08:00","publisher": {
+            "@type": "Organization",
+            "name": ""},"author": {
+                "@type": "Person",
+                "name": "Wey Gu"
+            },"description": "这篇文章带大家以最小方式，快速趟一下 Nebula Exchange 中 SST 写入方式的步骤。"
+    }
+    </script></head>
+
+<body header-desktop="fixed" header-mobile="auto"><script type="text/javascript">
+        function setTheme(theme) {document.body.setAttribute('theme', theme);}
+        function saveTheme(theme) {window.localStorage && localStorage.setItem('theme', theme);}
+        function getMeta(metaName) {const metas = document.getElementsByTagName('meta'); for (let i = 0; i < metas.length; i++) if (metas[i].getAttribute('name') === metaName) return metas[i]; return '';}
+        if (window.localStorage && localStorage.getItem('theme')) {let theme = localStorage.getItem('theme');theme === 'light' || theme === 'dark' || theme === 'black' ? setTheme(theme) : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light')); } else { if ('auto' === 'light' || 'auto' === 'dark' || 'auto' === 'black') setTheme('auto'), saveTheme('auto'); else saveTheme('auto'), window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light');}
+        let themeColorMeta = getMeta('theme-color');
+        if (document.body.getAttribute('theme') != 'light') themeColorMeta.content = '#000000';
+    </script>
+    <div id="back-to-top"></div>
+    <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/" title="siwei.io"><span class="header-title-pre"><i class="fas fa-code-branch"></i></span>siwei.io</a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="/about/"> 关于 </a><a class="menu-item" href="/projects/"> 项目 </a><a class="menu-item" href="/sketch-notes/"> 手绘 </a><a class="menu-item" href="/posts/"> 博客 </a><a class="menu-item" href="/talk/"> 演讲 </a><a class="menu-item" href="/cources/"> 课程 </a><a class="menu-item" href="https://vesoft.com/cn/careers/" rel="noopener noreffer" target="_blank"> 招聘 </a><a class="menu-item" href="/about/#%E8%81%94%E7%B3%BB%E6%88%91"> 联系 </a><span class="menu-item delimiter"></span><a href="#" onclick="return false;" class="menu-item language" title="选择语言">简体中文<i class="fas fa-chevron-right fa-fw"></i>
+                        <select class="language-select" title="Select Language" id="language-select-desktop" onchange="location = this.value;"><option value="/nebula-exchange-sst-2.x/" selected>简体中文</option></select>
+                    </a><span class="menu-item search" id="search-desktop">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-desktop">
+                        <a href="#" onclick="return false;" class="search-button search-toggle" id="search-toggle-desktop" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="#" onclick="return false;" class="search-button search-clear" id="search-clear-desktop" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-desktop">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </span><a href="#" onclick="return false;" class="menu-item theme-select" title="切换主题">
+                    <i class="fas fa-adjust fa-fw"></i>
+                    <select class="color-theme-select" id="theme-select-desktop" title="切换主题">
+                        <option value="light">浅色</option>
+                        <option value="dark">深色</option>
+                        <option value="black">黑色</option>
+                        <option value="auto">跟随系统</option>
+                    </select>
+                </a></div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="/" title="siwei.io"><span class="header-title-pre"><i class="fas fa-code-branch"></i></span>siwei.io</a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><div class="search-wrapper">
+                    <div class="search mobile" id="search-mobile">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-mobile">
+                        <a href="#" onclick="return false;" class="search-button search-toggle" id="search-toggle-mobile" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="#" onclick="return false;" class="search-button search-clear" id="search-clear-mobile" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-mobile">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </div>
+                    <a href="#" onclick="return false;" class="search-cancel" id="search-cancel-mobile">
+                        取消
+                    </a>
+                </div><a class="menu-item" href="/about/" title="">关于</a><a class="menu-item" href="/projects/" title="">项目</a><a class="menu-item" href="/sketch-notes/" title="">手绘</a><a class="menu-item" href="/posts/" title="">博客</a><a class="menu-item" href="/talk/" title="">演讲</a><a class="menu-item" href="/cources/" title="">课程</a><a class="menu-item" href="https://vesoft.com/cn/careers/" title="" rel="noopener noreffer" target="_blank">招聘</a><a class="menu-item" href="/about/#%E8%81%94%E7%B3%BB%E6%88%91" title="">联系</a><a href="#" onclick="return false;" class="menu-item theme-select" title="切换主题">
+                <i class="fas fa-adjust fa-fw"></i>
+                <select class="color-theme-select" id="theme-select-mobile" title="切换主题">
+                    <option value="light">浅色</option>
+                    <option value="dark">深色</option>
+                    <option value="black">黑色</option>
+                    <option value="auto">跟随系统</option>
+                </select>
+            </a><a href="#" onclick="return false;" class="menu-item" title="选择语言">简体中文<i class="fas fa-chevron-right fa-fw"></i>
+                    <select class="language-select" title="Select Language" onchange="location = this.value;"><option value="/nebula-exchange-sst-2.x/" selected>简体中文</option></select>
+                </a></div>
+    </div>
 </header>
 <div class="search-dropdown desktop">
-<div id=search-dropdown-desktop></div>
+    <div id="search-dropdown-desktop"></div>
 </div>
 <div class="search-dropdown mobile">
-<div id=search-dropdown-mobile></div>
+    <div id="search-dropdown-mobile"></div>
 </div>
-<main class=main>
-<div class=container><div class=toc id=toc-auto>
-<h2 class=toc-title>目录</h2>
-<div class="toc-content always-active" id=toc-content-auto></div>
-</div><script>document.getElementsByTagName("main")[0].setAttribute("pageStyle","normal")</script><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC","true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Nebula Exchange SST 2.x Hands-on Guide</h1><div class=post-meta>
-<div class=post-meta-line>
-<span class=post-author><i class="author fas fa-user-circle fa-fw"></i><a href=https://siwei.io title=Author target=_blank rel="noopener noreffer author" class=author>Wey Gu</a>
-</span>&nbsp;<span class=post-category>收录于 </span>&nbsp;<span class=post-category>类别 <a href=/categories/nebula-graph/><i class="far fa-folder fa-fw"></i>Nebula Graph</a></span></div>
-<div class=post-meta-line><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime=2021-08-18>2021-08-18</time>&nbsp;<i class="far fa-edit fa-fw"></i>&nbsp;<time datetime=2021-08-18>2021-08-18</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;约 3536 字&nbsp;
-<i class="far fa-clock fa-fw"></i>&nbsp;预计阅读 8 分钟&nbsp;<span id=/nebula-exchange-sst-2.x/ class=leancloud_visitors data-flag-title="Nebula Exchange SST 2.x Hands-on Guide">
-<i class="far fa-eye fa-fw"></i>&nbsp;<span class=leancloud-visitors-count></span>&nbsp;次阅读
-</span>&nbsp;</div>
-</div><div class=featured-image><img class=lazyload data-src=/nebula-exchange-sst-2.x/featured-image.webp data-srcset="/nebula-exchange-sst-2.x/featured-image.webp, /nebula-exchange-sst-2.x/featured-image.webp 1.5x, /nebula-exchange-sst-2.x/featured-image.webp 2x" data-sizes=auto alt=/nebula-exchange-sst-2.x/featured-image.webp title="这篇文章带大家以最小方式，快速趟一下 Nebula Exchange 中 SST 写入方式的步骤。" height=900 width=1738></div><div class="details toc" id=toc-static kept>
-<div class="details-summary toc-title">
-<span>目录</span>
-<span><i class="details-icon fas fa-angle-right"></i></span>
-</div>
-<div class="details-content toc-content" id=toc-content-static><nav id=TableOfContents>
-<ul>
-<li>
-<ul>
-<li><a href=#什么是-nebula-exchange->什么是 Nebula Exchange ?</a></li>
-<li><a href=#步骤概观>步骤概观</a></li>
-<li><a href=#实验环境准备>实验环境准备</a>
-<ul>
-<li><a href=#1-搭建-nebula-graph-集群>1. 搭建 Nebula Graph 集群</a></li>
-<li><a href=#2-搭建容器化的-spark-环境>2. 搭建容器化的 Spark 环境</a></li>
-<li><a href=#3-搭建容器化的-hdfs>3. 搭建容器化的 HDFS</a></li>
-</ul>
-</li>
-<li><a href=#配置exchange>配置Exchange</a></li>
-<li><a href=#生成sst文件>生成SST文件</a>
-<ul>
-<li><a href=#1-准备源文件配置文件>1. 准备源文件、配置文件</a></li>
-<li><a href=#2-执行-exchange-程序>2. 执行 exchange 程序</a></li>
-</ul>
-</li>
-<li><a href=#写入sst到nebulagraph>写入SST到NebulaGraph</a>
-<ul>
-<li><a href=#1-手动下载>1. 手动下载</a></li>
-<li><a href=#2-sst-文件导入>2. SST 文件导入</a></li>
-</ul>
-</li>
-<li><a href=#附录>附录</a>
-<ul>
-<li><a href=#附录一>附录一</a></li>
-<li><a href=#附录二>附录二</a></li>
-<li><a href=#附录三>附录三</a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
+<main class="main">
+            <div class="container"><div class="toc" id="toc-auto">
+        <h2 class="toc-title">目录</h2>
+        <div class="toc-content always-active" id="toc-content-auto"></div>
+    </div><script>document.getElementsByTagName("main")[0].setAttribute("pageStyle", "normal")</script><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC", "true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Nebula Exchange SST 2.x Hands-on Guide</h1><div class="post-meta">
+            <div class="post-meta-line">
+                <span class="post-author"><i class="author fas fa-user-circle fa-fw"></i><a href="https://siwei.io" title="Author" target="_blank" rel="noopener noreffer author" class="author">Wey Gu</a>
+                </span>&nbsp;<span class="post-category">收录于 </span>&nbsp;<span class="post-category">类别 <a href="/categories/nebula-graph/"><i class="far fa-folder fa-fw"></i>Nebula Graph</a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime="2021-08-18">2021-08-18</time>&nbsp;<i class="far fa-edit fa-fw"></i>&nbsp;<time datetime="2021-08-18">2021-08-18</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;约 3536 字&nbsp;
+                <i class="far fa-clock fa-fw"></i>&nbsp;预计阅读 8 分钟&nbsp;<span id="/nebula-exchange-sst-2.x/" class="leancloud_visitors" data-flag-title="Nebula Exchange SST 2.x Hands-on Guide">
+                        <i class="far fa-eye fa-fw"></i>&nbsp;<span class=leancloud-visitors-count></span>&nbsp;次阅读
+                    </span>&nbsp;</div>
+        </div><div class="featured-image"><img
+        class="lazyload"
+        data-src="/nebula-exchange-sst-2.x/featured-image.webp"
+        data-srcset="/nebula-exchange-sst-2.x/featured-image.webp, /nebula-exchange-sst-2.x/featured-image.webp 1.5x, /nebula-exchange-sst-2.x/featured-image.webp 2x"
+        data-sizes="auto"
+        alt="/nebula-exchange-sst-2.x/featured-image.webp"
+        title="这篇文章带大家以最小方式，快速趟一下 Nebula Exchange 中 SST 写入方式的步骤。" height="900" width="1738"
+    /></div><div class="details toc" id="toc-static"  kept="">
+                <div class="details-summary toc-title">
+                    <span>目录</span>
+                    <span><i class="details-icon fas fa-angle-right"></i></span>
+                </div>
+                <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#什么是-nebula-exchange-">什么是 Nebula Exchange ?</a></li>
+        <li><a href="#步骤概观">步骤概观</a></li>
+        <li><a href="#实验环境准备">实验环境准备</a>
+          <ul>
+            <li><a href="#1-搭建-nebula-graph-集群">1. 搭建 Nebula Graph 集群</a></li>
+            <li><a href="#2-搭建容器化的-spark-环境">2. 搭建容器化的 Spark 环境</a></li>
+            <li><a href="#3-搭建容器化的-hdfs">3. 搭建容器化的 HDFS</a></li>
+          </ul>
+        </li>
+        <li><a href="#配置exchange">配置Exchange</a></li>
+        <li><a href="#生成sst文件">生成SST文件</a>
+          <ul>
+            <li><a href="#1-准备源文件配置文件">1. 准备源文件、配置文件</a></li>
+            <li><a href="#2-执行-exchange-程序">2. 执行 exchange 程序</a></li>
+          </ul>
+        </li>
+        <li><a href="#写入sst到nebulagraph">写入SST到NebulaGraph</a>
+          <ul>
+            <li><a href="#1-手动下载">1. 手动下载</a></li>
+            <li><a href="#2-sst-文件导入">2. SST 文件导入</a></li>
+          </ul>
+        </li>
+        <li><a href="#附录">附录</a>
+          <ul>
+            <li><a href="#附录一">附录一</a></li>
+            <li><a href="#附录二">附录二</a></li>
+            <li><a href="#附录三">附录三</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
 </nav></div>
-</div><div class=content id=content><p>这篇文章带大家以最小方式，快速趟一下 Nebula Exchange 中 SST 写入方式的步骤。</p>
-<h2 id=什么是-nebula-exchange->什么是 Nebula Exchange ?</h2>
-<p>之前我在 <a href=https://siwei.io/sketches/nebula-data-import-options/ target=_blank rel="noopener noreffer">Nebula Data Import Options</a> 之中介绍过，<a href=https://github.com/vesoft-inc/nebula-spark-utils/tree/master/nebula-exchange target=_blank rel="noopener noreffer">Nebula Exchange</a> 是一个 Nebula Graph 社区开源的 Spark Applicaiton，它专门用来支持批量或者流式地把数据导入 Nebula Graph Database 之中。</p>
+            </div><div class="content" id="content"><p>这篇文章带大家以最小方式，快速趟一下 Nebula Exchange 中 SST 写入方式的步骤。</p>
+<h2 id="什么是-nebula-exchange-">什么是 Nebula Exchange ?</h2>
+<p>之前我在 <a href="https://siwei.io/sketches/nebula-data-import-options/" target="_blank" rel="noopener noreffer">Nebula Data Import Options</a> 之中介绍过，<a href="https://github.com/vesoft-inc/nebula-spark-utils/tree/master/nebula-exchange" target="_blank" rel="noopener noreffer">Nebula Exchange</a> 是一个 Nebula Graph 社区开源的 Spark Applicaiton，它专门用来支持批量或者流式地把数据导入 Nebula Graph Database 之中。</p>
 <p>Nebula Exchange 支持多种多样的数据源（从 Apache Parquet, ORC, JSON, CSV, HBase, Hive MaxCompute 到 Neo4j, MySQL, ClickHouse, 再有 Kafka, Pulsar，更多的数据源也在不断增加之中）。</p>
-<p><img class=lazyload data-src=./nebula-exchange-digram.webp data-srcset="./nebula-exchange-digram.webp, ./nebula-exchange-digram.webp 1.5x, ./nebula-exchange-digram.webp 2x" data-sizes=auto alt=./nebula-exchange-digram.webp title=nebula-exchange-digram></p>
+<p><img
+        class="lazyload"
+        data-src="./nebula-exchange-digram.webp"
+        data-srcset="./nebula-exchange-digram.webp, ./nebula-exchange-digram.webp 1.5x, ./nebula-exchange-digram.webp 2x"
+        data-sizes="auto"
+        alt="./nebula-exchange-digram.webp"
+        title="nebula-exchange-digram"
+    /></p>
 <p>如上图所示，在 Exchange 内部，从除了不同 Reader 可以读取不同数据源之外，在数据经过 Processor 处理之后通过 Writer写入（sink） Nebula Graph 图数据库的时候，除了走正常的 ServerBaseWriter 的写入流程之外，它还可以绕过整个写入流程，利用 Spark 的计算能力并行生成底层 RocksDB 的 SST 文件，从而实现超高性能的数据导入，这个 SST 文件导入的场景就是本文带大家上手熟悉的部分。</p>
 <blockquote>
-<p>详细信息请参阅：<a href=https://docs.nebula-graph.com.cn/master/nebula-exchange/about-exchange/ex-ug-what-is-exchange/ target=_blank rel="noopener noreffer">Nebula Graph 手册:什么是 Nebula Exchange</a></p>
-<p><a href=https://nebula-graph.com.cn/posts/ target=_blank rel="noopener noreffer">Nebula Graph 官方博客</a>也有更多 Nebula Exchange 的实践文章</p>
+<p>详细信息请参阅：<a href="https://docs.nebula-graph.com.cn/master/nebula-exchange/about-exchange/ex-ug-what-is-exchange/" target="_blank" rel="noopener noreffer">Nebula Graph 手册:什么是 Nebula Exchange</a></p>
+<p><a href="https://nebula-graph.com.cn/posts/" target="_blank" rel="noopener noreffer">Nebula Graph 官方博客</a>也有更多 Nebula Exchange 的实践文章</p>
 </blockquote>
-<h2 id=步骤概观>步骤概观</h2>
+<h2 id="步骤概观">步骤概观</h2>
 <ul>
-<li><a href=#%e5%ae%9e%e9%aa%8c%e7%8e%af%e5%a2%83%e5%87%86%e5%a4%87 rel>实验环境</a></li>
-<li><a href=#%e9%85%8d%e7%bd%aeExchange rel>配置 Exchange</a></li>
-<li><a href=#%e7%94%9f%e6%88%90SST%e6%96%87%e4%bb%b6 rel>生成 SST 文件</a></li>
-<li><a href=#%e5%86%99%e5%85%a5SST%e6%96%87%e4%bb%b6%e5%88%b0NebulaGraph rel>写入 SST 文件到 Nebula Graph</a></li>
+<li><a href="#%e5%ae%9e%e9%aa%8c%e7%8e%af%e5%a2%83%e5%87%86%e5%a4%87" rel="">实验环境</a></li>
+<li><a href="#%e9%85%8d%e7%bd%aeExchange" rel="">配置 Exchange</a></li>
+<li><a href="#%e7%94%9f%e6%88%90SST%e6%96%87%e4%bb%b6" rel="">生成 SST 文件</a></li>
+<li><a href="#%e5%86%99%e5%85%a5SST%e6%96%87%e4%bb%b6%e5%88%b0NebulaGraph" rel="">写入 SST 文件到 Nebula Graph</a></li>
 </ul>
-<h2 id=实验环境准备>实验环境准备</h2>
+<h2 id="实验环境准备">实验环境准备</h2>
 <p>为了最小化使用 Nebula Exchange 的 SST 功能，我们需要：</p>
 <ul>
-<li>搭建一个 Nebula Graph 集群，创建导入数据的 Schema，我们选择使用 Docker-Compose 方式、利用 <a href=https://github.com/wey-gu/nebula-up/ target=_blank rel="noopener noreffer">Nebula-Up</a> 快速部署，并简单修改其网络，以方便同样容器化的 Exchange 程序对其访问。</li>
+<li>搭建一个 Nebula Graph 集群，创建导入数据的 Schema，我们选择使用 Docker-Compose 方式、利用 <a href="https://github.com/wey-gu/nebula-up/" target="_blank" rel="noopener noreffer">Nebula-Up</a> 快速部署，并简单修改其网络，以方便同样容器化的 Exchange 程序对其访问。</li>
 <li>搭建容器化的 Spark 运行环境</li>
 <li>搭建容器化的 HDFS</li>
 </ul>
-<h3 id=1-搭建-nebula-graph-集群>1. 搭建 Nebula Graph 集群</h3>
-<p>借助于 <a href=https://github.com/wey-gu/nebula-up/ target=_blank rel="noopener noreffer">Nebula-Up</a> 我们可以在 Linux 环境下一键部署一套 Nebula Graph 集群：</p>
-<div class=highlight><div class=chroma>
-<table class=lntable><tr><td class=lntd>
-<pre tabindex=0 class=chroma><code><span class=lnt>1
+<h3 id="1-搭建-nebula-graph-集群">1. 搭建 Nebula Graph 集群</h3>
+<p>借助于 <a href="https://github.com/wey-gu/nebula-up/" target="_blank" rel="noopener noreffer">Nebula-Up</a> 我们可以在 Linux 环境下一键部署一套 Nebula Graph 集群：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
-<td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-bash data-lang=bash>curl -fsSL nebula-up.siwei.io/install.sh <span class=p>|</span> bash
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">curl -fsSL nebula-up.siwei.io/install.sh <span class="p">|</span> bash
 </code></pre></td></tr></table>
 </div>
-</div><p><img class=lazyload data-src=https://github.com/wey-gu/nebula-up/raw/main/images/nebula-up-demo-shell.png data-srcset="https://github.com/wey-gu/nebula-up/raw/main/images/nebula-up-demo-shell.png, https://github.com/wey-gu/nebula-up/raw/main/images/nebula-up-demo-shell.png 1.5x, https://github.com/wey-gu/nebula-up/raw/main/images/nebula-up-demo-shell.png 2x" data-sizes=auto alt=https://github.com/wey-gu/nebula-up/raw/main/images/nebula-up-demo-shell.png title=nebula-up></p>
+</div><p><img
+        class="lazyload"
+        data-src="https://github.com/wey-gu/nebula-up/raw/main/images/nebula-up-demo-shell.png"
+        data-srcset="https://github.com/wey-gu/nebula-up/raw/main/images/nebula-up-demo-shell.png, https://github.com/wey-gu/nebula-up/raw/main/images/nebula-up-demo-shell.png 1.5x, https://github.com/wey-gu/nebula-up/raw/main/images/nebula-up-demo-shell.png 2x"
+        data-sizes="auto"
+        alt="https://github.com/wey-gu/nebula-up/raw/main/images/nebula-up-demo-shell.png"
+        title="nebula-up"
+    /></p>
 <p>待部署成功之后，我们需要对环境做一些修改，这里我做的修改其实就是两点：</p>
 <ol>
 <li>只保留一个 metaD 服务</li>
 <li>起用 Docker 的外部网络</li>
 </ol>
-<p>详细修改的部分参考<a href=#%e9%99%84%e5%bd%95%e4%b8%80 rel>附录一</a></p>
+<p>详细修改的部分参考<a href="#%e9%99%84%e5%bd%95%e4%b8%80" rel="">附录一</a></p>
 <p>应用 docker-compose 的修改：</p>
-<div class=highlight><div class=chroma>
-<table class=lntable><tr><td class=lntd>
-<pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span><span class=lnt>3
-</span><span class=lnt>4
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
 </span></code></pre></td>
-<td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=nb>cd</span> ~/.nebula-up/nebula-docker-compose
-vim docker-compose.yaml <span class=c1># 参考附录一</span>
-docker network create nebula-net <span class=c1># 需要创建外部网络</span>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="nb">cd</span> ~/.nebula-up/nebula-docker-compose
+vim docker-compose.yaml <span class="c1"># 参考附录一</span>
+docker network create nebula-net <span class="c1"># 需要创建外部网络</span>
 docker-compose up -d --remove-orphans
 </code></pre></td></tr></table>
 </div>
@@ -201,28 +261,28 @@ docker-compose up -d --remove-orphans
 <ul>
 <li>进入 Nebula-Console 所在的容器</li>
 </ul>
-<div class=highlight><div class=chroma>
-<table class=lntable><tr><td class=lntd>
-<pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
 </span></code></pre></td>
-<td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-bash data-lang=bash>~/.nebula-up/console.sh
-/ <span class=c1>#</span>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">~/.nebula-up/console.sh
+/ <span class="c1">#</span>
 </code></pre></td></tr></table>
 </div>
 </div><ul>
 <li>在 console 容器里发起链接到图数据库，其中 <code>192.168.x.y</code> 是我所在的 Linux VM 的第一个网卡地址，请换成您的</li>
 </ul>
-<div class=highlight><div class=chroma>
-<table class=lntable><tr><td class=lntd>
-<pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span><span class=lnt>3
-</span><span class=lnt>4
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
 </span></code></pre></td>
-<td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback>/ # nebula-console -addr 192.168.x.y -port 9669 -user root -p password
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">/ # nebula-console -addr 192.168.x.y -port 9669 -user root -p password
 [INFO] connection pool is initialized successfully
 
 Welcome to Nebula Graph!
@@ -231,135 +291,135 @@ Welcome to Nebula Graph!
 </div><ul>
 <li>创建图空间（我们起名字叫 <code>sst</code> ），以及 schema</li>
 </ul>
-<div class=highlight><div class=chroma>
-<table class=lntable><tr><td class=lntd>
-<pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span><span class=lnt>3
-</span><span class=lnt>4
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
 </span></code></pre></td>
-<td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-sql data-lang=sql><span class=k>create</span><span class=w> </span><span class=k>space</span><span class=w> </span><span class=n>sst</span><span class=p>(</span><span class=n>partition_num</span><span class=o>=</span><span class=mi>5</span><span class=p>,</span><span class=n>replica_factor</span><span class=o>=</span><span class=mi>1</span><span class=p>,</span><span class=n>vid_type</span><span class=o>=</span><span class=n>fixed_string</span><span class=p>(</span><span class=mi>32</span><span class=p>));</span><span class=w>
-</span><span class=w></span><span class=p>:</span><span class=n>sleep</span><span class=w> </span><span class=mi>20</span><span class=w>
-</span><span class=w></span><span class=n>use</span><span class=w> </span><span class=n>sst</span><span class=w>
-</span><span class=w></span><span class=k>create</span><span class=w> </span><span class=n>tag</span><span class=w> </span><span class=n>player</span><span class=p>(</span><span class=n>name</span><span class=w> </span><span class=n>string</span><span class=p>,</span><span class=w> </span><span class=n>age</span><span class=w> </span><span class=nb>int</span><span class=p>);</span><span class=w>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="k">create</span><span class="w"> </span><span class="k">space</span><span class="w"> </span><span class="n">sst</span><span class="p">(</span><span class="n">partition_num</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span><span class="n">replica_factor</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">vid_type</span><span class="o">=</span><span class="n">fixed_string</span><span class="p">(</span><span class="mi">32</span><span class="p">));</span><span class="w">
+</span><span class="w"></span><span class="p">:</span><span class="n">sleep</span><span class="w"> </span><span class="mi">20</span><span class="w">
+</span><span class="w"></span><span class="n">use</span><span class="w"> </span><span class="n">sst</span><span class="w">
+</span><span class="w"></span><span class="k">create</span><span class="w"> </span><span class="n">tag</span><span class="w"> </span><span class="n">player</span><span class="p">(</span><span class="n">name</span><span class="w"> </span><span class="n">string</span><span class="p">,</span><span class="w"> </span><span class="n">age</span><span class="w"> </span><span class="nb">int</span><span class="p">);</span><span class="w">
 </span></code></pre></td></tr></table>
 </div>
 </div><p>示例输出</p>
-<div class=highlight><div class=chroma>
-<table class=lntable><tr><td class=lntd>
-<pre tabindex=0 class=chroma><code><span class=lnt> 1
-</span><span class=lnt> 2
-</span><span class=lnt> 3
-</span><span class=lnt> 4
-</span><span class=lnt> 5
-</span><span class=lnt> 6
-</span><span class=lnt> 7
-</span><span class=lnt> 8
-</span><span class=lnt> 9
-</span><span class=lnt>10
-</span><span class=lnt>11
-</span><span class=lnt>12
-</span><span class=lnt>13
-</span><span class=lnt>14
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
 </span></code></pre></td>
-<td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-sql data-lang=sql><span class=p>(</span><span class=n>root</span><span class=o>@</span><span class=n>nebula</span><span class=p>)</span><span class=w> </span><span class=p>[(</span><span class=k>none</span><span class=p>)]</span><span class=o>&gt;</span><span class=w> </span><span class=k>create</span><span class=w> </span><span class=k>space</span><span class=w> </span><span class=n>sst</span><span class=p>(</span><span class=n>partition_num</span><span class=o>=</span><span class=mi>5</span><span class=p>,</span><span class=n>replica_factor</span><span class=o>=</span><span class=mi>1</span><span class=p>,</span><span class=n>vid_type</span><span class=o>=</span><span class=n>fixed_string</span><span class=p>(</span><span class=mi>32</span><span class=p>));</span><span class=w>
-</span><span class=w></span><span class=n>Execution</span><span class=w> </span><span class=n>succeeded</span><span class=w> </span><span class=p>(</span><span class=n>time</span><span class=w> </span><span class=n>spent</span><span class=w> </span><span class=mi>1468</span><span class=o>/</span><span class=mi>1918</span><span class=w> </span><span class=n>us</span><span class=p>)</span><span class=w>
-</span><span class=w>
-</span><span class=w></span><span class=p>(</span><span class=n>root</span><span class=o>@</span><span class=n>nebula</span><span class=p>)</span><span class=w> </span><span class=p>[(</span><span class=k>none</span><span class=p>)]</span><span class=o>&gt;</span><span class=w> </span><span class=p>:</span><span class=n>sleep</span><span class=w> </span><span class=mi>20</span><span class=w>
-</span><span class=w>
-</span><span class=w></span><span class=p>(</span><span class=n>root</span><span class=o>@</span><span class=n>nebula</span><span class=p>)</span><span class=w> </span><span class=p>[(</span><span class=k>none</span><span class=p>)]</span><span class=o>&gt;</span><span class=w> </span><span class=n>use</span><span class=w> </span><span class=n>sst</span><span class=w>
-</span><span class=w></span><span class=n>Execution</span><span class=w> </span><span class=n>succeeded</span><span class=w> </span><span class=p>(</span><span class=n>time</span><span class=w> </span><span class=n>spent</span><span class=w> </span><span class=mi>1253</span><span class=o>/</span><span class=mi>1566</span><span class=w> </span><span class=n>us</span><span class=p>)</span><span class=w>
-</span><span class=w>
-</span><span class=w></span><span class=n>Wed</span><span class=p>,</span><span class=w> </span><span class=mi>18</span><span class=w> </span><span class=n>Aug</span><span class=w> </span><span class=mi>2021</span><span class=w> </span><span class=mi>08</span><span class=p>:</span><span class=mi>18</span><span class=p>:</span><span class=mi>13</span><span class=w> </span><span class=n>UTC</span><span class=w>
-</span><span class=w>
-</span><span class=w></span><span class=p>(</span><span class=n>root</span><span class=o>@</span><span class=n>nebula</span><span class=p>)</span><span class=w> </span><span class=p>[</span><span class=n>sst</span><span class=p>]</span><span class=o>&gt;</span><span class=w> </span><span class=k>create</span><span class=w> </span><span class=n>tag</span><span class=w> </span><span class=n>player</span><span class=p>(</span><span class=n>name</span><span class=w> </span><span class=n>string</span><span class=p>,</span><span class=w> </span><span class=n>age</span><span class=w> </span><span class=nb>int</span><span class=p>);</span><span class=w>
-</span><span class=w></span><span class=n>Execution</span><span class=w> </span><span class=n>succeeded</span><span class=w> </span><span class=p>(</span><span class=n>time</span><span class=w> </span><span class=n>spent</span><span class=w> </span><span class=mi>1312</span><span class=o>/</span><span class=mi>1735</span><span class=w> </span><span class=n>us</span><span class=p>)</span><span class=w>
-</span><span class=w>
-</span><span class=w></span><span class=n>Wed</span><span class=p>,</span><span class=w> </span><span class=mi>18</span><span class=w> </span><span class=n>Aug</span><span class=w> </span><span class=mi>2021</span><span class=w> </span><span class=mi>08</span><span class=p>:</span><span class=mi>18</span><span class=p>:</span><span class=mi>23</span><span class=w> </span><span class=n>UTC</span><span class=w>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="p">(</span><span class="n">root</span><span class="o">@</span><span class="n">nebula</span><span class="p">)</span><span class="w"> </span><span class="p">[(</span><span class="k">none</span><span class="p">)]</span><span class="o">&gt;</span><span class="w"> </span><span class="k">create</span><span class="w"> </span><span class="k">space</span><span class="w"> </span><span class="n">sst</span><span class="p">(</span><span class="n">partition_num</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span><span class="n">replica_factor</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">vid_type</span><span class="o">=</span><span class="n">fixed_string</span><span class="p">(</span><span class="mi">32</span><span class="p">));</span><span class="w">
+</span><span class="w"></span><span class="n">Execution</span><span class="w"> </span><span class="n">succeeded</span><span class="w"> </span><span class="p">(</span><span class="n">time</span><span class="w"> </span><span class="n">spent</span><span class="w"> </span><span class="mi">1468</span><span class="o">/</span><span class="mi">1918</span><span class="w"> </span><span class="n">us</span><span class="p">)</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="p">(</span><span class="n">root</span><span class="o">@</span><span class="n">nebula</span><span class="p">)</span><span class="w"> </span><span class="p">[(</span><span class="k">none</span><span class="p">)]</span><span class="o">&gt;</span><span class="w"> </span><span class="p">:</span><span class="n">sleep</span><span class="w"> </span><span class="mi">20</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="p">(</span><span class="n">root</span><span class="o">@</span><span class="n">nebula</span><span class="p">)</span><span class="w"> </span><span class="p">[(</span><span class="k">none</span><span class="p">)]</span><span class="o">&gt;</span><span class="w"> </span><span class="n">use</span><span class="w"> </span><span class="n">sst</span><span class="w">
+</span><span class="w"></span><span class="n">Execution</span><span class="w"> </span><span class="n">succeeded</span><span class="w"> </span><span class="p">(</span><span class="n">time</span><span class="w"> </span><span class="n">spent</span><span class="w"> </span><span class="mi">1253</span><span class="o">/</span><span class="mi">1566</span><span class="w"> </span><span class="n">us</span><span class="p">)</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="n">Wed</span><span class="p">,</span><span class="w"> </span><span class="mi">18</span><span class="w"> </span><span class="n">Aug</span><span class="w"> </span><span class="mi">2021</span><span class="w"> </span><span class="mi">08</span><span class="p">:</span><span class="mi">18</span><span class="p">:</span><span class="mi">13</span><span class="w"> </span><span class="n">UTC</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="p">(</span><span class="n">root</span><span class="o">@</span><span class="n">nebula</span><span class="p">)</span><span class="w"> </span><span class="p">[</span><span class="n">sst</span><span class="p">]</span><span class="o">&gt;</span><span class="w"> </span><span class="k">create</span><span class="w"> </span><span class="n">tag</span><span class="w"> </span><span class="n">player</span><span class="p">(</span><span class="n">name</span><span class="w"> </span><span class="n">string</span><span class="p">,</span><span class="w"> </span><span class="n">age</span><span class="w"> </span><span class="nb">int</span><span class="p">);</span><span class="w">
+</span><span class="w"></span><span class="n">Execution</span><span class="w"> </span><span class="n">succeeded</span><span class="w"> </span><span class="p">(</span><span class="n">time</span><span class="w"> </span><span class="n">spent</span><span class="w"> </span><span class="mi">1312</span><span class="o">/</span><span class="mi">1735</span><span class="w"> </span><span class="n">us</span><span class="p">)</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="n">Wed</span><span class="p">,</span><span class="w"> </span><span class="mi">18</span><span class="w"> </span><span class="n">Aug</span><span class="w"> </span><span class="mi">2021</span><span class="w"> </span><span class="mi">08</span><span class="p">:</span><span class="mi">18</span><span class="p">:</span><span class="mi">23</span><span class="w"> </span><span class="n">UTC</span><span class="w">
 </span></code></pre></td></tr></table>
 </div>
-</div><h3 id=2-搭建容器化的-spark-环境>2. 搭建容器化的 Spark 环境</h3>
+</div><h3 id="2-搭建容器化的-spark-环境">2. 搭建容器化的 Spark 环境</h3>
 <p>利用 big data europe 做的工作，这个过程非常容易。</p>
 <p>值得注意的是：</p>
 <ul>
 <li>现在的 Nebula Exchange 对 Spark 的版本有要求，在现在的 2021 年 8 月，我是用了 spark-2.4.5-hadoop-2.7 的版本。</li>
 <li>为了方便，我让 Spark 运行在 Nebula Graph 相同的机器上，并且指定了运行在同一个 Docker 网络下</li>
 </ul>
-<div class=highlight><div class=chroma>
-<table class=lntable><tr><td class=lntd>
-<pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span><span class=lnt>3
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
 </span></code></pre></td>
-<td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-bash data-lang=bash>docker run --name spark-master --network nebula-net <span class=se>\
-</span><span class=se></span>    -h spark-master -e <span class=nv>ENABLE_INIT_DAEMON</span><span class=o>=</span><span class=nb>false</span> -d <span class=se>\
-</span><span class=se></span>    bde2020/spark-master:2.4.5-hadoop2.7
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">docker run --name spark-master --network nebula-net <span class="se">\
+</span><span class="se"></span>    -h spark-master -e <span class="nv">ENABLE_INIT_DAEMON</span><span class="o">=</span><span class="nb">false</span> -d <span class="se">\
+</span><span class="se"></span>    bde2020/spark-master:2.4.5-hadoop2.7
 </code></pre></td></tr></table>
 </div>
 </div><p>然后，我们就可以进入到环境中了：</p>
-<div class=highlight><div class=chroma>
-<table class=lntable><tr><td class=lntd>
-<pre tabindex=0 class=chroma><code><span class=lnt>1
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
-<td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-bash data-lang=bash>docker <span class=nb>exec</span> -it spark-master bash
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">docker <span class="nb">exec</span> -it spark-master bash
 </code></pre></td></tr></table>
 </div>
 </div><p>进到 Spark 容器中之后，可以像这样安装 maven:</p>
-<div class=highlight><div class=chroma>
-<table class=lntable><tr><td class=lntd>
-<pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span><span class=lnt>3
-</span><span class=lnt>4
-</span><span class=lnt>5
-</span><span class=lnt>6
-</span><span class=lnt>7
-</span><span class=lnt>8
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
 </span></code></pre></td>
-<td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=nb>export</span> <span class=nv>MAVEN_VERSION</span><span class=o>=</span>3.5.4
-<span class=nb>export</span> <span class=nv>MAVEN_HOME</span><span class=o>=</span>/usr/lib/mvn
-<span class=nb>export</span> <span class=nv>PATH</span><span class=o>=</span><span class=nv>$MAVEN_HOME</span>/bin:<span class=nv>$PATH</span>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="nb">export</span> <span class="nv">MAVEN_VERSION</span><span class="o">=</span>3.5.4
+<span class="nb">export</span> <span class="nv">MAVEN_HOME</span><span class="o">=</span>/usr/lib/mvn
+<span class="nb">export</span> <span class="nv">PATH</span><span class="o">=</span><span class="nv">$MAVEN_HOME</span>/bin:<span class="nv">$PATH</span>
 
-wget http://archive.apache.org/dist/maven/maven-3/<span class=nv>$MAVEN_VERSION</span>/binaries/apache-maven-<span class=nv>$MAVEN_VERSION</span>-bin.tar.gz <span class=o>&amp;&amp;</span> <span class=se>\
-</span><span class=se></span>  tar -zxvf apache-maven-<span class=nv>$MAVEN_VERSION</span>-bin.tar.gz <span class=o>&amp;&amp;</span> <span class=se>\
-</span><span class=se></span>  rm apache-maven-<span class=nv>$MAVEN_VERSION</span>-bin.tar.gz <span class=o>&amp;&amp;</span> <span class=se>\
-</span><span class=se></span>  mv apache-maven-<span class=nv>$MAVEN_VERSION</span> /usr/lib/mvn
+wget http://archive.apache.org/dist/maven/maven-3/<span class="nv">$MAVEN_VERSION</span>/binaries/apache-maven-<span class="nv">$MAVEN_VERSION</span>-bin.tar.gz <span class="o">&amp;&amp;</span> <span class="se">\
+</span><span class="se"></span>  tar -zxvf apache-maven-<span class="nv">$MAVEN_VERSION</span>-bin.tar.gz <span class="o">&amp;&amp;</span> <span class="se">\
+</span><span class="se"></span>  rm apache-maven-<span class="nv">$MAVEN_VERSION</span>-bin.tar.gz <span class="o">&amp;&amp;</span> <span class="se">\
+</span><span class="se"></span>  mv apache-maven-<span class="nv">$MAVEN_VERSION</span> /usr/lib/mvn
 </code></pre></td></tr></table>
 </div>
 </div><p>还可以这样在容器里下载 nebula-exchange 的 <code>jar</code> 包：</p>
-<div class=highlight><div class=chroma>
-<table class=lntable><tr><td class=lntd>
-<pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
 </span></code></pre></td>
-<td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=nb>cd</span> ~
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="nb">cd</span> ~
 wget https://repo1.maven.org/maven2/com/vesoft/nebula-exchange/2.1.0/nebula-exchange-2.1.0.jar
 </code></pre></td></tr></table>
 </div>
-</div><h3 id=3-搭建容器化的-hdfs>3. 搭建容器化的 HDFS</h3>
+</div><h3 id="3-搭建容器化的-hdfs">3. 搭建容器化的 HDFS</h3>
 <p>同样借助 big-data-euroupe 的工作，这非常简单，不过我们要做一点修改，让它的 <code>docker-compose.yml</code> 文件里使用 <code>nebula-net</code> 这个之前创建的 Docker 网络。</p>
-<p>详细修改的部分参考<a href=#%e9%99%84%e5%bd%95%e4%ba%8c rel>附录二</a></p>
-<div class=highlight><div class=chroma>
-<table class=lntable><tr><td class=lntd>
-<pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span><span class=lnt>3
-</span><span class=lnt>4
+<p>详细修改的部分参考<a href="#%e9%99%84%e5%bd%95%e4%ba%8c" rel="">附录二</a></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
 </span></code></pre></td>
-<td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-bash data-lang=bash>git clone https://github.com/big-data-europe/docker-hadoop.git
-<span class=nb>cd</span> docker-hadoop
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">git clone https://github.com/big-data-europe/docker-hadoop.git
+<span class="nb">cd</span> docker-hadoop
 vim docker-compose.yml
 docker-compose up -d
 </code></pre></td></tr></table>
 </div>
-</div><h2 id=配置exchange>配置Exchange</h2>
+</div><h2 id="配置exchange">配置Exchange</h2>
 <p>这个配置主要填入的信息就是 Nebula Graph 集群本身和将要写入数据的 Space Name，以及数据源相关的配置（这里我们用 <code>csv</code> 作为例子），最后再配置输出（sink）为 <code>sst</code></p>
 <ul>
 <li>Nebula Graph
@@ -382,48 +442,48 @@ docker-compose up -d
 </ul>
 </li>
 </ul>
-<p>详细的配置参考<a href=#%e9%99%84%e5%bd%95%e4%ba%8c rel>附录二</a></p>
-<p>注意，这里 metaD 的地址可以这样获取，可以看到 <code>0.0.0.0:49377->9559</code> 表示 <code>49377</code> 是外部的地址。</p>
-<div class=highlight><div class=chroma>
-<table class=lntable><tr><td class=lntd>
-<pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
+<p>详细的配置参考<a href="#%e9%99%84%e5%bd%95%e4%ba%8c" rel="">附录二</a></p>
+<p>注意，这里 metaD 的地址可以这样获取，可以看到 <code>0.0.0.0:49377-&gt;9559</code> 表示 <code>49377</code> 是外部的地址。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
 </span></code></pre></td>
-<td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-bash data-lang=bash>$ docker ps <span class=p>|</span> grep meta
-887740c15750   vesoft/nebula-metad:v2.0.0                               <span class=s2>&#34;./bin/nebula-metad …&#34;</span>   <span class=m>6</span> hours ago    Up <span class=m>6</span> hours <span class=o>(</span>healthy<span class=o>)</span>    9560/tcp, 0.0.0.0:49377-&gt;9559/tcp, :::49377-&gt;9559/tcp, 0.0.0.0:49376-&gt;19559/tcp, :::49376-&gt;19559/tcp, 0.0.0.0:49375-&gt;19560/tcp, :::49375-&gt;19560/tcp                  nebula-docker-compose_metad0_1
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ docker ps <span class="p">|</span> grep meta
+887740c15750   vesoft/nebula-metad:v2.0.0                               <span class="s2">&#34;./bin/nebula-metad …&#34;</span>   <span class="m">6</span> hours ago    Up <span class="m">6</span> hours <span class="o">(</span>healthy<span class="o">)</span>    9560/tcp, 0.0.0.0:49377-&gt;9559/tcp, :::49377-&gt;9559/tcp, 0.0.0.0:49376-&gt;19559/tcp, :::49376-&gt;19559/tcp, 0.0.0.0:49375-&gt;19560/tcp, :::49375-&gt;19560/tcp                  nebula-docker-compose_metad0_1
 </code></pre></td></tr></table>
 </div>
-</div><h2 id=生成sst文件>生成SST文件</h2>
-<h3 id=1-准备源文件配置文件>1. 准备源文件、配置文件</h3>
-<div class=highlight><div class=chroma>
-<table class=lntable><tr><td class=lntd>
-<pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
+</div><h2 id="生成sst文件">生成SST文件</h2>
+<h3 id="1-准备源文件配置文件">1. 准备源文件、配置文件</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
 </span></code></pre></td>
-<td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-bash data-lang=bash>docker cp exchange-sst.conf spark-master:/root/
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">docker cp exchange-sst.conf spark-master:/root/
 docker cp player.csv spark-master:/root/
 </code></pre></td></tr></table>
 </div>
 </div><p>其中 <code>player.csv</code> 的例子：</p>
-<div class=highlight><div class=chroma>
-<table class=lntable><tr><td class=lntd>
-<pre tabindex=0 class=chroma><code><span class=lnt> 1
-</span><span class=lnt> 2
-</span><span class=lnt> 3
-</span><span class=lnt> 4
-</span><span class=lnt> 5
-</span><span class=lnt> 6
-</span><span class=lnt> 7
-</span><span class=lnt> 8
-</span><span class=lnt> 9
-</span><span class=lnt>10
-</span><span class=lnt>11
-</span><span class=lnt>12
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
 </span></code></pre></td>
-<td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback>1100,Tim Duncan,42
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">1100,Tim Duncan,42
 1101,Tony Parker,36
 1102,LaMarcus Aldridge,33
 1103,Rudy Gay,32
@@ -437,166 +497,166 @@ docker cp player.csv spark-master:/root/
 1111,David West,38
 </code></pre></td></tr></table>
 </div>
-</div><h3 id=2-执行-exchange-程序>2. 执行 exchange 程序</h3>
+</div><h3 id="2-执行-exchange-程序">2. 执行 exchange 程序</h3>
 <p>进入 <code>spark-master</code> 容器，提交执行 <code>exchange</code> 应用。</p>
-<div class=highlight><div class=chroma>
-<table class=lntable><tr><td class=lntd>
-<pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span><span class=lnt>3
-</span><span class=lnt>4
-</span><span class=lnt>5
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
 </span></code></pre></td>
-<td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-bash data-lang=bash>docker <span class=nb>exec</span> -it spark-master bash
-<span class=nb>cd</span> /root/
-/spark/bin/spark-submit --master <span class=nb>local</span> <span class=se>\
-</span><span class=se></span>    --class com.vesoft.nebula.exchange.Exchange nebula-exchange-2.1.0.jar<span class=se>\
-</span><span class=se></span>    -c exchange-sst.conf
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">docker <span class="nb">exec</span> -it spark-master bash
+<span class="nb">cd</span> /root/
+/spark/bin/spark-submit --master <span class="nb">local</span> <span class="se">\
+</span><span class="se"></span>    --class com.vesoft.nebula.exchange.Exchange nebula-exchange-2.1.0.jar<span class="se">\
+</span><span class="se"></span>    -c exchange-sst.conf
 </code></pre></td></tr></table>
 </div>
 </div><p>检查执行结果：</p>
 <p><code>spark-submit</code> 输出：</p>
-<div class=highlight><div class=chroma>
-<table class=lntable><tr><td class=lntd>
-<pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span><span class=lnt>3
-</span><span class=lnt>4
-</span><span class=lnt>5
-</span><span class=lnt>6
-</span><span class=lnt>7
-</span><span class=lnt>8
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
 </span></code></pre></td>
-<td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-bash data-lang=bash>21/08/17 03:37:43 INFO TaskSetManager: Finished task 31.0 in stage 2.0 <span class=o>(</span>TID 33<span class=o>)</span> in <span class=m>1093</span> ms on localhost <span class=o>(</span>executor driver<span class=o>)</span> <span class=o>(</span>32/32<span class=o>)</span>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">21/08/17 03:37:43 INFO TaskSetManager: Finished task 31.0 in stage 2.0 <span class="o">(</span>TID 33<span class="o">)</span> in <span class="m">1093</span> ms on localhost <span class="o">(</span>executor driver<span class="o">)</span> <span class="o">(</span>32/32<span class="o">)</span>
 21/08/17 03:37:43 INFO TaskSchedulerImpl: Removed TaskSet 2.0, whose tasks have all completed, from pool
-21/08/17 03:37:43 INFO DAGScheduler: ResultStage <span class=m>2</span> <span class=o>(</span>foreachPartition at VerticesProcessor.scala:179<span class=o>)</span> finished in 22.336 s
-21/08/17 03:37:43 INFO DAGScheduler: Job <span class=m>1</span> finished: foreachPartition at VerticesProcessor.scala:179, took 22.500639 s
-21/08/17 03:37:43 INFO Exchange$: SST-Import: failure.player: <span class=m>0</span>
+21/08/17 03:37:43 INFO DAGScheduler: ResultStage <span class="m">2</span> <span class="o">(</span>foreachPartition at VerticesProcessor.scala:179<span class="o">)</span> finished in 22.336 s
+21/08/17 03:37:43 INFO DAGScheduler: Job <span class="m">1</span> finished: foreachPartition at VerticesProcessor.scala:179, took 22.500639 s
+21/08/17 03:37:43 INFO Exchange$: SST-Import: failure.player: <span class="m">0</span>
 21/08/17 03:37:43 WARN Exchange$: Edge is not defined
 21/08/17 03:37:43 INFO SparkUI: Stopped Spark web UI at http://spark-master:4040
 21/08/17 03:37:43 INFO MapOutputTrackerMasterEndpoint: MapOutputTrackerMasterEndpoint stopped!
 </code></pre></td></tr></table>
 </div>
 </div><p>验证 HDFS 上生成的 SST 文件：</p>
-<div class=highlight><div class=chroma>
-<table class=lntable><tr><td class=lntd>
-<pre tabindex=0 class=chroma><code><span class=lnt> 1
-</span><span class=lnt> 2
-</span><span class=lnt> 3
-</span><span class=lnt> 4
-</span><span class=lnt> 5
-</span><span class=lnt> 6
-</span><span class=lnt> 7
-</span><span class=lnt> 8
-</span><span class=lnt> 9
-</span><span class=lnt>10
-</span><span class=lnt>11
-</span><span class=lnt>12
-</span><span class=lnt>13
-</span><span class=lnt>14
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
 </span></code></pre></td>
-<td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-bash data-lang=bash>docker <span class=nb>exec</span> -it namenode /bin/bash
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">docker <span class="nb">exec</span> -it namenode /bin/bash
 
 root@2db58903fb53:/# hdfs dfs -ls /sst
-Found <span class=m>10</span> items
-drwxr-xr-x   - root supergroup          <span class=m>0</span> 2021-08-17 03:37 /sst/1
-drwxr-xr-x   - root supergroup          <span class=m>0</span> 2021-08-17 03:37 /sst/10
-drwxr-xr-x   - root supergroup          <span class=m>0</span> 2021-08-17 03:37 /sst/2
-drwxr-xr-x   - root supergroup          <span class=m>0</span> 2021-08-17 03:37 /sst/3
-drwxr-xr-x   - root supergroup          <span class=m>0</span> 2021-08-17 03:37 /sst/4
-drwxr-xr-x   - root supergroup          <span class=m>0</span> 2021-08-17 03:37 /sst/5
-drwxr-xr-x   - root supergroup          <span class=m>0</span> 2021-08-17 03:37 /sst/6
-drwxr-xr-x   - root supergroup          <span class=m>0</span> 2021-08-17 03:37 /sst/7
-drwxr-xr-x   - root supergroup          <span class=m>0</span> 2021-08-17 03:37 /sst/8
-drwxr-xr-x   - root supergroup          <span class=m>0</span> 2021-08-17 03:37 /sst/9
+Found <span class="m">10</span> items
+drwxr-xr-x   - root supergroup          <span class="m">0</span> 2021-08-17 03:37 /sst/1
+drwxr-xr-x   - root supergroup          <span class="m">0</span> 2021-08-17 03:37 /sst/10
+drwxr-xr-x   - root supergroup          <span class="m">0</span> 2021-08-17 03:37 /sst/2
+drwxr-xr-x   - root supergroup          <span class="m">0</span> 2021-08-17 03:37 /sst/3
+drwxr-xr-x   - root supergroup          <span class="m">0</span> 2021-08-17 03:37 /sst/4
+drwxr-xr-x   - root supergroup          <span class="m">0</span> 2021-08-17 03:37 /sst/5
+drwxr-xr-x   - root supergroup          <span class="m">0</span> 2021-08-17 03:37 /sst/6
+drwxr-xr-x   - root supergroup          <span class="m">0</span> 2021-08-17 03:37 /sst/7
+drwxr-xr-x   - root supergroup          <span class="m">0</span> 2021-08-17 03:37 /sst/8
+drwxr-xr-x   - root supergroup          <span class="m">0</span> 2021-08-17 03:37 /sst/9
 </code></pre></td></tr></table>
 </div>
-</div><h2 id=写入sst到nebulagraph>写入SST到NebulaGraph</h2>
-<p>这里的操作实际上都是参考文档：<a href=https://docs.nebula-graph.com.cn/master/nebula-exchange/use-exchange/ex-ug-import-from-sst/ target=_blank rel="noopener noreffer">SST 导入</a>，得来。其中就是从 console 之中执行了两步操作：</p>
+</div><h2 id="写入sst到nebulagraph">写入SST到NebulaGraph</h2>
+<p>这里的操作实际上都是参考文档：<a href="https://docs.nebula-graph.com.cn/master/nebula-exchange/use-exchange/ex-ug-import-from-sst/" target="_blank" rel="noopener noreffer">SST 导入</a>，得来。其中就是从 console 之中执行了两步操作：</p>
 <ul>
 <li>Download</li>
 <li>Ingest</li>
 </ul>
 <p>其中 Download 实际上是触发 Nebula Graph 从服务端发起 HDFS Client 的 download，获取 HDFS 上的 SST 文件，然后放到 storageD 能访问的本地路径下，这里，需要我们在服务端部署 HDFS 的依赖。因为我们是最小实践，我就偷懒手动做了这个 Download 的操作。</p>
-<h3 id=1-手动下载>1. 手动下载</h3>
-<p>这里边手动下载我们就要知道 Nebula Graph 服务端下载的路径，实际上是 <code>/data/storage/nebula/&lt;space_id>/download/</code>，这里的 Space ID 需要手动获取一下：</p>
+<h3 id="1-手动下载">1. 手动下载</h3>
+<p>这里边手动下载我们就要知道 Nebula Graph 服务端下载的路径，实际上是 <code>/data/storage/nebula/&lt;space_id&gt;/download/</code>，这里的 Space ID 需要手动获取一下：</p>
 <p>这个例子里，我们的 Space Name 是 <code>sst</code>，而 Space ID 是 <code>49</code>。</p>
-<div class=highlight><div class=chroma>
-<table class=lntable><tr><td class=lntd>
-<pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span><span class=lnt>3
-</span><span class=lnt>4
-</span><span class=lnt>5
-</span><span class=lnt>6
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
 </span></code></pre></td>
-<td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-sql data-lang=sql><span class=p>(</span><span class=n>root</span><span class=o>@</span><span class=n>nebula</span><span class=p>)</span><span class=w> </span><span class=p>[</span><span class=n>sst</span><span class=p>]</span><span class=o>&gt;</span><span class=w> </span><span class=k>DESC</span><span class=w> </span><span class=k>space</span><span class=w> </span><span class=n>sst</span><span class=w>
-</span><span class=w></span><span class=o>+</span><span class=c1>----+-------+------------------+----------------+---------+------------+--------------------+-------------+-----------+
-</span><span class=c1></span><span class=o>|</span><span class=w> </span><span class=n>ID</span><span class=w> </span><span class=o>|</span><span class=w> </span><span class=n>Name</span><span class=w>  </span><span class=o>|</span><span class=w> </span><span class=n>Partition</span><span class=w> </span><span class=nb>Number</span><span class=w> </span><span class=o>|</span><span class=w> </span><span class=n>Replica</span><span class=w> </span><span class=n>Factor</span><span class=w> </span><span class=o>|</span><span class=w> </span><span class=n>Charset</span><span class=w> </span><span class=o>|</span><span class=w> </span><span class=k>Collate</span><span class=w>    </span><span class=o>|</span><span class=w> </span><span class=n>Vid</span><span class=w> </span><span class=k>Type</span><span class=w>           </span><span class=o>|</span><span class=w> </span><span class=k>Atomic</span><span class=w> </span><span class=n>Edge</span><span class=w> </span><span class=o>|</span><span class=w> </span><span class=k>Group</span><span class=w>     </span><span class=o>|</span><span class=w>
-</span><span class=w></span><span class=o>+</span><span class=c1>----+-------+------------------+----------------+---------+------------+--------------------+-------------+-----------+
-</span><span class=c1></span><span class=o>|</span><span class=w> </span><span class=mi>49</span><span class=w> </span><span class=o>|</span><span class=w> </span><span class=s2>&#34;sst&#34;</span><span class=w> </span><span class=o>|</span><span class=w> </span><span class=mi>10</span><span class=w>               </span><span class=o>|</span><span class=w> </span><span class=mi>1</span><span class=w>              </span><span class=o>|</span><span class=w> </span><span class=s2>&#34;utf8&#34;</span><span class=w>  </span><span class=o>|</span><span class=w> </span><span class=s2>&#34;utf8_bin&#34;</span><span class=w> </span><span class=o>|</span><span class=w> </span><span class=s2>&#34;FIXED_STRING(32)&#34;</span><span class=w> </span><span class=o>|</span><span class=w> </span><span class=s2>&#34;false&#34;</span><span class=w>     </span><span class=o>|</span><span class=w> </span><span class=s2>&#34;default&#34;</span><span class=w> </span><span class=o>|</span><span class=w>
-</span><span class=w></span><span class=o>+</span><span class=c1>----+-------+------------------+----------------+---------+------------+--------------------+-------------+-----------+
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="p">(</span><span class="n">root</span><span class="o">@</span><span class="n">nebula</span><span class="p">)</span><span class="w"> </span><span class="p">[</span><span class="n">sst</span><span class="p">]</span><span class="o">&gt;</span><span class="w"> </span><span class="k">DESC</span><span class="w"> </span><span class="k">space</span><span class="w"> </span><span class="n">sst</span><span class="w">
+</span><span class="w"></span><span class="o">+</span><span class="c1">----+-------+------------------+----------------+---------+------------+--------------------+-------------+-----------+
+</span><span class="c1"></span><span class="o">|</span><span class="w"> </span><span class="n">ID</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">Name</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="n">Partition</span><span class="w"> </span><span class="nb">Number</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">Replica</span><span class="w"> </span><span class="n">Factor</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">Charset</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="k">Collate</span><span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">Vid</span><span class="w"> </span><span class="k">Type</span><span class="w">           </span><span class="o">|</span><span class="w"> </span><span class="k">Atomic</span><span class="w"> </span><span class="n">Edge</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="k">Group</span><span class="w">     </span><span class="o">|</span><span class="w">
+</span><span class="w"></span><span class="o">+</span><span class="c1">----+-------+------------------+----------------+---------+------------+--------------------+-------------+-----------+
+</span><span class="c1"></span><span class="o">|</span><span class="w"> </span><span class="mi">49</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;sst&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="mi">10</span><span class="w">               </span><span class="o">|</span><span class="w"> </span><span class="mi">1</span><span class="w">              </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;utf8&#34;</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;utf8_bin&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;FIXED_STRING(32)&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;false&#34;</span><span class="w">     </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;default&#34;</span><span class="w"> </span><span class="o">|</span><span class="w">
+</span><span class="w"></span><span class="o">+</span><span class="c1">----+-------+------------------+----------------+---------+------------+--------------------+-------------+-----------+
 </span></code></pre></td></tr></table>
 </div>
 </div><p>于是，下边的操作就是手动把 SST 文件从 HDFS 之中 <code>get</code> 下来，再拷贝到 storageD 之中。</p>
-<div class=highlight><div class=chroma>
-<table class=lntable><tr><td class=lntd>
-<pre tabindex=0 class=chroma><code><span class=lnt> 1
-</span><span class=lnt> 2
-</span><span class=lnt> 3
-</span><span class=lnt> 4
-</span><span class=lnt> 5
-</span><span class=lnt> 6
-</span><span class=lnt> 7
-</span><span class=lnt> 8
-</span><span class=lnt> 9
-</span><span class=lnt>10
-</span><span class=lnt>11
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
 </span></code></pre></td>
-<td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-bash data-lang=bash>docker <span class=nb>exec</span> -it namenode /bin/bash
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">docker <span class="nb">exec</span> -it namenode /bin/bash
 
 $ hdfs dfs -get /sst /sst
-<span class=nb>exit</span>
+<span class="nb">exit</span>
 docker cp namenode:/sst .
-docker <span class=nb>exec</span> -it nebula-docker-compose_storaged0_1 mkdir -p /data/storage/nebula/49/download/
-docker <span class=nb>exec</span> -it nebula-docker-compose_storaged1_1 mkdir -p /data/storage/nebula/49/download/
-docker <span class=nb>exec</span> -it nebula-docker-compose_storaged2_1 mkdir -p /data/storage/nebula/49/download/
+docker <span class="nb">exec</span> -it nebula-docker-compose_storaged0_1 mkdir -p /data/storage/nebula/49/download/
+docker <span class="nb">exec</span> -it nebula-docker-compose_storaged1_1 mkdir -p /data/storage/nebula/49/download/
+docker <span class="nb">exec</span> -it nebula-docker-compose_storaged2_1 mkdir -p /data/storage/nebula/49/download/
 docker cp sst nebula-docker-compose_storaged0_1:/data/storage/nebula/49/download/
 docker cp sst nebula-docker-compose_storaged1_1:/data/storage/nebula/49/download/
 docker cp sst nebula-docker-compose_storaged2_1:/data/storage/nebula/49/download/
 </code></pre></td></tr></table>
 </div>
-</div><h3 id=2-sst-文件导入>2. SST 文件导入</h3>
+</div><h3 id="2-sst-文件导入">2. SST 文件导入</h3>
 <ul>
 <li>进入 Nebula-Console 所在的容器</li>
 </ul>
-<div class=highlight><div class=chroma>
-<table class=lntable><tr><td class=lntd>
-<pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
 </span></code></pre></td>
-<td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-bash data-lang=bash>~/.nebula-up/console.sh
-/ <span class=c1>#</span>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">~/.nebula-up/console.sh
+/ <span class="c1">#</span>
 </code></pre></td></tr></table>
 </div>
 </div><ul>
 <li>在 console 容器里发起链接到图数据库，其中 <code>192.168.x.y</code> 是我所在的 Linux VM 的第一个网卡地址，请换成您的</li>
 </ul>
-<div class=highlight><div class=chroma>
-<table class=lntable><tr><td class=lntd>
-<pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span><span class=lnt>3
-</span><span class=lnt>4
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
 </span></code></pre></td>
-<td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback>/ # nebula-console -addr 192.168.x.y -port 9669 -user root -p password
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">/ # nebula-console -addr 192.168.x.y -port 9669 -user root -p password
 [INFO] connection pool is initialized successfully
 
 Welcome to Nebula Graph!
@@ -605,818 +665,826 @@ Welcome to Nebula Graph!
 </div><ul>
 <li>执行 <code>INGEST</code> 开始让 StorageD 读取 SST 文件</li>
 </ul>
-<div class=highlight><div class=chroma>
-<table class=lntable><tr><td class=lntd>
-<pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
 </span></code></pre></td>
-<td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=o>(</span>root@nebula<span class=o>)</span> <span class=o>[(</span>none<span class=o>)]</span>&gt; use sst
-<span class=o>(</span>root@nebula<span class=o>)</span> <span class=o>[</span>sst<span class=o>]</span>&gt; INGEST<span class=p>;</span>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="o">(</span>root@nebula<span class="o">)</span> <span class="o">[(</span>none<span class="o">)]</span>&gt; use sst
+<span class="o">(</span>root@nebula<span class="o">)</span> <span class="o">[</span>sst<span class="o">]</span>&gt; INGEST<span class="p">;</span>
 </code></pre></td></tr></table>
 </div>
 </div><p>我们可以用如下方法实时查看 Nebula Graph 服务端的日志</p>
-<div class=highlight><div class=chroma>
-<table class=lntable><tr><td class=lntd>
-<pre tabindex=0 class=chroma><code><span class=lnt>1
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
-<td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-bash data-lang=bash>tail -f ~/.nebula-up/nebula-docker-compose/logs/*/*
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">tail -f ~/.nebula-up/nebula-docker-compose/logs/*/*
 </code></pre></td></tr></table>
 </div>
 </div><p>成功的 INGEST 日志：</p>
-<div class=highlight><div class=chroma>
-<table class=lntable><tr><td class=lntd>
-<pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
 </span></code></pre></td>
-<td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-bash data-lang=bash>I0817 08:03:28.611877   <span class=m>169</span> EventListner.h:96<span class=o>]</span> Ingest external SST file: column family default, the external file path /data/storage/nebula/49/download/8/8-6.sst, the internal file path /data/storage/nebula/49/data/000023.sst, the properties of the table: <span class=c1># data blocks=1; # entries=1; # deletions=0; # merge operands=0; # range deletions=0; raw key size=48; raw average key size=48.000000; raw value size=40; raw average value size=40.000000; data block size=75; index block size (user-key? 0, delta-value? 0)=66; filter block size=0; (estimated) table size=141; filter policy name=N/A; prefix extractor name=nullptr; column family ID=N/A; column family name=N/A; comparator name=leveldb.BytewiseComparator; merge operator name=nullptr; property collectors names=[]; SST file compression algo=Snappy; SST file compression options=window_bits=-14; level=32767; strategy=0; max_dict_bytes=0; zstd_max_train_bytes=0; enabled=0; ; creation time=0; time stamp of earliest key=0; file creation time=0;</span>
-E0817 08:03:28.611912   <span class=m>169</span> StorageHttpIngestHandler.cpp:63<span class=o>]</span> SSTFile ingest successfully
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">I0817 08:03:28.611877   <span class="m">169</span> EventListner.h:96<span class="o">]</span> Ingest external SST file: column family default, the external file path /data/storage/nebula/49/download/8/8-6.sst, the internal file path /data/storage/nebula/49/data/000023.sst, the properties of the table: <span class="c1"># data blocks=1; # entries=1; # deletions=0; # merge operands=0; # range deletions=0; raw key size=48; raw average key size=48.000000; raw value size=40; raw average value size=40.000000; data block size=75; index block size (user-key? 0, delta-value? 0)=66; filter block size=0; (estimated) table size=141; filter policy name=N/A; prefix extractor name=nullptr; column family ID=N/A; column family name=N/A; comparator name=leveldb.BytewiseComparator; merge operator name=nullptr; property collectors names=[]; SST file compression algo=Snappy; SST file compression options=window_bits=-14; level=32767; strategy=0; max_dict_bytes=0; zstd_max_train_bytes=0; enabled=0; ; creation time=0; time stamp of earliest key=0; file creation time=0;</span>
+E0817 08:03:28.611912   <span class="m">169</span> StorageHttpIngestHandler.cpp:63<span class="o">]</span> SSTFile ingest successfully
 </code></pre></td></tr></table>
 </div>
 </div><blockquote>
-<p>题图版权：<a href=https://unsplash.com/photos/n6B49lTx7NM target=_blank rel="noopener noreffer">Pietro Jeng</a></p>
+<p>题图版权：<a href="https://unsplash.com/photos/n6B49lTx7NM" target="_blank" rel="noopener noreffer">Pietro Jeng</a></p>
 </blockquote>
-<h2 id=附录>附录</h2>
-<h3 id=附录一>附录一</h3>
+<h2 id="附录">附录</h2>
+<h3 id="附录一">附录一</h3>
 <p><code>docker-compose.yaml</code></p>
-<div class=highlight><div class=chroma>
-<table class=lntable><tr><td class=lntd>
-<pre tabindex=0 class=chroma><code><span class=lnt>  1
-</span><span class=lnt>  2
-</span><span class=lnt>  3
-</span><span class=lnt>  4
-</span><span class=lnt>  5
-</span><span class=lnt>  6
-</span><span class=lnt>  7
-</span><span class=lnt>  8
-</span><span class=lnt>  9
-</span><span class=lnt> 10
-</span><span class=lnt> 11
-</span><span class=lnt> 12
-</span><span class=lnt> 13
-</span><span class=lnt> 14
-</span><span class=lnt> 15
-</span><span class=lnt> 16
-</span><span class=lnt> 17
-</span><span class=lnt> 18
-</span><span class=lnt> 19
-</span><span class=lnt> 20
-</span><span class=lnt> 21
-</span><span class=lnt> 22
-</span><span class=lnt> 23
-</span><span class=lnt> 24
-</span><span class=lnt> 25
-</span><span class=lnt> 26
-</span><span class=lnt> 27
-</span><span class=lnt> 28
-</span><span class=lnt> 29
-</span><span class=lnt> 30
-</span><span class=lnt> 31
-</span><span class=lnt> 32
-</span><span class=lnt> 33
-</span><span class=lnt> 34
-</span><span class=lnt> 35
-</span><span class=lnt> 36
-</span><span class=lnt> 37
-</span><span class=lnt> 38
-</span><span class=lnt> 39
-</span><span class=lnt> 40
-</span><span class=lnt> 41
-</span><span class=lnt> 42
-</span><span class=lnt> 43
-</span><span class=lnt> 44
-</span><span class=lnt> 45
-</span><span class=lnt> 46
-</span><span class=lnt> 47
-</span><span class=lnt> 48
-</span><span class=lnt> 49
-</span><span class=lnt> 50
-</span><span class=lnt> 51
-</span><span class=lnt> 52
-</span><span class=lnt> 53
-</span><span class=lnt> 54
-</span><span class=lnt> 55
-</span><span class=lnt> 56
-</span><span class=lnt> 57
-</span><span class=lnt> 58
-</span><span class=lnt> 59
-</span><span class=lnt> 60
-</span><span class=lnt> 61
-</span><span class=lnt> 62
-</span><span class=lnt> 63
-</span><span class=lnt> 64
-</span><span class=lnt> 65
-</span><span class=lnt> 66
-</span><span class=lnt> 67
-</span><span class=lnt> 68
-</span><span class=lnt> 69
-</span><span class=lnt> 70
-</span><span class=lnt> 71
-</span><span class=lnt> 72
-</span><span class=lnt> 73
-</span><span class=lnt> 74
-</span><span class=lnt> 75
-</span><span class=lnt> 76
-</span><span class=lnt> 77
-</span><span class=lnt> 78
-</span><span class=lnt> 79
-</span><span class=lnt> 80
-</span><span class=lnt> 81
-</span><span class=lnt> 82
-</span><span class=lnt> 83
-</span><span class=lnt> 84
-</span><span class=lnt> 85
-</span><span class=lnt> 86
-</span><span class=lnt> 87
-</span><span class=lnt> 88
-</span><span class=lnt> 89
-</span><span class=lnt> 90
-</span><span class=lnt> 91
-</span><span class=lnt> 92
-</span><span class=lnt> 93
-</span><span class=lnt> 94
-</span><span class=lnt> 95
-</span><span class=lnt> 96
-</span><span class=lnt> 97
-</span><span class=lnt> 98
-</span><span class=lnt> 99
-</span><span class=lnt>100
-</span><span class=lnt>101
-</span><span class=lnt>102
-</span><span class=lnt>103
-</span><span class=lnt>104
-</span><span class=lnt>105
-</span><span class=lnt>106
-</span><span class=lnt>107
-</span><span class=lnt>108
-</span><span class=lnt>109
-</span><span class=lnt>110
-</span><span class=lnt>111
-</span><span class=lnt>112
-</span><span class=lnt>113
-</span><span class=lnt>114
-</span><span class=lnt>115
-</span><span class=lnt>116
-</span><span class=lnt>117
-</span><span class=lnt>118
-</span><span class=lnt>119
-</span><span class=lnt>120
-</span><span class=lnt>121
-</span><span class=lnt>122
-</span><span class=lnt>123
-</span><span class=lnt>124
-</span><span class=lnt>125
-</span><span class=lnt>126
-</span><span class=lnt>127
-</span><span class=lnt>128
-</span><span class=lnt>129
-</span><span class=lnt>130
-</span><span class=lnt>131
-</span><span class=lnt>132
-</span><span class=lnt>133
-</span><span class=lnt>134
-</span><span class=lnt>135
-</span><span class=lnt>136
-</span><span class=lnt>137
-</span><span class=lnt>138
-</span><span class=lnt>139
-</span><span class=lnt>140
-</span><span class=lnt>141
-</span><span class=lnt>142
-</span><span class=lnt>143
-</span><span class=lnt>144
-</span><span class=lnt>145
-</span><span class=lnt>146
-</span><span class=lnt>147
-</span><span class=lnt>148
-</span><span class=lnt>149
-</span><span class=lnt>150
-</span><span class=lnt>151
-</span><span class=lnt>152
-</span><span class=lnt>153
-</span><span class=lnt>154
-</span><span class=lnt>155
-</span><span class=lnt>156
-</span><span class=lnt>157
-</span><span class=lnt>158
-</span><span class=lnt>159
-</span><span class=lnt>160
-</span><span class=lnt>161
-</span><span class=lnt>162
-</span><span class=lnt>163
-</span><span class=lnt>164
-</span><span class=lnt>165
-</span><span class=lnt>166
-</span><span class=lnt>167
-</span><span class=lnt>168
-</span><span class=lnt>169
-</span><span class=lnt>170
-</span><span class=lnt>171
-</span><span class=lnt>172
-</span><span class=lnt>173
-</span><span class=lnt>174
-</span><span class=lnt>175
-</span><span class=lnt>176
-</span><span class=lnt>177
-</span><span class=lnt>178
-</span><span class=lnt>179
-</span><span class=lnt>180
-</span><span class=lnt>181
-</span><span class=lnt>182
-</span><span class=lnt>183
-</span><span class=lnt>184
-</span><span class=lnt>185
-</span><span class=lnt>186
-</span><span class=lnt>187
-</span><span class=lnt>188
-</span><span class=lnt>189
-</span><span class=lnt>190
-</span><span class=lnt>191
-</span><span class=lnt>192
-</span><span class=lnt>193
-</span><span class=lnt>194
-</span><span class=lnt>195
-</span><span class=lnt>196
-</span><span class=lnt>197
-</span><span class=lnt>198
-</span><span class=lnt>199
-</span><span class=lnt>200
-</span><span class=lnt>201
-</span><span class=lnt>202
-</span><span class=lnt>203
-</span><span class=lnt>204
-</span><span class=lnt>205
-</span><span class=lnt>206
-</span><span class=lnt>207
-</span><span class=lnt>208
-</span><span class=lnt>209
-</span><span class=lnt>210
-</span><span class=lnt>211
-</span><span class=lnt>212
-</span><span class=lnt>213
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">  1
+</span><span class="lnt">  2
+</span><span class="lnt">  3
+</span><span class="lnt">  4
+</span><span class="lnt">  5
+</span><span class="lnt">  6
+</span><span class="lnt">  7
+</span><span class="lnt">  8
+</span><span class="lnt">  9
+</span><span class="lnt"> 10
+</span><span class="lnt"> 11
+</span><span class="lnt"> 12
+</span><span class="lnt"> 13
+</span><span class="lnt"> 14
+</span><span class="lnt"> 15
+</span><span class="lnt"> 16
+</span><span class="lnt"> 17
+</span><span class="lnt"> 18
+</span><span class="lnt"> 19
+</span><span class="lnt"> 20
+</span><span class="lnt"> 21
+</span><span class="lnt"> 22
+</span><span class="lnt"> 23
+</span><span class="lnt"> 24
+</span><span class="lnt"> 25
+</span><span class="lnt"> 26
+</span><span class="lnt"> 27
+</span><span class="lnt"> 28
+</span><span class="lnt"> 29
+</span><span class="lnt"> 30
+</span><span class="lnt"> 31
+</span><span class="lnt"> 32
+</span><span class="lnt"> 33
+</span><span class="lnt"> 34
+</span><span class="lnt"> 35
+</span><span class="lnt"> 36
+</span><span class="lnt"> 37
+</span><span class="lnt"> 38
+</span><span class="lnt"> 39
+</span><span class="lnt"> 40
+</span><span class="lnt"> 41
+</span><span class="lnt"> 42
+</span><span class="lnt"> 43
+</span><span class="lnt"> 44
+</span><span class="lnt"> 45
+</span><span class="lnt"> 46
+</span><span class="lnt"> 47
+</span><span class="lnt"> 48
+</span><span class="lnt"> 49
+</span><span class="lnt"> 50
+</span><span class="lnt"> 51
+</span><span class="lnt"> 52
+</span><span class="lnt"> 53
+</span><span class="lnt"> 54
+</span><span class="lnt"> 55
+</span><span class="lnt"> 56
+</span><span class="lnt"> 57
+</span><span class="lnt"> 58
+</span><span class="lnt"> 59
+</span><span class="lnt"> 60
+</span><span class="lnt"> 61
+</span><span class="lnt"> 62
+</span><span class="lnt"> 63
+</span><span class="lnt"> 64
+</span><span class="lnt"> 65
+</span><span class="lnt"> 66
+</span><span class="lnt"> 67
+</span><span class="lnt"> 68
+</span><span class="lnt"> 69
+</span><span class="lnt"> 70
+</span><span class="lnt"> 71
+</span><span class="lnt"> 72
+</span><span class="lnt"> 73
+</span><span class="lnt"> 74
+</span><span class="lnt"> 75
+</span><span class="lnt"> 76
+</span><span class="lnt"> 77
+</span><span class="lnt"> 78
+</span><span class="lnt"> 79
+</span><span class="lnt"> 80
+</span><span class="lnt"> 81
+</span><span class="lnt"> 82
+</span><span class="lnt"> 83
+</span><span class="lnt"> 84
+</span><span class="lnt"> 85
+</span><span class="lnt"> 86
+</span><span class="lnt"> 87
+</span><span class="lnt"> 88
+</span><span class="lnt"> 89
+</span><span class="lnt"> 90
+</span><span class="lnt"> 91
+</span><span class="lnt"> 92
+</span><span class="lnt"> 93
+</span><span class="lnt"> 94
+</span><span class="lnt"> 95
+</span><span class="lnt"> 96
+</span><span class="lnt"> 97
+</span><span class="lnt"> 98
+</span><span class="lnt"> 99
+</span><span class="lnt">100
+</span><span class="lnt">101
+</span><span class="lnt">102
+</span><span class="lnt">103
+</span><span class="lnt">104
+</span><span class="lnt">105
+</span><span class="lnt">106
+</span><span class="lnt">107
+</span><span class="lnt">108
+</span><span class="lnt">109
+</span><span class="lnt">110
+</span><span class="lnt">111
+</span><span class="lnt">112
+</span><span class="lnt">113
+</span><span class="lnt">114
+</span><span class="lnt">115
+</span><span class="lnt">116
+</span><span class="lnt">117
+</span><span class="lnt">118
+</span><span class="lnt">119
+</span><span class="lnt">120
+</span><span class="lnt">121
+</span><span class="lnt">122
+</span><span class="lnt">123
+</span><span class="lnt">124
+</span><span class="lnt">125
+</span><span class="lnt">126
+</span><span class="lnt">127
+</span><span class="lnt">128
+</span><span class="lnt">129
+</span><span class="lnt">130
+</span><span class="lnt">131
+</span><span class="lnt">132
+</span><span class="lnt">133
+</span><span class="lnt">134
+</span><span class="lnt">135
+</span><span class="lnt">136
+</span><span class="lnt">137
+</span><span class="lnt">138
+</span><span class="lnt">139
+</span><span class="lnt">140
+</span><span class="lnt">141
+</span><span class="lnt">142
+</span><span class="lnt">143
+</span><span class="lnt">144
+</span><span class="lnt">145
+</span><span class="lnt">146
+</span><span class="lnt">147
+</span><span class="lnt">148
+</span><span class="lnt">149
+</span><span class="lnt">150
+</span><span class="lnt">151
+</span><span class="lnt">152
+</span><span class="lnt">153
+</span><span class="lnt">154
+</span><span class="lnt">155
+</span><span class="lnt">156
+</span><span class="lnt">157
+</span><span class="lnt">158
+</span><span class="lnt">159
+</span><span class="lnt">160
+</span><span class="lnt">161
+</span><span class="lnt">162
+</span><span class="lnt">163
+</span><span class="lnt">164
+</span><span class="lnt">165
+</span><span class="lnt">166
+</span><span class="lnt">167
+</span><span class="lnt">168
+</span><span class="lnt">169
+</span><span class="lnt">170
+</span><span class="lnt">171
+</span><span class="lnt">172
+</span><span class="lnt">173
+</span><span class="lnt">174
+</span><span class="lnt">175
+</span><span class="lnt">176
+</span><span class="lnt">177
+</span><span class="lnt">178
+</span><span class="lnt">179
+</span><span class="lnt">180
+</span><span class="lnt">181
+</span><span class="lnt">182
+</span><span class="lnt">183
+</span><span class="lnt">184
+</span><span class="lnt">185
+</span><span class="lnt">186
+</span><span class="lnt">187
+</span><span class="lnt">188
+</span><span class="lnt">189
+</span><span class="lnt">190
+</span><span class="lnt">191
+</span><span class="lnt">192
+</span><span class="lnt">193
+</span><span class="lnt">194
+</span><span class="lnt">195
+</span><span class="lnt">196
+</span><span class="lnt">197
+</span><span class="lnt">198
+</span><span class="lnt">199
+</span><span class="lnt">200
+</span><span class="lnt">201
+</span><span class="lnt">202
+</span><span class="lnt">203
+</span><span class="lnt">204
+</span><span class="lnt">205
+</span><span class="lnt">206
+</span><span class="lnt">207
+</span><span class="lnt">208
+</span><span class="lnt">209
+</span><span class="lnt">210
+</span><span class="lnt">211
+</span><span class="lnt">212
+</span><span class="lnt">213
 </span></code></pre></td>
-<td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-diff data-lang=diff><span class=gh>diff --git a/docker-compose.yaml b/docker-compose.yaml
-</span><span class=gh>index 48854de..cfeaedb 100644
-</span><span class=gh></span><span class=gd>--- a/docker-compose.yaml
-</span><span class=gd></span><span class=gi>+++ b/docker-compose.yaml
-</span><span class=gi></span><span class=gu>@@ -6,11 +6,13 @@ services:
-</span><span class=gu></span>       USER: root
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-diff" data-lang="diff"><span class="gh">diff --git a/docker-compose.yaml b/docker-compose.yaml
+</span><span class="gh">index 48854de..cfeaedb 100644
+</span><span class="gh"></span><span class="gd">--- a/docker-compose.yaml
+</span><span class="gd"></span><span class="gi">+++ b/docker-compose.yaml
+</span><span class="gi"></span><span class="gu">@@ -6,11 +6,13 @@ services:
+</span><span class="gu"></span>       USER: root
        TZ:   &#34;${TZ}&#34;
      command:
-<span class=gd>-      - --meta_server_addrs=metad0:9559,metad1:9559,metad2:9559
-</span><span class=gd></span><span class=gi>+      - --meta_server_addrs=metad0:9559
-</span><span class=gi></span>       - --local_ip=metad0
+<span class="gd">-      - --meta_server_addrs=metad0:9559,metad1:9559,metad2:9559
+</span><span class="gd"></span><span class="gi">+      - --meta_server_addrs=metad0:9559
+</span><span class="gi"></span>       - --local_ip=metad0
        - --ws_ip=metad0
        - --port=9559
        - --ws_http_port=19559
-<span class=gi>+      - --ws_storage_http_port=19779
-</span><span class=gi></span>       - --data_path=/data/meta
+<span class="gi">+      - --ws_storage_http_port=19779
+</span><span class="gi"></span>       - --data_path=/data/meta
        - --log_dir=/logs
        - --v=0
-<span class=gu>@@ -34,81 +36,14 @@ services:
-</span><span class=gu></span>     cap_add:
+<span class="gu">@@ -34,81 +36,14 @@ services:
+</span><span class="gu"></span>     cap_add:
        - SYS_PTRACE
 
-<span class=gd>-  metad1:
-</span><span class=gd>-    image: vesoft/nebula-metad:v2.0.0
-</span><span class=gd>-    environment:
-</span><span class=gd>-      USER: root
-</span><span class=gd>-      TZ:   &#34;${TZ}&#34;
-</span><span class=gd>-    command:
-</span><span class=gd>-      - --meta_server_addrs=metad0:9559,metad1:9559,metad2:9559
-</span><span class=gd>-      - --local_ip=metad1
-</span><span class=gd>-      - --ws_ip=metad1
-</span><span class=gd>-      - --port=9559
-</span><span class=gd>-      - --ws_http_port=19559
-</span><span class=gd>-      - --data_path=/data/meta
-</span><span class=gd>-      - --log_dir=/logs
-</span><span class=gd>-      - --v=0
-</span><span class=gd>-      - --minloglevel=0
-</span><span class=gd>-    healthcheck:
-</span><span class=gd>-      test: [&#34;CMD&#34;, &#34;curl&#34;, &#34;-sf&#34;, &#34;http://metad1:19559/status&#34;]
-</span><span class=gd>-      interval: 30s
-</span><span class=gd>-      timeout: 10s
-</span><span class=gd>-      retries: 3
-</span><span class=gd>-      start_period: 20s
-</span><span class=gd>-    ports:
-</span><span class=gd>-      - 9559
-</span><span class=gd>-      - 19559
-</span><span class=gd>-      - 19560
-</span><span class=gd>-    volumes:
-</span><span class=gd>-      - ./data/meta1:/data/meta
-</span><span class=gd>-      - ./logs/meta1:/logs
-</span><span class=gd>-    networks:
-</span><span class=gd>-      - nebula-net
-</span><span class=gd>-    restart: on-failure
-</span><span class=gd>-    cap_add:
-</span><span class=gd>-      - SYS_PTRACE
-</span><span class=gd>-
-</span><span class=gd>-  metad2:
-</span><span class=gd>-    image: vesoft/nebula-metad:v2.0.0
-</span><span class=gd>-    environment:
-</span><span class=gd>-      USER: root
-</span><span class=gd>-      TZ:   &#34;${TZ}&#34;
-</span><span class=gd>-    command:
-</span><span class=gd>-      - --meta_server_addrs=metad0:9559,metad1:9559,metad2:9559
-</span><span class=gd>-      - --local_ip=metad2
-</span><span class=gd>-      - --ws_ip=metad2
-</span><span class=gd>-      - --port=9559
-</span><span class=gd>-      - --ws_http_port=19559
-</span><span class=gd>-      - --data_path=/data/meta
-</span><span class=gd>-      - --log_dir=/logs
-</span><span class=gd>-      - --v=0
-</span><span class=gd>-      - --minloglevel=0
-</span><span class=gd>-    healthcheck:
-</span><span class=gd>-      test: [&#34;CMD&#34;, &#34;curl&#34;, &#34;-sf&#34;, &#34;http://metad2:19559/status&#34;]
-</span><span class=gd>-      interval: 30s
-</span><span class=gd>-      timeout: 10s
-</span><span class=gd>-      retries: 3
-</span><span class=gd>-      start_period: 20s
-</span><span class=gd>-    ports:
-</span><span class=gd>-      - 9559
-</span><span class=gd>-      - 19559
-</span><span class=gd>-      - 19560
-</span><span class=gd>-    volumes:
-</span><span class=gd>-      - ./data/meta2:/data/meta
-</span><span class=gd>-      - ./logs/meta2:/logs
-</span><span class=gd>-    networks:
-</span><span class=gd>-      - nebula-net
-</span><span class=gd>-    restart: on-failure
-</span><span class=gd>-    cap_add:
-</span><span class=gd>-      - SYS_PTRACE
-</span><span class=gd>-
-</span><span class=gd></span>   storaged0:
+<span class="gd">-  metad1:
+</span><span class="gd">-    image: vesoft/nebula-metad:v2.0.0
+</span><span class="gd">-    environment:
+</span><span class="gd">-      USER: root
+</span><span class="gd">-      TZ:   &#34;${TZ}&#34;
+</span><span class="gd">-    command:
+</span><span class="gd">-      - --meta_server_addrs=metad0:9559,metad1:9559,metad2:9559
+</span><span class="gd">-      - --local_ip=metad1
+</span><span class="gd">-      - --ws_ip=metad1
+</span><span class="gd">-      - --port=9559
+</span><span class="gd">-      - --ws_http_port=19559
+</span><span class="gd">-      - --data_path=/data/meta
+</span><span class="gd">-      - --log_dir=/logs
+</span><span class="gd">-      - --v=0
+</span><span class="gd">-      - --minloglevel=0
+</span><span class="gd">-    healthcheck:
+</span><span class="gd">-      test: [&#34;CMD&#34;, &#34;curl&#34;, &#34;-sf&#34;, &#34;http://metad1:19559/status&#34;]
+</span><span class="gd">-      interval: 30s
+</span><span class="gd">-      timeout: 10s
+</span><span class="gd">-      retries: 3
+</span><span class="gd">-      start_period: 20s
+</span><span class="gd">-    ports:
+</span><span class="gd">-      - 9559
+</span><span class="gd">-      - 19559
+</span><span class="gd">-      - 19560
+</span><span class="gd">-    volumes:
+</span><span class="gd">-      - ./data/meta1:/data/meta
+</span><span class="gd">-      - ./logs/meta1:/logs
+</span><span class="gd">-    networks:
+</span><span class="gd">-      - nebula-net
+</span><span class="gd">-    restart: on-failure
+</span><span class="gd">-    cap_add:
+</span><span class="gd">-      - SYS_PTRACE
+</span><span class="gd">-
+</span><span class="gd">-  metad2:
+</span><span class="gd">-    image: vesoft/nebula-metad:v2.0.0
+</span><span class="gd">-    environment:
+</span><span class="gd">-      USER: root
+</span><span class="gd">-      TZ:   &#34;${TZ}&#34;
+</span><span class="gd">-    command:
+</span><span class="gd">-      - --meta_server_addrs=metad0:9559,metad1:9559,metad2:9559
+</span><span class="gd">-      - --local_ip=metad2
+</span><span class="gd">-      - --ws_ip=metad2
+</span><span class="gd">-      - --port=9559
+</span><span class="gd">-      - --ws_http_port=19559
+</span><span class="gd">-      - --data_path=/data/meta
+</span><span class="gd">-      - --log_dir=/logs
+</span><span class="gd">-      - --v=0
+</span><span class="gd">-      - --minloglevel=0
+</span><span class="gd">-    healthcheck:
+</span><span class="gd">-      test: [&#34;CMD&#34;, &#34;curl&#34;, &#34;-sf&#34;, &#34;http://metad2:19559/status&#34;]
+</span><span class="gd">-      interval: 30s
+</span><span class="gd">-      timeout: 10s
+</span><span class="gd">-      retries: 3
+</span><span class="gd">-      start_period: 20s
+</span><span class="gd">-    ports:
+</span><span class="gd">-      - 9559
+</span><span class="gd">-      - 19559
+</span><span class="gd">-      - 19560
+</span><span class="gd">-    volumes:
+</span><span class="gd">-      - ./data/meta2:/data/meta
+</span><span class="gd">-      - ./logs/meta2:/logs
+</span><span class="gd">-    networks:
+</span><span class="gd">-      - nebula-net
+</span><span class="gd">-    restart: on-failure
+</span><span class="gd">-    cap_add:
+</span><span class="gd">-      - SYS_PTRACE
+</span><span class="gd">-
+</span><span class="gd"></span>   storaged0:
      image: vesoft/nebula-storaged:v2.0.0
      environment:
        USER: root
        TZ:   &#34;${TZ}&#34;
      command:
-<span class=gd>-      - --meta_server_addrs=metad0:9559,metad1:9559,metad2:9559
-</span><span class=gd></span><span class=gi>+      - --meta_server_addrs=metad0:9559
-</span><span class=gi></span>       - --local_ip=storaged0
+<span class="gd">-      - --meta_server_addrs=metad0:9559,metad1:9559,metad2:9559
+</span><span class="gd"></span><span class="gi">+      - --meta_server_addrs=metad0:9559
+</span><span class="gi"></span>       - --local_ip=storaged0
        - --ws_ip=storaged0
        - --port=9779
-<span class=gu>@@ -119,8 +54,8 @@ services:
-</span><span class=gu></span>       - --minloglevel=0
+<span class="gu">@@ -119,8 +54,8 @@ services:
+</span><span class="gu"></span>       - --minloglevel=0
      depends_on:
        - metad0
-<span class=gd>-      - metad1
-</span><span class=gd>-      - metad2
-</span><span class=gd></span>     healthcheck:
+<span class="gd">-      - metad1
+</span><span class="gd">-      - metad2
+</span><span class="gd"></span>     healthcheck:
        test: [&#34;CMD&#34;, &#34;curl&#34;, &#34;-sf&#34;, &#34;http://storaged0:19779/status&#34;]
        interval: 30s
-<span class=gu>@@ -146,7 +81,7 @@ services:
-</span><span class=gu></span>       USER: root
+<span class="gu">@@ -146,7 +81,7 @@ services:
+</span><span class="gu"></span>       USER: root
        TZ:   &#34;${TZ}&#34;
      command:
-<span class=gd>-      - --meta_server_addrs=metad0:9559,metad1:9559,metad2:9559
-</span><span class=gd></span><span class=gi>+      - --meta_server_addrs=metad0:9559
-</span><span class=gi></span>       - --local_ip=storaged1
+<span class="gd">-      - --meta_server_addrs=metad0:9559,metad1:9559,metad2:9559
+</span><span class="gd"></span><span class="gi">+      - --meta_server_addrs=metad0:9559
+</span><span class="gi"></span>       - --local_ip=storaged1
        - --ws_ip=storaged1
        - --port=9779
-<span class=gu>@@ -157,8 +92,8 @@ services:
-</span><span class=gu></span>       - --minloglevel=0
+<span class="gu">@@ -157,8 +92,8 @@ services:
+</span><span class="gu"></span>       - --minloglevel=0
      depends_on:
        - metad0
-<span class=gd>-      - metad1
-</span><span class=gd>-      - metad2
-</span><span class=gd></span>     healthcheck:
+<span class="gd">-      - metad1
+</span><span class="gd">-      - metad2
+</span><span class="gd"></span>     healthcheck:
        test: [&#34;CMD&#34;, &#34;curl&#34;, &#34;-sf&#34;, &#34;http://storaged1:19779/status&#34;]
        interval: 30s
-<span class=gu>@@ -184,7 +119,7 @@ services:
-</span><span class=gu></span>       USER: root
+<span class="gu">@@ -184,7 +119,7 @@ services:
+</span><span class="gu"></span>       USER: root
        TZ:   &#34;${TZ}&#34;
      command:
-<span class=gd>-      - --meta_server_addrs=metad0:9559,metad1:9559,metad2:9559
-</span><span class=gd></span><span class=gi>+      - --meta_server_addrs=metad0:9559
-</span><span class=gi></span>       - --local_ip=storaged2
+<span class="gd">-      - --meta_server_addrs=metad0:9559,metad1:9559,metad2:9559
+</span><span class="gd"></span><span class="gi">+      - --meta_server_addrs=metad0:9559
+</span><span class="gi"></span>       - --local_ip=storaged2
        - --ws_ip=storaged2
        - --port=9779
-<span class=gu>@@ -195,8 +130,8 @@ services:
-</span><span class=gu></span>       - --minloglevel=0
+<span class="gu">@@ -195,8 +130,8 @@ services:
+</span><span class="gu"></span>       - --minloglevel=0
      depends_on:
        - metad0
-<span class=gd>-      - metad1
-</span><span class=gd>-      - metad2
-</span><span class=gd></span>     healthcheck:
+<span class="gd">-      - metad1
+</span><span class="gd">-      - metad2
+</span><span class="gd"></span>     healthcheck:
        test: [&#34;CMD&#34;, &#34;curl&#34;, &#34;-sf&#34;, &#34;http://storaged2:19779/status&#34;]
        interval: 30s
-<span class=gu>@@ -222,17 +157,19 @@ services:
-</span><span class=gu></span>       USER: root
+<span class="gu">@@ -222,17 +157,19 @@ services:
+</span><span class="gu"></span>       USER: root
        TZ:   &#34;${TZ}&#34;
      command:
-<span class=gd>-      - --meta_server_addrs=metad0:9559,metad1:9559,metad2:9559
-</span><span class=gd></span><span class=gi>+      - --meta_server_addrs=metad0:9559
-</span><span class=gi></span>       - --port=9669
+<span class="gd">-      - --meta_server_addrs=metad0:9559,metad1:9559,metad2:9559
+</span><span class="gd"></span><span class="gi">+      - --meta_server_addrs=metad0:9559
+</span><span class="gi"></span>       - --port=9669
        - --ws_ip=graphd
        - --ws_http_port=19669
-<span class=gi>+      - --ws_meta_http_port=19559
-</span><span class=gi></span>       - --log_dir=/logs
+<span class="gi">+      - --ws_meta_http_port=19559
+</span><span class="gi"></span>       - --log_dir=/logs
        - --v=0
        - --minloglevel=0
      depends_on:
        - metad0
-<span class=gd>-      - metad1
-</span><span class=gd>-      - metad2
-</span><span class=gd></span>     healthcheck:
+<span class="gd">-      - metad1
+</span><span class="gd">-      - metad2
+</span><span class="gd"></span>     healthcheck:
        test: [&#34;CMD&#34;, &#34;curl&#34;, &#34;-sf&#34;, &#34;http://graphd:19669/status&#34;]
        interval: 30s
-<span class=gu>@@ -257,17 +194,19 @@ services:
-</span><span class=gu></span>       USER: root
+<span class="gu">@@ -257,17 +194,19 @@ services:
+</span><span class="gu"></span>       USER: root
        TZ:   &#34;${TZ}&#34;
      command:
-<span class=gd>-      - --meta_server_addrs=metad0:9559,metad1:9559,metad2:9559
-</span><span class=gd></span><span class=gi>+      - --meta_server_addrs=metad0:9559
-</span><span class=gi></span>       - --port=9669
+<span class="gd">-      - --meta_server_addrs=metad0:9559,metad1:9559,metad2:9559
+</span><span class="gd"></span><span class="gi">+      - --meta_server_addrs=metad0:9559
+</span><span class="gi"></span>       - --port=9669
        - --ws_ip=graphd1
        - --ws_http_port=19669
-<span class=gi>+      - --ws_meta_http_port=19559
-</span><span class=gi></span>       - --log_dir=/logs
+<span class="gi">+      - --ws_meta_http_port=19559
+</span><span class="gi"></span>       - --log_dir=/logs
        - --v=0
        - --minloglevel=0
      depends_on:
        - metad0
-<span class=gd>-      - metad1
-</span><span class=gd>-      - metad2
-</span><span class=gd></span>     healthcheck:
+<span class="gd">-      - metad1
+</span><span class="gd">-      - metad2
+</span><span class="gd"></span>     healthcheck:
        test: [&#34;CMD&#34;, &#34;curl&#34;, &#34;-sf&#34;, &#34;http://graphd1:19669/status&#34;]
        interval: 30s
-<span class=gu>@@ -292,17 +231,21 @@ services:
-</span><span class=gu></span>       USER: root
+<span class="gu">@@ -292,17 +231,21 @@ services:
+</span><span class="gu"></span>       USER: root
        TZ:   &#34;${TZ}&#34;
      command:
-<span class=gd>-      - --meta_server_addrs=metad0:9559,metad1:9559,metad2:9559
-</span><span class=gd></span><span class=gi>+      - --meta_server_addrs=metad0:9559
-</span><span class=gi></span>       - --port=9669
+<span class="gd">-      - --meta_server_addrs=metad0:9559,metad1:9559,metad2:9559
+</span><span class="gd"></span><span class="gi">+      - --meta_server_addrs=metad0:9559
+</span><span class="gi"></span>       - --port=9669
        - --ws_ip=graphd2
        - --ws_http_port=19669
-<span class=gi>+      - --ws_meta_http_port=19559
-</span><span class=gi></span>       - --log_dir=/logs
+<span class="gi">+      - --ws_meta_http_port=19559
+</span><span class="gi"></span>       - --log_dir=/logs
        - --v=0
        - --minloglevel=0
-<span class=gi>+      - --storage_client_timeout_ms=60000
-</span><span class=gi>+      - --local_config=true
-</span><span class=gi></span>     depends_on:
+<span class="gi">+      - --storage_client_timeout_ms=60000
+</span><span class="gi">+      - --local_config=true
+</span><span class="gi"></span>     depends_on:
        - metad0
-<span class=gd>-      - metad1
-</span><span class=gd>-      - metad2
-</span><span class=gd></span>     healthcheck:
+<span class="gd">-      - metad1
+</span><span class="gd">-      - metad2
+</span><span class="gd"></span>     healthcheck:
        test: [&#34;CMD&#34;, &#34;curl&#34;, &#34;-sf&#34;, &#34;http://graphd2:19669/status&#34;]
        interval: 30s
-<span class=gu>@@ -323,3 +266,4 @@ services:
-</span><span class=gu></span>
+<span class="gu">@@ -323,3 +266,4 @@ services:
+</span><span class="gu"></span>
  networks:
    nebula-net:
-<span class=gi>+    external: true
+<span class="gi">+    external: true
 </span></code></pre></td></tr></table>
 </div>
-</div><h3 id=附录二>附录二</h3>
-<p><a href=https://github.com/big-data-europe/docker-hadoop target=_blank rel="noopener noreffer">https://github.com/big-data-europe/docker-hadoop</a> 的 <code>docker-compose.yml</code></p>
-<div class=highlight><div class=chroma>
-<table class=lntable><tr><td class=lntd>
-<pre tabindex=0 class=chroma><code><span class=lnt> 1
-</span><span class=lnt> 2
-</span><span class=lnt> 3
-</span><span class=lnt> 4
-</span><span class=lnt> 5
-</span><span class=lnt> 6
-</span><span class=lnt> 7
-</span><span class=lnt> 8
-</span><span class=lnt> 9
-</span><span class=lnt>10
-</span><span class=lnt>11
-</span><span class=lnt>12
-</span><span class=lnt>13
-</span><span class=lnt>14
-</span><span class=lnt>15
-</span><span class=lnt>16
-</span><span class=lnt>17
-</span><span class=lnt>18
-</span><span class=lnt>19
-</span><span class=lnt>20
-</span><span class=lnt>21
-</span><span class=lnt>22
-</span><span class=lnt>23
-</span><span class=lnt>24
-</span><span class=lnt>25
-</span><span class=lnt>26
-</span><span class=lnt>27
-</span><span class=lnt>28
-</span><span class=lnt>29
-</span><span class=lnt>30
-</span><span class=lnt>31
-</span><span class=lnt>32
-</span><span class=lnt>33
-</span><span class=lnt>34
-</span><span class=lnt>35
-</span><span class=lnt>36
-</span><span class=lnt>37
-</span><span class=lnt>38
-</span><span class=lnt>39
-</span><span class=lnt>40
-</span><span class=lnt>41
-</span><span class=lnt>42
-</span><span class=lnt>43
-</span><span class=lnt>44
-</span><span class=lnt>45
-</span><span class=lnt>46
-</span><span class=lnt>47
-</span><span class=lnt>48
-</span><span class=lnt>49
-</span><span class=lnt>50
-</span><span class=lnt>51
-</span><span class=lnt>52
-</span><span class=lnt>53
-</span><span class=lnt>54
-</span><span class=lnt>55
+</div><h3 id="附录二">附录二</h3>
+<p><a href="https://github.com/big-data-europe/docker-hadoop" target="_blank" rel="noopener noreffer">https://github.com/big-data-europe/docker-hadoop</a> 的 <code>docker-compose.yml</code></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
 </span></code></pre></td>
-<td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-diff data-lang=diff><span class=gh>diff --git a/docker-compose.yml b/docker-compose.yml
-</span><span class=gh>index ed40dc6..66ff1f4 100644
-</span><span class=gh></span><span class=gd>--- a/docker-compose.yml
-</span><span class=gd></span><span class=gi>+++ b/docker-compose.yml
-</span><span class=gi></span><span class=gu>@@ -14,6 +14,8 @@ services:
-</span><span class=gu></span>       - CLUSTER_NAME=test
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-diff" data-lang="diff"><span class="gh">diff --git a/docker-compose.yml b/docker-compose.yml
+</span><span class="gh">index ed40dc6..66ff1f4 100644
+</span><span class="gh"></span><span class="gd">--- a/docker-compose.yml
+</span><span class="gd"></span><span class="gi">+++ b/docker-compose.yml
+</span><span class="gi"></span><span class="gu">@@ -14,6 +14,8 @@ services:
+</span><span class="gu"></span>       - CLUSTER_NAME=test
      env_file:
        - ./hadoop.env
-<span class=gi>+    networks:
-</span><span class=gi>+      - nebula-net
-</span><span class=gi></span>
+<span class="gi">+    networks:
+</span><span class="gi">+      - nebula-net
+</span><span class="gi"></span>
    datanode:
      image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
-<span class=gu>@@ -25,6 +27,8 @@ services:
-</span><span class=gu></span>       SERVICE_PRECONDITION: &#34;namenode:9870&#34;
+<span class="gu">@@ -25,6 +27,8 @@ services:
+</span><span class="gu"></span>       SERVICE_PRECONDITION: &#34;namenode:9870&#34;
      env_file:
        - ./hadoop.env
-<span class=gi>+    networks:
-</span><span class=gi>+      - nebula-net
-</span><span class=gi></span>
+<span class="gi">+    networks:
+</span><span class="gi">+      - nebula-net
+</span><span class="gi"></span>
    resourcemanager:
      image: bde2020/hadoop-resourcemanager:2.0.0-hadoop3.2.1-java8
-<span class=gu>@@ -34,6 +38,8 @@ services:
-</span><span class=gu></span>       SERVICE_PRECONDITION: &#34;namenode:9000 namenode:9870 datanode:9864&#34;
+<span class="gu">@@ -34,6 +38,8 @@ services:
+</span><span class="gu"></span>       SERVICE_PRECONDITION: &#34;namenode:9000 namenode:9870 datanode:9864&#34;
      env_file:
        - ./hadoop.env
-<span class=gi>+    networks:
-</span><span class=gi>+      - nebula-net
-</span><span class=gi></span>
+<span class="gi">+    networks:
+</span><span class="gi">+      - nebula-net
+</span><span class="gi"></span>
    nodemanager1:
      image: bde2020/hadoop-nodemanager:2.0.0-hadoop3.2.1-java8
-<span class=gu>@@ -43,6 +49,8 @@ services:
-</span><span class=gu></span>       SERVICE_PRECONDITION: &#34;namenode:9000 namenode:9870 datanode:9864 resourcemanager:8088&#34;
+<span class="gu">@@ -43,6 +49,8 @@ services:
+</span><span class="gu"></span>       SERVICE_PRECONDITION: &#34;namenode:9000 namenode:9870 datanode:9864 resourcemanager:8088&#34;
      env_file:
        - ./hadoop.env
-<span class=gi>+    networks:
-</span><span class=gi>+      - nebula-net
-</span><span class=gi></span>
+<span class="gi">+    networks:
+</span><span class="gi">+      - nebula-net
+</span><span class="gi"></span>
    historyserver:
      image: bde2020/hadoop-historyserver:2.0.0-hadoop3.2.1-java8
-<span class=gu>@@ -54,8 +62,14 @@ services:
-</span><span class=gu></span>       - hadoop_historyserver:/hadoop/yarn/timeline
+<span class="gu">@@ -54,8 +62,14 @@ services:
+</span><span class="gu"></span>       - hadoop_historyserver:/hadoop/yarn/timeline
      env_file:
        - ./hadoop.env
-<span class=gi>+    networks:
-</span><span class=gi>+      - nebula-net
-</span><span class=gi></span>
+<span class="gi">+    networks:
+</span><span class="gi">+      - nebula-net
+</span><span class="gi"></span>
  volumes:
    hadoop_namenode:
    hadoop_datanode:
    hadoop_historyserver:
-<span class=gi>+
-</span><span class=gi>+networks:
-</span><span class=gi>+  nebula-net:
-</span><span class=gi>+    external: true
+<span class="gi">+
+</span><span class="gi">+networks:
+</span><span class="gi">+  nebula-net:
+</span><span class="gi">+    external: true
 </span></code></pre></td></tr></table>
 </div>
-</div><h3 id=附录三>附录三</h3>
+</div><h3 id="附录三">附录三</h3>
 <p><code>nebula-exchange-sst.conf</code></p>
-<div class=highlight><div class=chroma>
-<table class=lntable><tr><td class=lntd>
-<pre tabindex=0 class=chroma><code><span class=lnt> 1
-</span><span class=lnt> 2
-</span><span class=lnt> 3
-</span><span class=lnt> 4
-</span><span class=lnt> 5
-</span><span class=lnt> 6
-</span><span class=lnt> 7
-</span><span class=lnt> 8
-</span><span class=lnt> 9
-</span><span class=lnt>10
-</span><span class=lnt>11
-</span><span class=lnt>12
-</span><span class=lnt>13
-</span><span class=lnt>14
-</span><span class=lnt>15
-</span><span class=lnt>16
-</span><span class=lnt>17
-</span><span class=lnt>18
-</span><span class=lnt>19
-</span><span class=lnt>20
-</span><span class=lnt>21
-</span><span class=lnt>22
-</span><span class=lnt>23
-</span><span class=lnt>24
-</span><span class=lnt>25
-</span><span class=lnt>26
-</span><span class=lnt>27
-</span><span class=lnt>28
-</span><span class=lnt>29
-</span><span class=lnt>30
-</span><span class=lnt>31
-</span><span class=lnt>32
-</span><span class=lnt>33
-</span><span class=lnt>34
-</span><span class=lnt>35
-</span><span class=lnt>36
-</span><span class=lnt>37
-</span><span class=lnt>38
-</span><span class=lnt>39
-</span><span class=lnt>40
-</span><span class=lnt>41
-</span><span class=lnt>42
-</span><span class=lnt>43
-</span><span class=lnt>44
-</span><span class=lnt>45
-</span><span class=lnt>46
-</span><span class=lnt>47
-</span><span class=lnt>48
-</span><span class=lnt>49
-</span><span class=lnt>50
-</span><span class=lnt>51
-</span><span class=lnt>52
-</span><span class=lnt>53
-</span><span class=lnt>54
-</span><span class=lnt>55
-</span><span class=lnt>56
-</span><span class=lnt>57
-</span><span class=lnt>58
-</span><span class=lnt>59
-</span><span class=lnt>60
-</span><span class=lnt>61
-</span><span class=lnt>62
-</span><span class=lnt>63
-</span><span class=lnt>64
-</span><span class=lnt>65
-</span><span class=lnt>66
-</span><span class=lnt>67
-</span><span class=lnt>68
-</span><span class=lnt>69
-</span><span class=lnt>70
-</span><span class=lnt>71
-</span><span class=lnt>72
-</span><span class=lnt>73
-</span><span class=lnt>74
-</span><span class=lnt>75
-</span><span class=lnt>76
-</span><span class=lnt>77
-</span><span class=lnt>78
-</span><span class=lnt>79
-</span><span class=lnt>80
-</span><span class=lnt>81
-</span><span class=lnt>82
-</span><span class=lnt>83
-</span><span class=lnt>84
-</span><span class=lnt>85
-</span><span class=lnt>86
-</span><span class=lnt>87
-</span><span class=lnt>88
-</span><span class=lnt>89
-</span><span class=lnt>90
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span><span class="lnt">67
+</span><span class="lnt">68
+</span><span class="lnt">69
+</span><span class="lnt">70
+</span><span class="lnt">71
+</span><span class="lnt">72
+</span><span class="lnt">73
+</span><span class="lnt">74
+</span><span class="lnt">75
+</span><span class="lnt">76
+</span><span class="lnt">77
+</span><span class="lnt">78
+</span><span class="lnt">79
+</span><span class="lnt">80
+</span><span class="lnt">81
+</span><span class="lnt">82
+</span><span class="lnt">83
+</span><span class="lnt">84
+</span><span class="lnt">85
+</span><span class="lnt">86
+</span><span class="lnt">87
+</span><span class="lnt">88
+</span><span class="lnt">89
+</span><span class="lnt">90
 </span></code></pre></td>
-<td class=lntd>
-<pre tabindex=0 class=chroma><code class=language-toml data-lang=toml><span class=p>{</span>
-  <span class=c># Spark relation config</span>
-  <span class=nx>spark</span><span class=err>:</span> <span class=p>{</span>
-    <span class=nx>app</span><span class=err>:</span> <span class=p>{</span>
-      <span class=nx>name</span><span class=err>:</span> <span class=nx>Nebula</span> <span class=nx>Exchange</span> <span class=mf>2.1</span>
-    <span class=p>}</span>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-toml" data-lang="toml"><span class="p">{</span>
+  <span class="c"># Spark relation config</span>
+  <span class="nx">spark</span><span class="err">:</span> <span class="p">{</span>
+    <span class="nx">app</span><span class="err">:</span> <span class="p">{</span>
+      <span class="nx">name</span><span class="err">:</span> <span class="nx">Nebula</span> <span class="nx">Exchange</span> <span class="mf">2.1</span>
+    <span class="p">}</span>
 
-    <span class=nx>master</span><span class=err>:</span><span class=nx>local</span>
+    <span class="nx">master</span><span class="err">:</span><span class="nx">local</span>
 
-    <span class=nx>driver</span><span class=err>:</span> <span class=p>{</span>
-      <span class=nx>cores</span><span class=err>:</span> <span class=mi>1</span>
-      <span class=nx>maxResultSize</span><span class=err>:</span> <span class=mi>1</span><span class=nx>G</span>
-    <span class=p>}</span>
+    <span class="nx">driver</span><span class="err">:</span> <span class="p">{</span>
+      <span class="nx">cores</span><span class="err">:</span> <span class="mi">1</span>
+      <span class="nx">maxResultSize</span><span class="err">:</span> <span class="mi">1</span><span class="nx">G</span>
+    <span class="p">}</span>
 
-    <span class=nx>executor</span><span class=err>:</span> <span class=p>{</span>
-        <span class=nx>memory</span><span class=err>:</span><span class=mi>1</span><span class=nx>G</span>
-    <span class=p>}</span>
+    <span class="nx">executor</span><span class="err">:</span> <span class="p">{</span>
+        <span class="nx">memory</span><span class="err">:</span><span class="mi">1</span><span class="nx">G</span>
+    <span class="p">}</span>
 
-    <span class=nx>cores</span><span class=err>:</span><span class=p>{</span>
-      <span class=nx>max</span><span class=err>:</span> <span class=mi>16</span>
-    <span class=p>}</span>
-  <span class=p>}</span>
+    <span class="nx">cores</span><span class="err">:</span><span class="p">{</span>
+      <span class="nx">max</span><span class="err">:</span> <span class="mi">16</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
 
-  <span class=c># Nebula Graph relation config</span>
-  <span class=nx>nebula</span><span class=err>:</span> <span class=p>{</span>
-    <span class=nx>address</span><span class=err>:</span><span class=p>{</span>
-      <span class=nx>graph</span><span class=err>:</span><span class=p>[</span><span class=s2>&#34;192.168.8.128:9669&#34;</span><span class=p>]</span>
-      <span class=nx>meta</span><span class=err>:</span><span class=p>[</span><span class=s2>&#34;192.168.8.128:49377&#34;</span><span class=p>]</span>
-    <span class=p>}</span>
-    <span class=nx>user</span><span class=err>:</span> <span class=nx>root</span>
-    <span class=nx>pswd</span><span class=err>:</span> <span class=nx>nebula</span>
-    <span class=nx>space</span><span class=err>:</span> <span class=nx>sst</span>
+  <span class="c"># Nebula Graph relation config</span>
+  <span class="nx">nebula</span><span class="err">:</span> <span class="p">{</span>
+    <span class="nx">address</span><span class="err">:</span><span class="p">{</span>
+      <span class="nx">graph</span><span class="err">:</span><span class="p">[</span><span class="s2">&#34;192.168.8.128:9669&#34;</span><span class="p">]</span>
+      <span class="nx">meta</span><span class="err">:</span><span class="p">[</span><span class="s2">&#34;192.168.8.128:49377&#34;</span><span class="p">]</span>
+    <span class="p">}</span>
+    <span class="nx">user</span><span class="err">:</span> <span class="nx">root</span>
+    <span class="nx">pswd</span><span class="err">:</span> <span class="nx">nebula</span>
+    <span class="nx">space</span><span class="err">:</span> <span class="nx">sst</span>
 
-    <span class=c># parameters for SST import, not required</span>
-    <span class=nx>path</span><span class=err>:</span><span class=p>{</span>
-        <span class=nx>local</span><span class=err>:</span><span class=s2>&#34;/tmp&#34;</span>
-        <span class=nx>remote</span><span class=err>:</span><span class=s2>&#34;/sst&#34;</span>
-        <span class=nx>hdfs</span><span class=p>.</span><span class=nx>namenode</span><span class=err>:</span> <span class=s2>&#34;hdfs://192.168.8.128:9000&#34;</span>
-    <span class=p>}</span>
+    <span class="c"># parameters for SST import, not required</span>
+    <span class="nx">path</span><span class="err">:</span><span class="p">{</span>
+        <span class="nx">local</span><span class="err">:</span><span class="s2">&#34;/tmp&#34;</span>
+        <span class="nx">remote</span><span class="err">:</span><span class="s2">&#34;/sst&#34;</span>
+        <span class="nx">hdfs</span><span class="p">.</span><span class="nx">namenode</span><span class="err">:</span> <span class="s2">&#34;hdfs://192.168.8.128:9000&#34;</span>
+    <span class="p">}</span>
 
-    <span class=c># nebula client connection parameters</span>
-    <span class=nx>connection</span> <span class=p>{</span>
-      <span class=c># socket connect &amp; execute timeout, unit: millisecond</span>
-      <span class=nx>timeout</span><span class=err>:</span> <span class=mi>30000</span>
-    <span class=p>}</span>
+    <span class="c"># nebula client connection parameters</span>
+    <span class="nx">connection</span> <span class="p">{</span>
+      <span class="c"># socket connect &amp; execute timeout, unit: millisecond</span>
+      <span class="nx">timeout</span><span class="err">:</span> <span class="mi">30000</span>
+    <span class="p">}</span>
 
-    <span class=nx>error</span><span class=err>:</span> <span class=p>{</span>
-      <span class=c># max number of failures, if the number of failures is bigger than max, then exit the application.</span>
-      <span class=nx>max</span><span class=err>:</span> <span class=mi>32</span>
-      <span class=c># failed import job will be recorded in output path</span>
-      <span class=nx>output</span><span class=err>:</span> <span class=err>/</span><span class=nx>tmp</span><span class=err>/</span><span class=nx>errors</span>
-    <span class=p>}</span>
+    <span class="nx">error</span><span class="err">:</span> <span class="p">{</span>
+      <span class="c"># max number of failures, if the number of failures is bigger than max, then exit the application.</span>
+      <span class="nx">max</span><span class="err">:</span> <span class="mi">32</span>
+      <span class="c"># failed import job will be recorded in output path</span>
+      <span class="nx">output</span><span class="err">:</span> <span class="err">/</span><span class="nx">tmp</span><span class="err">/</span><span class="nx">errors</span>
+    <span class="p">}</span>
 
-    <span class=c># use google&#39;s RateLimiter to limit the requests send to NebulaGraph</span>
-    <span class=nx>rate</span><span class=err>:</span> <span class=p>{</span>
-      <span class=c># the stable throughput of RateLimiter</span>
-      <span class=nx>limit</span><span class=err>:</span> <span class=mi>1024</span>
-      <span class=c># Acquires a permit from RateLimiter, unit: MILLISECONDS</span>
-      <span class=c># if it can&#39;t be obtained within the specified timeout, then give up the request.</span>
-      <span class=nx>timeout</span><span class=err>:</span> <span class=mi>1000</span>
-    <span class=p>}</span>
-  <span class=p>}</span>
+    <span class="c"># use google&#39;s RateLimiter to limit the requests send to NebulaGraph</span>
+    <span class="nx">rate</span><span class="err">:</span> <span class="p">{</span>
+      <span class="c"># the stable throughput of RateLimiter</span>
+      <span class="nx">limit</span><span class="err">:</span> <span class="mi">1024</span>
+      <span class="c"># Acquires a permit from RateLimiter, unit: MILLISECONDS</span>
+      <span class="c"># if it can&#39;t be obtained within the specified timeout, then give up the request.</span>
+      <span class="nx">timeout</span><span class="err">:</span> <span class="mi">1000</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
 
-  <span class=c># Processing tags</span>
-  <span class=c># There are tag config examples for different dataSources.</span>
-  <span class=nx>tags</span><span class=err>:</span> <span class=p>[</span>
+  <span class="c"># Processing tags</span>
+  <span class="c"># There are tag config examples for different dataSources.</span>
+  <span class="nx">tags</span><span class="err">:</span> <span class="p">[</span>
 
-    <span class=c># HDFS csv</span>
-    <span class=c># Import mode is sst, just change type.sink to client if you want to use client import mode.</span>
-    <span class=p>{</span>
-      <span class=nx>name</span><span class=err>:</span> <span class=nx>player</span>
-      <span class=nx>type</span><span class=err>:</span> <span class=p>{</span>
-        <span class=nx>source</span><span class=err>:</span> <span class=nx>csv</span>
-        <span class=nx>sink</span><span class=err>:</span> <span class=nx>sst</span>
-      <span class=p>}</span>
-      <span class=nx>path</span><span class=err>:</span> <span class=s2>&#34;file:///root/player.csv&#34;</span>
-      <span class=c># if your csv file has no header, then use _c0,_c1,_c2,.. to indicate fields</span>
-      <span class=nx>fields</span><span class=err>:</span> <span class=p>[</span><span class=nx>_c1</span><span class=p>,</span> <span class=nx>_c2</span><span class=p>]</span>
-      <span class=nx>nebula</span><span class=p>.</span><span class=nx>fields</span><span class=err>:</span> <span class=p>[</span><span class=nx>name</span><span class=p>,</span> <span class=nx>age</span><span class=p>]</span>
-      <span class=nx>vertex</span><span class=err>:</span> <span class=p>{</span>
-        <span class=nx>field</span><span class=err>:</span><span class=nx>_c0</span>
-      <span class=p>}</span>
-      <span class=nx>separator</span><span class=err>:</span> <span class=s2>&#34;,&#34;</span>
-      <span class=nx>header</span><span class=err>:</span> <span class=kc>false</span>
-      <span class=nx>batch</span><span class=err>:</span> <span class=mi>256</span>
-      <span class=nx>partition</span><span class=err>:</span> <span class=mi>32</span>
-    <span class=p>}</span>
+    <span class="c"># HDFS csv</span>
+    <span class="c"># Import mode is sst, just change type.sink to client if you want to use client import mode.</span>
+    <span class="p">{</span>
+      <span class="nx">name</span><span class="err">:</span> <span class="nx">player</span>
+      <span class="nx">type</span><span class="err">:</span> <span class="p">{</span>
+        <span class="nx">source</span><span class="err">:</span> <span class="nx">csv</span>
+        <span class="nx">sink</span><span class="err">:</span> <span class="nx">sst</span>
+      <span class="p">}</span>
+      <span class="nx">path</span><span class="err">:</span> <span class="s2">&#34;file:///root/player.csv&#34;</span>
+      <span class="c"># if your csv file has no header, then use _c0,_c1,_c2,.. to indicate fields</span>
+      <span class="nx">fields</span><span class="err">:</span> <span class="p">[</span><span class="nx">_c1</span><span class="p">,</span> <span class="nx">_c2</span><span class="p">]</span>
+      <span class="nx">nebula</span><span class="p">.</span><span class="nx">fields</span><span class="err">:</span> <span class="p">[</span><span class="nx">name</span><span class="p">,</span> <span class="nx">age</span><span class="p">]</span>
+      <span class="nx">vertex</span><span class="err">:</span> <span class="p">{</span>
+        <span class="nx">field</span><span class="err">:</span><span class="nx">_c0</span>
+      <span class="p">}</span>
+      <span class="nx">separator</span><span class="err">:</span> <span class="s2">&#34;,&#34;</span>
+      <span class="nx">header</span><span class="err">:</span> <span class="kc">false</span>
+      <span class="nx">batch</span><span class="err">:</span> <span class="mi">256</span>
+      <span class="nx">partition</span><span class="err">:</span> <span class="mi">32</span>
+    <span class="p">}</span>
 
-  <span class=p>]</span>
-<span class=p>}</span>
+  <span class="p">]</span>
+<span class="p">}</span>
 </code></pre></td></tr></table>
 </div>
-</div></div><div class=post-footer id=post-footer>
-<div class=post-info>
-<div class=post-info-line>
-<div class=post-info-mod>
-<span>更新于 2021-08-18</span>
+</div></div><div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>更新于 2021-08-18</span>
+            </div>
+            <div class="post-info-license"></div>
+        </div>
+        <div class="post-info-line">
+            <div class="post-info-md"><span>
+                            <a class="link-to-markdown" href="/nebula-exchange-sst-2.x/index.md" target="_blank" rel="noopener noreferrer">阅读原始文档</a>
+                        </span></div>
+            <div class="post-info-share">
+                <span><a href="#" onclick="return false;" title="分享到 Twitter" data-sharer="twitter" data-url="https://siwei.io/nebula-exchange-sst-2.x/" data-title="Nebula Exchange SST 2.x Hands-on Guide" data-via="wey_gu" data-hashtags="Nebula Graph,Nebula Exchange,SST"><i class="fab fa-twitter fa-fw"></i></a><a href="#" onclick="return false;" title="分享到 Facebook" data-sharer="facebook" data-url="https://siwei.io/nebula-exchange-sst-2.x/" data-hashtag="Nebula Graph"><i class="fab fa-facebook-square fa-fw"></i></a><a href="#" onclick="return false;" title="分享到 WhatsApp" data-sharer="whatsapp" data-url="https://siwei.io/nebula-exchange-sst-2.x/" data-title="Nebula Exchange SST 2.x Hands-on Guide" data-web><i class="fab fa-whatsapp fa-fw"></i></a><a href="#" onclick="return false;" title="分享到 Line" data-sharer="line" data-url="https://siwei.io/nebula-exchange-sst-2.x/" data-title="Nebula Exchange SST 2.x Hands-on Guide"><i data-svg-src="/lib/simple-icons/icons/line.min.svg"></i></a><a href="#" onclick="return false;" title="分享到 微博" data-sharer="weibo" data-url="https://siwei.io/nebula-exchange-sst-2.x/" data-title="Nebula Exchange SST 2.x Hands-on Guide" data-image="featured-image.webp" data-ralateuid="siweigu"><i class="fab fa-weibo fa-fw"></i></a><a href="#" onclick="return false;" title="分享到 Myspace" data-sharer="myspace" data-url="https://siwei.io/nebula-exchange-sst-2.x/" data-title="Nebula Exchange SST 2.x Hands-on Guide" data-description="这篇文章带大家以最小方式，快速趟一下 Nebula Exchange 中 SST 写入方式的步骤。"><i data-svg-src="/lib/simple-icons/icons/myspace.min.svg"></i></a><a href="#" onclick="return false;" title="分享到 Blogger" data-sharer="blogger" data-url="https://siwei.io/nebula-exchange-sst-2.x/" data-title="Nebula Exchange SST 2.x Hands-on Guide" data-description="这篇文章带大家以最小方式，快速趟一下 Nebula Exchange 中 SST 写入方式的步骤。"><i class="fab fa-blogger fa-fw"></i></a><a href="#" onclick="return false;" title="分享到 Evernote" data-sharer="evernote" data-url="https://siwei.io/nebula-exchange-sst-2.x/" data-title="Nebula Exchange SST 2.x Hands-on Guide"><i class="fab fa-evernote fa-fw"></i></a></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section class="post-tags"><i class="fas fa-tags fa-fw"></i>&nbsp;<a href="/tags/nebula-graph/">Nebula Graph</a>,&nbsp;<a href="/tags/nebula-exchange/">Nebula Exchange</a>,&nbsp;<a href="/tags/sst/">SST</a></section>
+        <section>
+            <span><a href="#" onclick="window.history.back();">返回</a></span>&nbsp;|&nbsp;<span><a href="/">主页</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/nebula-operator-kind/" class="prev" rel="prev" title="Nebula Operator Kind，一键单机玩转 Nebula K8s 集群"><i class="fas fa-angle-left fa-fw"></i>Nebula Operator Kind，一键单机玩转 Nebula K8s 集群</a></div>
 </div>
-<div class=post-info-license></div>
-</div>
-<div class=post-info-line>
-<div class=post-info-md><span>
-<a class=link-to-markdown href=/nebula-exchange-sst-2.x/index.md target=_blank rel="noopener noreferrer">阅读原始文档</a>
-</span></div>
-<div class=post-info-share>
-<span><a href=# onclick=return!1 title="分享到 Twitter" data-sharer=twitter data-url=https://siwei.io/nebula-exchange-sst-2.x/ data-title="Nebula Exchange SST 2.x Hands-on Guide" data-via=wey_gu data-hashtags="Nebula Graph,Nebula Exchange,SST"><i class="fab fa-twitter fa-fw"></i></a><a href=# onclick=return!1 title="分享到 Facebook" data-sharer=facebook data-url=https://siwei.io/nebula-exchange-sst-2.x/ data-hashtag="Nebula Graph"><i class="fab fa-facebook-square fa-fw"></i></a><a href=# onclick=return!1 title="分享到 WhatsApp" data-sharer=whatsapp data-url=https://siwei.io/nebula-exchange-sst-2.x/ data-title="Nebula Exchange SST 2.x Hands-on Guide" data-web><i class="fab fa-whatsapp fa-fw"></i></a><a href=# onclick=return!1 title="分享到 Line" data-sharer=line data-url=https://siwei.io/nebula-exchange-sst-2.x/ data-title="Nebula Exchange SST 2.x Hands-on Guide"><i data-svg-src=/lib/simple-icons/icons/line.min.svg></i></a><a href=# onclick=return!1 title="分享到 微博" data-sharer=weibo data-url=https://siwei.io/nebula-exchange-sst-2.x/ data-title="Nebula Exchange SST 2.x Hands-on Guide" data-image=featured-image.webp data-ralateuid=siweigu><i class="fab fa-weibo fa-fw"></i></a><a href=# onclick=return!1 title="分享到 Myspace" data-sharer=myspace data-url=https://siwei.io/nebula-exchange-sst-2.x/ data-title="Nebula Exchange SST 2.x Hands-on Guide" data-description="这篇文章带大家以最小方式，快速趟一下 Nebula Exchange 中 SST 写入方式的步骤。"><i data-svg-src=/lib/simple-icons/icons/myspace.min.svg></i></a><a href=# onclick=return!1 title="分享到 Blogger" data-sharer=blogger data-url=https://siwei.io/nebula-exchange-sst-2.x/ data-title="Nebula Exchange SST 2.x Hands-on Guide" data-description="这篇文章带大家以最小方式，快速趟一下 Nebula Exchange 中 SST 写入方式的步骤。"><i class="fab fa-blogger fa-fw"></i></a><a href=# onclick=return!1 title="分享到 Evernote" data-sharer=evernote data-url=https://siwei.io/nebula-exchange-sst-2.x/ data-title="Nebula Exchange SST 2.x Hands-on Guide"><i class="fab fa-evernote fa-fw"></i></a></span>
-</div>
-</div>
-</div>
-<div class=post-info-more>
-<section class=post-tags><i class="fas fa-tags fa-fw"></i>&nbsp;<a href=/tags/nebula-graph/>Nebula Graph</a>,&nbsp;<a href=/tags/nebula-exchange/>Nebula Exchange</a>,&nbsp;<a href=/tags/sst/>SST</a></section>
-<section>
-<span><a href=# onclick=window.history.back()>返回</a></span>&nbsp;|&nbsp;<span><a href=/>主页</a></span>
-</section>
-</div>
-<div class=post-nav><a href=/nebula-operator-kind/ class=prev rel=prev title="Nebula Operator Kind，一键单机玩转 Nebula K8s 集群"><i class="fas fa-angle-left fa-fw"></i>Nebula Operator Kind，一键单机玩转 Nebula K8s 集群</a></div>
-</div>
-<div id=comments><div id=waline class=comment></div><noscript>
-Please enable JavaScript to view the comments powered by <a href=https://waline.js.org/>Waline</a>.
-</noscript></div></article></div>
-</main><footer class=footer>
-<div class=footer-container><div class=footer-line>由 <a href=https://gohugo.io/ target=_blank rel="noopener noreffer" title="Hugo 0.86.0">Hugo</a> 强力驱动 | 主题 - <a href=https://github.com/HEIGE-PCloud/DoIt target=_blank rel="noopener noreffer" title="DoIt 0.2.10"><i class="far fa-edit fa-fw"></i> DoIt</a>
-</div><div class=footer-line><i class="far fa-copyright fa-fw"></i><span itemprop=copyrightYear>2018 - 2021</span><span class=author itemprop=copyrightHolder>&nbsp;<a href=https://siwei.io target=_blank rel="noopener noreferrer">Wey Gu</a></span>&nbsp;|&nbsp;<span class=license><a rel="license external nofollow noopener noreffer" href=https://creativecommons.org/licenses/by-nc/4.0/ target=_blank>CC BY-NC 4.0</a></span></div>
-</div></footer></div>
-<div id=fixed-buttons><a href=#back-to-top id=back-to-top-button class=fixed-button title=回到顶部>
-<i class="fas fa-arrow-up fa-fw"></i>
-</a><a href=# id=view-comments class=fixed-button title=查看评论>
-<i class="fas fa-comment fa-fw"></i>
-</a>
-</div><div class=assets><script type=text/javascript src=/lib/autocomplete/autocomplete.min.js></script><script type=text/javascript src=/lib/fuse/fuse.min.js></script><script type=text/javascript src=/lib/lazysizes/lazysizes.min.js></script><script type=text/javascript src=/lib/topbar/topbar.min.js></script><script type=text/javascript src=/lib/pjax/pjax.min.js></script><script type=text/javascript src=/js/theme.min.js></script><script type=text/javascript>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date),gtag('config','UA-659952-4',{anonymize_ip:!0})</script><script type=text/javascript src="https://www.googletagmanager.com/gtag/js?id=UA-659952-4" async></script></div>
-<div class=pjax-assets><script type=text/javascript src=/lib/waline/Waline.min.js></script><script type=text/javascript src=/lib/lightgallery/lightgallery.min.js></script><script type=text/javascript src=/lib/lightgallery/lg-thumbnail.min.js></script><script type=text/javascript src=/lib/lightgallery/lg-zoom.min.js></script><script type=text/javascript src=/lib/clipboard/clipboard.min.js></script><script type=text/javascript src=/lib/sharer/sharer.min.js></script><script type=text/javascript src=/lib/katex/katex.min.js></script><script type=text/javascript src=/lib/katex/auto-render.min.js></script><script type=text/javascript src=/lib/katex/copy-tex.min.js></script><script type=text/javascript src=/lib/katex/mhchem.min.js></script><script type=text/javascript>window.config={code:{copyTitle:"复制到剪贴板",maxShownLines:10},comment:{waline:{avatar:"mp",avatarCDN:"https://cdn.v2ex.com/gravatar/",el:"#waline",emojiCDN:"https://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/",emojiMaps:"微博表情包",highlight:!0,lang:"en",meta:["nick","mail","link"],pageSize:10,placeholder:"Share your thoughts.",serverURL:"https://siwei-io.vercel.app",visitor:!0}},lightGallery:{actualSize:!1,exThumbImage:"data-thumbnail",hideBarsDelay:2e3,selector:".lightgallery",speed:400,thumbContHeight:80,thumbWidth:80,thumbnail:!0},math:{delimiters:[{display:!0,left:"$$",right:"$$"},{display:!0,left:"\\[",right:"\\]"},{display:!1,left:"$",right:"$"},{display:!1,left:"\\(",right:"\\)"}],strict:!1},search:{distance:100,findAllMatches:!0,fuseIndexURL:"/index.json",highlightTag:"em",ignoreFieldNorm:!1,ignoreLocation:!1,isCaseSensitive:!1,location:0,maxResultLength:10,minMatchCharLength:2,noResultsFound:"没有找到结果",snippetLength:50,threshold:.3,type:"fuse",useExtendedSearch:!1},sharerjs:!0}</script><link rel=stylesheet href=/lib/waline/Waline.min.css><link rel=stylesheet href=/lib/lightgallery/lightgallery.min.css><link rel=stylesheet href=/lib/katex/katex.min.css><link rel=stylesheet href=/lib/katex/copy-tex.min.css></div>
+<div id="comments"><div id="waline" class="comment"></div><noscript>
+                Please enable JavaScript to view the comments powered by <a href="https://waline.js.org/">Waline</a>.
+            </noscript></div></article></div>
+        </main><footer class="footer">
+        <div class="footer-container"><div class="footer-line">由 <a href="https://gohugo.io/" target="_blank" rel="noopener noreffer" title="Hugo 0.86.0">Hugo</a> 强力驱动 | 主题 - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreffer" title="DoIt 0.2.10"><i class="far fa-edit fa-fw"></i> DoIt</a>
+                </div><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2018 - 2021</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="https://siwei.io" target="_blank" rel="noopener noreferrer">Wey Gu</a></span>&nbsp;|&nbsp;<span class="license"><a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">CC BY-NC 4.0</a></span></div>
+        </div></footer></div>
+
+    <div id="fixed-buttons"><a href="#back-to-top" id="back-to-top-button" class="fixed-button" title="回到顶部">
+            <i class="fas fa-arrow-up fa-fw"></i>
+        </a><a href="#" id="view-comments" class="fixed-button" title="查看评论">
+            <i class="fas fa-comment fa-fw"></i>
+        </a>
+    </div><div class="assets"><script type="text/javascript" src="/lib/autocomplete/autocomplete.min.js"></script><script type="text/javascript" src="/lib/fuse/fuse.min.js"></script><script type="text/javascript" src="/lib/lazysizes/lazysizes.min.js"></script><script type="text/javascript" src="/lib/topbar/topbar.min.js"></script><script type="text/javascript" src="/lib/pjax/pjax.min.js"></script><script type="text/javascript" src="/js/theme.min.js"></script><script type="text/javascript">
+            window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());
+            gtag('config', 'UA-659952-4', { 'anonymize_ip': true });
+        </script><script type="text/javascript" src="https://www.googletagmanager.com/gtag/js?id=UA-659952-4" async></script></div>
+
+<div class="pjax-assets"><script type="text/javascript" src="/lib/waline/Waline.min.js"></script><script type="text/javascript" src="/lib/lightgallery/lightgallery.min.js"></script><script type="text/javascript" src="/lib/lightgallery/lg-thumbnail.min.js"></script><script type="text/javascript" src="/lib/lightgallery/lg-zoom.min.js"></script><script type="text/javascript" src="/lib/clipboard/clipboard.min.js"></script><script type="text/javascript" src="/lib/sharer/sharer.min.js"></script><script type="text/javascript" src="/lib/katex/katex.min.js"></script><script type="text/javascript" src="/lib/katex/auto-render.min.js"></script><script type="text/javascript" src="/lib/katex/copy-tex.min.js"></script><script type="text/javascript" src="/lib/katex/mhchem.min.js"></script><script type="text/javascript">window.config={"code":{"copyTitle":"复制到剪贴板","maxShownLines":10},"comment":{"waline":{"avatar":"mp","avatarCDN":"https://cdn.v2ex.com/gravatar/","el":"#waline","emojiCDN":"https://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/","emojiMaps":"微博表情包","highlight":true,"lang":"en","meta":["nick","mail","link"],"pageSize":10,"placeholder":"Share your thoughts.","serverURL":"https://siwei-io.vercel.app","visitor":true}},"lightGallery":{"actualSize":false,"exThumbImage":"data-thumbnail","hideBarsDelay":2000,"selector":".lightgallery","speed":400,"thumbContHeight":80,"thumbWidth":80,"thumbnail":true},"math":{"delimiters":[{"display":true,"left":"$$","right":"$$"},{"display":true,"left":"\\[","right":"\\]"},{"display":false,"left":"$","right":"$"},{"display":false,"left":"\\(","right":"\\)"}],"strict":false},"search":{"distance":100,"findAllMatches":true,"fuseIndexURL":"/index.json","highlightTag":"em","ignoreFieldNorm":false,"ignoreLocation":false,"isCaseSensitive":false,"location":0,"maxResultLength":10,"minMatchCharLength":2,"noResultsFound":"没有找到结果","snippetLength":50,"threshold":0.3,"type":"fuse","useExtendedSearch":false},"sharerjs":true};</script><link rel="stylesheet" href="/lib/waline/Waline.min.css"><link rel="stylesheet" href="/lib/lightgallery/lightgallery.min.css"><link rel="stylesheet" href="/lib/katex/katex.min.css"><link rel="stylesheet" href="/lib/katex/copy-tex.min.css"></div>
 </body>
+
 </html>
