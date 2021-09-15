@@ -48,7 +48,7 @@
 
 {{< showcase "nMeetup: Nebula 应用上手实操" "从头实操 Nebula 的部署，股权穿透，图算法运算，语音智能助手。" "https://siwei.io/talks/2021-nMeetup/images/cover.webp" "https://siwei.io/talks/2021-nMeetup/" 3 >}}
 
-{{< showcase "How to Train your Dragon" "如何成为开源开发者（布道师）。" "https://siwei.io/talks/Path-to-DA/images/cover.webp" "https://siwei.io/talks/Path-to-DA/" 3 >}}
+{{< showcase "How to Train your Dragon" "如何成为开源开发者（布道师）。" "https://siwei.io/talks/2021-Path-to-DA/images/cover.webp" "https://siwei.io/talks/2021-Path-to-DA/" 3 >}}
 
 ## 过往的经历
 
