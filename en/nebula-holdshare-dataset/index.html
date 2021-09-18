@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noodp" />
+    <title class="pjax-title">Nebula Holdshare Dataset: A demo of Shareholding Breakthrough with Distributed open-source Graph Database: Nebula Graph. - siwei.io</title><meta name="Description" content="A demo of Shareholding Breakthrough with Distributed open-source Graph Database: Nebula Graph. 图数据库应用示例：股权关系穿透"><meta property="og:title" content="Nebula Holdshare Dataset: A demo of Shareholding Breakthrough with Distributed open-source Graph Database: Nebula Graph." />
+<meta property="og:description" content="A demo of Shareholding Breakthrough with Distributed open-source Graph Database: Nebula Graph. 图数据库应用示例：股权关系穿透" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://siwei.io/en/nebula-holdshare-dataset/" /><meta property="og:image" content="https://siwei.io/en/nebula-holdshare-dataset/featured-image.webp"/><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2021-08-28T13:54:03+08:00" />
+<meta property="article:modified_time" content="2021-08-28T13:54:03+08:00" /><meta property="og:site_name" content="siwei.io" />
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://siwei.io/en/nebula-holdshare-dataset/featured-image.webp"/>
+<meta name="twitter:title" content="Nebula Holdshare Dataset: A demo of Shareholding Breakthrough with Distributed open-source Graph Database: Nebula Graph."/>
+<meta name="twitter:description" content="A demo of Shareholding Breakthrough with Distributed open-source Graph Database: Nebula Graph. 图数据库应用示例：股权关系穿透"/>
+<meta name="application-name" content="siwei.io">
+<meta name="apple-mobile-web-app-title" content="siwei.io">
+
+<meta name="theme-color" content="#ffffff"><meta name="msapplication-TileColor" content="#da532c"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="canonical" href="https://siwei.io/en/nebula-holdshare-dataset/" /><link rel="prev" href="https://siwei.io/en/nebula-livejournal/" /><link rel="next" href="https://siwei.io/en/nebula-clion/" /><link rel="stylesheet" href="/lib/normalize/normalize.min.css"><link rel="stylesheet" href="/css/style.min.css"><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/fontawesome-free/all.min.css">
+    <noscript><link rel="stylesheet" href="/lib/fontawesome-free/all.min.css"></noscript><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/animate/animate.min.css">
+    <noscript><link rel="stylesheet" href="/lib/animate/animate.min.css"></noscript><meta name="baidu-site-verification" content="code-4R67zl7SwH" /><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "Nebula Holdshare Dataset: A demo of Shareholding Breakthrough with Distributed open-source Graph Database: Nebula Graph.",
+        "inLanguage": "en",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "https:\/\/siwei.io\/en\/nebula-holdshare-dataset\/"
+        },"image": ["https:\/\/siwei.io\/images\/site-feature-image.webp"],"genre": "posts","keywords": "Nebula Graph, Know How, Shareholding Relationship Analysis, 图数据库应用, 股权穿透","wordcount":  1227 ,
+        "url": "https:\/\/siwei.io\/en\/nebula-holdshare-dataset\/","datePublished": "2021-08-28T13:54:03+08:00","dateModified": "2021-08-28T13:54:03+08:00","publisher": {
+            "@type": "Organization",
+            "name": ""},"author": {
+                "@type": "Person",
+                "name": "Wey Gu"
+            },"description": "A demo of Shareholding Breakthrough with Distributed open-source Graph Database: Nebula Graph. 图数据库应用示例：股权关系穿透"
+    }
+    </script></head>
+
+<body header-desktop="fixed" header-mobile="auto"><script type="text/javascript">
+        function setTheme(theme) {document.body.setAttribute('theme', theme);}
+        function saveTheme(theme) {window.localStorage && localStorage.setItem('theme', theme);}
+        function getMeta(metaName) {const metas = document.getElementsByTagName('meta'); for (let i = 0; i < metas.length; i++) if (metas[i].getAttribute('name') === metaName) return metas[i]; return '';}
+        if (window.localStorage && localStorage.getItem('theme')) {let theme = localStorage.getItem('theme');theme === 'light' || theme === 'dark' || theme === 'black' ? setTheme(theme) : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light')); } else { if ('auto' === 'light' || 'auto' === 'dark' || 'auto' === 'black') setTheme('auto'), saveTheme('auto'); else saveTheme('auto'), window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light');}
+        let themeColorMeta = getMeta('theme-color');
+        if (document.body.getAttribute('theme') != 'light') themeColorMeta.content = '#000000';
+    </script>
+    <div id="back-to-top"></div>
+    <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/en/" title="siwei.io"><span class="header-title-pre"><i class="fas fa-code-branch"></i></span>siwei.io</a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="/en/about/"> About </a><a class="menu-item" href="/en/projects/"> Project </a><a class="menu-item" href="/en/sketch-notes/"> Sketches </a><a class="menu-item" href="/en/posts/"> Blog </a><a class="menu-item" href="/en/cources/"> Hands-on </a><a class="menu-item" href="/en/talk/"> Talks </a><a class="menu-item" href="https://vesoft.com/en/careers/" rel="noopener noreffer" target="_blank"> Hire </a><a class="menu-item" href="/en/about/#contact"> Contact </a><span class="menu-item delimiter"></span><a href="#" onclick="return false;" class="menu-item language" title="Select Language">English<i class="fas fa-chevron-right fa-fw"></i>
+                        <select class="language-select" title="Select Language" id="language-select-desktop" onchange="location = this.value;"><option value="/en/nebula-holdshare-dataset/" selected>English</option><option value="/nebula-holdshare-dataset/">简体中文</option></select>
+                    </a><span class="menu-item search" id="search-desktop">
+                        <input type="text" placeholder="Search titles or contents..." id="search-input-desktop">
+                        <a href="#" onclick="return false;" class="search-button search-toggle" id="search-toggle-desktop" title="Search">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="#" onclick="return false;" class="search-button search-clear" id="search-clear-desktop" title="Clear">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-desktop">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </span><a href="#" onclick="return false;" class="menu-item theme-select" title="Switch Theme">
+                    <i class="fas fa-adjust fa-fw"></i>
+                    <select class="color-theme-select" id="theme-select-desktop" title="Switch Theme">
+                        <option value="light">Light</option>
+                        <option value="dark">Dark</option>
+                        <option value="black">Black</option>
+                        <option value="auto">Auto</option>
+                    </select>
+                </a></div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="/en/" title="siwei.io"><span class="header-title-pre"><i class="fas fa-code-branch"></i></span>siwei.io</a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><div class="search-wrapper">
+                    <div class="search mobile" id="search-mobile">
+                        <input type="text" placeholder="Search titles or contents..." id="search-input-mobile">
+                        <a href="#" onclick="return false;" class="search-button search-toggle" id="search-toggle-mobile" title="Search">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="#" onclick="return false;" class="search-button search-clear" id="search-clear-mobile" title="Clear">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-mobile">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </div>
+                    <a href="#" onclick="return false;" class="search-cancel" id="search-cancel-mobile">
+                        Cancel
+                    </a>
+                </div><a class="menu-item" href="/en/about/" title="">About</a><a class="menu-item" href="/en/projects/" title="">Project</a><a class="menu-item" href="/en/sketch-notes/" title="">Sketches</a><a class="menu-item" href="/en/posts/" title="">Blog</a><a class="menu-item" href="/en/cources/" title="">Hands-on</a><a class="menu-item" href="/en/talk/" title="">Talks</a><a class="menu-item" href="https://vesoft.com/en/careers/" title="" rel="noopener noreffer" target="_blank">Hire</a><a class="menu-item" href="/en/about/#contact" title="">Contact</a><a href="#" onclick="return false;" class="menu-item theme-select" title="Switch Theme">
+                <i class="fas fa-adjust fa-fw"></i>
+                <select class="color-theme-select" id="theme-select-mobile" title="Switch Theme">
+                    <option value="light">Light</option>
+                    <option value="dark">Dark</option>
+                    <option value="black">Black</option>
+                    <option value="auto">Auto</option>
+                </select>
+            </a><a href="#" onclick="return false;" class="menu-item" title="Select Language">English<i class="fas fa-chevron-right fa-fw"></i>
+                    <select class="language-select" title="Select Language" onchange="location = this.value;"><option value="/en/nebula-holdshare-dataset/" selected>English</option><option value="/nebula-holdshare-dataset/">简体中文</option></select>
+                </a></div>
+    </div>
+</header>
+<div class="search-dropdown desktop">
+    <div id="search-dropdown-desktop"></div>
+</div>
+<div class="search-dropdown mobile">
+    <div id="search-dropdown-mobile"></div>
+</div>
+<main class="main">
+            <div class="container"><div class="toc" id="toc-auto">
+        <h2 class="toc-title">Contents</h2>
+        <div class="toc-content always-active" id="toc-content-auto"></div>
+    </div><script>document.getElementsByTagName("main")[0].setAttribute("pageStyle", "normal")</script><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC", "true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Nebula Holdshare Dataset: A demo of Shareholding Breakthrough with Distributed open-source Graph Database: Nebula Graph.</h1><div class="post-meta">
+            <div class="post-meta-line">
+                <span class="post-author"><i class="author fas fa-user-circle fa-fw"></i><a href="https://siwei.io" title="Author" target="_blank" rel="noopener noreffer author" class="author">Wey Gu</a>
+                </span>&nbsp;<span class="post-category">included in </span>&nbsp;<span class="post-category">category <a href="/en/categories/nebula-graph/"><i class="far fa-folder fa-fw"></i>Nebula Graph</a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime="2021-08-28">2021-08-28</time>&nbsp;<i class="far fa-edit fa-fw"></i>&nbsp;<time datetime="2021-08-28">2021-08-28</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;1227 words&nbsp;
+                <i class="far fa-clock fa-fw"></i>&nbsp;3 minutes&nbsp;<span id="/en/nebula-holdshare-dataset/" class="leancloud_visitors" data-flag-title="Nebula Holdshare Dataset: A demo of Shareholding Breakthrough with Distributed open-source Graph Database: Nebula Graph.">
+                        <i class="far fa-eye fa-fw"></i>&nbsp;<span class=leancloud-visitors-count></span>&nbsp;views
+                    </span>&nbsp;</div>
+        </div><div class="featured-image"><img
+        class="lazyload"
+        data-src="/en/nebula-holdshare-dataset/featured-image.webp"
+        data-srcset="/en/nebula-holdshare-dataset/featured-image.webp, /en/nebula-holdshare-dataset/featured-image.webp 1.5x, /en/nebula-holdshare-dataset/featured-image.webp 2x"
+        data-sizes="auto"
+        alt="/en/nebula-holdshare-dataset/featured-image.webp"
+        title="A demo of Shareholding Breakthrough with Distributed open-source Graph Database: Nebula Graph. 图数据库应用示例：股权关系穿透" height="912" width="1736"
+    /></div><div class="details toc" id="toc-static"  kept="">
+                <div class="details-summary toc-title">
+                    <span>Contents</span>
+                    <span><i class="details-icon fas fa-angle-right"></i></span>
+                </div>
+                <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#data">Data</a>
+          <ul>
+            <li><a href="#data-modeling">Data Modeling</a></li>
+            <li><a href="#data-generation">Data Generation</a></li>
+            <li><a href="#data-import">Data Import</a></li>
+          </ul>
+        </li>
+        <li><a href="#corporation-sharehold-relationship-breakthrough">Corporation sharehold relationship breakthrough</a>
+          <ul>
+            <li>
+              <ul>
+                <li><a href="#query-in-ngql">Query in nGQL</a></li>
+                <li><a href="#in-a-visual-way">In a Visual Way</a></li>
+              </ul>
+            </li>
+          </ul>
+        </li>
+        <li><a href="#thanks-to-upstream-projects-">Thanks to Upstream Projects ❤️</a>
+          <ul>
+            <li><a href="#tips">Tips:</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</nav></div>
+            </div><div class="content" id="content"><blockquote>
+<p>A demo of Shareholding Breakthrough with Distributed open-source Graph Database: Nebula Graph. 图数据库应用示例：股权关系穿透</p>
+</blockquote>
+<p>Related GitHub Repo: <a href="https://github.com/wey-gu/nebula-siwi/" target="_blank" rel="noopener noreffer">https://github.com/wey-gu/nebula-siwi/</a></p>
+<blockquote>
+<p>这个项目我也做成了互动教程，可以按照这里的步骤搭建起来 👉🏻 <a href="https://siwei.io/cources/" target="_blank" rel="noopener noreffer">https://siwei.io/cources/</a></p>
+<p>I created the Katacoda Interactive Env for this project 👉🏻 <a href="https://siwei.io/cources/" target="_blank" rel="noopener noreffer">https://siwei.io/cources/</a></p>
+</blockquote>
+<blockquote>
+<p>您也可以在 Nebula Playground 上直接玩这个数据集啦：https://nebula-graph.com.cn/demo/</p>
+<p>Now you can play with the data on Nebula Playground: <a href="https://nebula-graph.io/demo/" target="_blank" rel="noopener noreffer">https://nebula-graph.io/demo/</a></p>
+</blockquote>
+<p>This is a demo of Shareholding Relationship Analysis with Distributed open-source Graph Database: Nebula Graph.</p>
+<h2 id="data">Data</h2>
+<h3 id="data-modeling">Data Modeling</h3>
+<p><img
+        class="lazyload"
+        data-src="./modeling.webp"
+        data-srcset="./modeling.webp, ./modeling.webp 1.5x, ./modeling.webp 2x"
+        data-sizes="auto"
+        alt="./modeling.webp"
+        title="modeling"
+    /></p>
+<p>There are various kinds of relationships when we checking companies' shareholding breakthrough, here let&rsquo;s simplify it with only two kind of entities: person and corp, and with following relationship types.</p>
+<ul>
+<li><code>person</code> can hold a <code>corp</code> in <code>{share} %</code></li>
+<li><code>person</code> can be relative with another <code>person</code></li>
+<li><code>corp</code> can hold another <code>corp</code> in <code>{share} %</code></li>
+<li><code>corp</code> can be a branch of another <code>corp</code></li>
+<li><code>person</code> can be as a role of a <code>corp</code></li>
+</ul>
+<p>Below is the lines to reflect this graph modele in Nebula Graph, it&rsquo;s quite straightforward, right?</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="k">CREATE</span><span class="w"> </span><span class="n">TAG</span><span class="w"> </span><span class="n">person</span><span class="p">(</span><span class="n">name</span><span class="w"> </span><span class="n">string</span><span class="p">);</span><span class="w">
+</span><span class="w"></span><span class="k">CREATE</span><span class="w"> </span><span class="n">TAG</span><span class="w"> </span><span class="n">corp</span><span class="p">(</span><span class="n">name</span><span class="w"> </span><span class="n">string</span><span class="p">);</span><span class="w">
+</span><span class="w"></span><span class="k">CREATE</span><span class="w"> </span><span class="n">EDGE</span><span class="w"> </span><span class="n">role_as</span><span class="p">(</span><span class="k">role</span><span class="w"> </span><span class="n">string</span><span class="p">);</span><span class="w">
+</span><span class="w"></span><span class="k">CREATE</span><span class="w"> </span><span class="n">EDGE</span><span class="w"> </span><span class="n">is_branch_of</span><span class="p">();</span><span class="w">
+</span><span class="w"></span><span class="k">CREATE</span><span class="w"> </span><span class="n">EDGE</span><span class="w"> </span><span class="n">hold_share</span><span class="p">(</span><span class="k">share</span><span class="w"> </span><span class="nb">float</span><span class="p">);</span><span class="w">
+</span><span class="w"></span><span class="k">CREATE</span><span class="w"> </span><span class="n">EDGE</span><span class="w"> </span><span class="n">reletive_with</span><span class="p">(</span><span class="n">degree</span><span class="w"> </span><span class="nb">int</span><span class="p">);</span><span class="w">
+</span></code></pre></td></tr></table>
+</div>
+</div><h3 id="data-generation">Data Generation</h3>
+<p>We just randomly generate some data to help with this demo, you can call <code>data_generator.py</code> directly to generate or reuse what&rsquo;s already done under <code>data_sample</code> folder.</p>
+<p>The generated data are records to be fit in above data model from below <code>.csv</code> files.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ pip install <span class="nv">Faker</span><span class="o">==</span>2.0.5 <span class="nv">pydbgen</span><span class="o">==</span>1.0.5
+$ python3 data_generator.py
+$ ls -l data
+total <span class="m">1688</span>
+-rw-r--r--  <span class="m">1</span> weyl  staff   <span class="m">23941</span> Jul <span class="m">14</span> 13:28 corp.csv
+-rw-r--r--  <span class="m">1</span> weyl  staff    <span class="m">1277</span> Jul <span class="m">14</span> 13:26 corp_rel.csv
+-rw-r--r--  <span class="m">1</span> weyl  staff    <span class="m">3048</span> Jul <span class="m">14</span> 13:26 corp_share.csv
+-rw-r--r--  <span class="m">1</span> weyl  staff  <span class="m">211661</span> Jul <span class="m">14</span> 13:26 person.csv
+-rw-r--r--  <span class="m">1</span> weyl  staff  <span class="m">179770</span> Jul <span class="m">14</span> 13:26 person_corp_role.csv
+-rw-r--r--  <span class="m">1</span> weyl  staff  <span class="m">322965</span> Jul <span class="m">14</span> 13:26 person_corp_share.csv
+-rw-r--r--  <span class="m">1</span> weyl  staff   <span class="m">17689</span> Jul <span class="m">14</span> 13:26 person_rel.csv
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="data-import">Data Import</h3>
+<p>With those data in <code>.csv</code> files, we can easily import them into a Nebula Graph Cluster with the help of <a href="https://github.com/vesoft-inc/nebula-importer" target="_blank" rel="noopener noreffer">Nebula-Importer</a>. <code>nebula-importer.yaml</code> in this repo describes rules and configurations on how this import will be done by the importer.</p>
+<p>For Nebula Graph Database, plesae refer to <a href="https://docs.nebula-graph.io/" target="_blank" rel="noopener noreffer">Doc</a> , <a href="https://docs.nebula-graph.com.cn/" target="_blank" rel="noopener noreffer">Doc-CN</a> to deploy on any Linux Servers, for study and test, you can run it via Docker following the Quick Start Chapter of the documentation.</p>
+<p>For Nebula-Importer, if you already have Docker env, you can run it as the following without installing anything. Or, if you prefer to install it, it&rsquo;s quite easy as it&rsquo;s written in Golang and you can run its single file binary quite easily, go check both Documentation and Nebula-Importer Repo: <a href="https://github.com/vesoft-inc/nebula-importer" target="_blank" rel="noopener noreffer">https://github.com/vesoft-inc/nebula-importer</a>.</p>
+<blockquote>
+<p>Let&rsquo;s start! Below is the commands I used to import our data into a Nebula Graph Database.</p>
+</blockquote>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="c1"># put generated data &amp; nebula-importor.yaml to nebula-importer server</span>
+$ scp -r data nebula_graph_host:~
+$ scp nebula-importer.yaml data nebula_graph_host:~/data
+$ ssh nebula_graph_host
+$ ls -l <span class="si">${</span><span class="nv">HOME</span><span class="si">}</span>/data
+total <span class="m">756</span>
+-rw-r--r--. <span class="m">1</span> wei.gu wei.gu  <span class="m">23941</span> Jul <span class="m">14</span> 05:44 corp.csv
+-rw-r--r--. <span class="m">1</span> wei.gu wei.gu   <span class="m">1277</span> Jul <span class="m">14</span> 05:44 corp_rel.csv
+-rw-r--r--. <span class="m">1</span> wei.gu wei.gu   <span class="m">3048</span> Jul <span class="m">14</span> 05:44 corp_share.csv
+-rw-r--r--. <span class="m">1</span> wei.gu wei.gu   <span class="m">3893</span> Jul <span class="m">14</span> 05:44 nebula-importer.yaml
+-rw-r--r--. <span class="m">1</span> wei.gu wei.gu <span class="m">211661</span> Jul <span class="m">14</span> 05:44 person.csv
+-rw-r--r--. <span class="m">1</span> wei.gu wei.gu <span class="m">179770</span> Jul <span class="m">14</span> 05:44 person_corp_role.csv
+-rw-r--r--. <span class="m">1</span> wei.gu wei.gu <span class="m">322965</span> Jul <span class="m">14</span> 05:44 person_corp_share.csv
+-rw-r--r--. <span class="m">1</span> wei.gu wei.gu  <span class="m">17689</span> Jul <span class="m">14</span> 05:44 person_rel.csv
+
+<span class="c1"># import data into our nebula graph database</span>
+$ docker run --rm -ti <span class="se">\
+</span><span class="se"></span>    --network<span class="o">=</span>nebula-docker-compose_nebula-net <span class="se">\
+</span><span class="se"></span>    -v <span class="si">${</span><span class="nv">HOME</span><span class="si">}</span>/data/nebula-importer.yaml:/root/nebula-importer.yaml <span class="se">\
+</span><span class="se"></span>    -v <span class="si">${</span><span class="nv">HOME</span><span class="si">}</span>/data:/root <span class="se">\
+</span><span class="se"></span>    vesoft/nebula-importer:v2 <span class="se">\
+</span><span class="se"></span>    --config /root/nebula-importer.yaml
+
+2021/07/14 05:49:32 --- START OF NEBULA IMPORTER ---
+2021/07/14 05:49:32 <span class="o">[</span>WARN<span class="o">]</span> config.go:491: Not <span class="nb">set</span> files<span class="o">[</span>0<span class="o">]</span>.schema.vertex.vid.Type, reset to default value <span class="sb">`</span>string<span class="err">&#39;</span>
+...
+2021/07/14 05:49:43 <span class="o">[</span>INFO<span class="o">]</span> reader.go:180: Total lines of file<span class="o">(</span>/root/person_corp_role.csv<span class="o">)</span> is: 5000, error lines: <span class="m">1287</span>
+2021/07/14 05:49:43 <span class="o">[</span>INFO<span class="o">]</span> statsmgr.go:61: Done<span class="o">(</span>/root/person_corp_role.csv<span class="o">)</span>: Time<span class="o">(</span>11.39s<span class="o">)</span>, Finished<span class="o">(</span>12523<span class="o">)</span>, Failed<span class="o">(</span>0<span class="o">)</span>, Latency AVG<span class="o">(</span>1514us<span class="o">)</span>, Batches Req AVG<span class="o">(</span>1824us<span class="o">)</span>, Rows AVG<span class="o">(</span>1099.43/s<span class="o">)</span>
+2021/07/14 05:49:47 <span class="o">[</span>INFO<span class="o">]</span> statsmgr.go:61: Tick: Time<span class="o">(</span>15.00s<span class="o">)</span>, Finished<span class="o">(</span>25807<span class="o">)</span>, Failed<span class="o">(</span>0<span class="o">)</span>, Latency AVG<span class="o">(</span>1500us<span class="o">)</span>, Batches Req AVG<span class="o">(</span>1805us<span class="o">)</span>, Rows AVG<span class="o">(</span>1720.46/s<span class="o">)</span>
+2021/07/14 05:49:48 <span class="o">[</span>INFO<span class="o">]</span> reader.go:180: Total lines of file<span class="o">(</span>/root/person.csv<span class="o">)</span> is: 10000, error lines: <span class="m">0</span>
+2021/07/14 05:49:48 <span class="o">[</span>INFO<span class="o">]</span> statsmgr.go:61: Done<span class="o">(</span>/root/person.csv<span class="o">)</span>: Time<span class="o">(</span>16.10s<span class="o">)</span>, Finished<span class="o">(</span>29731<span class="o">)</span>, Failed<span class="o">(</span>0<span class="o">)</span>, Latency AVG<span class="o">(</span>1505us<span class="o">)</span>, Batches Req AVG<span class="o">(</span>1810us<span class="o">)</span>, Rows AVG<span class="o">(</span>1847.17/s<span class="o">)</span>
+2021/07/14 05:49:50 <span class="o">[</span>INFO<span class="o">]</span> reader.go:180: Total lines of file<span class="o">(</span>/root/person_corp_share.csv<span class="o">)</span> is: 20000, error lines: <span class="m">0</span>
+2021/07/14 05:49:50 <span class="o">[</span>INFO<span class="o">]</span> statsmgr.go:61: Done<span class="o">(</span>/root/person_corp_share.csv<span class="o">)</span>: Time<span class="o">(</span>17.74s<span class="o">)</span>, Finished<span class="o">(</span>36013<span class="o">)</span>, Failed<span class="o">(</span>0<span class="o">)</span>, Latency AVG<span class="o">(</span>1531us<span class="o">)</span>, Batches Req AVG<span class="o">(</span>1844us<span class="o">)</span>, Rows AVG<span class="o">(</span>2030.29/s<span class="o">)</span>
+2021/07/14 05:49:50 Finish import data, consume time: 18.25s
+2021/07/14 05:49:51 --- END OF NEBULA IMPORTER ---
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="corporation-sharehold-relationship-breakthrough">Corporation sharehold relationship breakthrough</h2>
+<h4 id="query-in-ngql">Query in nGQL</h4>
+<p>We can query from corp: <code>c_132</code> over <code>*</code>(all relationships) in <code>BIDIRECT</code>:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="k">GO</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">TO</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="n">STEPS</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="s2">&#34;c_132&#34;</span><span class="w"> </span><span class="n">over</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">BIDIRECT</span><span class="w">
+</span></code></pre></td></tr></table>
+</div>
+</div><p>Below are lines I call this query in <a href="https://github.com/vesoft-inc/nebula-console" target="_blank" rel="noopener noreffer">nebula-console</a>:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">/ <span class="c1"># nebula-console  -addr 192.168.8.128 -port 9669 -user user -password password</span>
+2021/07/14 07:07:41 <span class="o">[</span>INFO<span class="o">]</span> connection pool is initialized successfully
+
+Welcome to Nebula Graph!
+
+<span class="o">(</span>user@nebula<span class="o">)</span> <span class="o">[(</span>none<span class="o">)]</span>&gt; show spaces
++--------------------+
+<span class="p">|</span> Name               <span class="p">|</span>
++--------------------+
+<span class="p">|</span> <span class="s2">&#34;basketballplayer&#34;</span> <span class="p">|</span>
++--------------------+
+<span class="p">|</span> <span class="s2">&#34;shareholding&#34;</span>     <span class="p">|</span>
++--------------------+
+Got <span class="m">2</span> rows <span class="o">(</span><span class="nb">time</span> spent 3851/4595 us<span class="o">)</span>
+
+Wed, <span class="m">14</span> Jul <span class="m">2021</span> 07:07:57 UTC
+
+<span class="o">(</span>user@nebula<span class="o">)</span> <span class="o">[(</span>none<span class="o">)]</span>&gt; use shareholding
+Execution succeeded <span class="o">(</span><span class="nb">time</span> spent 1822/2342 us<span class="o">)</span>
+
+Wed, <span class="m">14</span> Jul <span class="m">2021</span> 07:08:02 UTC
+
+<span class="o">(</span>user@nebula<span class="o">)</span> <span class="o">[</span>shareholding<span class="o">]</span>&gt; GO <span class="m">1</span> TO <span class="m">3</span> STEPS FROM <span class="s2">&#34;c_132&#34;</span> over * BIDIRECT
++--------------+-------------------+-----------------+--------------------+
+<span class="p">|</span> role_as._dst <span class="p">|</span> is_branch_of._dst <span class="p">|</span> hold_share._dst <span class="p">|</span> reletive_with._dst <span class="p">|</span>
++--------------+-------------------+-----------------+--------------------+
+<span class="p">|</span> <span class="s2">&#34;p_2024&#34;</span>     <span class="p">|</span>                   <span class="p">|</span>                 <span class="p">|</span>                    <span class="p">|</span>
++--------------+-------------------+-----------------+--------------------+
+<span class="p">|</span> <span class="s2">&#34;p_4000&#34;</span>     <span class="p">|</span>                   <span class="p">|</span>                 <span class="p">|</span>                    <span class="p">|</span>
++--------------+-------------------+-----------------+--------------------+
+<span class="p">|</span>              <span class="p">|</span>                   <span class="p">|</span> <span class="s2">&#34;c_245&#34;</span>         <span class="p">|</span>                    <span class="p">|</span>
++--------------+-------------------+-----------------+--------------------+
+<span class="p">|</span>              <span class="p">|</span>                   <span class="p">|</span> <span class="s2">&#34;p_1039&#34;</span>        <span class="p">|</span>                    <span class="p">|</span>
++--------------+-------------------+-----------------+--------------------+
+<span class="p">|</span>              <span class="p">|</span>                   <span class="p">|</span> <span class="s2">&#34;p_1399&#34;</span>        <span class="p">|</span>                    <span class="p">|</span>
++--------------+-------------------+-----------------+--------------------+
+<span class="p">|</span>              <span class="p">|</span>                   <span class="p">|</span> <span class="s2">&#34;p_1767&#34;</span>        <span class="p">|</span>                    <span class="p">|</span>
+...
++--------------+-------------------+-----------------+--------------------+
+<span class="p">|</span>              <span class="p">|</span>                   <span class="p">|</span> <span class="s2">&#34;c_132&#34;</span>         <span class="p">|</span>                    <span class="p">|</span>
++--------------+-------------------+-----------------+--------------------+
+<span class="p">|</span>              <span class="p">|</span>                   <span class="p">|</span> <span class="s2">&#34;c_245&#34;</span>         <span class="p">|</span>                    <span class="p">|</span>
++--------------+-------------------+-----------------+--------------------+
+<span class="p">|</span>              <span class="p">|</span>                   <span class="p">|</span> <span class="s2">&#34;c_25&#34;</span>          <span class="p">|</span>                    <span class="p">|</span>
++--------------+-------------------+-----------------+--------------------+
+<span class="p">|</span>              <span class="p">|</span>                   <span class="p">|</span> <span class="s2">&#34;c_649&#34;</span>         <span class="p">|</span>                    <span class="p">|</span>
++--------------+-------------------+-----------------+--------------------+
+<span class="p">|</span>              <span class="p">|</span>                   <span class="p">|</span> <span class="s2">&#34;c_753&#34;</span>         <span class="p">|</span>                    <span class="p">|</span>
++--------------+-------------------+-----------------+--------------------+
+Got <span class="m">1519</span> rows <span class="o">(</span><span class="nb">time</span> spent 12190/14702 us<span class="o">)</span>
+
+Wed, <span class="m">14</span> Jul <span class="m">2021</span> 07:08:06 UTC
+
+</code></pre></td></tr></table>
+</div>
+</div><h4 id="in-a-visual-way">In a Visual Way</h4>
+<p>Of course, we can also be done in a visual way:</p>
+<p>Step 1, login from Nebula Graph Studio, explore with one VID: <code>c_132</code>:</p>
+<p><img
+        class="lazyload"
+        data-src="./studio_explore_0.webp"
+        data-srcset="./studio_explore_0.webp, ./studio_explore_0.webp 1.5x, ./studio_explore_0.webp 2x"
+        data-sizes="auto"
+        alt="./studio_explore_0.webp"
+        title="studio_explore_0"
+    /></p>
+<p>Step2, click this explored vertex dot, then you can explore from select vertices by selecting:</p>
+<ul>
+<li>Edge Type</li>
+<li>Direction</li>
+<li>Steps</li>
+<li>Query Limit(Optional)</li>
+</ul>
+<blockquote>
+<p>note, you can click the 👁️ icon to add options to show fields of the graph,</p>
+</blockquote>
+<p><img
+        class="lazyload"
+        data-src="./studio_explore_1.webp"
+        data-srcset="./studio_explore_1.webp, ./studio_explore_1.webp 1.5x, ./studio_explore_1.webp 2x"
+        data-sizes="auto"
+        alt="./studio_explore_1.webp"
+        title="studio_explore_1"
+    /></p>
+<p>Step3, after click Expand, you will see all quried relations with <code>c_132</code> the <code>Chambers LLC</code>.</p>
+<p><img
+        class="lazyload"
+        data-src="./studio_explore_2.webp"
+        data-srcset="./studio_explore_2.webp, ./studio_explore_2.webp 1.5x, ./studio_explore_2.webp 2x"
+        data-sizes="auto"
+        alt="./studio_explore_2.webp"
+        title="studio_explore_2"
+    /></p>
+<h2 id="thanks-to-upstream-projects-">Thanks to Upstream Projects ❤️</h2>
+<ul>
+<li>Python Faker <a href="https://github.com/joke2k/faker/" target="_blank" rel="noopener noreffer">https://github.com/joke2k/faker/</a></li>
+<li>pydbgen <a href="https://github.com/tirthajyoti/pydbgen" target="_blank" rel="noopener noreffer">https://github.com/tirthajyoti/pydbgen</a></li>
+<li>Nebula Graph <a href="https://github.com/vesoft-inc/nebula-graph" target="_blank" rel="noopener noreffer">https://github.com/vesoft-inc/nebula-graph</a></li>
+</ul>
+<h3 id="tips">Tips:</h3>
+<ul>
+<li>You can deploy nebula graph in one line with:
+<ul>
+<li><a href="https://siwei.io/nebula-up/" target="_blank" rel="noopener noreffer">Nebula-UP</a>, it helps install a nebula graph with Docker</li>
+<li><a href="https://siwei.io/nebula-operator-kind/" target="_blank" rel="noopener noreffer">Nebula-operator-KIND</a> , it helps setup all dependencies of Nebula-K8s-Operator including a K8s in Docker, PV Provider and then install a Nebula Graph with Nebula-Operator in K8s.</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>Image Credit goes to <a href="https://unsplash.com/photos/3fPXt37X6UQ" target="_blank" rel="noopener noreffer">https://unsplash.com/photos/3fPXt37X6UQ</a></p>
+</blockquote></div><div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>Updated on 2021-08-28</span>
+            </div>
+            <div class="post-info-license"></div>
+        </div>
+        <div class="post-info-line">
+            <div class="post-info-md"><span>
+                            <a class="link-to-markdown" href="/en/nebula-holdshare-dataset/index.md" target="_blank" rel="noopener noreferrer">Read Markdown</a>
+                        </span></div>
+            <div class="post-info-share">
+                <span><a href="#" onclick="return false;" title="Share on Twitter" data-sharer="twitter" data-url="https://siwei.io/en/nebula-holdshare-dataset/" data-title="Nebula Holdshare Dataset: A demo of Shareholding Breakthrough with Distributed open-source Graph Database: Nebula Graph." data-via="wey_gu" data-hashtags="Nebula Graph,Know How,Shareholding Relationship Analysis,图数据库应用,股权穿透"><i class="fab fa-twitter fa-fw"></i></a><a href="#" onclick="return false;" title="Share on Facebook" data-sharer="facebook" data-url="https://siwei.io/en/nebula-holdshare-dataset/" data-hashtag="Nebula Graph"><i class="fab fa-facebook-square fa-fw"></i></a><a href="#" onclick="return false;" title="Share on WhatsApp" data-sharer="whatsapp" data-url="https://siwei.io/en/nebula-holdshare-dataset/" data-title="Nebula Holdshare Dataset: A demo of Shareholding Breakthrough with Distributed open-source Graph Database: Nebula Graph." data-web><i class="fab fa-whatsapp fa-fw"></i></a><a href="#" onclick="return false;" title="Share on Line" data-sharer="line" data-url="https://siwei.io/en/nebula-holdshare-dataset/" data-title="Nebula Holdshare Dataset: A demo of Shareholding Breakthrough with Distributed open-source Graph Database: Nebula Graph."><i data-svg-src="/lib/simple-icons/icons/line.min.svg"></i></a><a href="#" onclick="return false;" title="Share on 微博" data-sharer="weibo" data-url="https://siwei.io/en/nebula-holdshare-dataset/" data-title="Nebula Holdshare Dataset: A demo of Shareholding Breakthrough with Distributed open-source Graph Database: Nebula Graph." data-image="featured-image.webp" data-ralateuid="siweigu"><i class="fab fa-weibo fa-fw"></i></a><a href="#" onclick="return false;" title="Share on Myspace" data-sharer="myspace" data-url="https://siwei.io/en/nebula-holdshare-dataset/" data-title="Nebula Holdshare Dataset: A demo of Shareholding Breakthrough with Distributed open-source Graph Database: Nebula Graph." data-description="A demo of Shareholding Breakthrough with Distributed open-source Graph Database: Nebula Graph. 图数据库应用示例：股权关系穿透"><i data-svg-src="/lib/simple-icons/icons/myspace.min.svg"></i></a><a href="#" onclick="return false;" title="Share on Blogger" data-sharer="blogger" data-url="https://siwei.io/en/nebula-holdshare-dataset/" data-title="Nebula Holdshare Dataset: A demo of Shareholding Breakthrough with Distributed open-source Graph Database: Nebula Graph." data-description="A demo of Shareholding Breakthrough with Distributed open-source Graph Database: Nebula Graph. 图数据库应用示例：股权关系穿透"><i class="fab fa-blogger fa-fw"></i></a><a href="#" onclick="return false;" title="Share on Evernote" data-sharer="evernote" data-url="https://siwei.io/en/nebula-holdshare-dataset/" data-title="Nebula Holdshare Dataset: A demo of Shareholding Breakthrough with Distributed open-source Graph Database: Nebula Graph."><i class="fab fa-evernote fa-fw"></i></a></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section class="post-tags"><i class="fas fa-tags fa-fw"></i>&nbsp;<a href="/en/tags/nebula-graph/">Nebula Graph</a>,&nbsp;<a href="/en/tags/know-how/">Know How</a>,&nbsp;<a href="/en/tags/shareholding-relationship-analysis/">Shareholding Relationship Analysis</a>,&nbsp;<a href="/en/tags/%E5%9B%BE%E6%95%B0%E6%8D%AE%E5%BA%93%E5%BA%94%E7%94%A8/">图数据库应用</a>,&nbsp;<a href="/en/tags/%E8%82%A1%E6%9D%83%E7%A9%BF%E9%80%8F/">股权穿透</a></section>
+        <section>
+            <span><a href="#" onclick="window.history.back();">Back</a></span>&nbsp;|&nbsp;<span><a href="/en/">Home</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/en/nebula-livejournal/" class="prev" rel="prev" title="Nebula LiveJournal, Import LiveJournal Dataset into Nebula Graph and Run Nebula Algorithm"><i class="fas fa-angle-left fa-fw"></i>Nebula LiveJournal, Import LiveJournal Dataset into Nebula Graph and Run Nebula Algorithm</a>
+            <a href="/en/nebula-clion/" class="next" rel="next" title="Nebula CLion: Setup Nebula Graph Dev Env with CLion and Docker">Nebula CLion: Setup Nebula Graph Dev Env with CLion and Docker<i class="fas fa-angle-right fa-fw"></i></a></div>
+</div>
+<div id="comments"><div id="waline" class="comment"></div><noscript>
+                Please enable JavaScript to view the comments powered by <a href="https://waline.js.org/">Waline</a>.
+            </noscript></div></article></div>
+        </main><footer class="footer">
+        <div class="footer-container"><div class="footer-line">Powered by <a href="https://gohugo.io/" target="_blank" rel="noopener noreffer" title="Hugo 0.86.0">Hugo</a> | Theme - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreffer" title="DoIt 0.2.10"><i class="far fa-edit fa-fw"></i> DoIt</a>
+                </div><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2018 - 2021</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="https://siwei.io" target="_blank" rel="noopener noreferrer">Wey Gu</a></span>&nbsp;|&nbsp;<span class="license"><a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">CC BY-NC 4.0</a></span></div>
+        </div></footer></div>
+
+    <div id="fixed-buttons"><a href="#back-to-top" id="back-to-top-button" class="fixed-button" title="Back to Top">
+            <i class="fas fa-arrow-up fa-fw"></i>
+        </a><a href="#" id="view-comments" class="fixed-button" title="View Comments">
+            <i class="fas fa-comment fa-fw"></i>
+        </a>
+    </div><div class="assets"><script type="text/javascript" src="/lib/autocomplete/autocomplete.min.js"></script><script type="text/javascript" src="/lib/fuse/fuse.min.js"></script><script type="text/javascript" src="/lib/lazysizes/lazysizes.min.js"></script><script type="text/javascript" src="/lib/topbar/topbar.min.js"></script><script type="text/javascript" src="/lib/pjax/pjax.min.js"></script><script type="text/javascript" src="/js/theme.min.js"></script><script type="text/javascript">
+            window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());
+            gtag('config', 'UA-659952-4', { 'anonymize_ip': true });
+        </script><script type="text/javascript" src="https://www.googletagmanager.com/gtag/js?id=UA-659952-4" async></script></div>
+
+<div class="pjax-assets"><script type="text/javascript" src="/lib/waline/Waline.min.js"></script><script type="text/javascript" src="/lib/clipboard/clipboard.min.js"></script><script type="text/javascript" src="/lib/sharer/sharer.min.js"></script><script type="text/javascript" src="/lib/katex/katex.min.js"></script><script type="text/javascript" src="/lib/katex/auto-render.min.js"></script><script type="text/javascript" src="/lib/katex/copy-tex.min.js"></script><script type="text/javascript" src="/lib/katex/mhchem.min.js"></script><script type="text/javascript">window.config={"code":{"copyTitle":"Copy to clipboard","maxShownLines":10},"comment":{"waline":{"avatar":"mp","avatarCDN":"https://cdn.v2ex.com/gravatar/","el":"#waline","emojiCDN":"https://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/","emojiMaps":"微博表情包","highlight":true,"lang":"en","meta":["nick","mail","link"],"pageSize":10,"placeholder":"Share your thoughts.","serverURL":"https://siwei-io.vercel.app","visitor":true}},"math":{"delimiters":[{"display":true,"left":"$$","right":"$$"},{"display":true,"left":"\\[","right":"\\]"},{"display":false,"left":"$","right":"$"},{"display":false,"left":"\\(","right":"\\)"}],"strict":false},"search":{"distance":100,"findAllMatches":true,"fuseIndexURL":"/en/index.json","highlightTag":"em","ignoreFieldNorm":false,"ignoreLocation":false,"isCaseSensitive":false,"location":0,"maxResultLength":10,"minMatchCharLength":2,"noResultsFound":"No results found","snippetLength":50,"threshold":0.3,"type":"fuse","useExtendedSearch":false},"sharerjs":true};</script><link rel="stylesheet" href="/lib/waline/Waline.min.css"><link rel="stylesheet" href="/lib/katex/katex.min.css"><link rel="stylesheet" href="/lib/katex/copy-tex.min.css"></div>
+</body>
+
+</html>

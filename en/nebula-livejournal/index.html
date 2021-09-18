@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noodp" />
+    <title class="pjax-title">Nebula LiveJournal, Import LiveJournal Dataset into Nebula Graph and Run Nebula Algorithm - siwei.io</title><meta name="Description" content="Import LiveJournal Dataset into Nebula Graph and Run Nebula Algorithm 导入 Livejournal 数据集到 Nebula 并运行 Nebula Algorithm 图算法"><meta property="og:title" content="Nebula LiveJournal, Import LiveJournal Dataset into Nebula Graph and Run Nebula Algorithm" />
+<meta property="og:description" content="Import LiveJournal Dataset into Nebula Graph and Run Nebula Algorithm 导入 Livejournal 数据集到 Nebula 并运行 Nebula Algorithm 图算法" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://siwei.io/en/nebula-livejournal/" /><meta property="og:image" content="https://siwei.io/en/nebula-livejournal/featured-image.png"/><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2021-08-24T11:22:55+08:00" />
+<meta property="article:modified_time" content="2021-08-24T11:22:55+08:00" /><meta property="og:site_name" content="siwei.io" />
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://siwei.io/en/nebula-livejournal/featured-image.png"/>
+<meta name="twitter:title" content="Nebula LiveJournal, Import LiveJournal Dataset into Nebula Graph and Run Nebula Algorithm"/>
+<meta name="twitter:description" content="Import LiveJournal Dataset into Nebula Graph and Run Nebula Algorithm 导入 Livejournal 数据集到 Nebula 并运行 Nebula Algorithm 图算法"/>
+<meta name="application-name" content="siwei.io">
+<meta name="apple-mobile-web-app-title" content="siwei.io">
+
+<meta name="theme-color" content="#ffffff"><meta name="msapplication-TileColor" content="#da532c"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="canonical" href="https://siwei.io/en/nebula-livejournal/" /><link rel="prev" href="https://siwei.io/en/nebula-exchange-sst-2.x/" /><link rel="next" href="https://siwei.io/en/nebula-holdshare-dataset/" /><link rel="stylesheet" href="/lib/normalize/normalize.min.css"><link rel="stylesheet" href="/css/style.min.css"><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/fontawesome-free/all.min.css">
+    <noscript><link rel="stylesheet" href="/lib/fontawesome-free/all.min.css"></noscript><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/animate/animate.min.css">
+    <noscript><link rel="stylesheet" href="/lib/animate/animate.min.css"></noscript><meta name="baidu-site-verification" content="code-4R67zl7SwH" /><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "Nebula LiveJournal, Import LiveJournal Dataset into Nebula Graph and Run Nebula Algorithm",
+        "inLanguage": "en",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "https:\/\/siwei.io\/en\/nebula-livejournal\/"
+        },"image": ["https:\/\/siwei.io\/images\/site-feature-image.webp"],"genre": "posts","keywords": "Nebula Graph, LiveJournal, Nebula Algorithm, PageRank, Graph Algorithm","wordcount":  628 ,
+        "url": "https:\/\/siwei.io\/en\/nebula-livejournal\/","datePublished": "2021-08-24T11:22:55+08:00","dateModified": "2021-08-24T11:22:55+08:00","publisher": {
+            "@type": "Organization",
+            "name": ""},"author": {
+                "@type": "Person",
+                "name": "Wey Gu"
+            },"description": "Import LiveJournal Dataset into Nebula Graph and Run Nebula Algorithm 导入 Livejournal 数据集到 Nebula 并运行 Nebula Algorithm 图算法"
+    }
+    </script></head>
+
+<body header-desktop="fixed" header-mobile="auto"><script type="text/javascript">
+        function setTheme(theme) {document.body.setAttribute('theme', theme);}
+        function saveTheme(theme) {window.localStorage && localStorage.setItem('theme', theme);}
+        function getMeta(metaName) {const metas = document.getElementsByTagName('meta'); for (let i = 0; i < metas.length; i++) if (metas[i].getAttribute('name') === metaName) return metas[i]; return '';}
+        if (window.localStorage && localStorage.getItem('theme')) {let theme = localStorage.getItem('theme');theme === 'light' || theme === 'dark' || theme === 'black' ? setTheme(theme) : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light')); } else { if ('auto' === 'light' || 'auto' === 'dark' || 'auto' === 'black') setTheme('auto'), saveTheme('auto'); else saveTheme('auto'), window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light');}
+        let themeColorMeta = getMeta('theme-color');
+        if (document.body.getAttribute('theme') != 'light') themeColorMeta.content = '#000000';
+    </script>
+    <div id="back-to-top"></div>
+    <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/en/" title="siwei.io"><span class="header-title-pre"><i class="fas fa-code-branch"></i></span>siwei.io</a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="/en/about/"> About </a><a class="menu-item" href="/en/projects/"> Project </a><a class="menu-item" href="/en/sketch-notes/"> Sketches </a><a class="menu-item" href="/en/posts/"> Blog </a><a class="menu-item" href="/en/cources/"> Hands-on </a><a class="menu-item" href="/en/talk/"> Talks </a><a class="menu-item" href="https://vesoft.com/en/careers/" rel="noopener noreffer" target="_blank"> Hire </a><a class="menu-item" href="/en/about/#contact"> Contact </a><span class="menu-item delimiter"></span><a href="#" onclick="return false;" class="menu-item language" title="Select Language">English<i class="fas fa-chevron-right fa-fw"></i>
+                        <select class="language-select" title="Select Language" id="language-select-desktop" onchange="location = this.value;"><option value="/en/nebula-livejournal/" selected>English</option><option value="/nebula-livejournal/">简体中文</option></select>
+                    </a><span class="menu-item search" id="search-desktop">
+                        <input type="text" placeholder="Search titles or contents..." id="search-input-desktop">
+                        <a href="#" onclick="return false;" class="search-button search-toggle" id="search-toggle-desktop" title="Search">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="#" onclick="return false;" class="search-button search-clear" id="search-clear-desktop" title="Clear">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-desktop">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </span><a href="#" onclick="return false;" class="menu-item theme-select" title="Switch Theme">
+                    <i class="fas fa-adjust fa-fw"></i>
+                    <select class="color-theme-select" id="theme-select-desktop" title="Switch Theme">
+                        <option value="light">Light</option>
+                        <option value="dark">Dark</option>
+                        <option value="black">Black</option>
+                        <option value="auto">Auto</option>
+                    </select>
+                </a></div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="/en/" title="siwei.io"><span class="header-title-pre"><i class="fas fa-code-branch"></i></span>siwei.io</a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><div class="search-wrapper">
+                    <div class="search mobile" id="search-mobile">
+                        <input type="text" placeholder="Search titles or contents..." id="search-input-mobile">
+                        <a href="#" onclick="return false;" class="search-button search-toggle" id="search-toggle-mobile" title="Search">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="#" onclick="return false;" class="search-button search-clear" id="search-clear-mobile" title="Clear">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-mobile">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </div>
+                    <a href="#" onclick="return false;" class="search-cancel" id="search-cancel-mobile">
+                        Cancel
+                    </a>
+                </div><a class="menu-item" href="/en/about/" title="">About</a><a class="menu-item" href="/en/projects/" title="">Project</a><a class="menu-item" href="/en/sketch-notes/" title="">Sketches</a><a class="menu-item" href="/en/posts/" title="">Blog</a><a class="menu-item" href="/en/cources/" title="">Hands-on</a><a class="menu-item" href="/en/talk/" title="">Talks</a><a class="menu-item" href="https://vesoft.com/en/careers/" title="" rel="noopener noreffer" target="_blank">Hire</a><a class="menu-item" href="/en/about/#contact" title="">Contact</a><a href="#" onclick="return false;" class="menu-item theme-select" title="Switch Theme">
+                <i class="fas fa-adjust fa-fw"></i>
+                <select class="color-theme-select" id="theme-select-mobile" title="Switch Theme">
+                    <option value="light">Light</option>
+                    <option value="dark">Dark</option>
+                    <option value="black">Black</option>
+                    <option value="auto">Auto</option>
+                </select>
+            </a><a href="#" onclick="return false;" class="menu-item" title="Select Language">English<i class="fas fa-chevron-right fa-fw"></i>
+                    <select class="language-select" title="Select Language" onchange="location = this.value;"><option value="/en/nebula-livejournal/" selected>English</option><option value="/nebula-livejournal/">简体中文</option></select>
+                </a></div>
+    </div>
+</header>
+<div class="search-dropdown desktop">
+    <div id="search-dropdown-desktop"></div>
+</div>
+<div class="search-dropdown mobile">
+    <div id="search-dropdown-mobile"></div>
+</div>
+<main class="main">
+            <div class="container"><div class="toc" id="toc-auto">
+        <h2 class="toc-title">Contents</h2>
+        <div class="toc-content always-active" id="toc-content-auto"></div>
+    </div><script>document.getElementsByTagName("main")[0].setAttribute("pageStyle", "normal")</script><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC", "true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Nebula LiveJournal, Import LiveJournal Dataset into Nebula Graph and Run Nebula Algorithm</h1><div class="post-meta">
+            <div class="post-meta-line">
+                <span class="post-author"><i class="author fas fa-user-circle fa-fw"></i><a href="https://siwei.io" title="Author" target="_blank" rel="noopener noreffer author" class="author">Wey Gu</a>
+                </span>&nbsp;<span class="post-category">included in </span>&nbsp;<span class="post-category">category <a href="/en/categories/nebula-graph/"><i class="far fa-folder fa-fw"></i>Nebula Graph</a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime="2021-08-24">2021-08-24</time>&nbsp;<i class="far fa-edit fa-fw"></i>&nbsp;<time datetime="2021-08-24">2021-08-24</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;628 words&nbsp;
+                <i class="far fa-clock fa-fw"></i>&nbsp;2 minutes&nbsp;<span id="/en/nebula-livejournal/" class="leancloud_visitors" data-flag-title="Nebula LiveJournal, Import LiveJournal Dataset into Nebula Graph and Run Nebula Algorithm">
+                        <i class="far fa-eye fa-fw"></i>&nbsp;<span class=leancloud-visitors-count></span>&nbsp;views
+                    </span>&nbsp;</div>
+        </div><div class="featured-image"><img
+        class="lazyload"
+        data-src="/en/nebula-livejournal/featured-image.webp"
+        data-srcset="/en/nebula-livejournal/featured-image.webp, /en/nebula-livejournal/featured-image.webp 1.5x, /en/nebula-livejournal/featured-image.webp 2x"
+        data-sizes="auto"
+        alt="/en/nebula-livejournal/featured-image.webp"
+        title="Import LiveJournal Dataset into Nebula Graph and Run Nebula Algorithm 导入 Livejournal 数据集到 Nebula 并运行 Nebula Algorithm 图算法" height="914" width="1738"
+    /></div><div class="details toc" id="toc-static"  kept="">
+                <div class="details-summary toc-title">
+                    <span>Contents</span>
+                    <span><i class="details-icon fas fa-angle-right"></i></span>
+                </div>
+                <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#nebula-livejournal">nebula-LiveJournal</a>
+      <ul>
+        <li><a href="#dataset-download-and-preprocessing">Dataset Download and Preprocessing</a>
+          <ul>
+            <li><a href="#download">Download</a></li>
+            <li><a href="#preprocessing">Preprocessing</a></li>
+          </ul>
+        </li>
+        <li><a href="#import-dataset-to-nebula-graph">Import dataset to Nebula Graph</a>
+          <ul>
+            <li><a href="#with-nebula-importer">With Nebula Importer</a></li>
+            <li><a href="#with-nebula-exchange">With Nebula Exchange</a></li>
+          </ul>
+        </li>
+        <li><a href="#run-algorithms-with-nebula-graph">Run Algorithms with Nebula Graph</a>
+          <ul>
+            <li><a href="#ad-hoc-spark-env-setup">Ad-hoc Spark Env setup</a></li>
+            <li><a href="#run-algorithms">Run Algorithms</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</nav></div>
+            </div><div class="content" id="content"><blockquote>
+<p>一个导入 Livejournal 数据集到 Nebula Graph 图数据库，并执行 Nebula Algorithm 图算法的过程分享。</p>
+</blockquote>
+<p>Related GitHub Repo: <a href="https://github.com/wey-gu/nebula-LiveJournal" target="_blank" rel="noopener noreffer">https://github.com/wey-gu/nebula-LiveJournal</a></p>
+<h1 id="nebula-livejournal">nebula-LiveJournal</h1>
+<p>LiveJournal Dataset is a Social Network Dataset in one file with two columns(FromNodeId, ToNodeId).</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ head soc-LiveJournal1.txt
+<span class="c1"># Directed graph (each unordered pair of nodes is saved once): soc-LiveJournal1.txt</span>
+<span class="c1"># Directed LiveJournal friednship social network</span>
+<span class="c1"># Nodes: 4847571 Edges: 68993773</span>
+<span class="c1"># FromNodeId	ToNodeId</span>
+0	<span class="m">1</span>
+0	<span class="m">2</span>
+0	<span class="m">3</span>
+0	<span class="m">4</span>
+0	<span class="m">5</span>
+0	<span class="m">6</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>It could be accessed in <a href="https://snap.stanford.edu/data/soc-LiveJournal1.html" target="_blank" rel="noopener noreffer">https://snap.stanford.edu/data/soc-LiveJournal1.html</a>.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">Dataset statistics</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">Nodes</td>
+<td>4847571</td>
+</tr>
+<tr>
+<td style="text-align:left">Edges</td>
+<td>68993773</td>
+</tr>
+<tr>
+<td style="text-align:left">Nodes in largest WCC</td>
+<td>4843953 (0.999)</td>
+</tr>
+<tr>
+<td style="text-align:left">Edges in largest WCC</td>
+<td>68983820 (1.000)</td>
+</tr>
+<tr>
+<td style="text-align:left">Nodes in largest SCC</td>
+<td>3828682 (0.790)</td>
+</tr>
+<tr>
+<td style="text-align:left">Edges in largest SCC</td>
+<td>65825429 (0.954)</td>
+</tr>
+<tr>
+<td style="text-align:left">Average clustering coefficient</td>
+<td>0.2742</td>
+</tr>
+<tr>
+<td style="text-align:left">Number of triangles</td>
+<td>285730264</td>
+</tr>
+<tr>
+<td style="text-align:left">Fraction of closed triangles</td>
+<td>0.04266</td>
+</tr>
+<tr>
+<td style="text-align:left">Diameter (longest shortest path)</td>
+<td>16</td>
+</tr>
+<tr>
+<td style="text-align:left">90-percentile effective diameter</td>
+<td>6.5</td>
+</tr>
+</tbody>
+</table>
+<h2 id="dataset-download-and-preprocessing">Dataset Download and Preprocessing</h2>
+<h3 id="download">Download</h3>
+<p>It is accesissiable from the official web page:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ <span class="nb">cd</span> nebula-livejournal/data
+$ wget https://snap.stanford.edu/data/soc-LiveJournal1.txt.gz
+</code></pre></td></tr></table>
+</div>
+</div><p>Comments in data file should be removed to make the data import tool happy.</p>
+<h3 id="preprocessing">Preprocessing</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ gzip -d soc-LiveJournal1.txt.gz
+$ sed -i <span class="s1">&#39;1,4d&#39;</span> soc-LiveJournal1.txt
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="import-dataset-to-nebula-graph">Import dataset to Nebula Graph</h2>
+<h3 id="with-nebula-importer">With Nebula Importer</h3>
+<p><a href="https://github.com/vesoft-inc/nebula-importer" target="_blank" rel="noopener noreffer">Nebula-Importer</a> is a Golang Headless import tool for Nebula Graph.</p>
+<p>You may need to edit the config file under <a href="nebula-importer/importer.yaml" rel="">nebula-importer/importer.yaml</a> on Nebula Graph&rsquo;s address and credential。</p>
+<p>Then, Nebula-Importer could be called in Docker as follow:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ <span class="nb">cd</span> nebula-livejournal
+
+$ docker run --rm -ti <span class="se">\
+</span><span class="se"></span>    --network<span class="o">=</span>nebula-net <span class="se">\
+</span><span class="se"></span>    -v nebula-importer/importer.yaml:/root/importer.yaml <span class="se">\
+</span><span class="se"></span>    -v data/:/root <span class="se">\
+</span><span class="se"></span>    vesoft/nebula-importer:v2 <span class="se">\
+</span><span class="se"></span>    --config /root/importer.yaml
+</code></pre></td></tr></table>
+</div>
+</div><p>Or if you have the binary nebula-importer locally:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ <span class="nb">cd</span> data
+$ &lt;path_to_nebula-importer_binary&gt; --config ../nebula-importer/importer.yaml
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="with-nebula-exchange">With Nebula Exchange</h3>
+<p><a href="https://github.com/vesoft-inc/nebula-spark-utils/tree/master/nebula-exchange" target="_blank" rel="noopener noreffer">Nebula-Exchange</a> is a Spark Application to enable batch and streaming data import from multiple data sources to Nebula Graph.</p>
+<p>To be done. (You can refer to <a href="https://siwei.io/nebula-exchange-sst-2.x/" target="_blank" rel="noopener noreffer">https://siwei.io/nebula-exchange-sst-2.x/</a>)</p>
+<h2 id="run-algorithms-with-nebula-graph">Run Algorithms with Nebula Graph</h2>
+<p><a href="https://github.com/vesoft-inc/nebula-spark-utils/tree/master/nebula-algorithm" target="_blank" rel="noopener noreffer">Nebula-Algorithm</a> is a Spark/GraphX Application to run Graph Algorithms with data consumed from files or a Nebula Graph Cluster.</p>
+<p>Supported Algorithms for now:</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Use Case</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PageRank</td>
+<td>page ranking, important node digging</td>
+</tr>
+<tr>
+<td>Louvain</td>
+<td>community digging, hierarchical clustering</td>
+</tr>
+<tr>
+<td>KCore</td>
+<td>community detection, financial risk control</td>
+</tr>
+<tr>
+<td>LabelPropagation</td>
+<td>community detection, consultation propagation, advertising recommendation</td>
+</tr>
+<tr>
+<td>ConnectedComponent</td>
+<td>community detection, isolated island detection</td>
+</tr>
+<tr>
+<td>StronglyConnectedComponent</td>
+<td>community detection</td>
+</tr>
+<tr>
+<td>ShortestPath</td>
+<td>path plan, network plan</td>
+</tr>
+<tr>
+<td>TriangleCount</td>
+<td>network structure analysis</td>
+</tr>
+<tr>
+<td>BetweennessCentrality</td>
+<td>important node digging, node influence calculation</td>
+</tr>
+<tr>
+<td>DegreeStatic</td>
+<td>graph structure analysis</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ad-hoc-spark-env-setup">Ad-hoc Spark Env setup</h3>
+<p>Here I assume the Nebula Graph was bootstraped with <a href="https://github.com/wey-gu/nebula-up" target="_blank" rel="noopener noreffer">Nebula-Up</a>, thus nebula is running in a Docker Network named <code>nebula-docker-compose_nebula-net</code>.</p>
+<p>Then let&rsquo;s start a single server spark:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">docker run --name spark-master --network nebula-docker-compose_nebula-net <span class="se">\
+</span><span class="se"></span>    -h spark-master -e <span class="nv">ENABLE_INIT_DAEMON</span><span class="o">=</span><span class="nb">false</span> -d <span class="se">\
+</span><span class="se"></span>    -v nebula-algorithm/:/root <span class="se">\
+</span><span class="se"></span>    bde2020/spark-master:2.4.5-hadoop2.7
+</code></pre></td></tr></table>
+</div>
+</div><p>Thus we could make spark application submt inside this container:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">docker <span class="nb">exec</span> -it spark-master bash
+<span class="nb">cd</span> /root/
+<span class="c1"># download Nebula-Algorithm Jar Packagem, 2.0.0 for example, for other versions, refer to nebula-algorithm github repo and documentations.</span>
+wget https://repo1.maven.org/maven2/com/vesoft/nebula-algorithm/2.0.0/nebula-algorithm-2.0.0.jar
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="run-algorithms">Run Algorithms</h3>
+<p>There are many altorithms supported by Nebula-Algorithm, here some of their configuration files were put under nebula-algorithm as an example.</p>
+<p>Before using them, please first edit and change Nebula Graph Cluster Addresses and credentials.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">vim nebula-altorithm/algo-pagerank.conf
+</code></pre></td></tr></table>
+</div>
+</div><p>Then we could enter the spark container and call corresponding algorithms as follow.</p>
+<p>Please adjust your <code>--driver-memeory</code> accordingly, i.e. pagerank altorithm:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">/spark/bin/spark-submit --master <span class="s2">&#34;local&#34;</span> --conf spark.rpc.askTimeout<span class="o">=</span>6000s <span class="se">\
+</span><span class="se"></span>    --class com.vesoft.nebula.algorithm.Main <span class="se">\
+</span><span class="se"></span>    --driver-memory 16g nebula-algorithm-2.0.0.jar <span class="se">\
+</span><span class="se"></span>    -p pagerank.conf
+</code></pre></td></tr></table>
+</div>
+</div><p>After the algorithm finished, the output will be under the path insdie the container defined in conf file:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-toml" data-lang="toml">    <span class="nx">write</span><span class="err">:</span><span class="p">{</span>
+        <span class="nx">resultPath</span><span class="err">:/</span><span class="nx">output</span><span class="err">/</span>
+    <span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>题图版权：<a href="https://unsplash.com/photos/eTgMFFzroGc" target="_blank" rel="noopener noreffer">@sigmund</a></p>
+</blockquote></div><div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>Updated on 2021-08-24</span>
+            </div>
+            <div class="post-info-license"></div>
+        </div>
+        <div class="post-info-line">
+            <div class="post-info-md"><span>
+                            <a class="link-to-markdown" href="/en/nebula-livejournal/index.md" target="_blank" rel="noopener noreferrer">Read Markdown</a>
+                        </span></div>
+            <div class="post-info-share">
+                <span><a href="#" onclick="return false;" title="Share on Twitter" data-sharer="twitter" data-url="https://siwei.io/en/nebula-livejournal/" data-title="Nebula LiveJournal, Import LiveJournal Dataset into Nebula Graph and Run Nebula Algorithm" data-via="wey_gu" data-hashtags="Nebula Graph,LiveJournal,Nebula Algorithm,PageRank,Graph Algorithm"><i class="fab fa-twitter fa-fw"></i></a><a href="#" onclick="return false;" title="Share on Facebook" data-sharer="facebook" data-url="https://siwei.io/en/nebula-livejournal/" data-hashtag="Nebula Graph"><i class="fab fa-facebook-square fa-fw"></i></a><a href="#" onclick="return false;" title="Share on WhatsApp" data-sharer="whatsapp" data-url="https://siwei.io/en/nebula-livejournal/" data-title="Nebula LiveJournal, Import LiveJournal Dataset into Nebula Graph and Run Nebula Algorithm" data-web><i class="fab fa-whatsapp fa-fw"></i></a><a href="#" onclick="return false;" title="Share on Line" data-sharer="line" data-url="https://siwei.io/en/nebula-livejournal/" data-title="Nebula LiveJournal, Import LiveJournal Dataset into Nebula Graph and Run Nebula Algorithm"><i data-svg-src="/lib/simple-icons/icons/line.min.svg"></i></a><a href="#" onclick="return false;" title="Share on 微博" data-sharer="weibo" data-url="https://siwei.io/en/nebula-livejournal/" data-title="Nebula LiveJournal, Import LiveJournal Dataset into Nebula Graph and Run Nebula Algorithm" data-image="featured-image.webp" data-ralateuid="siweigu"><i class="fab fa-weibo fa-fw"></i></a><a href="#" onclick="return false;" title="Share on Myspace" data-sharer="myspace" data-url="https://siwei.io/en/nebula-livejournal/" data-title="Nebula LiveJournal, Import LiveJournal Dataset into Nebula Graph and Run Nebula Algorithm" data-description="Import LiveJournal Dataset into Nebula Graph and Run Nebula Algorithm 导入 Livejournal 数据集到 Nebula 并运行 Nebula Algorithm 图算法"><i data-svg-src="/lib/simple-icons/icons/myspace.min.svg"></i></a><a href="#" onclick="return false;" title="Share on Blogger" data-sharer="blogger" data-url="https://siwei.io/en/nebula-livejournal/" data-title="Nebula LiveJournal, Import LiveJournal Dataset into Nebula Graph and Run Nebula Algorithm" data-description="Import LiveJournal Dataset into Nebula Graph and Run Nebula Algorithm 导入 Livejournal 数据集到 Nebula 并运行 Nebula Algorithm 图算法"><i class="fab fa-blogger fa-fw"></i></a><a href="#" onclick="return false;" title="Share on Evernote" data-sharer="evernote" data-url="https://siwei.io/en/nebula-livejournal/" data-title="Nebula LiveJournal, Import LiveJournal Dataset into Nebula Graph and Run Nebula Algorithm"><i class="fab fa-evernote fa-fw"></i></a></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section class="post-tags"><i class="fas fa-tags fa-fw"></i>&nbsp;<a href="/en/tags/nebula-graph/">Nebula Graph</a>,&nbsp;<a href="/en/tags/livejournal/">LiveJournal</a>,&nbsp;<a href="/en/tags/nebula-algorithm/">Nebula Algorithm</a>,&nbsp;<a href="/en/tags/pagerank/">PageRank</a>,&nbsp;<a href="/en/tags/graph-algorithm/">Graph Algorithm</a></section>
+        <section>
+            <span><a href="#" onclick="window.history.back();">Back</a></span>&nbsp;|&nbsp;<span><a href="/en/">Home</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/en/nebula-exchange-sst-2.x/" class="prev" rel="prev" title="Nebula Exchange SST 2.x Hands-on Guide"><i class="fas fa-angle-left fa-fw"></i>Nebula Exchange SST 2.x Hands-on Guide</a>
+            <a href="/en/nebula-holdshare-dataset/" class="next" rel="next" title="Nebula Holdshare Dataset: A demo of Shareholding Breakthrough with Distributed open-source Graph Database: Nebula Graph.">Nebula Holdshare Dataset: A demo of Shareholding Breakthrough with Distributed open-source Graph Database: Nebula Graph.<i class="fas fa-angle-right fa-fw"></i></a></div>
+</div>
+<div id="comments"><div id="waline" class="comment"></div><noscript>
+                Please enable JavaScript to view the comments powered by <a href="https://waline.js.org/">Waline</a>.
+            </noscript></div></article></div>
+        </main><footer class="footer">
+        <div class="footer-container"><div class="footer-line">Powered by <a href="https://gohugo.io/" target="_blank" rel="noopener noreffer" title="Hugo 0.86.0">Hugo</a> | Theme - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreffer" title="DoIt 0.2.10"><i class="far fa-edit fa-fw"></i> DoIt</a>
+                </div><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2018 - 2021</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="https://siwei.io" target="_blank" rel="noopener noreferrer">Wey Gu</a></span>&nbsp;|&nbsp;<span class="license"><a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">CC BY-NC 4.0</a></span></div>
+        </div></footer></div>
+
+    <div id="fixed-buttons"><a href="#back-to-top" id="back-to-top-button" class="fixed-button" title="Back to Top">
+            <i class="fas fa-arrow-up fa-fw"></i>
+        </a><a href="#" id="view-comments" class="fixed-button" title="View Comments">
+            <i class="fas fa-comment fa-fw"></i>
+        </a>
+    </div><div class="assets"><script type="text/javascript" src="/lib/autocomplete/autocomplete.min.js"></script><script type="text/javascript" src="/lib/fuse/fuse.min.js"></script><script type="text/javascript" src="/lib/lazysizes/lazysizes.min.js"></script><script type="text/javascript" src="/lib/topbar/topbar.min.js"></script><script type="text/javascript" src="/lib/pjax/pjax.min.js"></script><script type="text/javascript" src="/js/theme.min.js"></script><script type="text/javascript">
+            window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());
+            gtag('config', 'UA-659952-4', { 'anonymize_ip': true });
+        </script><script type="text/javascript" src="https://www.googletagmanager.com/gtag/js?id=UA-659952-4" async></script></div>
+
+<div class="pjax-assets"><script type="text/javascript" src="/lib/waline/Waline.min.js"></script><script type="text/javascript" src="/lib/clipboard/clipboard.min.js"></script><script type="text/javascript" src="/lib/sharer/sharer.min.js"></script><script type="text/javascript" src="/lib/katex/katex.min.js"></script><script type="text/javascript" src="/lib/katex/auto-render.min.js"></script><script type="text/javascript" src="/lib/katex/copy-tex.min.js"></script><script type="text/javascript" src="/lib/katex/mhchem.min.js"></script><script type="text/javascript">window.config={"code":{"copyTitle":"Copy to clipboard","maxShownLines":10},"comment":{"waline":{"avatar":"mp","avatarCDN":"https://cdn.v2ex.com/gravatar/","el":"#waline","emojiCDN":"https://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/","emojiMaps":"微博表情包","highlight":true,"lang":"en","meta":["nick","mail","link"],"pageSize":10,"placeholder":"Share your thoughts.","serverURL":"https://siwei-io.vercel.app","visitor":true}},"math":{"delimiters":[{"display":true,"left":"$$","right":"$$"},{"display":true,"left":"\\[","right":"\\]"},{"display":false,"left":"$","right":"$"},{"display":false,"left":"\\(","right":"\\)"}],"strict":false},"search":{"distance":100,"findAllMatches":true,"fuseIndexURL":"/en/index.json","highlightTag":"em","ignoreFieldNorm":false,"ignoreLocation":false,"isCaseSensitive":false,"location":0,"maxResultLength":10,"minMatchCharLength":2,"noResultsFound":"No results found","snippetLength":50,"threshold":0.3,"type":"fuse","useExtendedSearch":false},"sharerjs":true};</script><link rel="stylesheet" href="/lib/waline/Waline.min.css"><link rel="stylesheet" href="/lib/katex/katex.min.css"><link rel="stylesheet" href="/lib/katex/copy-tex.min.css"></div>
+</body>
+
+</html>
