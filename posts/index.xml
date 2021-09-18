@@ -4,7 +4,357 @@
         <link>https://siwei.io/posts/</link>
         <description>所有文章 | siwei.io</description>
         <generator>Hugo -- gohugo.io</generator><language>zh-CN</language><managingEditor>weyl.gu@gmail.com (Wey Gu)</managingEditor>
-            <webMaster>weyl.gu@gmail.com (Wey Gu)</webMaster><lastBuildDate>Wed, 18 Aug 2021 15:21:00 &#43;0800</lastBuildDate><atom:link href="https://siwei.io/posts/" rel="self" type="application/rss+xml" /><item>
+            <webMaster>weyl.gu@gmail.com (Wey Gu)</webMaster><lastBuildDate>Sat, 18 Sep 2021 10:00:05 &#43;0800</lastBuildDate><atom:link href="https://siwei.io/posts/" rel="self" type="application/rss+xml" /><item>
+    <title>Nebula CLion</title>
+    <link>https://siwei.io/nebula-clion/</link>
+    <pubDate>Sat, 18 Sep 2021 10:00:05 &#43;0800</pubDate><author>
+        <name>Wey Gu</name>
+    </author><guid>https://siwei.io/nebula-clion/</guid>
+    <description><![CDATA[<div class="featured-image">
+                <img src="/featured-image.webp" referrerpolicy="no-referrer">
+            </div><blockquote>
+<p>之前卡比同学向我咨询搭建 CLion 环境，开发 Nebula 的一些问题，我做了一些工作方便利用 Docker 在本地搭建这样一个环境，相关的东西放在：https://github.com/wey-gu/nebula-dev-CLion 。</p>
+</blockquote>
+<p>Related GitHub Repo: <a href="https://github.com/wey-gu/nebula-dev-CLion" target="_blank" rel="noopener noreffer">https://github.com/wey-gu/nebula-dev-CLion</a></p>
+<h2 id="run-docker-env-for-nebula-graph-with-clion">Run Docker Env for Nebula-Graph with CLion</h2>
+<p>Build Docker Image</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">git clone https://github.com/wey-gu/nebula-dev-CLion.git
+
+<span class="nb">cd</span> nebula-dev-CLion
+docker build -t wey/nebula-dev-clion:v2.0 .
+</code></pre></td></tr></table>
+</div>
+</div><p>Run Docker Container for Nebula-Dev with CLion Integration Readiness(actually mostly Rsync &amp; SSH).</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="nb">cd</span> &lt;nebula-graph-repo-you-worked-on&gt;
+<span class="nb">export</span> <span class="nv">DOCKER_DEFAULT_PLATFORM</span><span class="o">=</span>linux/amd64
+docker run --rm -d <span class="se">\
+</span><span class="se"></span>  --name nebula-dev <span class="se">\
+</span><span class="se"></span>  --security-opt <span class="nv">seccomp</span><span class="o">=</span>unconfined <span class="se">\
+</span><span class="se"></span>  -p 2222:22 -p 2873:873 --cap-add<span class="o">=</span>ALL <span class="se">\
+</span><span class="se"></span>  -v <span class="nv">$PWD</span>:/home/nebula <span class="se">\
+</span><span class="se"></span>  -w /home/nebula <span class="se">\
+</span><span class="se"></span>  wey/nebula-dev-clion:v2.0
+</code></pre></td></tr></table>
+</div>
+</div><p>Verify cmake with SSH.</p>
+<blockquote>
+<p>The default password is <code>password</code></p>
+</blockquote>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">ssh -o <span class="nv">StrictHostKeyChecking</span><span class="o">=</span>no root@localhost -p <span class="m">2222</span>
+
+<span class="c1"># in docker</span>
+<span class="nb">cd</span> /home/nebula
+mkdir build <span class="o">&amp;&amp;</span> <span class="nb">cd</span> build
+cmake -DENABLE_TESTING<span class="o">=</span>OFF -DCMAKE_BUILD_TYPE<span class="o">=</span>Release ..
+</code></pre></td></tr></table>
+</div>
+</div><p>Access container w/o SSH.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">docker <span class="nb">exec</span> -it nebula-dev bash
+mkdir -p build <span class="o">&amp;&amp;</span> <span class="nb">cd</span> build
+cmake -DENABLE_TESTING<span class="o">=</span>OFF -DCMAKE_BUILD_TYPE<span class="o">=</span>Release ..
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="configurations-in-clion">Configurations in CLion</h2>
+<blockquote>
+<p>Ref: <a href="https://www.jetbrains.com/help/clion/clion-toolchains-in-docker.html#build-and-run" target="_blank" rel="noopener noreffer">https://www.jetbrains.com/help/clion/clion-toolchains-in-docker.html#build-and-run</a></p>
+</blockquote>
+<p><strong>Toolchains</strong></p>
+<ul>
+<li>Add a remote host
+<ul>
+<li><code>root@localhost:2222</code></li>
+<li><code>password</code></li>
+</ul>
+</li>
+<li>Put <code>/opt/vesoft/toolset/cmake/bin/cmake</code> as CMake</li>
+</ul>
+<p></p>
+<p><strong>CMake</strong></p>
+<ul>
+<li>Toochain:
+<ul>
+<li>Select the one created in last step</li>
+</ul>
+</li>
+<li>Build directory:
+<ul>
+<li><code>/home/nebula/build</code></li>
+</ul>
+</li>
+</ul>
+<p></p>
+<h2 id="the-appendix">The appendix</h2>
+<h3 id="references-of-cmake-output">References of CMake output:</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">  1
+</span><span class="lnt">  2
+</span><span class="lnt">  3
+</span><span class="lnt">  4
+</span><span class="lnt">  5
+</span><span class="lnt">  6
+</span><span class="lnt">  7
+</span><span class="lnt">  8
+</span><span class="lnt">  9
+</span><span class="lnt"> 10
+</span><span class="lnt"> 11
+</span><span class="lnt"> 12
+</span><span class="lnt"> 13
+</span><span class="lnt"> 14
+</span><span class="lnt"> 15
+</span><span class="lnt"> 16
+</span><span class="lnt"> 17
+</span><span class="lnt"> 18
+</span><span class="lnt"> 19
+</span><span class="lnt"> 20
+</span><span class="lnt"> 21
+</span><span class="lnt"> 22
+</span><span class="lnt"> 23
+</span><span class="lnt"> 24
+</span><span class="lnt"> 25
+</span><span class="lnt"> 26
+</span><span class="lnt"> 27
+</span><span class="lnt"> 28
+</span><span class="lnt"> 29
+</span><span class="lnt"> 30
+</span><span class="lnt"> 31
+</span><span class="lnt"> 32
+</span><span class="lnt"> 33
+</span><span class="lnt"> 34
+</span><span class="lnt"> 35
+</span><span class="lnt"> 36
+</span><span class="lnt"> 37
+</span><span class="lnt"> 38
+</span><span class="lnt"> 39
+</span><span class="lnt"> 40
+</span><span class="lnt"> 41
+</span><span class="lnt"> 42
+</span><span class="lnt"> 43
+</span><span class="lnt"> 44
+</span><span class="lnt"> 45
+</span><span class="lnt"> 46
+</span><span class="lnt"> 47
+</span><span class="lnt"> 48
+</span><span class="lnt"> 49
+</span><span class="lnt"> 50
+</span><span class="lnt"> 51
+</span><span class="lnt"> 52
+</span><span class="lnt"> 53
+</span><span class="lnt"> 54
+</span><span class="lnt"> 55
+</span><span class="lnt"> 56
+</span><span class="lnt"> 57
+</span><span class="lnt"> 58
+</span><span class="lnt"> 59
+</span><span class="lnt"> 60
+</span><span class="lnt"> 61
+</span><span class="lnt"> 62
+</span><span class="lnt"> 63
+</span><span class="lnt"> 64
+</span><span class="lnt"> 65
+</span><span class="lnt"> 66
+</span><span class="lnt"> 67
+</span><span class="lnt"> 68
+</span><span class="lnt"> 69
+</span><span class="lnt"> 70
+</span><span class="lnt"> 71
+</span><span class="lnt"> 72
+</span><span class="lnt"> 73
+</span><span class="lnt"> 74
+</span><span class="lnt"> 75
+</span><span class="lnt"> 76
+</span><span class="lnt"> 77
+</span><span class="lnt"> 78
+</span><span class="lnt"> 79
+</span><span class="lnt"> 80
+</span><span class="lnt"> 81
+</span><span class="lnt"> 82
+</span><span class="lnt"> 83
+</span><span class="lnt"> 84
+</span><span class="lnt"> 85
+</span><span class="lnt"> 86
+</span><span class="lnt"> 87
+</span><span class="lnt"> 88
+</span><span class="lnt"> 89
+</span><span class="lnt"> 90
+</span><span class="lnt"> 91
+</span><span class="lnt"> 92
+</span><span class="lnt"> 93
+</span><span class="lnt"> 94
+</span><span class="lnt"> 95
+</span><span class="lnt"> 96
+</span><span class="lnt"> 97
+</span><span class="lnt"> 98
+</span><span class="lnt"> 99
+</span><span class="lnt">100
+</span><span class="lnt">101
+</span><span class="lnt">102
+</span><span class="lnt">103
+</span><span class="lnt">104
+</span><span class="lnt">105
+</span><span class="lnt">106
+</span><span class="lnt">107
+</span><span class="lnt">108
+</span><span class="lnt">109
+</span><span class="lnt">110
+</span><span class="lnt">111
+</span><span class="lnt">112
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="o">[</span>root@4c98e3f77ce8 build<span class="o">]</span><span class="c1"># cmake -DENABLE_TESTING=OFF -DCMAKE_BUILD_TYPE=Release ..</span>
+&gt;&gt;&gt;&gt; Options of Nebula Graph <span class="o">&lt;&lt;&lt;</span>&lt;
+-- ENABLE_ASAN                     : OFF <span class="o">(</span>Build with AddressSanitizer<span class="o">)</span>
+-- ENABLE_BUILD_STORAGE            : OFF <span class="o">(</span>Whether to build storage<span class="o">)</span>
+-- ENABLE_CCACHE                   : ON <span class="o">(</span>Use ccache to speed up compiling<span class="o">)</span>
+-- ENABLE_CLANG_TIDY               : OFF <span class="o">(</span>Enable clang-tidy <span class="k">if</span> present<span class="o">)</span>
+-- ENABLE_COMPRESSED_DEBUG_INFO    : ON <span class="o">(</span>Compress debug info to reduce binary size<span class="o">)</span>
+-- ENABLE_COVERAGE                 : OFF <span class="o">(</span>Build with coverage report<span class="o">)</span>
+-- ENABLE_FRAME_POINTER            : OFF <span class="o">(</span>Build with frame pointer<span class="o">)</span>
+-- ENABLE_FUZZY_TESTING            : OFF <span class="o">(</span>Enable Fuzzy tests<span class="o">)</span>
+-- ENABLE_GDB_SCRIPT_SECTION       : OFF <span class="o">(</span>Add .debug_gdb_scripts section<span class="o">)</span>
+-- ENABLE_JEMALLOC                 : ON <span class="o">(</span>Use jemalloc as memory allocator<span class="o">)</span>
+-- ENABLE_MODULE_FORCE_CHECKOUT    : ON <span class="o">(</span>Whether checkout branch of module to same as graph.<span class="o">)</span>
+-- ENABLE_MODULE_UPDATE            : OFF <span class="o">(</span>Automatically update module<span class="o">)</span>
+-- ENABLE_PACK_ONE                 : ON <span class="o">(</span>Whether to package into one<span class="o">)</span>
+-- ENABLE_PIC                      : OFF <span class="o">(</span>Build with -fPIC<span class="o">)</span>
+-- ENABLE_STATIC_ASAN              : OFF <span class="o">(</span>Statically link against libasan<span class="o">)</span>
+-- ENABLE_STATIC_UBSAN             : OFF <span class="o">(</span>Statically link against libubsan<span class="o">)</span>
+-- ENABLE_STRICT_ALIASING          : OFF <span class="o">(</span>Build with -fstrict-aliasing<span class="o">)</span>
+-- ENABLE_TESTING                  : OFF <span class="o">(</span>Build unit tests<span class="o">)</span>
+-- ENABLE_TSAN                     : OFF <span class="o">(</span>Build with ThreadSanitizer<span class="o">)</span>
+-- ENABLE_UBSAN                    : OFF <span class="o">(</span>Build with UndefinedBehaviourSanitizer<span class="o">)</span>
+-- ENABLE_VERBOSE_BISON            : OFF <span class="o">(</span>Enable Bison to report state<span class="o">)</span>
+-- ENABLE_WERROR                   : ON <span class="o">(</span>Regard warnings as errors<span class="o">)</span>
+-- CMAKE_BUILD_TYPE                : Release <span class="o">(</span>Choose the <span class="nb">type</span> of build, options are: None Debug Release RelWithDebInfo MinSizeRel ...<span class="o">)</span>
+-- CMAKE_INSTALL_PREFIX            : /usr/local/nebula <span class="o">(</span>Install path prefix, prepended onto install directories.<span class="o">)</span>
+-- CMAKE_CXX_STANDARD              : <span class="m">17</span>
+-- CMAKE_CXX_COMPILER              : /opt/vesoft/toolset/clang/9.0.0/bin/c++ <span class="o">(</span>CXX compiler<span class="o">)</span>
+-- CMAKE_CXX_COMPILER_ID           : GNU
+-- NEBULA_USE_LINKER               : bfd
+-- CCACHE_DIR                      : /root/.ccache
+&gt;&gt;&gt;&gt; Configuring third party <span class="k">for</span> <span class="s1">&#39;Nebula Graph&#39;</span> <span class="o">&lt;&lt;&lt;</span>&lt;
+-- NEBULA_THIRDPARTY_ROOT          : /opt/vesoft/third-party/2.0
+-- Build info of nebula third party:
+Package         : Nebula Third Party
+Version         : 2.0
+Date            : Mon Jun <span class="m">28</span> 15:07:38 UTC <span class="m">2021</span>
+glibc           : 2.17
+Arch            : x86_64
+Compiler        : GCC 9.2.0
+C++ ABI         : <span class="m">11</span>
+Vendor          : VEsoft Inc.
+
+-- CMAKE_INCLUDE_PATH              : /opt/vesoft/third-party/2.0/include
+-- CMAKE_LIBRARY_PATH              : /opt/vesoft/third-party/2.0/lib64<span class="p">;</span>/opt/vesoft/third-party/2.0/lib
+-- CMAKE_PROGRAM_PATH              : /opt/vesoft/third-party/2.0/bin
+-- GLIBC_VERSION                   : 2.17
+
+-- found krb5-config here /opt/vesoft/third-party/2.0/bin/krb5-config
+-- Found kerberos <span class="m">5</span> headers: /opt/vesoft/third-party/2.0/include
+-- Found kerberos <span class="m">5</span> libs:    /opt/vesoft/third-party/2.0/lib/libgssapi_krb5.a<span class="p">;</span>/opt/vesoft/third-party/2.0/lib/libkrb5.a<span class="p">;</span>/opt/vesoft/third-party/2.0/lib/libk5crypto.a<span class="p">;</span>/opt/vesoft/third-party/2.0/lib/libcom_err.a<span class="p">;</span>/opt/vesoft/third-party/2.0/lib/libkrb5support.a
+&gt;&gt;&gt;&gt; Configuring third party <span class="k">for</span> <span class="s1">&#39;Nebula Graph&#39;</span> <span class="k">done</span> <span class="o">&lt;&lt;&lt;</span>&lt;
+-- Create the pre-commit hook
+-- Creating pre-commit hook <span class="k">done</span>
+&gt;&gt;&gt;&gt; Configuring Nebula Common <span class="o">&lt;&lt;&lt;</span>&lt;
+&gt;&gt;&gt;&gt; Options of Nebula Common <span class="o">&lt;&lt;&lt;</span>&lt;
+-- ENABLE_ASAN                     : OFF <span class="o">(</span>Build with AddressSanitizer<span class="o">)</span>
+-- ENABLE_CCACHE                   : ON <span class="o">(</span>Use ccache to speed up compiling<span class="o">)</span>
+-- ENABLE_CLANG_TIDY               : OFF <span class="o">(</span>Enable clang-tidy <span class="k">if</span> present<span class="o">)</span>
+-- ENABLE_COMPRESSED_DEBUG_INFO    : ON <span class="o">(</span>Compress debug info to reduce binary size<span class="o">)</span>
+-- ENABLE_COVERAGE                 : OFF <span class="o">(</span>Build with coverage report<span class="o">)</span>
+-- ENABLE_FRAME_POINTER            : OFF <span class="o">(</span>Build with frame pointer<span class="o">)</span>
+-- ENABLE_FUZZY_TESTING            : OFF <span class="o">(</span>Enable Fuzzy tests<span class="o">)</span>
+-- ENABLE_GDB_SCRIPT_SECTION       : OFF <span class="o">(</span>Add .debug_gdb_scripts section<span class="o">)</span>
+-- ENABLE_JEMALLOC                 : ON <span class="o">(</span>Use jemalloc as memory allocator<span class="o">)</span>
+-- ENABLE_PIC                      : OFF <span class="o">(</span>Build with -fPIC<span class="o">)</span>
+-- ENABLE_STATIC_ASAN              : OFF <span class="o">(</span>Statically link against libasan<span class="o">)</span>
+-- ENABLE_STATIC_UBSAN             : OFF <span class="o">(</span>Statically link against libubsan<span class="o">)</span>
+-- ENABLE_STRICT_ALIASING          : OFF <span class="o">(</span>Build with -fstrict-aliasing<span class="o">)</span>
+-- ENABLE_TESTING                  : OFF <span class="o">(</span>Build unit tests<span class="o">)</span>
+-- ENABLE_TSAN                     : OFF <span class="o">(</span>Build with ThreadSanitizer<span class="o">)</span>
+-- ENABLE_UBSAN                    : OFF <span class="o">(</span>Build with UndefinedBehaviourSanitizer<span class="o">)</span>
+-- ENABLE_WERROR                   : ON <span class="o">(</span>Regard warnings as errors<span class="o">)</span>
+-- Set D_GLIBCXX_USE_CXX11_ABI to <span class="m">1</span>
+-- CMAKE_BUILD_TYPE                : Release <span class="o">(</span>Choose the <span class="nb">type</span> of build, options are: None Debug Release RelWithDebInfo MinSizeRel ...<span class="o">)</span>
+-- CMAKE_INSTALL_PREFIX            : /usr/local/nebula <span class="o">(</span>Install path prefix, prepended onto install directories.<span class="o">)</span>
+-- CMAKE_CXX_STANDARD              : <span class="m">17</span>
+-- CMAKE_CXX_COMPILER              : /opt/vesoft/toolset/clang/9.0.0/bin/c++
+-- CMAKE_CXX_COMPILER_ID           : GNU
+-- NEBULA_USE_LINKER               : bfd
+-- CCACHE_DIR                      : /root/.ccache
+&gt;&gt;&gt;&gt; Configuring third party <span class="k">for</span> <span class="s1">&#39;Nebula Common&#39;</span> <span class="o">&lt;&lt;&lt;</span>&lt;
+-- NEBULA_THIRDPARTY_ROOT          : /opt/vesoft/third-party/2.0
+-- Build info of nebula third party:
+Package         : Nebula Third Party
+Version         : 2.0
+Date            : Mon Jun <span class="m">28</span> 15:07:38 UTC <span class="m">2021</span>
+glibc           : 2.17
+Arch            : x86_64
+Compiler        : GCC 9.2.0
+C++ ABI         : <span class="m">11</span>
+Vendor          : VEsoft Inc.
+
+-- CMAKE_INCLUDE_PATH              : /opt/vesoft/third-party/2.0/include
+-- CMAKE_LIBRARY_PATH              : /opt/vesoft/third-party/2.0/lib64<span class="p">;</span>/opt/vesoft/third-party/2.0/lib
+-- CMAKE_PROGRAM_PATH              : /opt/vesoft/third-party/2.0/bin
+-- GLIBC_VERSION                   : 2.17
+
+-- found krb5-config here /opt/vesoft/third-party/2.0/bin/krb5-config
+-- Found kerberos <span class="m">5</span> headers: /opt/vesoft/third-party/2.0/include
+-- Found kerberos <span class="m">5</span> libs:    /opt/vesoft/third-party/2.0/lib/libgssapi_krb5.a<span class="p">;</span>/opt/vesoft/third-party/2.0/lib/libkrb5.a<span class="p">;</span>/opt/vesoft/third-party/2.0/lib/libk5crypto.a<span class="p">;</span>/opt/vesoft/third-party/2.0/lib/libcom_err.a<span class="p">;</span>/opt/vesoft/third-party/2.0/lib/libkrb5support.a
+&gt;&gt;&gt;&gt; Configuring third party <span class="k">for</span> <span class="s1">&#39;Nebula Common&#39;</span> <span class="k">done</span> <span class="o">&lt;&lt;&lt;</span>&lt;
+-- Create the pre-commit hook
+-- Creating pre-commit hook <span class="k">done</span>
+-- Configuring <span class="k">done</span>
+
+-- Generating <span class="k">done</span>
+-- Build files have been written to: /home/nebula/build/modules/common
+&gt;&gt;&gt;&gt; Configuring Nebula Common <span class="k">done</span> <span class="o">&lt;&lt;&lt;</span>&lt;
+-- Configuring <span class="k">done</span>
+-- Generating <span class="k">done</span>
+-- Build files have been written to: /home/nebula/build
+</code></pre></td></tr></table>
+</div>
+</div>]]></description>
+</item><item>
     <title>Nebula Exchange SST 2.x Hands-on Guide</title>
     <link>https://siwei.io/nebula-exchange-sst-2.x/</link>
     <pubDate>Wed, 18 Aug 2021 15:21:00 &#43;0800</pubDate><author>
