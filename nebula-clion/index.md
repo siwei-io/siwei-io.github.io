@@ -1,4 +1,4 @@
-# Nebula CLion
+# Nebula CLion，搭建基于 Docker 的 Nebula Graph CLion 开发环境
 
 
 

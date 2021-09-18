@@ -1,4 +1,4 @@
-# Nebula LiveJournal
+# Nebula LiveJournal，上手 LiveJournal 数据集导入 Nebula Graph 与图算法执行
 
 
 
