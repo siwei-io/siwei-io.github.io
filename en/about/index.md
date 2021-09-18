@@ -12,6 +12,10 @@ I am working in open source and consider it is a privilege [^1]. It took me a co
 
 ## Recent Projects
 
+{{< showcase "Nebula-Siwi" "Nebula-Siwi, a Dialog System With Graph Database Backed Knowledge Graph." "/nebula-siwi/featured-image.webp" "/nebula-siwi/" >}}
+
+{{< showcase "Nebula-Holdshare" "Nebula-Holdshare, a demo/ dataset of Shareholding Breakthrough with Distributed open-source Graph Database: Nebula Graph." "/nebula-holdshare-dataset/featured-image.webp" "/nebula-holdshare-dataset/" >}}
+
 {{< showcase "Nebula-KIND" "Nebula-Kind, one-liner command to try K8s Operator based Nebula Graph Cluster on your machine, with the help of KIND(K8s in Docker)" "/nebula-operator-kind/featured-image.webp" "/nebula-operator-kind/" >}}
 
 {{< showcase "Nebula-Up" "A PoC utility for the newcomers or developers to bootstrap a nebula-graph playground in a oneliner command on Windows, Linux, and macOS(x86_64 and aarch64), w/o dealing with dependencies." "/nebula-up/featured-image.webp" "/nebula-up/" >}}

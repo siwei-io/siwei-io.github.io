@@ -2,7 +2,6 @@
 
 
 
-
 > 一个导入 Livejournal 数据集到 Nebula Graph 图数据库，并执行 Nebula Algorithm 图算法的过程分享。
 
 <!--more-->
