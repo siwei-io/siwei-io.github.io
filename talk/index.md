@@ -1,6 +1,8 @@
 # My Talks
 
 
+{{< showcase "COScon 2021" "我的开源之路" "https://siwei.io/talks/coscon-2021/images/cover.webp" "https://siwei.io/talks/coscon-2021/" 3 >}}
+
 {{< showcase "PyCon China 2021" "图数据库解谜与 Python 的图库应用实践" "https://siwei.io/talks/2021-PyCon/images/cover.webp" "https://siwei.io/talks/2021-PyCon/" 3 >}}
 
 {{< showcase "K8s 上的图数据库" "Nebula K8s Operator 的实现解析，图数据库应用在 K8s + OpenFunction 上的落地演示" "https://siwei.io/talks/2021-09-kubesphere/images/cover.webp" "https://siwei.io/talks/2021-09-kubesphere/" 3 >}}
