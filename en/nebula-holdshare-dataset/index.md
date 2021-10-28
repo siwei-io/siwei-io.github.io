@@ -7,7 +7,7 @@
 
 <!--more-->
 
-Related GitHub Repo: https://github.com/wey-gu/nebula-siwi/
+Related GitHub Repo: https://github.com/wey-gu/nebula-shareholding-example
 
 
 
