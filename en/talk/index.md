@@ -1,7 +1,7 @@
 # 我的演讲
 
 
-{{< showcase "K8s Community Day 2021" "Openfunction + GraphDB" "https://siwei.io/talks/2021-KDC/images/cover.webp" "https://siwei.io/talks/2021-KDC/" 3 >}}
+{{< showcase "K8s Community Day 2021" "Openfunction + GraphDB" "https://siwei.io/talks/2021-KCD/images/cover.webp" "https://siwei.io/talks/2021-KCD/" 3 >}}
 
 {{< showcase "COScon 2021" "我的开源之路" "https://siwei.io/talks/coscon-2021/images/cover.webp" "https://siwei.io/talks/coscon-2021/" 3 >}}
 
