@@ -1,6 +1,7 @@
 # 个人项目
 
 
+{{< showcase "Nebula-Corp-Rel-Graph" "Nebula-Corp-Rel-Graph，基于图数据库的股权穿透系统" "/corp-rel-graph/featured-image.webp" "/corp-rel-graph/" >}}
 
 {{< showcase "Nebula-Siwi" "Nebula-Siwi，基于图数据库的智能问答助手" "/nebula-siwi/featured-image.webp" "/nebula-siwi/" >}}
 

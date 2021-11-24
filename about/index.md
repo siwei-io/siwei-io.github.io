@@ -12,6 +12,8 @@
 
 ## 最近的开源项目
 
+{{< showcase "Nebula-Corp-Rel-Graph" "Nebula-Corp-Rel-Graph，基于图数据库的股权穿透系统" "/corp-rel-graph/featured-image.webp" "/corp-rel-graph/" >}}
+
 {{< showcase "Nebula-Siwi" "Nebula-Siwi，基于图数据库的智能问答助手" "/nebula-siwi/featured-image.webp" "/nebula-siwi/" >}}
 
 {{< showcase "Nebula-Holdshare" "Nebula-Holdshare，图数据库应用示例：股权关系穿透" "/nebula-holdshare-dataset/featured-image.webp" "/nebula-holdshare-dataset/" >}}
