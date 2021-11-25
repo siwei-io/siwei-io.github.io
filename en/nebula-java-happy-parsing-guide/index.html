@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noodp" />
+    <title class="pjax-title">Nebula Java Happy Parsing Guide - siwei.io</title><meta name="Description" content="How to parsing nebula graph data in an interactive way and what are the best practices?"><meta property="og:title" content="Nebula Java Happy Parsing Guide" />
+<meta property="og:description" content="How to parsing nebula graph data in an interactive way and what are the best practices?" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://siwei.io/en/nebula-java-happy-parsing-guide/" /><meta property="og:image" content="https://siwei.io/en/nebula-java-happy-parsing-guide/featured-image.png"/><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2021-11-25T19:47:53+08:00" />
+<meta property="article:modified_time" content="2021-11-25T19:47:53+08:00" /><meta property="og:site_name" content="siwei.io" />
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://siwei.io/en/nebula-java-happy-parsing-guide/featured-image.png"/>
+<meta name="twitter:title" content="Nebula Java Happy Parsing Guide"/>
+<meta name="twitter:description" content="How to parsing nebula graph data in an interactive way and what are the best practices?"/>
+<meta name="application-name" content="siwei.io">
+<meta name="apple-mobile-web-app-title" content="siwei.io">
+
+<meta name="theme-color" content="#f8f8f8"><meta name="msapplication-TileColor" content="#da532c"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="canonical" href="https://siwei.io/en/nebula-java-happy-parsing-guide/" /><link rel="prev" href="https://siwei.io/en/nebula-siwi/" /><link rel="stylesheet" href="/lib/normalize/normalize.min.css"><link rel="stylesheet" href="/css/style.min.css"><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/fontawesome-free/all.min.css">
+    <noscript><link rel="stylesheet" href="/lib/fontawesome-free/all.min.css"></noscript><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/animate/animate.min.css">
+    <noscript><link rel="stylesheet" href="/lib/animate/animate.min.css"></noscript><meta name="baidu-site-verification" content="code-4R67zl7SwH" /><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "Nebula Java Happy Parsing Guide",
+        "inLanguage": "en",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "https:\/\/siwei.io\/en\/nebula-java-happy-parsing-guide\/"
+        },"image": ["https:\/\/siwei.io\/images\/site-feature-image.webp"],"genre": "posts","keywords": "Nebula Graph, Graph Database, java","wordcount":  1180 ,
+        "url": "https:\/\/siwei.io\/en\/nebula-java-happy-parsing-guide\/","datePublished": "2021-11-25T19:47:53+08:00","dateModified": "2021-11-25T19:47:53+08:00","publisher": {
+            "@type": "Organization",
+            "name": ""},"author": {
+                "@type": "Person",
+                "name": "Wey Gu"
+            },"description": "How to parsing nebula graph data in an interactive way and what are the best practices?"
+    }
+    </script></head>
+
+<body header-desktop="fixed" header-mobile="auto"><script type="text/javascript">
+        function setTheme(theme) {document.body.setAttribute('theme', theme);}
+        function saveTheme(theme) {window.localStorage && localStorage.setItem('theme', theme);}
+        function getMeta(metaName) {const metas = document.getElementsByTagName('meta'); for (let i = 0; i < metas.length; i++) if (metas[i].getAttribute('name') === metaName) return metas[i]; return '';}
+        if (window.localStorage && localStorage.getItem('theme')) {let theme = localStorage.getItem('theme');theme === 'light' || theme === 'dark' || theme === 'black' ? setTheme(theme) : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light')); } else { if ('auto' === 'light' || 'auto' === 'dark' || 'auto' === 'black') setTheme('auto'), saveTheme('auto'); else saveTheme('auto'), window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light');}
+        let metaColors = {'light': '#f8f8f8','dark': '#252627','black': '#000000'}
+        getMeta('theme-color').content = metaColors[document.body.getAttribute('theme')];
+    </script>
+    <div id="back-to-top"></div>
+    <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/en/" title="siwei.io"><span class="header-title-pre"><i class="fas fa-code-branch"></i></span>siwei.io</a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="/en/about/"> About </a><a class="menu-item" href="/en/projects/"> Project </a><a class="menu-item" href="/en/sketch-notes/"> Sketches </a><a class="menu-item" href="/en/posts/"> Blog </a><a class="menu-item" href="/en/cources/"> Hands-on </a><a class="menu-item" href="/en/talk/"> Talks </a><a class="menu-item" href="https://vesoft.com/en/careers/" rel="noopener noreffer" target="_blank"> Hire </a><a class="menu-item" href="/en/about/#contact"> Contact </a><span class="menu-item delimiter"></span><a href="#" onclick="return false;" class="menu-item language" title="Select Language">English<i class="fas fa-chevron-right fa-fw"></i>
+                        <select class="language-select" title="Select Language" id="language-select-desktop" onchange="location = this.value;"><option value="/en/nebula-java-happy-parsing-guide/" selected>English</option><option value="/nebula-java-happy-parsing-guide/">简体中文</option></select>
+                    </a><span class="menu-item search" id="search-desktop">
+                        <input type="text" placeholder="Search titles or contents..." id="search-input-desktop">
+                        <a href="#" onclick="return false;" class="search-button search-toggle" id="search-toggle-desktop" title="Search">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="#" onclick="return false;" class="search-button search-clear" id="search-clear-desktop" title="Clear">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-desktop">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </span><a href="#" onclick="return false;" class="menu-item theme-select" title="Switch Theme">
+                    <i class="fas fa-adjust fa-fw"></i>
+                    <select class="color-theme-select" id="theme-select-desktop" title="Switch Theme">
+                        <option value="light">Light</option>
+                        <option value="dark">Dark</option>
+                        <option value="black">Black</option>
+                        <option value="auto">Auto</option>
+                    </select>
+                </a></div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="/en/" title="siwei.io"><span class="header-title-pre"><i class="fas fa-code-branch"></i></span>siwei.io</a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><div class="search-wrapper">
+                    <div class="search mobile" id="search-mobile">
+                        <input type="text" placeholder="Search titles or contents..." id="search-input-mobile">
+                        <a href="#" onclick="return false;" class="search-button search-toggle" id="search-toggle-mobile" title="Search">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="#" onclick="return false;" class="search-button search-clear" id="search-clear-mobile" title="Clear">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-mobile">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </div>
+                    <a href="#" onclick="return false;" class="search-cancel" id="search-cancel-mobile">
+                        Cancel
+                    </a>
+                </div><a class="menu-item" href="/en/about/" title="">About</a><a class="menu-item" href="/en/projects/" title="">Project</a><a class="menu-item" href="/en/sketch-notes/" title="">Sketches</a><a class="menu-item" href="/en/posts/" title="">Blog</a><a class="menu-item" href="/en/cources/" title="">Hands-on</a><a class="menu-item" href="/en/talk/" title="">Talks</a><a class="menu-item" href="https://vesoft.com/en/careers/" title="" rel="noopener noreffer" target="_blank">Hire</a><a class="menu-item" href="/en/about/#contact" title="">Contact</a><a href="#" onclick="return false;" class="menu-item theme-select" title="Switch Theme">
+                <i class="fas fa-adjust fa-fw"></i>
+                <select class="color-theme-select" id="theme-select-mobile" title="Switch Theme">
+                    <option value="light">Light</option>
+                    <option value="dark">Dark</option>
+                    <option value="black">Black</option>
+                    <option value="auto">Auto</option>
+                </select>
+            </a><a href="#" onclick="return false;" class="menu-item" title="Select Language">English<i class="fas fa-chevron-right fa-fw"></i>
+                    <select class="language-select" title="Select Language" onchange="location = this.value;"><option value="/en/nebula-java-happy-parsing-guide/" selected>English</option><option value="/nebula-java-happy-parsing-guide/">简体中文</option></select>
+                </a></div>
+    </div>
+</header>
+<div class="search-dropdown desktop">
+    <div id="search-dropdown-desktop"></div>
+</div>
+<div class="search-dropdown mobile">
+    <div id="search-dropdown-mobile"></div>
+</div>
+<main class="main">
+            <div class="container"><div class="toc" id="toc-auto">
+        <h2 class="toc-title">Contents</h2>
+        <div class="toc-content always-active" id="toc-content-auto"></div>
+    </div><script>document.getElementsByTagName("main")[0].setAttribute("pageStyle", "normal")</script><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC", "true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Nebula Java Happy Parsing Guide</h1><div class="post-meta">
+            <div class="post-meta-line">
+                <span class="post-author"><i class="author fas fa-user-circle fa-fw"></i><a href="https://siwei.io" title="Author" target="_blank" rel="noopener noreffer author" class="author">Wey Gu</a>
+                </span>&nbsp;<span class="post-category">included in </span>&nbsp;<span class="post-category">category <a href="/en/categories/nebula-graph/"><i class="far fa-folder fa-fw"></i>Nebula Graph</a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime="2021-11-25">2021-11-25</time>&nbsp;<i class="far fa-edit fa-fw"></i>&nbsp;<time datetime="2021-11-25">2021-11-25</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;1180 words&nbsp;
+                <i class="far fa-clock fa-fw"></i>&nbsp;6 minutes&nbsp;<span id="/en/nebula-java-happy-parsing-guide/" class="leancloud_visitors" data-flag-title="Nebula Java Happy Parsing Guide">
+                        <i class="far fa-eye fa-fw"></i>&nbsp;<span class=leancloud-visitors-count></span>&nbsp;views
+                    </span>&nbsp;</div>
+        </div><div class="featured-image"><img
+        class="lazyload"
+        data-src="/en/nebula-java-happy-parsing-guide/featured-image.webp"
+        data-srcset="/en/nebula-java-happy-parsing-guide/featured-image.webp, /en/nebula-java-happy-parsing-guide/featured-image.webp 1.5x, /en/nebula-java-happy-parsing-guide/featured-image.webp 2x"
+        data-sizes="auto"
+        alt="/en/nebula-java-happy-parsing-guide/featured-image.webp"
+        title="How to parsing nebula graph data in an interactive way and what are the best practices?" height="888" width="1736"
+    /></div><div class="details toc" id="toc-static"  kept="">
+                <div class="details-summary toc-title">
+                    <span>Contents</span>
+                    <span><i class="details-icon fas fa-angle-right"></i></span>
+                </div>
+                <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#prepare-for-the-java-repl">Prepare for the Java REPL</a></li>
+        <li><a href="#the-execute-for-resultset">The <code>execute</code> for ResultSet</a></li>
+        <li><a href="#the-executejson-method">The <code>executeJson</code> method</a></li>
+        <li><a href="#conclusion">Conclusion</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav></div>
+            </div><div class="content" id="content"><blockquote>
+<p>How to parsing nebula graph data in an interactive way and what are the best practices?</p>
+<p>I will show you a easier way in this article 😁.</p>
+</blockquote>
+<h2 id="prepare-for-the-java-repl">Prepare for the Java REPL</h2>
+<p>Thanks to <a href="https://github.com/albertlatacz/java-repl/" target="_blank" rel="noopener noreffer">https://github.com/albertlatacz/java-repl/</a> we could play with/debug this in an interactive way, and all we need is to leverage its docker image to have all the envrioment in a clean and quick way:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">docker pull albertlatacz/java-repl
+docker run --rm -it <span class="se">\
+</span><span class="se"></span>    --network<span class="o">=</span>nebula-docker-compose_nebula-net <span class="se">\
+</span><span class="se"></span>    -v ~:/root <span class="se">\
+</span><span class="se"></span>    albertlatacz/java-repl <span class="se">\
+</span><span class="se"></span>    bash
+apt update -y <span class="o">&amp;&amp;</span> apt install ca-certificates -y
+wget https://dlcdn.apache.org/maven/maven-3/3.8.4/binaries/apache-maven-3.8.4-bin.tar.gz --no-check-certificate
+
+tar xzvf apache-maven-3.8.4-bin.tar.gz
+
+wget https://github.com/vesoft-inc/nebula-java/archive/refs/tags/v2.6.1.tar.gz
+tar xzvf v2.6.1.tar.gz
+<span class="nb">cd</span> nebula-java-2.6.1/
+../apache-maven-3.8.4/bin/mvn dependency:copy-dependencies
+../apache-maven-3.8.4/bin/mvn -B package -Dmaven.test.skip<span class="o">=</span><span class="nb">true</span>
+
+java -jar ../javarepl/javarepl.jar
+</code></pre></td></tr></table>
+</div>
+</div><p>Now we are in the java REPL, let&rsquo;s introduce all the class path needed and do the imports in one go:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="o">:</span><span class="n">cp</span> <span class="o">/</span><span class="n">javarepl</span><span class="o">/</span><span class="n">nebula</span><span class="o">-</span><span class="n">java</span><span class="o">-</span><span class="n">2</span><span class="o">.</span><span class="na">6</span><span class="o">.</span><span class="na">1</span><span class="o">/</span><span class="n">client</span><span class="o">/</span><span class="n">target</span><span class="o">/</span><span class="n">client</span><span class="o">-</span><span class="n">2</span><span class="o">.</span><span class="na">6</span><span class="o">.</span><span class="na">1</span><span class="o">.</span><span class="na">jar</span>
+<span class="o">:</span><span class="n">cp</span> <span class="o">/</span><span class="n">javarepl</span><span class="o">/</span><span class="n">nebula</span><span class="o">-</span><span class="n">java</span><span class="o">-</span><span class="n">2</span><span class="o">.</span><span class="na">6</span><span class="o">.</span><span class="na">1</span><span class="o">/</span><span class="n">client</span><span class="o">/</span><span class="n">target</span><span class="o">/</span><span class="n">dependency</span><span class="o">/</span><span class="n">fastjson</span><span class="o">-</span><span class="n">1</span><span class="o">.</span><span class="na">2</span><span class="o">.</span><span class="na">78</span><span class="o">.</span><span class="na">jar</span>
+<span class="o">:</span><span class="n">cp</span> <span class="o">/</span><span class="n">javarepl</span><span class="o">/</span><span class="n">nebula</span><span class="o">-</span><span class="n">java</span><span class="o">-</span><span class="n">2</span><span class="o">.</span><span class="na">6</span><span class="o">.</span><span class="na">1</span><span class="o">/</span><span class="n">client</span><span class="o">/</span><span class="n">target</span><span class="o">/</span><span class="n">dependency</span><span class="o">/</span><span class="n">slf4j</span><span class="o">-</span><span class="n">api</span><span class="o">-</span><span class="n">1</span><span class="o">.</span><span class="na">7</span><span class="o">.</span><span class="na">25</span><span class="o">.</span><span class="na">jar</span>
+<span class="o">:</span><span class="n">cp</span> <span class="o">/</span><span class="n">javarepl</span><span class="o">/</span><span class="n">nebula</span><span class="o">-</span><span class="n">java</span><span class="o">-</span><span class="n">2</span><span class="o">.</span><span class="na">6</span><span class="o">.</span><span class="na">1</span><span class="o">/</span><span class="n">client</span><span class="o">/</span><span class="n">target</span><span class="o">/</span><span class="n">dependency</span><span class="o">/</span><span class="n">slf4j</span><span class="o">-</span><span class="n">log4j12</span><span class="o">-</span><span class="n">1</span><span class="o">.</span><span class="na">7</span><span class="o">.</span><span class="na">25</span><span class="o">.</span><span class="na">jar</span>
+<span class="o">:</span><span class="n">cp</span> <span class="o">/</span><span class="n">javarepl</span><span class="o">/</span><span class="n">nebula</span><span class="o">-</span><span class="n">java</span><span class="o">-</span><span class="n">2</span><span class="o">.</span><span class="na">6</span><span class="o">.</span><span class="na">1</span><span class="o">/</span><span class="n">client</span><span class="o">/</span><span class="n">target</span><span class="o">/</span><span class="n">dependency</span><span class="o">/</span><span class="n">commons</span><span class="o">-</span><span class="n">pool2</span><span class="o">-</span><span class="n">2</span><span class="o">.</span><span class="na">2</span><span class="o">.</span><span class="na">jar</span>
+<span class="o">:</span><span class="n">cp</span> <span class="o">/</span><span class="n">javarepl</span><span class="o">/</span><span class="n">nebula</span><span class="o">-</span><span class="n">java</span><span class="o">-</span><span class="n">2</span><span class="o">.</span><span class="na">6</span><span class="o">.</span><span class="na">1</span><span class="o">/</span><span class="n">client</span><span class="o">/</span><span class="n">target</span><span class="o">/</span><span class="n">dependency</span><span class="o">/</span><span class="n">log4j</span><span class="o">-</span><span class="n">1</span><span class="o">.</span><span class="na">2</span><span class="o">.</span><span class="na">17</span><span class="o">.</span><span class="na">jar</span>
+
+<span class="kn">import</span> <span class="nn">com.alibaba.fastjson.JSON</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">com.alibaba.fastjson.JSONObject</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">com.vesoft.nebula.ErrorCode</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">com.vesoft.nebula.client.graph.NebulaPoolConfig</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">com.vesoft.nebula.client.graph.data.CASignedSSLParam</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">com.vesoft.nebula.client.graph.data.HostAddress</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">com.vesoft.nebula.client.graph.data.ResultSet</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">com.vesoft.nebula.client.graph.data.SelfSignedSSLParam</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">com.vesoft.nebula.client.graph.data.ValueWrapper</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">com.vesoft.nebula.client.graph.net.NebulaPool</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">com.vesoft.nebula.client.graph.net.Session</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.io.UnsupportedEncodingException</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.util.Arrays</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.util.List</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.util.concurrent.TimeUnit</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.slf4j.Logger</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.slf4j.LoggerFactory</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.lang.reflect.*</span><span class="o">;</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>And let&rsquo;s connect it to the nebula graph, please replace your graphD IP and Port here:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="n">NebulaPoolConfig</span> <span class="n">nebulaPoolConfig</span> <span class="o">=</span> <span class="k">new</span> <span class="n">NebulaPoolConfig</span><span class="o">();</span>
+<span class="n">nebulaPoolConfig</span><span class="o">.</span><span class="na">setMaxConnSize</span><span class="o">(</span><span class="n">10</span><span class="o">);</span>
+<span class="n">List</span><span class="o">&lt;</span><span class="n">HostAddress</span><span class="o">&gt;</span> <span class="n">addresses</span> <span class="o">=</span> <span class="n">Arrays</span><span class="o">.</span><span class="na">asList</span><span class="o">(</span><span class="k">new</span> <span class="n">HostAddress</span><span class="o">(</span><span class="s">&#34;192.168.8.127&#34;</span><span class="o">,</span> <span class="n">9669</span><span class="o">));</span>
+<span class="n">NebulaPool</span> <span class="n">pool</span> <span class="o">=</span> <span class="k">new</span> <span class="n">NebulaPool</span><span class="o">();</span>
+<span class="n">pool</span><span class="o">.</span><span class="na">init</span><span class="o">(</span><span class="n">addresses</span><span class="o">,</span> <span class="n">nebulaPoolConfig</span><span class="o">);</span>
+<span class="n">Session</span> <span class="n">session</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="na">getSession</span><span class="o">(</span><span class="s">&#34;root&#34;</span><span class="o">,</span> <span class="s">&#34;nebula&#34;</span><span class="o">,</span> <span class="kc">false</span><span class="o">);</span>
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="the-execute-for-resultset">The <code>execute</code> for ResultSet</h2>
+<p>First let&rsquo;s check what we can do with a simple query:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="n">ResultSet</span> <span class="n">resp</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="na">execute</span><span class="o">(</span><span class="s">&#34;USE basketballplayer;MATCH (n:player) WHERE n.name==\&#34;Tim Duncan\&#34; RETURN n&#34;</span><span class="o">);</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>Now you could play with it:</p>
+<blockquote>
+<p>Reference: <a href="https://github.dev/vesoft-inc/nebula-java/blob/master/client/src/main/java/com/vesoft/nebula/client/graph/data/ResultSet.java" target="_blank" rel="noopener noreffer">client/graph/data/ResultSet.java</a></p>
+</blockquote>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="n">java</span><span class="o">&gt;</span> <span class="n">resp</span><span class="o">.</span><span class="na">isSucceeded</span><span class="o">()</span>
+<span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">Boolean</span> <span class="n">res9</span> <span class="o">=</span> <span class="kc">true</span>
+
+<span class="n">java</span><span class="o">&gt;</span> <span class="n">resp</span><span class="o">.</span><span class="na">rowsSize</span><span class="o">()</span>
+<span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">Integer</span> <span class="n">res16</span> <span class="o">=</span> <span class="n">1</span>
+
+<span class="n">java</span><span class="o">&gt;</span> <span class="n">rows</span> <span class="o">=</span> <span class="n">resp</span><span class="o">.</span><span class="na">getRows</span><span class="o">()</span>
+<span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">ArrayList</span> <span class="n">rows</span> <span class="o">=</span> <span class="o">[</span><span class="n">Row</span> <span class="o">(</span>
+  <span class="n">values</span> <span class="o">:</span> <span class="o">[</span>
+    <span class="o">&lt;</span><span class="n">Value</span> <span class="n">vVal</span><span class="o">:</span><span class="n">Vertex</span> <span class="o">(</span>
+        <span class="n">vid</span> <span class="o">:</span> <span class="o">&lt;</span><span class="n">Value</span> <span class="n">sVal</span><span class="o">:</span><span class="n">70</span> <span class="n">6c</span> <span class="n">61</span> <span class="n">79</span> <span class="n">65</span> <span class="n">72</span> <span class="n">31</span> <span class="n">30</span> <span class="n">30</span><span class="o">&gt;,</span>
+        <span class="n">tags</span> <span class="o">:</span> <span class="o">[</span>
+          <span class="n">Tag</span> <span class="o">(</span>
+              <span class="n">name</span> <span class="o">:</span> <span class="n">70</span> <span class="n">6C</span> <span class="n">61</span> <span class="n">79</span> <span class="n">65</span> <span class="n">72</span><span class="o">,</span>
+              <span class="n">props</span> <span class="o">:</span> <span class="o">{</span>
+                <span class="o">[</span><span class="n">B</span><span class="nd">@5264a468</span> <span class="o">:</span> <span class="o">&lt;</span><span class="n">Value</span> <span class="n">iVal</span><span class="o">:</span><span class="n">42</span><span class="o">&gt;</span>
+                <span class="o">[</span><span class="n">B</span><span class="nd">@496b8e10</span> <span class="o">:</span> <span class="o">&lt;</span><span class="n">Value</span> <span class="n">sVal</span><span class="o">:</span><span class="n">54</span> <span class="n">69</span> <span class="n">6d</span> <span class="n">20</span> <span class="n">44</span> <span class="n">75</span> <span class="n">6e</span> <span class="n">63</span> <span class="n">61</span> <span class="n">6e</span><span class="o">&gt;</span>
+              <span class="o">}</span>
+            <span class="o">)</span>
+        <span class="o">]</span>
+      <span class="o">)&gt;</span>
+  <span class="o">]</span>
+<span class="o">)]</span>
+    
+<span class="n">java</span><span class="o">&gt;</span> <span class="n">row0</span> <span class="o">=</span> <span class="n">resp</span><span class="o">.</span><span class="na">rowValues</span><span class="o">(</span><span class="n">0</span><span class="o">)</span>
+<span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">Iterable</span><span class="o">&lt;</span><span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ValueWrapper</span><span class="o">&gt;</span> <span class="n">res10</span> <span class="o">=</span> <span class="n">ColumnName</span><span class="o">:</span> <span class="o">[</span><span class="n">n</span><span class="o">],</span> <span class="n">Values</span><span class="o">:</span> <span class="o">[(</span><span class="s">&#34;player100&#34;</span> <span class="o">:</span><span class="n">player</span> <span class="o">{</span><span class="n">name</span><span class="o">:</span> <span class="s">&#34;Tim Duncan&#34;</span><span class="o">,</span> <span class="n">age</span><span class="o">:</span> <span class="n">42</span><span class="o">})]</span>
+
+</code></pre></td></tr></table>
+</div>
+</div><p>Remember our item is actually a vertex?</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">(root@nebula) [basketballplayer]&gt; match (n:player) WHERE n.name == &#34;Tim Duncan&#34; return n
++----------------------------------------------------+
+| n                                                  |
++----------------------------------------------------+
+| (&#34;player100&#34; :player{age: 42, name: &#34;Tim Duncan&#34;}) |
++----------------------------------------------------+
+Got 1 rows (time spent 2116/44373 us)
+</code></pre></td></tr></table>
+</div>
+</div><p>Let&rsquo;s see what(methods) can be done towards a value?</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="n">v</span> <span class="o">=</span> <span class="n">Class</span><span class="o">.</span><span class="na">forName</span><span class="o">(</span><span class="s">&#34;com.vesoft.nebula.Value&#34;</span><span class="o">)</span>
+<span class="n">v</span><span class="o">.</span><span class="na">getDeclaredMethods</span><span class="o">()</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>We could tell it&rsquo;s quite Primitive on what <code>com.vesoft.nebula.Value</code> provided, thus we should use the ValueWrapper(or use executeJson actually) instead.</p>
+<p>To get a row of the result via iteration(as its a java iterable), we just follow how the example looped the result:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="kn">import</span> <span class="nn">java.util.ArrayList</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.util.List</span><span class="o">;</span>
+<span class="n">List</span><span class="o">&lt;</span><span class="n">ValueWrapper</span><span class="o">&gt;</span> <span class="n">wrappedValueList</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">&lt;&gt;();</span>
+
+<span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="n">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">resp</span><span class="o">.</span><span class="na">rowsSize</span><span class="o">();</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
+    <span class="n">ResultSet</span><span class="o">.</span><span class="na">Record</span> <span class="n">record</span> <span class="o">=</span> <span class="n">resp</span><span class="o">.</span><span class="na">rowValues</span><span class="o">(</span><span class="n">i</span><span class="o">);</span>
+    <span class="k">for</span> <span class="o">(</span><span class="n">ValueWrapper</span> <span class="n">value</span> <span class="o">:</span> <span class="n">record</span><span class="o">.</span><span class="na">values</span><span class="o">())</span> <span class="o">{</span>
+        <span class="n">wrappedValueList</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">value</span><span class="o">);</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">value</span><span class="o">.</span><span class="na">isLong</span><span class="o">())</span> <span class="o">{</span>
+            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">printf</span><span class="o">(</span><span class="s">&#34;%15s |&#34;</span><span class="o">,</span> <span class="n">value</span><span class="o">.</span><span class="na">asLong</span><span class="o">());</span>
+        <span class="o">}</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">value</span><span class="o">.</span><span class="na">isBoolean</span><span class="o">())</span> <span class="o">{</span>
+            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">printf</span><span class="o">(</span><span class="s">&#34;%15s |&#34;</span><span class="o">,</span> <span class="n">value</span><span class="o">.</span><span class="na">asBoolean</span><span class="o">());</span>
+        <span class="o">}</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">value</span><span class="o">.</span><span class="na">isDouble</span><span class="o">())</span> <span class="o">{</span>
+            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">printf</span><span class="o">(</span><span class="s">&#34;%15s |&#34;</span><span class="o">,</span> <span class="n">value</span><span class="o">.</span><span class="na">asDouble</span><span class="o">());</span>
+        <span class="o">}</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">value</span><span class="o">.</span><span class="na">isString</span><span class="o">())</span> <span class="o">{</span>
+            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">printf</span><span class="o">(</span><span class="s">&#34;%15s |&#34;</span><span class="o">,</span> <span class="n">value</span><span class="o">.</span><span class="na">asString</span><span class="o">());</span>
+        <span class="o">}</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">value</span><span class="o">.</span><span class="na">isTime</span><span class="o">())</span> <span class="o">{</span>
+            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">printf</span><span class="o">(</span><span class="s">&#34;%15s |&#34;</span><span class="o">,</span> <span class="n">value</span><span class="o">.</span><span class="na">asTime</span><span class="o">());</span>
+        <span class="o">}</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">value</span><span class="o">.</span><span class="na">isDate</span><span class="o">())</span> <span class="o">{</span>
+            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">printf</span><span class="o">(</span><span class="s">&#34;%15s |&#34;</span><span class="o">,</span> <span class="n">value</span><span class="o">.</span><span class="na">asDate</span><span class="o">());</span>
+        <span class="o">}</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">value</span><span class="o">.</span><span class="na">isDateTime</span><span class="o">())</span> <span class="o">{</span>
+            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">printf</span><span class="o">(</span><span class="s">&#34;%15s |&#34;</span><span class="o">,</span> <span class="n">value</span><span class="o">.</span><span class="na">asDateTime</span><span class="o">());</span>
+        <span class="o">}</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">value</span><span class="o">.</span><span class="na">isVertex</span><span class="o">())</span> <span class="o">{</span>
+            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">printf</span><span class="o">(</span><span class="s">&#34;%15s |&#34;</span><span class="o">,</span> <span class="n">value</span><span class="o">.</span><span class="na">asNode</span><span class="o">());</span>
+        <span class="o">}</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">value</span><span class="o">.</span><span class="na">isEdge</span><span class="o">())</span> <span class="o">{</span>
+            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">printf</span><span class="o">(</span><span class="s">&#34;%15s |&#34;</span><span class="o">,</span> <span class="n">value</span><span class="o">.</span><span class="na">asRelationship</span><span class="o">());</span>
+        <span class="o">}</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">value</span><span class="o">.</span><span class="na">isPath</span><span class="o">())</span> <span class="o">{</span>
+            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">printf</span><span class="o">(</span><span class="s">&#34;%15s |&#34;</span><span class="o">,</span> <span class="n">value</span><span class="o">.</span><span class="na">asPath</span><span class="o">());</span>
+        <span class="o">}</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">value</span><span class="o">.</span><span class="na">isList</span><span class="o">())</span> <span class="o">{</span>
+            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">printf</span><span class="o">(</span><span class="s">&#34;%15s |&#34;</span><span class="o">,</span> <span class="n">value</span><span class="o">.</span><span class="na">asList</span><span class="o">());</span>
+        <span class="o">}</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">value</span><span class="o">.</span><span class="na">isSet</span><span class="o">())</span> <span class="o">{</span>
+            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">printf</span><span class="o">(</span><span class="s">&#34;%15s |&#34;</span><span class="o">,</span> <span class="n">value</span><span class="o">.</span><span class="na">asSet</span><span class="o">());</span>
+        <span class="o">}</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">value</span><span class="o">.</span><span class="na">isMap</span><span class="o">())</span> <span class="o">{</span>
+            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">printf</span><span class="o">(</span><span class="s">&#34;%15s |&#34;</span><span class="o">,</span> <span class="n">value</span><span class="o">.</span><span class="na">asMap</span><span class="o">());</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+    <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">();</span>
+<span class="o">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>As shown in above, the result value/item could be in properties string/int etc&hellip; or in graph semantic vertex, edge, path, we should use correspond <code>asXxxx</code> methods:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="n">java</span><span class="o">&gt;</span> <span class="n">v</span> <span class="o">=</span> <span class="n">wrappedValueList</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">0</span><span class="o">)</span>
+<span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ValueWrapper</span> <span class="n">v</span> <span class="o">=</span> <span class="o">(</span><span class="s">&#34;player100&#34;</span> <span class="o">:</span><span class="n">player</span> <span class="o">{</span><span class="n">name</span><span class="o">:</span> <span class="s">&#34;Tim Duncan&#34;</span><span class="o">,</span> <span class="n">age</span><span class="o">:</span> <span class="n">42</span><span class="o">})</span>
+<span class="n">java</span><span class="o">&gt;</span> <span class="n">v</span><span class="o">.</span><span class="na">asNode</span><span class="o">()</span>
+<span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">Node</span> <span class="n">res16</span> <span class="o">=</span> <span class="o">(</span><span class="s">&#34;player100&#34;</span> <span class="o">:</span><span class="n">player</span> <span class="o">{</span><span class="n">name</span><span class="o">:</span> <span class="s">&#34;Tim Duncan&#34;</span><span class="o">,</span> <span class="n">age</span><span class="o">:</span> <span class="n">42</span><span class="o">})</span>
+<span class="n">java</span><span class="o">&gt;</span> <span class="n">node</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="na">asNode</span><span class="o">()</span>
+<span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">Node</span> <span class="n">node</span> <span class="o">=</span> <span class="o">(</span><span class="s">&#34;player100&#34;</span> <span class="o">:</span><span class="n">player</span> <span class="o">{</span><span class="n">name</span><span class="o">:</span> <span class="s">&#34;Tim Duncan&#34;</span><span class="o">,</span> <span class="n">age</span><span class="o">:</span> <span class="n">42</span><span class="o">})</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>Btw, it&rsquo;s also possible to play with it with reflections(we imported already):</p>
+<blockquote>
+<p>Of courese we could also check via <a href="https://github.dev/vesoft-inc/nebula-java/blob/master/client/src/main/java/com/vesoft/nebula/client/graph/data/ResultSet.java" target="_blank" rel="noopener noreffer">client/graph/data/ResultSet.java</a></p>
+</blockquote>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="n">java</span><span class="o">&gt;</span> <span class="n">rClass</span><span class="o">=</span><span class="n">Class</span><span class="o">.</span><span class="na">forName</span><span class="o">(</span><span class="s">&#34;com.vesoft.nebula.client.graph.data.ResultSet&#34;</span><span class="o">)</span>
+<span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">Class</span> <span class="n">r</span> <span class="o">=</span> <span class="kd">class</span> <span class="nc">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet</span>
+<span class="n">java</span><span class="o">&gt;</span> <span class="n">rClass</span><span class="o">.</span><span class="na">getDeclaredMethods</span><span class="o">()</span>
+<span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">reflect</span><span class="o">.</span><span class="na">Method</span><span class="o">[]</span> <span class="n">res20</span> <span class="o">=</span> <span class="o">[</span><span class="kd">public</span> <span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">List</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet</span><span class="o">.</span><span class="na">getColumnNames</span><span class="o">(),</span> <span class="kd">public</span> <span class="kt">int</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet</span><span class="o">.</span><span class="na">rowsSize</span><span class="o">(),</span> <span class="kd">public</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet$Record</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet</span><span class="o">.</span><span class="na">rowValues</span><span class="o">(</span><span class="kt">int</span><span class="o">),</span> <span class="kd">public</span> <span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">List</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet</span><span class="o">.</span><span class="na">colValues</span><span class="o">(</span><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span><span class="o">),</span> <span class="kd">public</span> <span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet</span><span class="o">.</span><span class="na">getErrorMessage</span><span class="o">(),</span> <span class="kd">public</span> <span class="kt">boolean</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet</span><span class="o">.</span><span class="na">isSucceeded</span><span class="o">(),</span> <span class="kd">public</span> <span class="kt">int</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet</span><span class="o">.</span><span class="na">getErrorCode</span><span class="o">(),</span> <span class="kd">public</span> <span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet</span><span class="o">.</span><span class="na">getSpaceName</span><span class="o">(),</span> <span class="kd">public</span> <span class="kt">int</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet</span><span class="o">.</span><span class="na">getLatency</span><span class="o">(),</span> <span class="kd">public</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">PlanDescription</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet</span><span class="o">.</span><span class="na">getPlanDesc</span><span class="o">(),</span> <span class="kd">public</span> <span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">List</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet</span><span class="o">.</span><span class="na">getRows</span><span class="o">(),</span> <span class="kd">public</span> <span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet</span><span class="o">.</span><span class="na">getComment</span><span class="o">(),</span> <span class="kd">public</span> <span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet</span><span class="o">.</span><span class="na">toString</span><span class="o">(),</span> <span class="kd">public</span> <span class="kt">boolean</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet</span><span class="o">.</span><span class="na">isEmpty</span><span class="o">(),</span> <span class="kd">public</span> <span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">List</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet</span><span class="o">.</span><span class="na">keys</span><span class="o">()]</span>
+</code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="n">java</span><span class="o">&gt;</span> <span class="n">nodeClass</span><span class="o">=</span><span class="n">Class</span><span class="o">.</span><span class="na">forName</span><span class="o">(</span><span class="s">&#34;com.vesoft.nebula.client.graph.data.Node&#34;</span><span class="o">)</span>
+<span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">Class</span> <span class="n">nodeClass</span> <span class="o">=</span> <span class="kd">class</span> <span class="nc">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">Node</span>
+<span class="n">java</span><span class="o">&gt;</span> <span class="n">nodeClass</span><span class="o">.</span><span class="na">getDeclaredMethods</span><span class="o">()</span>
+<span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">reflect</span><span class="o">.</span><span class="na">Method</span><span class="o">[]</span> <span class="n">res20</span> <span class="o">=</span> <span class="o">[</span><span class="kd">public</span> <span class="kt">boolean</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">Node</span><span class="o">.</span><span class="na">hasTagName</span><span class="o">(</span><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span><span class="o">),</span> <span class="kd">public</span> <span class="kt">boolean</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">Node</span><span class="o">.</span><span class="na">hasLabel</span><span class="o">(</span><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span><span class="o">),</span> <span class="kd">public</span> <span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">List</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">Node</span><span class="o">.</span><span class="na">tagNames</span><span class="o">(),</span> <span class="kd">public</span> <span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">HashMap</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">Node</span><span class="o">.</span><span class="na">properties</span><span class="o">(</span><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">java</span><span class="o">.</span><span class="na">io</span><span class="o">.</span><span class="na">UnsupportedEncodingException</span><span class="o">,</span> <span class="kd">public</span> <span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">List</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">Node</span><span class="o">.</span><span class="na">labels</span><span class="o">(),</span> <span class="kd">public</span> <span class="kt">boolean</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">Node</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">Object</span><span class="o">),</span> <span class="kd">public</span> <span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">Node</span><span class="o">.</span><span class="na">toString</span><span class="o">(),</span> <span class="kd">public</span> <span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">List</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">Node</span><span class="o">.</span><span class="na">values</span><span class="o">(</span><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span><span class="o">),</span> <span class="kd">public</span> <span class="kt">int</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">Node</span><span class="o">.</span><span class="na">hashCode</span><span class="o">(),</span> <span class="kd">public</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ValueWrapper</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">Node</span><span class="o">.</span><span class="na">getId</span><span class="o">(),</span> <span class="kd">public</span> <span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">List</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">Node</span><span class="o">.</span><span class="na">keys</span><span class="o">(</span><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">java</span><span class="o">.</span><span class="na">io</span><span class="o">.</span><span class="na">UnsupportedEncodingException</span><span class="o">]</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>It comes with methods like <code>tagNames()</code>, <code>properties()</code>, <code>labels()</code> etc&hellip;</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="n">java</span><span class="o">&gt;</span> <span class="n">node</span><span class="o">.</span><span class="na">properties</span><span class="o">(</span><span class="s">&#34;player&#34;</span><span class="o">)</span>
+<span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">HashMap</span> <span class="n">res11</span> <span class="o">=</span> <span class="o">{</span><span class="n">name</span><span class="o">=</span><span class="s">&#34;Tim Duncan&#34;</span><span class="o">,</span> <span class="n">age</span><span class="o">=</span><span class="n">42</span><span class="o">}</span>
+<span class="n">java</span><span class="o">&gt;</span> <span class="n">node</span><span class="o">.</span><span class="na">tagNames</span><span class="o">()</span>
+<span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">ArrayList</span> <span class="n">res12</span> <span class="o">=</span> <span class="o">[</span><span class="n">player</span><span class="o">]</span>
+<span class="n">java</span><span class="o">&gt;</span> <span class="n">node</span><span class="o">.</span><span class="na">labels</span><span class="o">()</span>
+<span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">ArrayList</span> <span class="n">res13</span> <span class="o">=</span> <span class="o">[</span><span class="n">player</span><span class="o">]</span>
+<span class="n">java</span><span class="o">&gt;</span> <span class="n">node</span><span class="o">.</span><span class="na">values</span><span class="o">(</span><span class="s">&#34;player&#34;</span><span class="o">)</span>
+<span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">ArrayList</span> <span class="n">res14</span> <span class="o">=</span> <span class="o">[</span><span class="n">42</span><span class="o">,</span> <span class="s">&#34;Tim Duncan&#34;</span><span class="o">]</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>We only demestrated the <code>RETURN n</code> case which is a vertex, but for sure you could explore other types like: edge, path or datetime, string etc., right?</p>
+<h2 id="the-executejson-method">The <code>executeJson</code> method</h2>
+<p>Since 2.6, nebule finally supports json string response and we could do this:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="n">java</span><span class="o">&gt;</span> <span class="n">String</span> <span class="n">resp_json</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="na">executeJson</span><span class="o">(</span><span class="s">&#34;USE basketballplayer;MATCH (n:player) WHERE n.name==\&#34;Tim Duncan\&#34; RETURN n&#34;</span><span class="o">);</span>
+
+<span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span> <span class="n">resp_json</span> <span class="o">=</span> <span class="s">&#34;
+</span><span class="s">{
+</span><span class="s">   &#34;</span><span class="n">errors</span><span class="s">&#34;:[
+</span><span class="s">      {
+</span><span class="s">         &#34;</span><span class="n">code</span><span class="s">&#34;:0
+</span><span class="s">      }
+</span><span class="s">   ],
+</span><span class="s">   &#34;</span><span class="n">results</span><span class="s">&#34;:[
+</span><span class="s">      {
+</span><span class="s">         &#34;</span><span class="n">spaceName</span><span class="s">&#34;:&#34;</span><span class="n">basketballplayer</span><span class="s">&#34;,
+</span><span class="s">         &#34;</span><span class="n">data</span><span class="s">&#34;:[
+</span><span class="s">            {
+</span><span class="s">               &#34;</span><span class="n">meta</span><span class="s">&#34;:[
+</span><span class="s">                  {
+</span><span class="s">                     &#34;</span><span class="n">type</span><span class="s">&#34;:&#34;</span><span class="n">vertex</span><span class="s">&#34;,
+</span><span class="s">                     &#34;</span><span class="n">id</span><span class="s">&#34;:&#34;</span><span class="n">player100</span><span class="s">&#34;
+</span><span class="s">                  }
+</span><span class="s">               ],
+</span><span class="s">               &#34;</span><span class="n">row</span><span class="s">&#34;:[
+</span><span class="s">                  {
+</span><span class="s">                     &#34;</span><span class="n">player</span><span class="o">.</span><span class="na">age</span><span class="s">&#34;:42,
+</span><span class="s">                     &#34;</span><span class="n">player</span><span class="o">.</span><span class="na">name</span><span class="s">&#34;:&#34;</span><span class="n">Tim</span> <span class="n">Duncan</span><span class="s">&#34;
+</span><span class="s">                  }
+</span><span class="s">               ]
+</span><span class="s">            }
+</span><span class="s">         ],
+</span><span class="s">         &#34;</span><span class="n">columns</span><span class="s">&#34;:[
+</span><span class="s">            &#34;</span><span class="n">n</span><span class="s">&#34;
+</span><span class="s">         ],
+</span><span class="s">         &#34;</span><span class="n">errors</span><span class="s">&#34;:{
+</span><span class="s">            &#34;</span><span class="n">code</span><span class="s">&#34;:0
+</span><span class="s">         },
+</span><span class="s">         &#34;</span><span class="n">latencyInUs</span><span class="s">&#34;:4761
+</span><span class="s">      }
+</span><span class="s">   ]
+</span><span class="s">}
+</span><span class="s">&#34;</span>
+<span class="n">java</span><span class="o">&gt;</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>And I believe you know much better than I do with it.</p>
+<h2 id="conclusion">Conclusion</h2>
+<ul>
+<li>If we go with JSON response, it&rsquo;ll be easier for you to have everything parsed.</li>
+<li>If we have to deal with resultSet object, just use the ValueWrapper asNode() if the value is a vertex, use asRelationship if value is an edge and asPath() if the value is a path.
+<ul>
+<li>With the REPL tool shown together with java reflection and source code, it&rsquo;s possbile to inspect on how data could be parsed.</li>
+</ul>
+</li>
+</ul>
+<p>Happy Graphing!</p>
+<blockquote>
+<p>Picture Credit：<a href="https://unsplash.com/photos/0wIHsm2_1fc" target="_blank" rel="noopener noreffer">leunesmedia</a></p>
+</blockquote></div>
+
+        <div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>Updated on 2021-11-25</span>
+            </div>
+            <div class="post-info-license"></div>
+        </div>
+        <div class="post-info-line">
+            <div class="post-info-md"><span>
+                            <a class="link-to-markdown" href="/en/nebula-java-happy-parsing-guide/index.md" target="_blank" rel="noopener noreferrer">Read Markdown</a>
+                        </span></div>
+            <div class="post-info-share">
+                <span><a href="#" onclick="return false;" title="Share on Twitter" data-sharer="twitter" data-url="https://siwei.io/en/nebula-java-happy-parsing-guide/" data-title="Nebula Java Happy Parsing Guide" data-via="wey_gu" data-hashtags="Nebula Graph,Graph Database,java"><i class="fab fa-twitter fa-fw"></i></a><a href="#" onclick="return false;" title="Share on Facebook" data-sharer="facebook" data-url="https://siwei.io/en/nebula-java-happy-parsing-guide/" data-hashtag="Nebula Graph"><i class="fab fa-facebook-square fa-fw"></i></a><a href="#" onclick="return false;" title="Share on WhatsApp" data-sharer="whatsapp" data-url="https://siwei.io/en/nebula-java-happy-parsing-guide/" data-title="Nebula Java Happy Parsing Guide" data-web><i class="fab fa-whatsapp fa-fw"></i></a><a href="#" onclick="return false;" title="Share on Line" data-sharer="line" data-url="https://siwei.io/en/nebula-java-happy-parsing-guide/" data-title="Nebula Java Happy Parsing Guide"><i data-svg-src="/lib/simple-icons/icons/line.min.svg"></i></a><a href="#" onclick="return false;" title="Share on 微博" data-sharer="weibo" data-url="https://siwei.io/en/nebula-java-happy-parsing-guide/" data-title="Nebula Java Happy Parsing Guide" data-image="featured-image.webp" data-ralateuid="siweigu"><i class="fab fa-weibo fa-fw"></i></a><a href="#" onclick="return false;" title="Share on Myspace" data-sharer="myspace" data-url="https://siwei.io/en/nebula-java-happy-parsing-guide/" data-title="Nebula Java Happy Parsing Guide" data-description="How to parsing nebula graph data in an interactive way and what are the best practices?"><i data-svg-src="/lib/simple-icons/icons/myspace.min.svg"></i></a><a href="#" onclick="return false;" title="Share on Blogger" data-sharer="blogger" data-url="https://siwei.io/en/nebula-java-happy-parsing-guide/" data-title="Nebula Java Happy Parsing Guide" data-description="How to parsing nebula graph data in an interactive way and what are the best practices?"><i class="fab fa-blogger fa-fw"></i></a><a href="#" onclick="return false;" title="Share on Evernote" data-sharer="evernote" data-url="https://siwei.io/en/nebula-java-happy-parsing-guide/" data-title="Nebula Java Happy Parsing Guide"><i class="fab fa-evernote fa-fw"></i></a></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section class="post-tags"><i class="fas fa-tags fa-fw"></i>&nbsp;<a href="/en/tags/nebula-graph/">Nebula Graph</a>,&nbsp;<a href="/en/tags/graph-database/">Graph Database</a>,&nbsp;<a href="/en/tags/java/">java</a></section>
+        <section>
+            <span><a href="javascript:void(0);" onclick="window.history.back();">Back</a></span>&nbsp;|&nbsp;<span><a href="/en/">Home</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/en/nebula-siwi/" class="prev" rel="prev" title="Nebula Siwi: A Dialog System With Graph Database Backed Knowledge Graph"><i class="fas fa-angle-left fa-fw"></i>Nebula Siwi: A Dialog System With Graph Database Backed Knowledge Graph</a></div>
+</div>
+<div id="comments"><div id="waline" class="comment"></div><noscript>
+                Please enable JavaScript to view the comments powered by <a href="https://waline.js.org/">Waline</a>.
+            </noscript></div></article></div>
+        </main><footer class="footer">
+        <div class="footer-container"><div class="footer-line">Powered by <a href="https://gohugo.io/" target="_blank" rel="noopener noreffer" title="Hugo 0.89.0">Hugo</a> | Theme - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreffer" title="DoIt 0.2.13"><i class="far fa-edit fa-fw"></i> DoIt</a>
+                </div><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2018 - 2021</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="https://siwei.io" target="_blank" rel="noopener noreferrer">Wey Gu</a></span>&nbsp;|&nbsp;<span class="license"><a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">CC BY-NC 4.0</a></span></div>
+        </div></footer></div>
+
+    <div id="fixed-buttons"><a href="#back-to-top" id="back-to-top-button" class="fixed-button" title="Back to Top">
+            <i class="fas fa-arrow-up fa-fw"></i>
+        </a><a href="#" id="view-comments" class="fixed-button" title="View Comments">
+            <i class="fas fa-comment fa-fw"></i>
+        </a>
+    </div><div class="assets"><script type="text/javascript" src="/lib/autocomplete/autocomplete.min.js"></script><script type="text/javascript" src="/lib/fuse/fuse.min.js"></script><script type="text/javascript" src="/lib/lazysizes/lazysizes.min.js"></script><script type="text/javascript" src="/lib/topbar/topbar.min.js"></script><script type="text/javascript" src="/lib/pjax/pjax.min.js"></script><script type="text/javascript" src="/js/theme.min.js"></script><script type="text/javascript">
+            window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());
+            gtag('config', 'UA-659952-4', { 'anonymize_ip': true });
+        </script><script type="text/javascript" src="https://www.googletagmanager.com/gtag/js?id=UA-659952-4" async></script></div>
+
+<div class="pjax-assets"><script type="text/javascript" src="/lib/waline/Waline.min.js"></script><script type="text/javascript" src="/lib/lightgallery/lightgallery.min.js"></script><script type="text/javascript" src="/lib/lightgallery/lg-thumbnail.min.js"></script><script type="text/javascript" src="/lib/lightgallery/lg-zoom.min.js"></script><script type="text/javascript" src="/lib/clipboard/clipboard.min.js"></script><script type="text/javascript" src="/lib/sharer/sharer.min.js"></script><script type="text/javascript" src="/lib/katex/katex.min.js"></script><script type="text/javascript" src="/lib/katex/auto-render.min.js"></script><script type="text/javascript" src="/lib/katex/copy-tex.min.js"></script><script type="text/javascript" src="/lib/katex/mhchem.min.js"></script><script type="text/javascript">window.config={"code":{"copyTitle":"Copy to clipboard","maxShownLines":10},"comment":{"waline":{"copyright":true,"dark":"body[theme='dark'], body[theme='black']","el":"#waline","highlight":true,"lang":"en","meta":["nick","mail","link"],"pageSize":10,"serverURL":"https://siwei-io.vercel.app","visitor":true}},"lightGallery":{"actualSize":false,"exThumbImage":"data-thumbnail","hideBarsDelay":2000,"selector":".lightgallery","speed":400,"thumbContHeight":80,"thumbWidth":80,"thumbnail":true},"math":{"delimiters":[{"display":true,"left":"$$","right":"$$"},{"display":true,"left":"\\[","right":"\\]"},{"display":false,"left":"$","right":"$"},{"display":false,"left":"\\(","right":"\\)"}],"strict":false},"search":{"distance":100,"findAllMatches":true,"fuseIndexURL":"/en/index.json","highlightTag":"em","ignoreFieldNorm":false,"ignoreLocation":false,"isCaseSensitive":false,"location":0,"maxResultLength":10,"minMatchCharLength":2,"noResultsFound":"No results found","snippetLength":50,"threshold":0.3,"type":"fuse","useExtendedSearch":false},"sharerjs":true};</script><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/lightgallery/lightgallery.min.css">
+    <noscript><link rel="stylesheet" href="/lib/lightgallery/lightgallery.min.css"></noscript><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/katex/katex.min.css">
+    <noscript><link rel="stylesheet" href="/lib/katex/katex.min.css"></noscript><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/katex/copy-tex.min.css">
+    <noscript><link rel="stylesheet" href="/lib/katex/copy-tex.min.css"></noscript></div>
+</body>
+
+</html>
