@@ -1,7 +1,7 @@
 # Nebula Java Happy Parsing Guide
 
 
-> How to parsing nebula graph data in an interactive way and what are the best practices?
+> How to parse nebula graph data in an interactive way and what are the best practices?
 >
 > I will show you a easier way in this article 😁.
 
