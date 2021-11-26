@@ -3,7 +3,7 @@
 
 > How to parse nebula graph data in an interactive way and what are the best practices?
 >
-> I will show you a easier way in this article 😁.
+> I will show you an easier way in this article 😁.
 
 <!--more-->
 
@@ -30,6 +30,21 @@ cd nebula-java-2.6.1/
 ../apache-maven-3.8.4/bin/mvn -B package -Dmaven.test.skip=true
 
 java -jar ../javarepl/javarepl.jar
+```
+
+Now, after executing `java -jar ../javarepl/javarepl.jar` we are in a Java Shell(REPL), this enable us to execute Java code in an interactive way without wasting time and patience in the slow path(code --> build --> execute --> add print --> build), isn't that cool?
+
+Like this:
+```java
+root@a2e26ba62bb6:/javarepl/nebula-java-2.6.1# java -jar ../javarepl/javarepl.jar
+
+Welcome to JavaREPL version 428 (Java HotSpot(TM) 64-Bit Server VM, Java 1.8.0_111)
+Type expression to evaluate, :help for more options or press tab to auto-complete.
+Connected to local instance at http://localhost:43707
+
+java> System.out.println("Hello, World!");
+Hello, World!
+java>
 ```
 
 Now we are in the java REPL, let's introduce all the class path needed and do the imports in one go:
@@ -62,7 +77,7 @@ import org.slf4j.LoggerFactory;
 import java.lang.reflect.*;
 ```
 
-And let's connect it to the nebula graph, please replace your graphD IP and Port here:
+And let's connect it to the nebula graph, please replace your graphD IP and Port here, and execute them under the propmt string of `java>`:
 
 ```java
 NebulaPoolConfig nebulaPoolConfig = new NebulaPoolConfig();

@@ -29,7 +29,20 @@ cd nebula-java-2.6.1/
 
 java -jar ../javarepl/javarepl.jar
 ```
-现在咱们已经进到这个交互的 Java Shell 之中了，现在把必须的类路径和导入先执行了：
+这时候，在执行完 `java -jar ../javarepl/javarepl.jar` 之后，我们就进入了交互式的 Java Shell（REPL），我们可以无需做编译，执行，print 这样的慢反馈来调试和研究我们的代码了，是不是很方便？
+
+```java
+root@a2e26ba62bb6:/javarepl/nebula-java-2.6.1# java -jar ../javarepl/javarepl.jar
+
+Welcome to JavaREPL version 428 (Java HotSpot(TM) 64-Bit Server VM, Java 1.8.0_111)
+Type expression to evaluate, :help for more options or press tab to auto-complete.
+Connected to local instance at http://localhost:43707
+
+java> System.out.println("Hello, World!");
+Hello, World!
+java>
+```
+首先我们在 `java>` 提示符下，这些来把必须的类路径和导入：
 
 ```java
 :cp /javarepl/nebula-java-2.6.1/client/target/client-2.6.1.jar
