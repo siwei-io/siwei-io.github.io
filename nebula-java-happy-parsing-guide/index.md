@@ -148,7 +148,7 @@ v.getDeclaredMethods()
 
 > 注意：其实我们有更轻松地方法，就是用 executeJson 直接获得 JSON string，别担心，会在后边提到，不过这个方法要 2.6 之后才支持。
 
-那么问题来了，如何使用 `ValueWrapper` 封装呢？其实答案已经在上边了，大家可以会去看看，resp.rowValues(0) 的类型正是 ValueWrapper 的可迭代对象！
+那么问题来了，如何使用 `ValueWrapper` 封装呢？其实答案已经在上边了，大家可以回去看看，resp.rowValues(0) 的类型正是 ValueWrapper 的可迭代对象！
 
 所以，正确打开方式是迭它！迭它！迭它！其实这个就是代码库里的 GraphClientExample 的一部分例子了，我们把它迭代取出来，放到 `wrappedValueList` 里慢慢把玩：
 
@@ -301,7 +301,7 @@ java.lang.String resp_json = "
 }
 "
 ```
-我相信大家跟定比我更擅长处理 JSON 的结果了哈~~
+我相信大家肯定比我更擅长处理 JSON 的结果了哈~~
 
 ## 结论
 
