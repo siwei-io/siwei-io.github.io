@@ -571,14 +571,14 @@ Got 1 rows (time spent 2116/44373 us)
             </div><blockquote>
 <p>如何构建一个具有股权分析的图谱与线上系统呢？本文里，我将利用图数据库从零到一带你构建一个简易版的股权穿透图谱系统。</p>
 </blockquote>
-<p>我们知道无论是监管部门、企业还是个人，我们有需求针对一个企业、法人做一些背景调查，这些调查可以是法律诉讼、公开持股、企业任职等等多种多样的信息。这些背景信息可以辅助我们做商业上的重要决策，规避风险：比如根据公司的股权关系，了解是否存在利益冲突比如是否选择与一家公司进行商业往来。</p>
-<p>为了满足这样的关系分析需求的时候，我们往往面临一些挑战，比如：</p>
-<ul>
+<p>我们知道无论是监管部门、企业还是个人，都有需求去针对一个企业、法人做一些背景调查，这些调查可以是法律诉讼、公开持股、企业任职等等多种多样的信息。这些背景信息可以辅助我们做商业上的重要决策，规避风险：比如根据公司的股权关系，了解是否存在利益冲突比如是否选择与一家公司进行商业往来。</p>
+<p>在满足这样的关系分析需求的时候，我们往往面临一些挑战，比如：</p>
+<ol>
 <li>如何将这些数据的关联关系体现在系统之中？使得它们可以被挖掘、利用</li>
-<li>多种异构数据、数据源之间的关系可能随着业务的发展引申出更多的变化，在表结构数据库中，这意味着 Schema 变更</li>
+<li>多种异构数据、数据源之间的关系可能随着业务的发展引申出更多的变化，在结构数据库中，这意味着 Schema 变更</li>
 <li>分析系统需要尽可能实时获取需要的查询结果，这通常涉及到多跳关系查询</li>
 <li>领域专家能否快速灵活、可视化获取分享信息</li>
-</ul>
+</ol>
 <p>那么如何构建这样一个系统解决以上挑战呢？</p>
 <h2 id="数据存在哪里">数据存在哪里？</h2>
 <blockquote>
@@ -590,34 +590,30 @@ Got 1 rows (time spent 2116/44373 us)
 <p></p>
 <p>而这么建模的问题在于：这种逻辑关联的方式使得无论数据的关联关系查询表达、存储、还是引入新的关联关系都不是很高效。</p>
 <ul>
-<li><em>查询表达不高效</em>是因为关系型数据库是面向表结构设计的，这决定了关系查询要写嵌套的 JOIN。</li>
-<li><em>存储不高效</em>是因为表结构被设计的模式是面向数据记录，而非数据之间的关系关系：我们虽然习惯了将数据中实体（比如法人）和实体关联（比如持有股权 <code>hold_sharing_relationship</code>）以另外一个表中的记录来表达、存储起来，这逻辑上完全行得通，但是到了多跳、大量需要请求数据关系跳转的情况下，这样跨表 JOIN 的代价就成为了瓶颈。</li>
+<li><strong>查询表达不高效</strong>是因为关系型数据库是面向表结构设计的，这决定了关系查询要写嵌套的 JOIN。
+<ul>
+<li>这就是前边提到的<strong>挑战 1</strong>：能够表达，但是比较勉强，遇到稍微复杂的情况就变得很难。</li>
+</ul>
+</li>
+<li><strong>存储不高效</strong>是因为表结构被设计的模式是面向数据记录，而非数据之间的关系：我们虽然习惯了将数据中实体（比如法人）和实体关联（比如持有股权 <code>hold_sharing_relationship</code>）以另外一个表中的记录来表达、存储起来，这逻辑上完全行得通，但是到了多跳、大量需要请求数据关系跳转的情况下，这样跨表 JOIN 的代价就成为了瓶颈。
+<ul>
+<li>这就是前边提到的<strong>挑战 3</strong>：无法应对多条查询的性能需要。</li>
+</ul>
+</li>
+<li><strong>引入新的关联关系</strong>代价大，还是前边提到的，表结构下，用新的表来表达持有股权 <code>hold_sharing_relationship</code>这个关联关系是可行的，但是这非常不灵活、而且昂贵，它意味着我们在引入这个关系的时候限定了起点终点的类型，比如股权持有的关系可能是法人-&gt;公司，也可能是公司-&gt;公司，随着业务的演进，我们可能还需要引入政府-&gt;公司的新关系，而这些变化都需要做有不小代价的工作：改动 Schema。
+<ul>
+<li>这就是前边提到的<strong>挑战 2</strong>：无法应对业务上对数据关系上灵活多变的要求。</li>
+</ul>
+</li>
 </ul>
 <p>当一个通用系统无法满足不可忽视的具体需求的时候，一个新的系统就会诞生，这就是图数据库，针对这样的场景，图数据库很自然地特别针对关联关系场景去设计整个数据库：</p>
 <ul>
-<li>
-<p>面向关联关系表达的语义。</p>
+<li>面向关联关系表达的语义。（挑战 1）
 <ul>
-<li>我列举了一个等价的一跳查询在表结构数据库与图数据库中，查询语句的区别。大家应该可以看出“找到所有服役过和球员 Tim 曾服役的球队的球员”这样的查询表达可以在图数据库如何自然表达，这仅仅是一条查询的区别，如果是多跳的话，他们的复杂度区分还会更明显一些。</li>
-</ul>
-</li>
-<li>
-<p>将关联关系存储为物理连接，从而使得跳转查询代价最小。</p>
-<ul>
-<li>图数据之中，从点拓展（找到一个或者多个关系的另一头）出去的代价是非常小的，这因为图数据库是一个专有的系统，得益于它主要关心“图”结构的设计，查找确定的实体（比如和一个法人 A ）所有关联（可能是任职、亲戚、持有、等等关系）其他所有实体（公司、法人）这个查找的代价是 O(1) 的，因为它们在图数据库的数据机构里是真的链接在一起的。</li>
-<li>大家可以从下表第三列的一个参考数据一窥图数据库在这种查询下的优势，这种优势在多跳高并发情况下的区别是“能”与”不能“作为线上系统的区别，是“实时”与“离线”的区别。</li>
-</ul>
-</li>
-<li>
-<p>建模符合直觉。</p>
-<ul>
-<li>大家在下表第二列中可以对比我们本文中进行的股权分析数据在两种数据库之中的建模的区别，尤其是在关心关联关系的场景下，我们可以感受到属性图的模型建立是很符合人类大脑直觉的，而这和大脑之中<a href="https://zh.wikipedia.org/zh/%E7%A5%9E%E7%B6%93%E5%85%83" target="_blank" rel="noopener noreffer">神经元</a>的结构可能也有一些关系。</li>
+<li>如下表，我列举了一个等价的一跳查询在表结构数据库与图数据库中，查询语句的区别。大家应该可以看出“找到所有持有和 p_100 共同持有公司股份的人”这样的查询表达可以在图数据库如何自然表达，这仅仅是一条查询的区别，如果是多跳的话，他们的复杂度区分还会更明显一些。</li>
 </ul>
 </li>
 </ul>
-<blockquote>
-<p>表格——表结构数据库与图数据库的比较：</p>
-</blockquote>
 <table>
 <thead>
 <tr>
@@ -630,19 +626,104 @@ Got 1 rows (time spent 2116/44373 us)
 <td></td>
 <td></td>
 </tr>
+</tbody>
+</table>
+<ul>
+<li>将关联关系存储为物理连接，从而使得跳转查询代价最小。（挑战 3、2）
+<ul>
+<li>图数据之中，从点拓展（找到一个或者多个关系的另一头）出去的代价是非常小的，这因为图数据库是一个专有的系统，得益于它主要关心“图”结构的设计，查找确定的实体（比如和一个法人 A ）所有关联（可能是任职、亲戚、持有、等等关系）其他所有实体（公司、法人）这个查找的代价是 O(1) 的，因为它们在图数据库的数据机构里是真的链接在一起的。</li>
+<li>大家可以从下表的定量参考数据一窥图数据库在这种查询下的优势，这种优势在多跳高并发情况下的区别是“能”与”不能“作为线上系统的区别，是“实时”与“离线”的区别。</li>
+<li>在面向关联关系的数据建模和数据结构之下，引入新的实体、关联关系的代价要小很多，还是前边提到的例子：
+在 Nebula Graph 图数据中引入一个新的“政府机构”类型的实体，并增加政府机构-&gt;公司的“持有股份”的关联关系相比于在非图模型的数据库中的代价小很多。</li>
+</ul>
+</li>
+</ul>
+<table>
+<thead>
 <tr>
-<td></td>
-<td></td>
+<th>表结构数据库</th>
+<th>图数据库（属性图）</th>
 </tr>
+</thead>
+<tbody>
 <tr>
 <td>4 跳查询时延 1544 秒</td>
 <td>4 跳查询时延 1.36 秒</td>
 </tr>
 </tbody>
 </table>
-<p>所以，在本教程里，我们将利用图数据库来进行数据存储。</p>
-<h2 id="数据建模">数据建模</h2>
-<p>前便在讨论数据存在哪里的时候，我们已经揭示了在图数据库中建模的方式：本质上，我们在这张图中，将会有两种实体：</p>
+<ul>
+<li>建模符合直觉；图数据库有面向数据连接的数据可视化能力（挑战 4）
+<ul>
+<li>大家在下表第二列中可以对比我们本文中进行的股权分析数据在两种数据库之中的建模的区别，尤其是在关心关联关系的场景下，我们可以感受到属性图的模型建立是很符合人类大脑直觉的，而这和大脑之中<a href="https://zh.wikipedia.org/zh/%E7%A5%9E%E7%B6%93%E5%85%83" target="_blank" rel="noopener noreffer">神经元</a>的结构可能也有一些关系。</li>
+<li>图数据库中内置的可视化工具提供了一般用户便捷理解数据关系的能力，也给领域专家用户提供了表达请求复杂数据关系的直观接口。</li>
+</ul>
+</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>表结构数据库</th>
+<th>图数据库（属性图）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>表结构数据库与图数据库的总体比较：</p>
+</blockquote>
+<!---
+```ngql
+GO FROM "p_100" OVER hold_share YIELD dst(edge) AS corp_with_share |\
+GO FROM $-.corp_with_share OVER hold_share REVERSELY YIELD properties(vertex).name;
+```
+
+```sql
+SELECT a.id, a.name, c.name
+FROM person a
+JOIN hold_share b ON a.id=b.person_id
+JOIN corp c ON c.id=b.corp_id
+WHERE c.name IN (SELECT c.name
+FROM person a
+JOIN hold_share b ON a.id=b.person_id
+JOIN corp c ON c.id=b.corp_id
+WHERE a.id = 'p_100')
+```
+-->
+<table>
+<thead>
+<tr>
+<th></th>
+<th>表结构数据库</th>
+<th>图数据库（属性图）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>查询</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>建模</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>性能</td>
+<td>4 跳查询时延 1544 秒</td>
+<td>4 跳查询时延 1.36 秒</td>
+</tr>
+</tbody>
+</table>
+<p>综上，在本教程里，我们将利用图数据库来进行数据存储。</p>
+<h2 id="图数据建模">图数据建模</h2>
+<p>前面在讨论数据存在哪里的时候，我们已经揭示了在图数据库中建模的方式：本质上，在这张图中，将会有两种实体：</p>
 <ul>
 <li>人</li>
 <li>公司</li>
@@ -654,7 +735,7 @@ Got 1 rows (time spent 2116/44373 us)
 <li><code>人</code> 或者 <code>公司</code> –<code>持有股份</code>–&gt; <code>公司</code></li>
 <li><code>公司</code> –<code>作为子机构</code>–&gt; <code>公司</code></li>
 </ul>
-<p>这里边，实体与关系本身都可以包涵更多的信息，这些信息在图数据库里就是实体、关系自身的属性。如下图表示：</p>
+<p>这里面，实体与关系本身都可以包含更多的信息，这些信息在图数据库里就是实体、关系自身的属性。如下图表示：</p>
 <ul>
 <li><code>人</code>的属性包括 <code>name</code>，<code>age</code></li>
 <li><code>公司</code>的属性包括 <code>name</code>，<code>location</code></li>
@@ -667,11 +748,11 @@ Got 1 rows (time spent 2116/44373 us)
 <blockquote>
 <p>Nebula Graph in Github: <a href="https://github.com/vesoft-inc/nebula" target="_blank" rel="noopener noreffer">https://github.com/vesoft-inc/nebula</a></p>
 </blockquote>
-<p>在 Nebula Graph 之中导入数据，有很多不同定位的工具可供选项，大家可以在<a href="https://docs.nebula-graph.com.cn/2.6.1/20.appendix/write-tools/" target="_blank" rel="noopener noreffer">这篇文档</a>和<a href="https://www.siwei.io/sketches/nebula-data-import-options/" target="_blank" rel="noopener noreffer">这个视频</a>了解更多数据导入工具选型的信息。</p>
-<p>在我们的教程之中，我们使用 nebula-importer 来完成这个工作（这其实不是唯一的选择）。</p>
+<p>在向 Nebula Graph 导入数据的时候，关于如何选择工具，请参考<a href="https://docs.nebula-graph.com.cn/2.6.1/20.appendix/write-tools/" target="_blank" rel="noopener noreffer">这篇文档</a>和<a href="https://www.siwei.io/sketches/nebula-data-import-options/" target="_blank" rel="noopener noreffer">这个视频</a>。</p>
+<p>这里，由于数据格式是 csv 文件并且利用单机的客户端资源就足够了，我们可以选择使用 nebula-importer 来完成这个工作。</p>
 <blockquote>
-<p>本章节假设了您已经部署了一个 Nebula Graph 集群，您可以参考<a href="https://docs.nebula-graph.com.cn/2.6.1/4.deployment-and-installation/2.compile-and-install-nebula-graph/3.deploy-nebula-graph-with-docker-compose/" target="_blank" rel="noopener noreffer">这个文档</a>利用 Docker 很方便地部署，也可以利用 <a href="https://siwei.io/nebula-up/" target="_blank" rel="noopener noreffer">Nebula-UP</a>，在一个 Linux 机器上同时启动一个 Nebula Graph 核心和它的可视化图探索工具 <a href="https://docs.nebula-graph.com.cn/2.6.1/nebula-studio/about-studio/st-ug-what-is-graph-studio/" target="_blank" rel="noopener noreffer">Nebula Graph Studio</a>。</p>
-<p>本文假设我们使用 Nebula-UP 来部署集群，它非常简单，只需要一行：</p>
+<p>提示：在导入数据之前，请先部署一个 Nebula Graph 集群，最简便的部署方式是使用 nebula-up 这个小工具，只需要一行命令就能在 Linux 机器上同时启动一个 Nebula Graph 核心和可视化图探索工具  <a href="https://docs.nebula-graph.com.cn/2.6.1/nebula-studio/about-studio/st-ug-what-is-graph-studio/" target="_blank" rel="noopener noreffer">Nebula Graph Studio</a>。如果你更愿意用 Docker 部署，请参考<a href="https://docs.nebula-graph.com.cn/2.6.1/4.deployment-and-installation/2.compile-and-install-nebula-graph/3.deploy-nebula-graph-with-docker-compose/" target="_blank" rel="noopener noreffer">这个文档</a>。</p>
+<p>本文假设我们使用 <a href="https://siwei.io/nebula-up/" target="_blank" rel="noopener noreffer">Nebula-UP</a> 来部署：</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
@@ -680,15 +761,40 @@ Got 1 rows (time spent 2116/44373 us)
 <pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">curl -fsSL nebula-up.siwei.io/install.sh <span class="p">|</span> bash
 </code></pre></td></tr></table>
 </div>
-</div><p>详细信息可以参考 <a href="https://siwei.io/nebula-up/" target="_blank" rel="noopener noreffer">Nebula-UP</a>。</p>
-</blockquote>
-<p>前边我们也提到了，我们引用的数据集是作者生成的，生成器（可以按需生成任意规模随机数据集）代码和一份示例的数据在 GitHub 上：</p>
-<blockquote>
-<p>数据集生成器：https://github.com/wey-gu/nebula-shareholding-example</p>
-<p>示例数据：https://github.com/wey-gu/nebula-shareholding-example/tree/main/data_sample</p>
-</blockquote>
-<p>另外，我还准备好了一份 nebula-importer 的配置文件，在同一个 repo 之下的<a href="https://github.com/wey-gu/nebula-shareholding-example/blob/main/nebula-importer.yaml" target="_blank" rel="noopener noreffer">这里</a>。</p>
-<p>这里，只需要执行如下命令行就可以开始数据导入了：</p>
+</div></blockquote>
+<p>这里的数据是<a href="https://github.com/wey-gu/nebula-shareholding-example" target="_blank" rel="noopener noreffer">生成器</a>生成的，你可以按需生成任意规模随机数据集，或者选择一份生成好了的数据在<a href="https://github.com/wey-gu/nebula-shareholding-example/tree/main/data_sample" target="_blank" rel="noopener noreffer">这里</a></p>
+<p>有了这些<a href="https://github.com/wey-gu/nebula-shareholding-example/tree/main/data_sample" target="_blank" rel="noopener noreffer">数据</a>，我们可以开始导入了。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ pip install <span class="nv">Faker</span><span class="o">==</span>2.0.5 <span class="nv">pydbgen</span><span class="o">==</span>1.0.5
+$ python3 data_generator.py
+$ ls -l data
+total <span class="m">1688</span>
+-rw-r--r--  <span class="m">1</span> weyl  staff   <span class="m">23941</span> Jul <span class="m">14</span> 13:28 corp.csv
+-rw-r--r--  <span class="m">1</span> weyl  staff    <span class="m">1277</span> Jul <span class="m">14</span> 13:26 corp_rel.csv
+-rw-r--r--  <span class="m">1</span> weyl  staff    <span class="m">3048</span> Jul <span class="m">14</span> 13:26 corp_share.csv
+-rw-r--r--  <span class="m">1</span> weyl  staff  <span class="m">211661</span> Jul <span class="m">14</span> 13:26 person.csv
+-rw-r--r--  <span class="m">1</span> weyl  staff  <span class="m">179770</span> Jul <span class="m">14</span> 13:26 person_corp_role.csv
+-rw-r--r--  <span class="m">1</span> weyl  staff  <span class="m">322965</span> Jul <span class="m">14</span> 13:26 person_corp_share.csv
+-rw-r--r--  <span class="m">1</span> weyl  staff   <span class="m">17689</span> Jul <span class="m">14</span> 13:26 person_rel.csv
+</code></pre></td></tr></table>
+</div>
+</div><p>导入工具 <a href="https://github.com/vesoft-inc/nebula-importer" target="_blank" rel="noopener noreffer">nebula-importer</a> 是一个 golang 的二进制文件，使用方式就是将导入的 Nebula Graph 连接信息、数据源中字段的含义的信息写进 YAML 格式的配置文件里，然后通过命令行调用它。可以参考<a href="https://docs.nebula-graph.com.cn/2.6.1/nebula-importer/use-importer/" target="_blank" rel="noopener noreffer">文档</a>或者它的 GitHub 仓库里的例子。</p>
+<p>这里我已经写好了准备好了一份 nebula-importer 的配置文件，在数据生成器同一个 repo 之下的<a href="https://github.com/wey-gu/nebula-shareholding-example/blob/main/nebula-importer.yaml" target="_blank" rel="noopener noreffer">这里</a>。</p>
+<p>最后，只需要执行如下命令就可以开始数据导入了：</p>
 <blockquote>
 <p>注意，在写本文的时候，nebula 的新版本是 2.6.1，这里对应的 nebula-importer 是 v2.6.0，如果您出现导入错误可能是版本不匹配，可以相应调整下边命令中的版本号。</p>
 </blockquote>
@@ -1006,11 +1112,11 @@ WHERE id(v) IN [&#34;c_132&#34;] RETURN p LIMIT 100
 </span><span class="lnt">5
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">nodes: [
-        {&#34;id&#34;: &#34;c_132&#34;, &#34;name&#34;: &#34;Chambers LLC&#34;, &#34;tag&#34;: &#34;corp&#34;},
-        {&#34;id&#34;: &#34;p_4000&#34;, &#34;name&#34;: &#34;Colton Bailey&#34;, &#34;tag&#34;: &#34;person&#34;}],
-relationships: [
-        {&#34;source&#34;: &#34;p_4000&#34;, &#34;target&#34;: &#34;c_132&#34;, &#34;properties&#34;: { &#34;role&#34;: &#34;Editorial assistant&#34; }, &#34;edge&#34;: &#34;role_as&#34;}]
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">nodes</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span><span class="s2">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;c_132&#34;</span><span class="p">,</span> <span class="s2">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;Chambers LLC&#34;</span><span class="p">,</span> <span class="s2">&#34;tag&#34;</span><span class="p">:</span> <span class="s2">&#34;corp&#34;</span><span class="p">},</span>
+        <span class="p">{</span><span class="s2">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;p_4000&#34;</span><span class="p">,</span> <span class="s2">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;Colton Bailey&#34;</span><span class="p">,</span> <span class="s2">&#34;tag&#34;</span><span class="p">:</span> <span class="s2">&#34;person&#34;</span><span class="p">}],</span>
+<span class="n">relationships</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span><span class="s2">&#34;source&#34;</span><span class="p">:</span> <span class="s2">&#34;p_4000&#34;</span><span class="p">,</span> <span class="s2">&#34;target&#34;</span><span class="p">:</span> <span class="s2">&#34;c_132&#34;</span><span class="p">,</span> <span class="s2">&#34;properties&#34;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&#34;role&#34;</span><span class="p">:</span> <span class="s2">&#34;Editorial assistant&#34;</span> <span class="p">},</span> <span class="s2">&#34;edge&#34;</span><span class="p">:</span> <span class="s2">&#34;role_as&#34;</span><span class="p">}]</span>
 </code></pre></td></tr></table>
 </div>
 </div><p></p>
@@ -1318,7 +1424,7 @@ relationships: [
 </span><span class="lnt">8
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell">├── README.md         <span class="c1"># You could find Design Logs here</span>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">├── README.md         <span class="c1"># You could find Design Logs here</span>
 ├── corp-rel-backend
 │   └── app.py        <span class="c1"># Flask App to handle Requst and calls GDB</span>
 ├── corp-rel-frontend
@@ -1338,7 +1444,7 @@ relationships: [
 <li>前端接收到图结构的数据，渲染股权穿透的数据如下：</li>
 </ul>
 <video width="800" controls>
-  <source src="demo.mov" type="video/mp4"> 
+  <source src="./demo.mov" type="video/mp4"> 
 </video>
 <h2 id="总结">总结</h2>
 <p>现在，我们知道得益于图数据库的设计，在它上边构建一个方便的股权分析系统非常自然、高效，我们或者利用图数据库的图探索可视化能力、或者自己搭建，可以为用户提供非常高效、直观的多跳股权穿透分析。</p>

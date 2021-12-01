@@ -5,14 +5,14 @@
 
 <!--more-->
 
-我们知道无论是监管部门、企业还是个人，我们有需求针对一个企业、法人做一些背景调查，这些调查可以是法律诉讼、公开持股、企业任职等等多种多样的信息。这些背景信息可以辅助我们做商业上的重要决策，规避风险：比如根据公司的股权关系，了解是否存在利益冲突比如是否选择与一家公司进行商业往来。
+我们知道无论是监管部门、企业还是个人，都有需求去针对一个企业、法人做一些背景调查，这些调查可以是法律诉讼、公开持股、企业任职等等多种多样的信息。这些背景信息可以辅助我们做商业上的重要决策，规避风险：比如根据公司的股权关系，了解是否存在利益冲突比如是否选择与一家公司进行商业往来。
 
-为了满足这样的关系分析需求的时候，我们往往面临一些挑战，比如：
+在满足这样的关系分析需求的时候，我们往往面临一些挑战，比如：
 
-- 如何将这些数据的关联关系体现在系统之中？使得它们可以被挖掘、利用
-- 多种异构数据、数据源之间的关系可能随着业务的发展引申出更多的变化，在表结构数据库中，这意味着 Schema 变更
-- 分析系统需要尽可能实时获取需要的查询结果，这通常涉及到多跳关系查询
-- 领域专家能否快速灵活、可视化获取分享信息
+1. 如何将这些数据的关联关系体现在系统之中？使得它们可以被挖掘、利用
+2. 多种异构数据、数据源之间的关系可能随着业务的发展引申出更多的变化，在结构数据库中，这意味着 Schema 变更
+3. 分析系统需要尽可能实时获取需要的查询结果，这通常涉及到多跳关系查询
+4. 领域专家能否快速灵活、可视化获取分享信息
 
 那么如何构建这样一个系统解决以上挑战呢？
 
@@ -30,33 +30,76 @@
 
 而这么建模的问题在于：这种逻辑关联的方式使得无论数据的关联关系查询表达、存储、还是引入新的关联关系都不是很高效。
 
-- *查询表达不高效*是因为关系型数据库是面向表结构设计的，这决定了关系查询要写嵌套的 JOIN。
-- *存储不高效*是因为表结构被设计的模式是面向数据记录，而非数据之间的关系关系：我们虽然习惯了将数据中实体（比如法人）和实体关联（比如持有股权 `hold_sharing_relationship`）以另外一个表中的记录来表达、存储起来，这逻辑上完全行得通，但是到了多跳、大量需要请求数据关系跳转的情况下，这样跨表 JOIN 的代价就成为了瓶颈。
+- **查询表达不高效**是因为关系型数据库是面向表结构设计的，这决定了关系查询要写嵌套的 JOIN。
+    - 这就是前边提到的**挑战 1**：能够表达，但是比较勉强，遇到稍微复杂的情况就变得很难。
+- **存储不高效**是因为表结构被设计的模式是面向数据记录，而非数据之间的关系：我们虽然习惯了将数据中实体（比如法人）和实体关联（比如持有股权 `hold_sharing_relationship`）以另外一个表中的记录来表达、存储起来，这逻辑上完全行得通，但是到了多跳、大量需要请求数据关系跳转的情况下，这样跨表 JOIN 的代价就成为了瓶颈。
+    - 这就是前边提到的**挑战 3**：无法应对多条查询的性能需要。
+- **引入新的关联关系**代价大，还是前边提到的，表结构下，用新的表来表达持有股权 `hold_sharing_relationship`这个关联关系是可行的，但是这非常不灵活、而且昂贵，它意味着我们在引入这个关系的时候限定了起点终点的类型，比如股权持有的关系可能是法人->公司，也可能是公司->公司，随着业务的演进，我们可能还需要引入政府->公司的新关系，而这些变化都需要做有不小代价的工作：改动 Schema。
+    - 这就是前边提到的**挑战 2**：无法应对业务上对数据关系上灵活多变的要求。
 
 当一个通用系统无法满足不可忽视的具体需求的时候，一个新的系统就会诞生，这就是图数据库，针对这样的场景，图数据库很自然地特别针对关联关系场景去设计整个数据库：
 
-- 面向关联关系表达的语义。
-  - 我列举了一个等价的一跳查询在表结构数据库与图数据库中，查询语句的区别。大家应该可以看出“找到所有服役过和球员 Tim 曾服役的球队的球员”这样的查询表达可以在图数据库如何自然表达，这仅仅是一条查询的区别，如果是多跳的话，他们的复杂度区分还会更明显一些。
-- 将关联关系存储为物理连接，从而使得跳转查询代价最小。
-  - 图数据之中，从点拓展（找到一个或者多个关系的另一头）出去的代价是非常小的，这因为图数据库是一个专有的系统，得益于它主要关心“图”结构的设计，查找确定的实体（比如和一个法人 A ）所有关联（可能是任职、亲戚、持有、等等关系）其他所有实体（公司、法人）这个查找的代价是 O(1) 的，因为它们在图数据库的数据机构里是真的链接在一起的。
-  - 大家可以从下表第三列的一个参考数据一窥图数据库在这种查询下的优势，这种优势在多跳高并发情况下的区别是“能”与”不能“作为线上系统的区别，是“实时”与“离线”的区别。
+- 面向关联关系表达的语义。（挑战 1）
+    - 如下表，我列举了一个等价的一跳查询在表结构数据库与图数据库中，查询语句的区别。大家应该可以看出“找到所有持有和 p_100 共同持有公司股份的人”这样的查询表达可以在图数据库如何自然表达，这仅仅是一条查询的区别，如果是多跳的话，他们的复杂度区分还会更明显一些。
 
-- 建模符合直觉。
-  - 大家在下表第二列中可以对比我们本文中进行的股权分析数据在两种数据库之中的建模的区别，尤其是在关心关联关系的场景下，我们可以感受到属性图的模型建立是很符合人类大脑直觉的，而这和大脑之中[神经元](https://zh.wikipedia.org/zh/%E7%A5%9E%E7%B6%93%E5%85%83)的结构可能也有一些关系。
+| 表结构数据库                                                 | 图数据库（属性图）                                           |
+| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| ![why_1_sql_join](./why_1_sql_join.webp) | ![why_1_ngql](./why_1_ngql.webp) |
 
-> 表格——表结构数据库与图数据库的比较：
+
+- 将关联关系存储为物理连接，从而使得跳转查询代价最小。（挑战 3、2）
+    - 图数据之中，从点拓展（找到一个或者多个关系的另一头）出去的代价是非常小的，这因为图数据库是一个专有的系统，得益于它主要关心“图”结构的设计，查找确定的实体（比如和一个法人 A ）所有关联（可能是任职、亲戚、持有、等等关系）其他所有实体（公司、法人）这个查找的代价是 O(1) 的，因为它们在图数据库的数据机构里是真的链接在一起的。
+    - 大家可以从下表的定量参考数据一窥图数据库在这种查询下的优势，这种优势在多跳高并发情况下的区别是“能”与”不能“作为线上系统的区别，是“实时”与“离线”的区别。
+    - 在面向关联关系的数据建模和数据结构之下，引入新的实体、关联关系的代价要小很多，还是前边提到的例子：
+    在 Nebula Graph 图数据中引入一个新的“政府机构”类型的实体，并增加政府机构->公司的“持有股份”的关联关系相比于在非图模型的数据库中的代价小很多。
 
 | 表结构数据库                             | 图数据库（属性图）                             |
 | ---------------------------------------- | ---------------------------------------------- |
-| ![why_1_sql_join](./why_1_sql_join.webp) | ![why_1_ngql](./why_1_ngql.webp)               |
-| ![why_0_tabular](./why_0_tabular.webp)   | ![why_0_graph_based](./why_0_graph_based.webp) |
 | 4 跳查询时延 1544 秒                     | 4 跳查询时延 1.36 秒                           |
 
-所以，在本教程里，我们将利用图数据库来进行数据存储。
 
-## 数据建模
+- 建模符合直觉；图数据库有面向数据连接的数据可视化能力（挑战 4）
+    - 大家在下表第二列中可以对比我们本文中进行的股权分析数据在两种数据库之中的建模的区别，尤其是在关心关联关系的场景下，我们可以感受到属性图的模型建立是很符合人类大脑直觉的，而这和大脑之中[神经元](https://zh.wikipedia.org/zh/%E7%A5%9E%E7%B6%93%E5%85%83)的结构可能也有一些关系。
+    - 图数据库中内置的可视化工具提供了一般用户便捷理解数据关系的能力，也给领域专家用户提供了表达请求复杂数据关系的直观接口。
 
-前便在讨论数据存在哪里的时候，我们已经揭示了在图数据库中建模的方式：本质上，我们在这张图中，将会有两种实体：
+| 表结构数据库                             | 图数据库（属性图）                             |
+| ---------------------------------------- | ---------------------------------------------- |
+| ![why_0_tabular](./why_0_tabular.webp)   | ![why_0_graph_based](./why_0_graph_based.webp) |
+
+
+> 表结构数据库与图数据库的总体比较：
+
+<!---
+```ngql
+GO FROM "p_100" OVER hold_share YIELD dst(edge) AS corp_with_share |\
+GO FROM $-.corp_with_share OVER hold_share REVERSELY YIELD properties(vertex).name;
+```
+
+```sql
+SELECT a.id, a.name, c.name
+FROM person a
+JOIN hold_share b ON a.id=b.person_id
+JOIN corp c ON c.id=b.corp_id
+WHERE c.name IN (SELECT c.name
+FROM person a
+JOIN hold_share b ON a.id=b.person_id
+JOIN corp c ON c.id=b.corp_id
+WHERE a.id = 'p_100')
+```
+-->
+
+|          | 表结构数据库                                                 | 图数据库（属性图）                                           |
+| -------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| 查询   | ![why_1_sql_join](./why_1_sql_join.webp) | ![why_1_ngql](./why_1_ngql.webp) |
+| 建模     | ![why_0_tabular](./why_0_tabular.webp) | ![why_0_graph_based](./why_0_graph_based.webp) |
+| 性能     | 4 跳查询时延 1544 秒                                         | 4 跳查询时延 1.36 秒                                         |
+
+
+综上，在本教程里，我们将利用图数据库来进行数据存储。
+
+## 图数据建模
+
+前面在讨论数据存在哪里的时候，我们已经揭示了在图数据库中建模的方式：本质上，在这张图中，将会有两种实体：
 
 - 人
 - 公司
@@ -68,7 +111,7 @@
 - `人` 或者 `公司` –`持有股份`–> `公司`
 - `公司` –`作为子机构`–> `公司`
 
-这里边，实体与关系本身都可以包涵更多的信息，这些信息在图数据库里就是实体、关系自身的属性。如下图表示：
+这里面，实体与关系本身都可以包含更多的信息，这些信息在图数据库里就是实体、关系自身的属性。如下图表示：
 
 - `人`的属性包括 `name`，`age`
 - `公司`的属性包括 `name`，`location`
@@ -83,29 +126,42 @@
 
 > Nebula Graph in Github: https://github.com/vesoft-inc/nebula
 
-在 Nebula Graph 之中导入数据，有很多不同定位的工具可供选项，大家可以在[这篇文档](https://docs.nebula-graph.com.cn/2.6.1/20.appendix/write-tools/)和[这个视频](https://www.siwei.io/sketches/nebula-data-import-options/)了解更多数据导入工具选型的信息。
+在向 Nebula Graph 导入数据的时候，关于如何选择工具，请参考[这篇文档](https://docs.nebula-graph.com.cn/2.6.1/20.appendix/write-tools/)和[这个视频](https://www.siwei.io/sketches/nebula-data-import-options/)。
 
-在我们的教程之中，我们使用 nebula-importer 来完成这个工作（这其实不是唯一的选择）。
+这里，由于数据格式是 csv 文件并且利用单机的客户端资源就足够了，我们可以选择使用 nebula-importer 来完成这个工作。
 
-> 本章节假设了您已经部署了一个 Nebula Graph 集群，您可以参考[这个文档](https://docs.nebula-graph.com.cn/2.6.1/4.deployment-and-installation/2.compile-and-install-nebula-graph/3.deploy-nebula-graph-with-docker-compose/)利用 Docker 很方便地部署，也可以利用 [Nebula-UP](https://siwei.io/nebula-up/)，在一个 Linux 机器上同时启动一个 Nebula Graph 核心和它的可视化图探索工具 [Nebula Graph Studio](https://docs.nebula-graph.com.cn/2.6.1/nebula-studio/about-studio/st-ug-what-is-graph-studio/)。
+> 提示：在导入数据之前，请先部署一个 Nebula Graph 集群，最简便的部署方式是使用 nebula-up 这个小工具，只需要一行命令就能在 Linux 机器上同时启动一个 Nebula Graph 核心和可视化图探索工具  [Nebula Graph Studio](https://docs.nebula-graph.com.cn/2.6.1/nebula-studio/about-studio/st-ug-what-is-graph-studio/)。如果你更愿意用 Docker 部署，请参考[这个文档](https://docs.nebula-graph.com.cn/2.6.1/4.deployment-and-installation/2.compile-and-install-nebula-graph/3.deploy-nebula-graph-with-docker-compose/)。
 >
-> 本文假设我们使用 Nebula-UP 来部署集群，它非常简单，只需要一行：
+> 本文假设我们使用 [Nebula-UP](https://siwei.io/nebula-up/) 来部署：
 >
 > ```bash
 > curl -fsSL nebula-up.siwei.io/install.sh | bash
 > ```
 >
-> 详细信息可以参考 [Nebula-UP](https://siwei.io/nebula-up/)。
 
-前边我们也提到了，我们引用的数据集是作者生成的，生成器（可以按需生成任意规模随机数据集）代码和一份示例的数据在 GitHub 上：
 
-> 数据集生成器：https://github.com/wey-gu/nebula-shareholding-example
->
-> 示例数据：https://github.com/wey-gu/nebula-shareholding-example/tree/main/data_sample
+这里的数据是[生成器](https://github.com/wey-gu/nebula-shareholding-example)生成的，你可以按需生成任意规模随机数据集，或者选择一份生成好了的数据在[这里](https://github.com/wey-gu/nebula-shareholding-example/tree/main/data_sample)
 
-另外，我还准备好了一份 nebula-importer 的配置文件，在同一个 repo 之下的[这里](https://github.com/wey-gu/nebula-shareholding-example/blob/main/nebula-importer.yaml)。
+有了这些[数据](https://github.com/wey-gu/nebula-shareholding-example/tree/main/data_sample)，我们可以开始导入了。
 
-这里，只需要执行如下命令行就可以开始数据导入了：
+```bash
+$ pip install Faker==2.0.5 pydbgen==1.0.5
+$ python3 data_generator.py
+$ ls -l data
+total 1688
+-rw-r--r--  1 weyl  staff   23941 Jul 14 13:28 corp.csv
+-rw-r--r--  1 weyl  staff    1277 Jul 14 13:26 corp_rel.csv
+-rw-r--r--  1 weyl  staff    3048 Jul 14 13:26 corp_share.csv
+-rw-r--r--  1 weyl  staff  211661 Jul 14 13:26 person.csv
+-rw-r--r--  1 weyl  staff  179770 Jul 14 13:26 person_corp_role.csv
+-rw-r--r--  1 weyl  staff  322965 Jul 14 13:26 person_corp_share.csv
+-rw-r--r--  1 weyl  staff   17689 Jul 14 13:26 person_rel.csv
+```
+导入工具 [nebula-importer](https://github.com/vesoft-inc/nebula-importer) 是一个 golang 的二进制文件，使用方式就是将导入的 Nebula Graph 连接信息、数据源中字段的含义的信息写进 YAML 格式的配置文件里，然后通过命令行调用它。可以参考[文档](https://docs.nebula-graph.com.cn/2.6.1/nebula-importer/use-importer/)或者它的 GitHub 仓库里的例子。
+
+这里我已经写好了准备好了一份 nebula-importer 的配置文件，在数据生成器同一个 repo 之下的[这里](https://github.com/wey-gu/nebula-shareholding-example/blob/main/nebula-importer.yaml)。
+
+最后，只需要执行如下命令就可以开始数据导入了：
 
 > 注意，在写本文的时候，nebula 的新版本是 2.6.1，这里对应的 nebula-importer 是 v2.6.0，如果您出现导入错误可能是版本不匹配，可以相应调整下边命令中的版本号。
 
@@ -136,8 +192,6 @@ CREATE EDGE is_branch_of();
 CREATE EDGE hold_share(share float);
 CREATE EDGE reletive_with(degree int);
 ```
-
-
 
 ## 图库中查询数据
 
@@ -321,7 +375,7 @@ Out[23]: "c_132"
 
 通过 vue-network-d3 的抽象，能看出来喂给他这样的数据，就可以把点边信息渲染成很好看的图
 
-```
+```python
 nodes: [
         {"id": "c_132", "name": "Chambers LLC", "tag": "corp"},
         {"id": "p_4000", "name": "Colton Bailey", "tag": "person"}],
@@ -493,7 +547,7 @@ curl --header "Content-Type: application/json" \
 
 项目的代码都在 GitHub 上，最后其实只有一两百行的代码，把所有东西拼起来之后的代码是：
 
-```shell
+```bash
 ├── README.md         # You could find Design Logs here
 ├── corp-rel-backend
 │   └── app.py        # Flask App to handle Requst and calls GDB
@@ -514,10 +568,8 @@ curl --header "Content-Type: application/json" \
 - 后端将结果构建成前端 D3 接受的格式，传给前端
 - 前端接收到图结构的数据，渲染股权穿透的数据如下：
 
-
-
 <video width="800" controls>
-  <source src="demo.mov" type="video/mp4"> 
+  <source src="./demo.mov" type="video/mp4"> 
 </video>
 
 ## 总结
