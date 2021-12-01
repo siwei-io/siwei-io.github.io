@@ -9,16 +9,10 @@
 
 Related GitHub Repo: https://github.com/wey-gu/nebula-shareholding-example
 
+> 更新：在这个数据集生成的工作基础上，我又做了一个全栈示例项目 👉🏻 https://siwei.io/corp-rel-graph/
 
-
-> 这个项目我也做成了互动教程，可以按照这里的步骤搭建起来 👉🏻 https://siwei.io/cources/ 
-> 
->
 > I created the Katacoda Interactive Env for this project 👉🏻 https://siwei.io/cources/ 
 
-> 您也可以在 Nebula Playground 上直接玩这个数据集啦：https://nebula-graph.com.cn/demo/
-> 
->
 > Now you can play with the data on Nebula Playground: https://nebula-graph.io/demo/
 
 
