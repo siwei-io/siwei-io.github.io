@@ -81,6 +81,7 @@ nebula-docker-compose-metad0-1      9560/tcp, 0.0.0.0:61704->9559/tcp, 0.0.0.0:6
 ### 第一步，把 Python 容器
 
 在 `nebula-docker-compose_nebula-net` 这个容器网络启动一个 Jupyter 的容器。
+> 这里采用了 https://github.com/jupyter/docker-stacks 维护的 Docker Image。
 
 ```bash
 docker run \
