@@ -150,7 +150,7 @@ while resp.has_next():
         print(edge_data)
 ```
 
-Jupyter 的过程我也记录在[这个 notebook](https://siwei.io/nebula-python-storage-docker-guide/Storage_Client_Example.ipynb) 里方便大家参考，这里有 [PDF 版本的 notebook](https://siwei.io/nebula-python-storage-docker-guide/Storage_Client_Example.PDF)
+Jupyter 的过程我也记录在[这个 notebook](https://siwei.io/nebula-python-storage-docker-guide/Storage_Client_Example.ipynb) 里方便大家参考。
 
 Happy Graphing!
 
