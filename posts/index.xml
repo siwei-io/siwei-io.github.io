@@ -4,7 +4,254 @@
         <link>https://siwei.io/posts/</link>
         <description>所有文章 | siwei.io</description>
         <generator>Hugo -- gohugo.io</generator><language>zh-CN</language><managingEditor>weyl.gu@gmail.com (Wey Gu)</managingEditor>
-            <webMaster>weyl.gu@gmail.com (Wey Gu)</webMaster><lastBuildDate>Thu, 25 Nov 2021 19:47:53 &#43;0800</lastBuildDate><atom:link href="https://siwei.io/posts/" rel="self" type="application/rss+xml" /><item>
+            <webMaster>weyl.gu@gmail.com (Wey Gu)</webMaster><lastBuildDate>Fri, 10 Dec 2021 16:03:07 &#43;0800</lastBuildDate><atom:link href="https://siwei.io/posts/" rel="self" type="application/rss+xml" /><item>
+    <title>快速搭建调试 Nebula Graph Python Storage 客户端的环境</title>
+    <link>https://siwei.io/nebula-python-storage-docker-guide/</link>
+    <pubDate>Fri, 10 Dec 2021 16:03:07 &#43;0800</pubDate><author>
+        <name>Wey Gu</name>
+    </author><guid>https://siwei.io/nebula-python-storage-docker-guide/</guid>
+    <description><![CDATA[<div class="featured-image">
+                <img src="/featured-image.webp" referrerpolicy="no-referrer">
+            </div><blockquote>
+<p>Python Storage Client 连不上第一次安装的 Nebula Graph？ Docker 部署情况下使用 Python Storage Client 指南</p>
+</blockquote>
+<h2 id="前置条件">前置条件</h2>
+<blockquote>
+<p>注意：一个重要的前置条件是我们真的需要 Storage Client，如果我们只需要在 Python Client 里通过 nGQL 来请求数据，那么 GraphClient 才是你需要的，可以跳过本文。</p>
+</blockquote>
+<p>对于刚接触 Nebula 的同学，部署集群最快速的方式是用 Docker Compose，安装部署可以参考文档：<a href="https://docs.nebula-graph.com.cn/2.6.1/4.deployment-and-installation/2.compile-and-install-nebula-graph/3.deploy-nebula-graph-with-docker-compose/" target="_blank" rel="noopener noreffer">deploy-nebula-graph-with-docker-compose</a>。</p>
+<p>在 <code>docker compose up -d</code> 之后，我们的 nebula 集群就起来了，我们可以用 <code>docker ps</code> 看看运行着的容器：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">❯ docker ps --format <span class="s2">&#34;table {{.Names}}\t{{.Ports}}&#34;</span>
+NAMES                               PORTS
+nebula-docker-compose-graphd1-1     0.0.0.0:61852-&gt;9669/tcp, 0.0.0.0:61850-&gt;19669/tcp, 0.0.0.0:61851-&gt;19670/tcp
+nebula-docker-compose-graphd-1      0.0.0.0:9669-&gt;9669/tcp, 0.0.0.0:61858-&gt;19669/tcp, 0.0.0.0:61859-&gt;19670/tcp
+nebula-docker-compose-graphd2-1     0.0.0.0:61855-&gt;9669/tcp, 0.0.0.0:61853-&gt;19669/tcp, 0.0.0.0:61854-&gt;19670/tcp
+nebula-docker-compose-storaged2-1   9777-9778/tcp, 9780/tcp, 0.0.0.0:61868-&gt;9779/tcp, 0.0.0.0:61869-&gt;19779/tcp, 0.0.0.0:61870-&gt;19780/tcp
+nebula-docker-compose-storaged1-1   9777-9778/tcp, 9780/tcp, 0.0.0.0:61865-&gt;9779/tcp, 0.0.0.0:61866-&gt;19779/tcp, 0.0.0.0:61864-&gt;19780/tcp
+nebula-docker-compose-storaged0-1   9777-9778/tcp, 9780/tcp, 0.0.0.0:61845-&gt;9779/tcp, 0.0.0.0:61843-&gt;19779/tcp, 0.0.0.0:61844-&gt;19780/tcp
+nebula-docker-compose-metad1-1      9560/tcp, 0.0.0.0:61705-&gt;9559/tcp, 0.0.0.0:61706-&gt;19559/tcp, 0.0.0.0:61707-&gt;19560/tcp
+nebula-docker-compose-metad2-1      9560/tcp, 0.0.0.0:61699-&gt;9559/tcp, 0.0.0.0:61700-&gt;19559/tcp, 0.0.0.0:61701-&gt;19560/tcp
+nebula-docker-compose-metad0-1      9560/tcp, 0.0.0.0:61704-&gt;9559/tcp, 0.0.0.0:61702-&gt;19559/tcp, 0.0.0.0:61703-&gt;19560/tcp
+</code></pre></td></tr></table>
+</div>
+</div><p>这里边有三种容器 ：</p>
+<ul>
+<li><code>GrpahD</code>，查询引擎，也是我们用户进行登录、连接、发 Query 请求直接访问的唯一一种服务、接口。</li>
+<li><code>MetaD</code>，元数据服务，它一般不会暴露给外部，只有 GraphD 、StorageD 会直接访问它。</li>
+<li><code>StorageD</code>，存储引擎，它一般不会暴露给外部，只有 GraphD、StorageD 会直接访问它。</li>
+</ul>
+<p>我们可以从 Stuido Console，或者 Nebula Console （连接到 GraphD 之后）里通过 <code>SHOW HOSTS &lt;Type&gt;</code>，来获取每种服务的信息，其中第一列的信息就是他们的 IP 或者 Host，下边的例子是 Docker Compose 默认配置下的情况。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sh" data-lang="sh"><span class="o">(</span>root@nebula<span class="o">)</span> <span class="o">[(</span>none<span class="o">)]</span>&gt; SHOW HOSTS GRAPH
++-----------+------+----------+---------+--------------+---------+
+<span class="p">|</span> Host      <span class="p">|</span> Port <span class="p">|</span> Status   <span class="p">|</span> Role    <span class="p">|</span> Git Info Sha <span class="p">|</span> Version <span class="p">|</span>
++-----------+------+----------+---------+--------------+---------+
+<span class="p">|</span> <span class="s2">&#34;graphd&#34;</span>  <span class="p">|</span> <span class="m">9669</span> <span class="p">|</span> <span class="s2">&#34;ONLINE&#34;</span> <span class="p">|</span> <span class="s2">&#34;GRAPH&#34;</span> <span class="p">|</span> <span class="s2">&#34;3ba41bd&#34;</span>    <span class="p">|</span> <span class="s2">&#34;2.6.0&#34;</span> <span class="p">|</span>
++-----------+------+----------+---------+--------------+---------+
+<span class="p">|</span> <span class="s2">&#34;graphd1&#34;</span> <span class="p">|</span> <span class="m">9669</span> <span class="p">|</span> <span class="s2">&#34;ONLINE&#34;</span> <span class="p">|</span> <span class="s2">&#34;GRAPH&#34;</span> <span class="p">|</span> <span class="s2">&#34;3ba41bd&#34;</span>    <span class="p">|</span> <span class="s2">&#34;2.6.0&#34;</span> <span class="p">|</span>
++-----------+------+----------+---------+--------------+---------+
+<span class="p">|</span> <span class="s2">&#34;graphd2&#34;</span> <span class="p">|</span> <span class="m">9669</span> <span class="p">|</span> <span class="s2">&#34;ONLINE&#34;</span> <span class="p">|</span> <span class="s2">&#34;GRAPH&#34;</span> <span class="p">|</span> <span class="s2">&#34;3ba41bd&#34;</span>    <span class="p">|</span> <span class="s2">&#34;2.6.0&#34;</span> <span class="p">|</span>
++-----------+------+----------+---------+--------------+---------+
+
+<span class="o">(</span>root@nebula<span class="o">)</span> <span class="o">[(</span>none<span class="o">)]</span>&gt; SHOW HOSTS META
++----------+------+----------+--------+--------------+---------+
+<span class="p">|</span> Host     <span class="p">|</span> Port <span class="p">|</span> Status   <span class="p">|</span> Role   <span class="p">|</span> Git Info Sha <span class="p">|</span> Version <span class="p">|</span>
++----------+------+----------+--------+--------------+---------+
+<span class="p">|</span> <span class="s2">&#34;metad1&#34;</span> <span class="p">|</span> <span class="m">9559</span> <span class="p">|</span> <span class="s2">&#34;ONLINE&#34;</span> <span class="p">|</span> <span class="s2">&#34;META&#34;</span> <span class="p">|</span> <span class="s2">&#34;3ba41bd&#34;</span>    <span class="p">|</span> <span class="s2">&#34;2.6.0&#34;</span> <span class="p">|</span>
++----------+------+----------+--------+--------------+---------+
+<span class="p">|</span> <span class="s2">&#34;metad0&#34;</span> <span class="p">|</span> <span class="m">9559</span> <span class="p">|</span> <span class="s2">&#34;ONLINE&#34;</span> <span class="p">|</span> <span class="s2">&#34;META&#34;</span> <span class="p">|</span> <span class="s2">&#34;3ba41bd&#34;</span>    <span class="p">|</span> <span class="s2">&#34;2.6.0&#34;</span> <span class="p">|</span>
++----------+------+----------+--------+--------------+---------+
+<span class="p">|</span> <span class="s2">&#34;metad2&#34;</span> <span class="p">|</span> <span class="m">9559</span> <span class="p">|</span> <span class="s2">&#34;ONLINE&#34;</span> <span class="p">|</span> <span class="s2">&#34;META&#34;</span> <span class="p">|</span> <span class="s2">&#34;3ba41bd&#34;</span>    <span class="p">|</span> <span class="s2">&#34;2.6.0&#34;</span> <span class="p">|</span>
++----------+------+----------+--------+--------------+---------+
+
+<span class="o">(</span>root@nebula<span class="o">)</span> <span class="o">[(</span>none<span class="o">)]</span>&gt; SHOW HOSTS STORAGE
++-------------+------+----------+-----------+--------------+---------+
+<span class="p">|</span> Host        <span class="p">|</span> Port <span class="p">|</span> Status   <span class="p">|</span> Role      <span class="p">|</span> Git Info Sha <span class="p">|</span> Version <span class="p">|</span>
++-------------+------+----------+-----------+--------------+---------+
+<span class="p">|</span> <span class="s2">&#34;storaged0&#34;</span> <span class="p">|</span> <span class="m">9779</span> <span class="p">|</span> <span class="s2">&#34;ONLINE&#34;</span> <span class="p">|</span> <span class="s2">&#34;STORAGE&#34;</span> <span class="p">|</span> <span class="s2">&#34;3ba41bd&#34;</span>    <span class="p">|</span> <span class="s2">&#34;2.6.0&#34;</span> <span class="p">|</span>
++-------------+------+----------+-----------+--------------+---------+
+<span class="p">|</span> <span class="s2">&#34;storaged1&#34;</span> <span class="p">|</span> <span class="m">9779</span> <span class="p">|</span> <span class="s2">&#34;ONLINE&#34;</span> <span class="p">|</span> <span class="s2">&#34;STORAGE&#34;</span> <span class="p">|</span> <span class="s2">&#34;3ba41bd&#34;</span>    <span class="p">|</span> <span class="s2">&#34;2.6.0&#34;</span> <span class="p">|</span>
++-------------+------+----------+-----------+--------------+---------+
+<span class="p">|</span> <span class="s2">&#34;storaged2&#34;</span> <span class="p">|</span> <span class="m">9779</span> <span class="p">|</span> <span class="s2">&#34;ONLINE&#34;</span> <span class="p">|</span> <span class="s2">&#34;STORAGE&#34;</span> <span class="p">|</span> <span class="s2">&#34;3ba41bd&#34;</span>    <span class="p">|</span> <span class="s2">&#34;2.6.0&#34;</span> <span class="p">|</span>
++-------------+------+----------+-----------+--------------+---------+
+</code></pre></td></tr></table>
+</div>
+</div><p>在默认的 <a href="https://github.com/vesoft-inc/nebula-docker-compose" target="_blank" rel="noopener noreffer">nebula-docker-compose</a> 的配置下各个服务为<code>graphd</code>, <code>metad1</code>, <code>storaged0</code> 这种域名的 Host 格式，这其实是假设了我们使用 Docker 启动的服务一般是作为单机测试之用，除了其中的 <code>graphd</code>之外，其他的服务都没有指定固定的外部映射端口（见前边的 <code>docker ps</code>  的结果里，它暴露在<code>0.0.0.0:9669</code>)。</p>
+<p>这意味着，如果客户端不是运行在本机，访问其他服务的端口都是动态的，这会让很多第一次想用 Python Storage Client 连接服务的同学卡住。</p>
+<p>所以我这里给大家分享一个快速用 Python 去调试 Storage Client 的方法：</p>
+<blockquote>
+<p>本质上我们可以通过修改 Compose 的配置文件、通过其他部署或者配置的方式安装 Nebula 来保证 Python Client 能够访问 Storage/Meta 服务，这里只是给出一个无需修改配置的方法：让 Python 运行环境处在 Docker Compose 的 Nebula Cluster 同一个容器网络。</p>
+</blockquote>
+<h3 id="第一步把-python-容器">第一步，把 Python 容器</h3>
+<p>在 <code>nebula-docker-compose_nebula-net</code> 这个容器网络启动一个 Jupyter 的容器。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">docker run <span class="se">\
+</span><span class="se"></span>    -p 8888:8888 <span class="se">\
+</span><span class="se"></span>    --network nebula-docker-compose_nebula-net <span class="se">\
+</span><span class="se"></span>    jupyter/scipy-notebook:33add21fab64
+</code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>可以看到容器了，并且在监听端口：8888。</p>
+</blockquote>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="o">[</span>I 07:06:31.060 NotebookApp<span class="o">]</span> Jupyter Notebook 6.3.0 is running at:
+<span class="o">[</span>I 07:06:31.060 NotebookApp<span class="o">]</span> http://e170a5eb4858:8888/?token<span class="o">=</span>5beafb26fc6995b081c611d5d2cc96d557897b74bfdaac53
+<span class="o">[</span>I 07:06:31.060 NotebookApp<span class="o">]</span> or http://127.0.0.1:8888/?token<span class="o">=</span>5beafb26fc6995b081c611d5d2cc96d557897b74bfdaac53
+</code></pre></td></tr></table>
+</div>
+</div><p>这时候我们可在浏览器打开 http://127.0.0.1:8888/?token=5beafb26fc6995b081c611d5d2cc96d557897b74bfdaac53.</p>
+<p>在里边新建一个 Notebook。</p>
+<h3 id="第二步安装-nebula-python-sdk">第二步，安装 Nebula Python SDK</h3>
+<p>我们只需要在 Jupyter 里执行</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="err">!</span><span class="n">pip</span> <span class="n">install</span> <span class="n">nebula2</span><span class="o">-</span><span class="n">python</span><span class="o">==</span><span class="mf">2.6.0</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>就可以了，具体的版本要根据 Nebula Python 的 README 里的<a href="https://github.com/vesoft-inc/nebula-python#how-to-choose-nebula-python" target="_blank" rel="noopener noreffer">版本对应</a>关系来给定。</p>
+<h3 id="第三步实例化-metacache-和-graphstorageclient">第三步，实例化 MetaCache 和 GraphStorageClient</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">nebula2.mclient</span> <span class="kn">import</span> <span class="n">MetaCache</span><span class="p">,</span> <span class="n">HostAddr</span>
+<span class="kn">from</span> <span class="nn">nebula2.sclient.GraphStorageClient</span> <span class="kn">import</span> <span class="n">GraphStorageClient</span>
+<span class="c1"># Docker Compose 下默认 meta 的地址是 metad1 metad0 metad2</span>
+<span class="n">meta_cache</span> <span class="o">=</span> <span class="n">MetaCache</span><span class="p">([(</span><span class="s1">&#39;metad1&#39;</span><span class="p">,</span><span class="mi">9559</span><span class="p">),(</span><span class="s1">&#39;metad0&#39;</span><span class="p">,</span><span class="mi">9559</span><span class="p">),(</span><span class="s1">&#39;metad2&#39;</span><span class="p">,</span><span class="mi">9559</span><span class="p">)])</span>
+
+<span class="n">graph_storage_client</span> <span class="o">=</span> <span class="n">GraphStorageClient</span><span class="p">(</span><span class="n">meta_cache</span><span class="p">)</span>
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="第四步扫数据">第四步，扫数据</h3>
+<ul>
+<li>按空间、点类型扫点</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">resp</span> <span class="o">=</span> <span class="n">graph_storage_client</span><span class="o">.</span><span class="n">scan_vertex</span><span class="p">(</span>
+        <span class="n">space_name</span><span class="o">=</span><span class="s1">&#39;basketballplayer&#39;</span><span class="p">,</span>
+        <span class="n">tag_name</span><span class="o">=</span><span class="s1">&#39;player&#39;</span><span class="p">)</span>
+
+<span class="k">while</span> <span class="n">resp</span><span class="o">.</span><span class="n">has_next</span><span class="p">():</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">resp</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">vertex_data</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">vertex_data</span><span class="p">)</span>
+</code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>按空间、边类型扫边</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">resp</span> <span class="o">=</span> <span class="n">graph_storage_client</span><span class="o">.</span><span class="n">scan_edge</span><span class="p">(</span>
+    <span class="n">space_name</span><span class="o">=</span><span class="s1">&#39;basketballplayer&#39;</span><span class="p">,</span>
+    <span class="n">edge_name</span><span class="o">=</span><span class="s1">&#39;follow&#39;</span><span class="p">)</span>
+
+<span class="k">while</span> <span class="n">resp</span><span class="o">.</span><span class="n">has_next</span><span class="p">():</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">resp</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">edge_data</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">edge_data</span><span class="p">)</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>Jupyter 的过程我也记录在<a href="https://siwei.io/nebula-python-storage-docker-guide/Storage_Client_Example.ipynb" target="_blank" rel="noopener noreffer">这个 notebook</a> 里方便大家参考。</p>
+<p>Happy Graphing!</p>
+<blockquote>
+<p>Picture Credit：<a href="https://unsplash.com/photos/AMXFr97d00c" target="_blank" rel="noopener noreffer">Borderpolar Photographer</a></p>
+</blockquote>]]></description>
+</item><item>
     <title>Nebula Graph 的 Java 数据解析实践与指导</title>
     <link>https://siwei.io/nebula-java-happy-parsing-guide/</link>
     <pubDate>Thu, 25 Nov 2021 19:47:53 &#43;0800</pubDate><author>
@@ -4897,35 +5144,5 @@ docker run --rm -ti <span class="se">\
 <blockquote>
 <p>题图版权：<a href="https://unsplash.com/photos/Ph5_4TnXXYE?utm_source=unsplash&amp;utm_medium=referral&amp;utm_content=creditShareLink" target="_blank" rel="noopener noreffer">Icons8 Team</a></p>
 </blockquote>]]></description>
-</item><item>
-    <title>VSCode-ngql，Nebula Graph 的 VSCode 语法高亮插件。</title>
-    <link>https://siwei.io/vscode-ngql/</link>
-    <pubDate>Wed, 05 May 2021 21:11:04 &#43;0800</pubDate><author>
-        <name>Wey Gu</name>
-    </author><guid>https://siwei.io/vscode-ngql/</guid>
-    <description><![CDATA[<div class="featured-image">
-                <img src="/featured-image.webp" referrerpolicy="no-referrer">
-            </div><blockquote>
-<p>VSCode-ngql 是 Nebula Graph 的 VS Code 之中对 nGQL 语法高亮的插件。
-您可以从 <a href="https://marketplace.visualstudio.com/items?itemName=wey-gu.vscode-ngql" target="_blank" rel="noopener noreffer"><em>这里</em></a> 直接下载安装试用。</p>
-</blockquote>
-<h1 id="vs-code-ngql-syntax-highlight">VS Code nGQL Syntax Highlight</h1>
-<p></p>
-<h2 id="download">Download</h2>
-<p>Search ngql from the market or click <a href="https://marketplace.visualstudio.com/items?itemName=wey-gu.vscode-ngql" target="_blank" rel="noopener noreffer">here</a>.</p>
-<h2 id="features">Features</h2>
-<ul>
-<li>Highlighting all Keywords, Functions of a given <code>.ngql</code> file</li>
-</ul>
-<h2 id="release-notes">Release Notes</h2>
-<h3 id="001">0.0.1</h3>
-<p>Initial release, only <code>.ngql</code> Syntax is supported.</p>
-<h3 id="002">0.0.2</h3>
-<p>Lower supported vscode version till <code>^1.50.1</code></p>
-<h2 id="reference">Reference</h2>
-<ul>
-<li><a href="https://docs.nebula-graph.com.cn/" target="_blank" rel="noopener noreffer">https://docs.nebula-graph.com.cn/</a></li>
-<li><a href="https://github.com/vesoft-inc/nebula-graph/blob/master/src/parser/scanner.lex" target="_blank" rel="noopener noreffer">https://github.com/vesoft-inc/nebula-graph/blob/master/src/parser/scanner.lex</a></li>
-</ul>]]></description>
 </item></channel>
 </rss>

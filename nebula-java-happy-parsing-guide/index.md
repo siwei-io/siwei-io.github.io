@@ -311,7 +311,5 @@ java.lang.String resp_json = "
 
 Happy Graphing!
 
-
-
 > Picture Credit：[leunesmedia](https://unsplash.com/photos/0wIHsm2_1fc) 
 
