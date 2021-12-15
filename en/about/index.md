@@ -48,11 +48,7 @@ I am working in open source and consider it is a privilege [^1]. It took me a co
 
 ## Talks
 
-{{< showcase "K8s 上的图数据库" "Nebula K8s Operator 的实现解析，图数据库应用在 K8s + OpenFunction 上的落地演示" "https://siwei.io/talks/2021-09-kubesphere/images/cover.webp" "https://siwei.io/talks/2021-09-kubesphere/" 3 >}}
-
-{{< showcase "nMeetup: Nebula 应用上手实操" "从头实操 Nebula 的部署，股权穿透，图算法运算，语音智能助手。" "https://siwei.io/talks/2021-nMeetup/images/cover.webp" "https://siwei.io/talks/2021-nMeetup/" 3 >}}
-
-{{< showcase "How to Train your Dragon" "如何成为开源开发者（布道师）。" "https://siwei.io/talks/2021-Path-to-DA/images/cover.webp" "https://siwei.io/talks/2021-Path-to-DA/" 3 >}}
+{{< showcase "Data on K8s Community 2021" "GraphDB on Kubesphere" "https://siwei.io/talk/nebula_on_k3s.webp" "https://youtu.be/ri8VmYYTdkY" 3 >}}
 
 ## Previous work
 
