@@ -4,1293 +4,7 @@
         <link>https://siwei.io/posts/</link>
         <description>所有文章 | siwei.io</description>
         <generator>Hugo -- gohugo.io</generator><language>zh-CN</language><managingEditor>weyl.gu@gmail.com (Wey Gu)</managingEditor>
-            <webMaster>weyl.gu@gmail.com (Wey Gu)</webMaster><lastBuildDate>Mon, 03 Jan 2022 11:20:43 &#43;0800</lastBuildDate><atom:link href="https://siwei.io/posts/" rel="self" type="application/rss+xml" /><item>
-    <title>2021 End of Year</title>
-    <link>https://siwei.io/2021-end-of-year/</link>
-    <pubDate>Mon, 03 Jan 2022 11:20:43 &#43;0800</pubDate><author>
-        <name>Wey Gu</name>
-    </author><guid>https://siwei.io/2021-end-of-year/</guid>
-    <description><![CDATA[<div class="featured-image">
-                <img src="/featured-image.webp" referrerpolicy="no-referrer">
-            </div><p>总结一下结束了的 2021 年，想要写这个总结的触发点是看到了 <a href="https://xuanwo.io/2021/11-2021-review/" target="_blank" rel="noopener noreffer">xuanwo</a> 的文章，我为他能开启适合自己职业生涯高兴，也为自己有类似的转变而高兴，就想着为什么不梳理一下呢，写两句吧。</p>
-<p>TL;DR：我成为了开源团队 <a href="https://vesoft.com" target="_blank" rel="noopener noreffer">vesoft inc</a> 的一员，戴着 Developer Advocate 这顶帽子，做着开源、开发者布道的工作。</p>
-<p>2011 年，因为女朋友（现在的老婆）还要读研，选择留在学校所的城市工作，加入一家瑞典的通信设备商：Ericsson，作为 2G/3G 核心网工程师。</p>
-<p>那时候的我并不知道想要什么，只是那个在数学系比同学更熟悉计算机的人，连脚本小子都算不上。通信工程师的工作是理解通信协议，自家的通信系统，帮助我们的客户：全球各地的本地（ Ericsson Local Support ）工程师做一些运维相关的测试、支持的工作。在熟悉了需要的背景知识之后，工作开始变得不那么有趣了，除了能去全球各地的客户现场体验不同的生活之外，大部分工作都是枯燥重复的。虽然我在通读了 DSL</p>
-<h3 id="from-cloud-to-nebula" class="headerLink">
-    <a href="#from-cloud-to-nebula" class="header-mark"></a>From Cloud to Nebula</h3><h3 id="开源" class="headerLink">
-    <a href="#%e5%bc%80%e6%ba%90" class="header-mark"></a>开源</h3><h3 id="da" class="headerLink">
-    <a href="#da" class="header-mark"></a>DA</h3><h3 id="nebula" class="headerLink">
-    <a href="#nebula" class="header-mark"></a>Nebula</h3><h3 id="tooling" class="headerLink">
-    <a href="#tooling" class="header-mark"></a>Tooling</h3><h3 id="home-lab" class="headerLink">
-    <a href="#home-lab" class="header-mark"></a>Home Lab</h3><h3 id="podcast" class="headerLink">
-    <a href="#podcast" class="header-mark"></a>Podcast</h3><h3 id="life" class="headerLink">
-    <a href="#life" class="header-mark"></a>Life</h3><ul>
-<li>Flower</li>
-<li>Gym</li>
-</ul>
-<h3 id="2022" class="headerLink">
-    <a href="#2022" class="header-mark"></a>2022</h3><ul>
-<li>Book</li>
-</ul>
-]]></description>
-</item><item>
-    <title>从零到一：如何构建一个基于知识图谱的智能问答助手？</title>
-    <link>https://siwei.io/siwi/</link>
-    <pubDate>Thu, 30 Dec 2021 14:04:31 &#43;0800</pubDate><author>
-        <name>Wey Gu</name>
-    </author><guid>https://siwei.io/siwi/</guid>
-    <description><![CDATA[<div class="featured-image">
-                <img src="/featured-image.webp" referrerpolicy="no-referrer">
-            </div><blockquote>
-<p>如何利用图数据库从0-1构建一个特定领域问答助手？本文手把手带你构建一个简易版的篮球领域智能问答机器人。</p>
-</blockquote>
-<h2 id="前言" class="headerLink">
-    <a href="#%e5%89%8d%e8%a8%80" class="header-mark"></a>前言</h2><p>「问答机器人」在我们日常生活中并不少见到 ：像是一些电商客服、智能问诊、技术支持等人工输入与沟通界面的场景下，机器人“智能”问答系统一定程度上可以在无需人力、不需要耗费终端用户心智去做知识库、商品搜索、科室选择等等的情况下实时给出问题答案。</p>
-<p>问答机器人系统背后的技术有多重可能：</p>
-<ul>
-<li>基于检索，全文搜索接近的问题</li>
-<li>基于<a href="https://arxiv.org/abs/1710.10723" target="_blank" rel="noopener noreffer">机器学习阅读理解</a></li>
-<li>基于知识图谱（Knowledge-Based Question Answering system: KBQA）</li>
-<li>其他</li>
-</ul>
-<p>基于知识图谱构建问答系统在以下三个情况下很有优势：</p>
-<ul>
-<li>对于领域类型是结构化数据场景：电商、医药、系统运维（微服务、服务器、事件）、产品支持系统等，其中作为问答系统的参考对象已经是结构化数据；</li>
-<li>问题的解答过程涉及多跳查询，比如“姚明的妻子今年是本命年吗？”，“你们家的产品 A 和 A+ 的区别是什么？”；</li>
-<li>为了解决其他需求（风控、推荐、管理），已经构建了图结构数据、知识图谱的情况。</li>
-</ul>
-<p>为了方便读者最快速了解如何构建 KBQA 系统，我写了非常简陋的小 KBQA 项目，在本文中，我会带领大家从头到尾把它搭起来。</p>
-<blockquote>
-<p>💡：这个小项目叫做 Siwi，它的代码就在 GitHub 上：<a href="https://github.com/wey-gu/nebula-siwi/" target="_blank" rel="noopener noreffer">github.com/wey-gu/nebula-siwi</a></p>
-<p>Siwi 的发音是：<code>/ˈsɪwi/</code> 或者叫：<code>思二为</code> ，它是一个能解答 NBA 相关问题的机器人。</p>
-</blockquote>
-<p>我们开始吧。</p>
-<h2 id="鸟瞰-tldr" class="headerLink">
-    <a href="#%e9%b8%9f%e7%9e%b0-tldr" class="header-mark"></a>鸟瞰 TL;DR</h2><p>KBQA 用一句话说就是把问题解析、转换成在知识图谱中的查询，查询得到结果之后进行筛选、翻译成结果（句子、卡片或者任何方便人理解的答案格式）。</p>
-<blockquote>
-<p>💡：知识图谱的构建实际上是非常重要的过程，在本文中，我们专注在串起来 KBQA 系统的骨架，我们假设需求是基于一个已经有的图谱之上，为其增加一个 QA 系统。</p>
-</blockquote>
-<p>「问题到图谱查询的转换」有不同的方法可以实现。</p>
-<ul>
-<li>可以是对语义进行分析：理解问题的意图，针对不同意图匹配最可能的问题类型，从而构建这个类型问题的图谱查询，查得结果；</li>
-<li>也可以是基于信息的抽取：从问题中抽取主要的实体，在图谱中获取实体的所有知识、关系条目（子图），再对结果根据问题中的约束条件匹配、排序选择结果。</li>
-</ul>
-<blockquote>
-<p>💡：美团技术团队在<a href="https://tech.meituan.com/2021/11/03/knowledge-based-question-answering-in-meituan.html" target="_blank" rel="noopener noreffer">这篇文章</a>里分享了他们的真实世界实践，下图是美团结合了机器学习和 NLP 的方案。</p>
-</blockquote>
-<p></p>
-<p>而在 Siwi 里，我们一切从简，单独选择了语义分析这条路，它的特点是需要人为去标注或者编码一些问题类型的查询方式，但实际上在大多数场景下，尤其单一领域图谱的场景下反而是轻量却效果不差的方案，也是一个便于新手理解 KBQA 的合适的入门方式。</p>
-<p>除了核心的问答部分，我还为 Siwi 增加了语音识别和语音回答（感谢浏览器接口标准的发展）的功能，于是，这个项目的结构和问答调用流程就是这样的了：一个语音问题自上而下分别经过三个部分：</p>
-<ul>
-<li>基于网页的 Siwi Frontend 语音、文字问答界面</li>
-<li>Python Flask 实现的 Siwi Backend/API 系统</li>
-<li><a href="https://nebula-graph.com.cn" target="_blank" rel="noopener noreffer">Nebula Graph</a> 开源分布式高性能图数据库之上的知识图谱</li>
-</ul>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
-</span><span class="lnt">28
-</span><span class="lnt">29
-</span><span class="lnt">30
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">┌────────────────┬──────────────────────────────────────┐
-│                │                                      │
-│                │  Speech                              │
-│     ┌──────────▼──────────┐                           │
-│     │            Frontend │   Siwi, /ˈsɪwi/           │
-│     │ Web_Speech_API      │   A PoC of                │
-│     │                     │   Dialog System           │
-│     │ Vue.JS              │   With Graph Database     │
-│     │                     │   Backed Knowledge Graph  │
-│     └──────────┬──────────┘                           │
-│                │  Sentence                            │
-│   ┌────────────┼──────────────────────────────┐       │
-│   │            │              Backend         │       │
-│   │ ┌──────────▼──────────┐                   │       │
-│   │ │ Web API, Flask      │   ./app/          │       │
-│   │ └──────────┬──────────┘                   │       │
-│   │            │  Sentence    ./bot/          │       │
-│   │ ┌──────────▼──────────┐                   │       │
-│   │ │ Intent matching,    │   ./bot/classifier│       │
-│   │ │ Symentic Processing │                   │       │
-│   │ └──────────┬──────────┘                   │       │
-│   │            │  Intent, Entities            │       │
-│   │ ┌──────────▼──────────┐                   │       │
-│   │ │ Intent Actor        │   ./bot/actions   │       │
-│   └─┴──────────┬──────────┴───────────────────┘       │
-│                │  Graph Query                         │
-│     ┌──────────▼──────────┐                           │
-│     │ Graph Database      │    Nebula Graph           │
-│     └─────────────────────┘                           │
-└───────────────────────────────────────────────────────┘
-</code></pre></td></tr></table>
-</div>
-</div><blockquote>
-<p>💡：图数据库相比于其他知识图谱存储系统来说，因为其设计专注于数据内的数据关系，非常擅长实时获取海量数据下实体之间的复杂关联关系。</p>
-<p>Nebula Graph 的原生分布式设计和 share-nothing 架构使得它擅长于巨大数据量和高并发读写的场景，加上它的开源社区特别活跃，已经被国内很多团队用于支撑生产上的各种业务，<a href="https://nebula-graph.com.cn/cases/" target="_blank" rel="noopener noreffer">这里</a>有一些他们分享的选型、落地实践。</p>
-</blockquote>
-<h2 id="知识图谱" class="headerLink">
-    <a href="#%e7%9f%a5%e8%af%86%e5%9b%be%e8%b0%b1" class="header-mark"></a>知识图谱</h2><p>Siwi 构建于一个篮球相关的知识图谱之上，它其实是 Siwi 采用的开源分布式图数据库 <a href="http://nebula-graph.com.cn/" target="_blank" rel="noopener noreffer">Nebula Graph</a> 社区的官方文档里的示例<a href="https://docs.nebula-graph.com.cn/master/3.ngql-guide/1.nGQL-overview/1.overview/#basketballplayer" target="_blank" rel="noopener noreffer">数据集</a>。</p>
-<p>在这个非常简单的图谱之中，只有两种点：</p>
-<ul>
-<li>player，球员</li>
-<li>team，球队</li>
-</ul>
-<p>两种关系：</p>
-<ul>
-<li>serve 服役于（比如：姚明 <code>-服役于-&gt;</code> 休斯顿火箭）</li>
-<li>follow 关注 （比如：姚明 <code>-关注-&gt;</code> 奥尼尔）</li>
-</ul>
-<blockquote>
-<p>💡：这个数据集在 Nebula 社区上有一个 <a href="https://nebula-graph.com.cn/demo/" target="_blank" rel="noopener noreffer">在线体验</a> 环境，任何人都无需登录，通过<a href="https://docs.nebula-graph.com.cn/2.6.1/nebula-studio/about-studio/st-ug-what-is-graph-studio/" target="_blank" rel="noopener noreffer">Nebula Graph Studio</a> 可视化探索篮球图谱。</p>
-</blockquote>
-<p>下图就是这个图谱的可视化探索截图，可以看到左边的中心节点勇士队（Warriors）有杜兰特（Durant）还有其他几个队员在其中服役（serve）；除了服役之外，还可以看到队员和队员之中也有关注（follow）的关系存在。</p>
-<p></p>
-<p>有了这个知识图谱，咱们接下来就在它之上搭一个简单的基于语法解析的 QA 系统吧😁。</p>
-<h2 id="siwi-backend" class="headerLink">
-    <a href="#siwi-backend" class="header-mark"></a>Siwi-backend</h2><div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">┌────────────┼──────────────────────────────┐
-│            │              Backend         │
-│ ┌──────────▼──────────┐                   │
-│ │ Web API, Flask      │   ./app/          │
-│ └──────────┬──────────┘                   │
-│            │  Sentence    ./bot/          │
-│ ┌──────────▼──────────┐                   │
-│ │ Intent matching,    │   ./bot/classifier│
-│ │ Symentic Processing │                   │
-│ └──────────┬──────────┘                   │
-│            │  Intent, Entities            │
-│ ┌──────────▼──────────┐                   │
-│ │ Intent Actor        │   ./bot/actions   │
-└─┴──────────┬──────────┴───────────────────┘
-             │  Graph Query
-  ┌──────────▼──────────┐
-  │ Graph Database      │    Nebula Graph
-  └─────────────────────┘
-</code></pre></td></tr></table>
-</div>
-</div><p>如上图的设计流程，Siwi 的后端部分需要接收问句，处理之后访问知识图谱（图数据库），然后将处理结果返回给用户。</p>
-<h3 id="接收-http-请求app" class="headerLink">
-    <a href="#%e6%8e%a5%e6%94%b6-http-%e8%af%b7%e6%b1%82app" class="header-mark"></a>接收 HTTP 请求(app)</h3><p>对于请求，就简单地用 Flask 作为 web server 来接收 HTTP 的 POST 请求：</p>
-<blockquote>
-<p>💡：还不熟悉 Flask 的同学，可以在 <a href="https://www.freecodecamp.org/news/tag/flask/" target="_blank" rel="noopener noreffer">freeCodeCamp 上搜索一下</a>，有一些不错的课程哈。</p>
-</blockquote>
-<p>下边的代码就是告诉 Flask ：</p>
-<ol>
-<li>如果用户发过来 <code>http://&lt;server&gt;/query</code> 的 POST 请求，提的问题就在请求的 body 里的 <code>question</code> 的 Key 之下。</li>
-<li>取得问题之后，调用把请求传给  <code>siwi_bot</code> 的 <code>query()</code>，得到 <code>answer</code> 。</li>
-</ol>
-<p>代码段：<code>src/siwi/app/__init__.py</code></p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="c1">#...</span>
-<span class="kn">from</span> <span class="nn">siwi.bot</span> <span class="kn">import</span> <span class="n">bot</span>
-
-<span class="c1">#...</span>
-<span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s2">&#34;/query&#34;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s2">&#34;POST&#34;</span><span class="p">])</span>
-<span class="k">def</span> <span class="nf">query</span><span class="p">():</span>
-    <span class="n">request_data</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">get_json</span><span class="p">()</span>
-    <span class="n">question</span> <span class="o">=</span> <span class="n">request_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;question&#34;</span><span class="p">,</span> <span class="s2">&#34;&#34;</span><span class="p">)</span> <span class="c1"># &lt;----- 1.</span>
-    <span class="k">if</span> <span class="n">question</span><span class="p">:</span>
-        <span class="n">answer</span> <span class="o">=</span> <span class="n">siwi_bot</span><span class="o">.</span><span class="n">query</span><span class="p">(</span>
-            <span class="n">request_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;question&#34;</span><span class="p">,</span> <span class="s2">&#34;&#34;</span><span class="p">))</span>   <span class="c1"># &lt;----- 2.</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">answer</span> <span class="o">=</span> <span class="s2">&#34;Sorry, what did you say?&#34;</span>
-    <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s2">&#34;answer&#34;</span><span class="p">:</span> <span class="n">answer</span><span class="p">})</span>
-</code></pre></td></tr></table>
-</div>
-</div><p>接下来我们来实现 <code>siwi_bot</code>，真正处理提问的逻辑。</p>
-<h3 id="处理请求bot" class="headerLink">
-    <a href="#%e5%a4%84%e7%90%86%e8%af%b7%e6%b1%82bot" class="header-mark"></a>处理请求(bot)</h3><div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span><span class="lnt">7
-</span><span class="lnt">8
-</span><span class="lnt">9
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">│            │  Sentence    ./bot/          │
-│ ┌──────────▼──────────┐                   │
-│ │ Intent matching,    │   ./bot/classifier│
-│ │ Symentic Processing │                   │
-│ └──────────┬──────────┘                   │
-│            │  Intent, Entities            │
-│ ┌──────────▼──────────┐                   │
-│ │ Intent Actor        │   ./bot/actions   │
-└─┴──────────┬──────────┴───────────────────┘
-</code></pre></td></tr></table>
-</div>
-</div><p>前边提到过，KBQA 基本上是</p>
-<p>a. 把问题解析、转换成在知识图谱中的查询</p>
-<p>b. 查询得到结果之后进行筛选、翻译成结果</p>
-<p>这里，我们把 a. 的逻辑放在 <code>classifier</code> 里，b. 的逻辑放在 <code>actions</code>(actor) 里。</p>
-<p>a. HTTP 请求的问题句子 <code>sentence</code> 传过来，用 <code>classifier</code> 解析它的意图和句子实体</p>
-<p>b. 用意图和句子实体构造 <code>action</code>，并链接图数据库执行，获取结果。</p>
-<p>代码段：<code>src/siwi/bot/bot/__init__.py</code></p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">siwi.bot.actions</span> <span class="kn">import</span> <span class="n">SiwiActions</span>
-<span class="kn">from</span> <span class="nn">siwi.bot.classifier</span> <span class="kn">import</span> <span class="n">SiwiClassifier</span>
-
-
-<span class="k">class</span> <span class="nc">SiwiBot</span><span class="p">():</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">connection_pool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">classifier</span> <span class="o">=</span> <span class="n">SiwiClassifier</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">actions</span> <span class="o">=</span> <span class="n">SiwiActions</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">connection_pool</span> <span class="o">=</span> <span class="n">connection_pool</span>
-
-    <span class="k">def</span> <span class="nf">query</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sentence</span><span class="p">):</span>
-        <span class="n">intent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">classifier</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">sentence</span><span class="p">)</span> <span class="c1"># &lt;--- a.</span>
-        <span class="n">action</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">actions</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">intent</span><span class="p">)</span>      <span class="c1"># &lt;--- b.</span>
-        <span class="k">return</span> <span class="n">action</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">connection_pool</span><span class="p">)</span>
-</code></pre></td></tr></table>
-</div>
-</div><p>首先咱们来进一步实现一下 <code>SiwiClassifier</code> 吧。</p>
-<h4 id="语义解析classifier" class="headerLink">
-    <a href="#%e8%af%ad%e4%b9%89%e8%a7%a3%e6%9e%90classifier" class="header-mark"></a>语义解析(classifier)</h4><p><code>classifier </code> 需要在 <code>get(sentence)</code> 方法里将句子中的实体和句子的意图解析、分类出来。通常来说，这里是需要借助机器学习、NLP去分词、分类实现的，这里只是为了展示这个过程实际上只是各种 <code>if/ else</code>。</p>
-<p>我们这里实现了三类意图的问题：</p>
-<ul>
-<li>关系（A，B）：获得 A 和 B 在图谱中的关系路径，比如姚明和湖人队的关系是？</li>
-<li>服役情况：比如乔纳森在哪里服役？</li>
-<li>关注情况：比如邓肯关注了谁？</li>
-</ul>
-<blockquote>
-<p>❓ 开放问题：</p>
-<p>如果看教程的你觉得这几个问题太没意思了，这里留一个开放问题，你可以在 Siwi li 帮我们实现：「共同好友（A，B）获得 A 和 B 的一度共同好友」这个意图（或者更酷的其他句子）么？欢迎来 Github：github.com/wey-gu/nebula-siwi/ 提 PR 哦，看看谁先实现。</p>
-</blockquote>
-<p>代码片段：<code>src/siwi/bot/classfier/__init__.py</code></p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
-</span><span class="lnt">28
-</span><span class="lnt">29
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="k">class</span> <span class="nc">SiwiClassifier</span><span class="p">():</span>
-    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sentence</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-        <span class="s2">&#34;&#34;&#34;
-</span><span class="s2">        Classify Sentences and Fill Slots.
-</span><span class="s2">        This should be done by NLP, here we fake one to demostrate
-</span><span class="s2">        the intent Actor --&gt; Graph DB work flow.
-</span><span class="s2">
-</span><span class="s2">        sentense:
-</span><span class="s2">          relation:
-</span><span class="s2">            - What is the relationship between Yao Ming and Lakers?
-</span><span class="s2">            - How does Tracy McGrady and Lakers connected?
-</span><span class="s2">          serving:
-</span><span class="s2">            - Which team had Jonathon Simmons served?
-</span><span class="s2">          friendship:
-</span><span class="s2">            - Whom does Tim Duncan follow?
-</span><span class="s2">            - Who are Tracy McGrady&#39;s friends?
-</span><span class="s2">
-</span><span class="s2">        returns:
-</span><span class="s2">        {
-</span><span class="s2">            &#34;entities&#34;: entities,
-</span><span class="s2">            &#34;intents&#34;: intents
-</span><span class="s2">        }
-</span><span class="s2">        &#34;&#34;&#34;</span>
-        <span class="n">entities</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_matched_entities</span><span class="p">(</span><span class="n">sentence</span><span class="p">)</span>
-        <span class="n">intents</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_matched_intents</span><span class="p">(</span><span class="n">sentence</span><span class="p">)</span>
-        <span class="k">return</span> <span class="p">{</span>
-            <span class="s2">&#34;entities&#34;</span><span class="p">:</span> <span class="n">entities</span><span class="p">,</span>
-            <span class="s2">&#34;intents&#34;</span><span class="p">:</span> <span class="n">intents</span>
-        <span class="p">}</span>
-</code></pre></td></tr></table>
-</div>
-</div><p>这里，我把匹配的规则（等价于 if else&hellip;）写在了 <code>src/siwi/bot/test/data</code> 之下的 YAML 文件里，这样增加 <code>classifier</code> 之中新的规则只需要更新这个文件就可以了：</p>
-<h5 id="意图识别intent" class="headerLink">
-    <a href="#%e6%84%8f%e5%9b%be%e8%af%86%e5%88%abintent" class="header-mark"></a>意图识别(intent)</h5><div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="k">def</span> <span class="nf">load_entity_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="c1"># load data from yaml files</span>
-    <span class="n">module_path</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span> <span class="n">siwi</span><span class="o">.</span><span class="n">__path__</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="si">}</span><span class="s2">/bot/test/data&#34;</span>
-    <span class="c1">#...</span>
-    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span> <span class="n">module_path</span> <span class="si">}</span><span class="s2">/intents.yaml&#34;</span><span class="p">,</span> <span class="s2">&#34;r&#34;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">intents</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">file</span><span class="p">)[</span><span class="s2">&#34;intents&#34;</span><span class="p">]</span>
-</code></pre></td></tr></table>
-</div>
-</div><p>对于每一个意图来说：</p>
-<ul>
-<li><code>intents.&lt;名字&gt;</code> 代表名字</li>
-<li>名字之后的 <code>action</code> 代表后边在要实现的相应的 <code>xxxAction</code> 的类
-<ul>
-<li>比如 <code>RelationshipAction</code> 将是用来处理查询关系（A，B）这样的问题的 Action 类</li>
-</ul>
-</li>
-<li><code>keywords</code> 代表在句子之中匹配的关键词
-<ul>
-<li>比如问句里出现 serve，served，serving 的字眼的时候，将会匹配服役的问题</li>
-</ul>
-</li>
-</ul>
-<blockquote>
-<p>💡：写 if else 条件来对应意图是不容易的，因为不同意图不可能没有关键词相交的情况，我们的实现只是一个非常简陋、不严谨的方式。在实际场景下，训练模型去做匹配效果会更好，有意思的是，那些做的比较好的模型的输入和我们的 YAML 的格式是很类似的。</p>
-</blockquote>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
-</span><span class="lnt">28
-</span><span class="lnt">29
-</span><span class="lnt">30
-</span><span class="lnt">31
-</span><span class="lnt">32
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="nn">---</span><span class="w">
-</span><span class="w"></span><span class="nt">intents</span><span class="p">:</span><span class="w">
-</span><span class="w">  </span><span class="nt">fallback</span><span class="p">:</span><span class="w">
-</span><span class="w">    </span><span class="nt">action</span><span class="p">:</span><span class="w">
-</span><span class="w">      </span><span class="l">FallbackAction</span><span class="w">
-</span><span class="w">    </span><span class="nt">keywords</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span><span class="w">
-</span><span class="w">  </span><span class="nt">relationship</span><span class="p">:</span><span class="w">
-</span><span class="w">    </span><span class="nt">action</span><span class="p">:</span><span class="w">
-</span><span class="w">      </span><span class="l">RelationshipAction</span><span class="w">
-</span><span class="w">    </span><span class="nt">keywords</span><span class="p">:</span><span class="w">
-</span><span class="w">      </span>- <span class="l">between</span><span class="w">
-</span><span class="w">      </span>- <span class="l">relation</span><span class="w">
-</span><span class="w">      </span>- <span class="l">relationship</span><span class="w">
-</span><span class="w">      </span>- <span class="l">related</span><span class="w">
-</span><span class="w">      </span>- <span class="l">connect</span><span class="w">
-</span><span class="w">      </span>- <span class="l">correlate</span><span class="w">
-</span><span class="w">  </span><span class="nt">serve</span><span class="p">:</span><span class="w">
-</span><span class="w">    </span><span class="nt">action</span><span class="p">:</span><span class="w">
-</span><span class="w">      </span><span class="l">ServeAction</span><span class="w">
-</span><span class="w">    </span><span class="nt">keywords</span><span class="p">:</span><span class="w">
-</span><span class="w">      </span>- <span class="l">serve</span><span class="w">
-</span><span class="w">      </span>- <span class="l">served</span><span class="w">
-</span><span class="w">      </span>- <span class="l">serving</span><span class="w">
-</span><span class="w">  </span><span class="nt">friend</span><span class="p">:</span><span class="w">
-</span><span class="w">    </span><span class="nt">action</span><span class="p">:</span><span class="w">
-</span><span class="w">      </span><span class="l">FollowAction</span><span class="w">
-</span><span class="w">    </span><span class="nt">keywords</span><span class="p">:</span><span class="w">
-</span><span class="w">      </span>- <span class="l">follows</span><span class="w">
-</span><span class="w">      </span>- <span class="l">followed</span><span class="w">
-</span><span class="w">      </span>- <span class="l">follow</span><span class="w">
-</span><span class="w">      </span>- <span class="l">friend</span><span class="w">
-</span><span class="w">      </span>- <span class="l">friends</span><span class="w">
-</span></code></pre></td></tr></table>
-</div>
-</div><h5 id="实体识别entity" class="headerLink">
-    <a href="#%e5%ae%9e%e4%bd%93%e8%af%86%e5%88%abentity" class="header-mark"></a>实体识别(entity)</h5><p>类似的，实体识别的部分本质上也是 if else，只不过这里利用到了**<a href="https://zh.wikipedia.org/wiki/AC%E8%87%AA%E5%8A%A8%E6%9C%BA%E7%AE%97%E6%B3%95" target="_blank" rel="noopener noreffer">Aho–Corasick算法</a>**来帮助搜索实体，在生产（非玩具）的情况下，应该用 NLP 里的分词的方法来做。</p>
-<blockquote>
-<p>💡：大家可以去了解一下这个 <a href="https://zh.wikipedia.org/wiki/AC%E8%87%AA%E5%8A%A8%E6%9C%BA%E7%AE%97%E6%B3%95" target="_blank" rel="noopener noreffer">AC自动机算法</a></p>
-</blockquote>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="k">def</span> <span class="nf">setup_entity_tree</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">entity_type_map</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
-        <span class="n">key</span><span class="p">:</span> <span class="s2">&#34;player&#34;</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">players</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
-        <span class="p">})</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">entity_type_map</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
-        <span class="n">key</span><span class="p">:</span> <span class="s2">&#34;team&#34;</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">teams</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
-        <span class="p">})</span>
-
-    <span class="bp">self</span><span class="o">.</span><span class="n">entity_tree</span> <span class="o">=</span> <span class="n">ahocorasick</span><span class="o">.</span><span class="n">Automaton</span><span class="p">()</span>
-    <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">entity</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">entity_type_map</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">entity_tree</span><span class="o">.</span><span class="n">add_word</span><span class="p">(</span><span class="n">entity</span><span class="p">,</span> <span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">entity</span><span class="p">))</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">entity_tree</span><span class="o">.</span><span class="n">make_automaton</span><span class="p">()</span>
-
-<span class="c1">#...</span>
-
-<span class="k">def</span> <span class="nf">get_matched_entities</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sentence</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-    <span class="s2">&#34;&#34;&#34;
-</span><span class="s2">    Consume a sentence to be matched with ahocorasick
-</span><span class="s2">    Returns a dict: {entity: entity_type}
-</span><span class="s2">    &#34;&#34;&#34;</span>
-    <span class="n">_matched</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">entity_tree</span><span class="o">.</span><span class="n">iter</span><span class="p">(</span><span class="n">sentence</span><span class="p">):</span>
-        <span class="n">entities_matched</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
-    <span class="k">return</span> <span class="p">{</span>
-        <span class="n">entity</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">entity_type_map</span><span class="p">[</span><span class="n">entity</span><span class="p">]</span> <span class="k">for</span> <span class="n">entity</span> <span class="ow">in</span> <span class="n">_matched</span>
-    <span class="p">}</span>
-</code></pre></td></tr></table>
-</div>
-</div><p>至此，我们的 <code>SiwiClassifier.get(sentence)</code> 已经能返回解析、分类出来的意图和实体了，这时候，它们会被传给 Actions 来让 siwi bot 知道如何去执行只是图谱的查询啦！</p>
-<h4 id="构造图谱查询action" class="headerLink">
-    <a href="#%e6%9e%84%e9%80%a0%e5%9b%be%e8%b0%b1%e6%9f%a5%e8%af%a2action" class="header-mark"></a>构造图谱查询(action)</h4><p>还记得前边的 bot 代码里，最后一步，图谱查询的动作是这么被构造的：</p>
-<p><code>action = self.actions.get(intent)</code></p>
-<p>现在咱们就把它实现一下：</p>
-<ol>
-<li>
-<p>在前边提到过的 <code>intents.yaml</code> 里获取这个意图里配置的意图的类名称</p>
-</li>
-<li>
-<p>导入相应的 Action 类</p>
-</li>
-</ol>
-<p>代码段：<code>src/bot/actions/__init__.py</code></p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="k">class</span> <span class="nc">SiwiActions</span><span class="p">():</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">intent_map</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">load_data</span><span class="p">()</span>
-
-    <span class="k">def</span> <span class="nf">load_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="c1"># load data from yaml files</span>
-        <span class="n">module_path</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span> <span class="n">siwi</span><span class="o">.</span><span class="n">__path__</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="si">}</span><span class="s2">/bot/test/data&#34;</span>
-
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span> <span class="n">module_path</span> <span class="si">}</span><span class="s2">/intents.yaml&#34;</span><span class="p">,</span> <span class="s2">&#34;r&#34;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">intent_map</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">file</span><span class="p">)[</span><span class="s2">&#34;intents&#34;</span><span class="p">]</span>
-
-    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">intent</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
-        <span class="s2">&#34;&#34;&#34;
-</span><span class="s2">        returns SiwiActionBase
-</span><span class="s2">        &#34;&#34;&#34;</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">intent</span><span class="p">[</span><span class="s2">&#34;intents&#34;</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">intent_name</span> <span class="o">=</span> <span class="n">intent</span><span class="p">[</span><span class="s2">&#34;intents&#34;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">intent_name</span> <span class="o">=</span> <span class="s2">&#34;fallback&#34;</span>
-
-        <span class="n">cls_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">intent_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-            <span class="n">intent_name</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;action&#34;</span><span class="p">)</span> <span class="c1">#-------&gt; 1.</span>
-        <span class="n">action_cls</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span>          <span class="c1">#-------&gt; 2.</span>
-            <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="s2">&#34;siwi.bot.actions&#34;</span><span class="p">),</span> <span class="n">cls_name</span><span class="p">)</span>
-        <span class="n">action</span> <span class="o">=</span> <span class="n">action_cls</span><span class="p">(</span><span class="n">intent</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">action</span>
-</code></pre></td></tr></table>
-</div>
-</div><p>最后，我们来实现这个类吧，比如 <code>RelationshipAction</code> 对应的代码如下：</p>
-<ol>
-<li>根据提供的 A 和 B，构造并执行图数据库之中的 <code>FIND PATH</code></li>
-<li>将 <code>FIND PATH</code> 的结果进行解析，通过 <code>as_path()</code> 方法的封装，获得 path 类型的数据，并处理一个句子返回给用户</li>
-</ol>
-<blockquote>
-<p>💡：FIND PATH 就是字面意思的查找路径，<a href="https://docs.nebula-graph.com.cn/2.6.1/3.ngql-guide/16.subgraph-and-path/2.find-path/" target="_blank" rel="noopener noreffer">这里</a>有详细的解释哦。</p>
-</blockquote>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
-</span><span class="lnt">28
-</span><span class="lnt">29
-</span><span class="lnt">30
-</span><span class="lnt">31
-</span><span class="lnt">32
-</span><span class="lnt">33
-</span><span class="lnt">34
-</span><span class="lnt">35
-</span><span class="lnt">36
-</span><span class="lnt">37
-</span><span class="lnt">38
-</span><span class="lnt">39
-</span><span class="lnt">40
-</span><span class="lnt">41
-</span><span class="lnt">42
-</span><span class="lnt">43
-</span><span class="lnt">44
-</span><span class="lnt">45
-</span><span class="lnt">46
-</span><span class="lnt">47
-</span><span class="lnt">48
-</span><span class="lnt">49
-</span><span class="lnt">50
-</span><span class="lnt">51
-</span><span class="lnt">52
-</span><span class="lnt">53
-</span><span class="lnt">54
-</span><span class="lnt">55
-</span><span class="lnt">56
-</span><span class="lnt">57
-</span><span class="lnt">58
-</span><span class="lnt">59
-</span><span class="lnt">60
-</span><span class="lnt">61
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="k">class</span> <span class="nc">RelationshipAction</span><span class="p">(</span><span class="n">SiwiActionBase</span><span class="p">):</span>
-    <span class="s2">&#34;&#34;&#34;
-</span><span class="s2">    USE basketballplayer;
-</span><span class="s2">    FIND NOLOOP PATH
-</span><span class="s2">    FROM &#34;player100&#34; TO &#34;team204&#34; OVER * BIDIRECT UPTO 4 STEPS;
-</span><span class="s2">    &#34;&#34;&#34;</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">intent</span><span class="p">):</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;[DEBUG] RelationshipAction intent: </span><span class="si">{</span> <span class="n">intent</span> <span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">intent</span><span class="p">)</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">entity_left</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">entity_right</span> <span class="o">=</span> <span class="n">intent</span><span class="p">[</span><span class="s2">&#34;entities&#34;</span><span class="p">]</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">left_vid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vid</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">entity_left</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">right_vid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vid</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">entity_right</span><span class="p">)</span>
-        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&#34;[WARN] RelationshipAction entities recognition Failure &#34;</span>
-                <span class="sa">f</span><span class="s2">&#34;will fallback to FallbackAction, &#34;</span>
-                <span class="sa">f</span><span class="s2">&#34;intent: </span><span class="si">{</span> <span class="n">intent</span> <span class="si">}</span><span class="s2">&#34;</span>
-                <span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">error</span> <span class="o">=</span> <span class="kc">True</span>
-
-    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">connection_pool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_error_check</span><span class="p">()</span>
-        <span class="n">query</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="sa">f</span><span class="s1">&#39;USE basketballplayer;&#39;</span>
-            <span class="sa">f</span><span class="s1">&#39;FIND NOLOOP PATH &#39;</span>
-            <span class="sa">f</span><span class="s1">&#39;FROM &#34;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">left_vid</span><span class="si">}</span><span class="s1">&#34; TO &#34;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">right_vid</span><span class="si">}</span><span class="s1">&#34; &#39;</span>
-            <span class="sa">f</span><span class="s1">&#39;OVER * BIDIRECT UPTO 4 STEPS;&#39;</span>
-            <span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&#34;[DEBUG] query for RelationshipAction :</span><span class="se">\n\t</span><span class="si">{</span> <span class="n">query</span> <span class="si">}</span><span class="s2">&#34;</span>
-            <span class="p">)</span>
-        <span class="k">with</span> <span class="n">connection_pool</span><span class="o">.</span><span class="n">session_context</span><span class="p">(</span><span class="s2">&#34;root&#34;</span><span class="p">,</span> <span class="s2">&#34;nebula&#34;</span><span class="p">)</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
-            <span class="n">result</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>        <span class="c1">#--------------------&gt; 1.</span>
-
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">result</span><span class="o">.</span><span class="n">is_succeeded</span><span class="p">():</span>
-            <span class="k">return</span> <span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&#34;Something is wrong on Graph Database connection when query &#34;</span>
-                <span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span> <span class="n">query</span> <span class="si">}</span><span class="s2">&#34;</span>
-                <span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">is_empty</span><span class="p">():</span>
-            <span class="k">return</span> <span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&#34;There is no relationship between &#34;</span>
-                <span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span> <span class="bp">self</span><span class="o">.</span><span class="n">entity_left</span> <span class="si">}</span><span class="s2"> and </span><span class="si">{</span> <span class="bp">self</span><span class="o">.</span><span class="n">entity_right</span> <span class="si">}</span><span class="s2">&#34;</span>
-                <span class="p">)</span>
-        <span class="n">path</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">row_values</span><span class="p">(</span><span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">as_path</span><span class="p">()</span>    <span class="c1">#-------------------&gt; 2.</span>
-        <span class="n">relationships</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">relationships</span><span class="p">()</span>
-        <span class="n">relations_str</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">(</span>
-            <span class="n">relationships</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">start_vertex_id</span><span class="p">()</span><span class="o">.</span><span class="n">as_string</span><span class="p">())</span>
-        <span class="k">for</span> <span class="n">rel_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">length</span><span class="p">()):</span>
-            <span class="n">rel</span> <span class="o">=</span> <span class="n">relationships</span><span class="p">[</span><span class="n">rel_index</span><span class="p">]</span>
-            <span class="n">relations_str</span> <span class="o">+=</span> <span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&#34; </span><span class="si">{</span> <span class="n">rel</span><span class="o">.</span><span class="n">edge_name</span><span class="p">()</span> <span class="si">}</span><span class="s2">s &#34;</span>
-                <span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">(</span><span class="n">rel</span><span class="o">.</span><span class="n">end_vertex_id</span><span class="p">()</span><span class="o">.</span><span class="n">as_string</span><span class="p">())</span> <span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&#34;There are at least </span><span class="si">{</span> <span class="n">result</span><span class="o">.</span><span class="n">row_size</span><span class="p">()</span> <span class="si">}</span><span class="s2"> relations between &#34;</span>
-            <span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span> <span class="bp">self</span><span class="o">.</span><span class="n">entity_left</span> <span class="si">}</span><span class="s2"> and </span><span class="si">{</span> <span class="bp">self</span><span class="o">.</span><span class="n">entity_right</span> <span class="si">}</span><span class="s2">, &#34;</span>
-            <span class="sa">f</span><span class="s2">&#34;one relation path is: </span><span class="si">{</span> <span class="n">relations_str</span> <span class="si">}</span><span class="s2">.&#34;</span>
-            <span class="p">)</span>
-
-</code></pre></td></tr></table>
-</div>
-</div><p>至此，咱们就已经实现了后端的所有功能，我们可以把它启动起来试试了！</p>
-<h3 id="测试一下" class="headerLink">
-    <a href="#%e6%b5%8b%e8%af%95%e4%b8%80%e4%b8%8b" class="header-mark"></a>测试一下</h3><h4 id="启动图数据库" class="headerLink">
-    <a href="#%e5%90%af%e5%8a%a8%e5%9b%be%e6%95%b0%e6%8d%ae%e5%ba%93" class="header-mark"></a>启动图数据库</h4><p>我们在 Nebula Graph 里建立（导入数据）一个篮球的知识图谱。</p>
-<blockquote>
-<p>💡：在导入数据之前，请先部署一个 Nebula Graph 集群。最简便的部署方式是使用 Nebula-UP 这个小工具，只需要一行命令就能在 Linux 机器上同时启动一个 Nebula Graph 核心和可视化图探索工具 <a href="https://docs.nebula-graph.com.cn/2.6.1/nebula-studio/about-studio/st-ug-what-is-graph-studio/" target="_blank" rel="noopener noreffer">Nebula Graph Studio</a>。如果你更愿意用 Docker 部署，请参考<a href="https://docs.nebula-graph.com.cn/2.6.1/4.deployment-and-installation/2.compile-and-install-nebula-graph/3.deploy-nebula-graph-with-docker-compose/" target="_blank" rel="noopener noreffer">这个文档</a>。</p>
-</blockquote>
-<p>本文假设我们使用 <a href="https://siwei.io/nebula-up/" target="_blank" rel="noopener noreffer">Nebula-UP</a> 来部署一个 Nebula Graph：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">curl -fsSL nebula-up.siwei.io/install.sh <span class="p">|</span> bash
-</code></pre></td></tr></table>
-</div>
-</div><p>之后，我们会看到这样的提示：</p>
-<p></p>
-<p>按照提示，我们可以通过这个命令进入到有 Nebula Console 的容器里：</p>
-<blockquote>
-<p>💡：<a href="https://github.com/vesoft-inc/nebula-console" target="_blank" rel="noopener noreffer">Nebula Console</a> 是命令行访问 Nebula Graph 图数据库的客户端，支持 Linux，Windows 和 macOS，下载地址：<a href="https://github.com/vesoft-inc/nebula-console/releases" target="_blank" rel="noopener noreffer">这里</a></p>
-</blockquote>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">~/.nebula-up/console.sh
-</code></pre></td></tr></table>
-</div>
-</div><p>然后，在 <code>#</code> 的提示符下就表示我们进来了，我们在里边可以执行：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">nebula-console -addr graphd -port 9669 -user root -p nebula
-</code></pre></td></tr></table>
-</div>
-</div><p>这样就表示我们连接上了 Nebula Graph 图数据库：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="o">/</span><span class="w"> </span><span class="c1"># nebula-console -addr graphd -port 9669 -user root -p nebula
-</span><span class="c1"></span><span class="n">Welcome</span><span class="w"> </span><span class="k">to</span><span class="w"> </span><span class="n">Nebula</span><span class="w"> </span><span class="n">Graph</span><span class="o">!</span><span class="w">
-</span><span class="w">
-</span><span class="w"></span><span class="p">(</span><span class="n">root</span><span class="o">@</span><span class="n">nebula</span><span class="p">)</span><span class="w"> </span><span class="p">[(</span><span class="n">none</span><span class="p">)]</span><span class="o">&gt;</span><span class="w">
-</span></code></pre></td></tr></table>
-</div>
-</div><p>在这里，我们就可以通过 nGQL 去操作 Nebula Graph，不过我们先退出来，执行 <code>exit</code>：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="p">(</span><span class="n">root</span><span class="o">@</span><span class="n">nebula</span><span class="p">)</span><span class="w"> </span><span class="p">[(</span><span class="n">none</span><span class="p">)]</span><span class="o">&gt;</span><span class="w"> </span><span class="k">exit</span><span class="w">
-</span><span class="w">
-</span><span class="w"></span><span class="n">Bye</span><span class="w"> </span><span class="n">root</span><span class="o">!</span><span class="w">
-</span><span class="w"></span><span class="n">Fri</span><span class="p">,</span><span class="w"> </span><span class="mi">31</span><span class="w"> </span><span class="kt">Dec</span><span class="w"> </span><span class="mi">2021</span><span class="w"> </span><span class="mi">04</span><span class="p">:</span><span class="mi">11</span><span class="p">:</span><span class="mi">28</span><span class="w"> </span><span class="n">UTC</span><span class="w">
-</span></code></pre></td></tr></table>
-</div>
-</div><p>我们在这个容器内把基于 nGQL 语句的数据下载下来：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">/ <span class="c1"># wget https://docs.nebula-graph.io/2.0/basketballplayer-2.X.ngql</span>
-</code></pre></td></tr></table>
-</div>
-</div><p>然后通过 Nebula Console 的 <code>-f &lt;file_path&gt;</code> 把数据导入进去：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">nebula-console -addr graphd -port <span class="m">9669</span> -user root -p nebula -f basketballplayer-2.X.ngql
-</code></pre></td></tr></table>
-</div>
-</div><p>至此，我们就启动了一个 Nebula Graph 图数据库，还在里边加载了篮球的知识图谱！</p>
-<blockquote>
-<p>💡：还记得前边我们提到的 <a href="https://nebula-graph.com.cn/demo/" target="_blank" rel="noopener noreffer">在线体验</a> 环境么？现在，我们可以在这个利用 Nebula-UP 部署了 Nebula 的环境里启动自己的 Nebula Studio 啦，按照上边 Nebula-UP 的提示：http://&lt;本机IP&gt;:7001 就是它的地址，然后大家可以参考<a href="https://docs.nebula-graph.com.cn/2.6.1/nebula-studio/deploy-connect/st-ug-connect/" target="_blank" rel="noopener noreffer">文档</a>和<a href="https://www.bilibili.com/video/BV1hq4y1177e" target="_blank" rel="noopener noreffer">在线体验介绍</a>去了解更多。</p>
-<p></p>
-</blockquote>
-<h4 id="启动-siwi-backend" class="headerLink">
-    <a href="#%e5%90%af%e5%8a%a8-siwi-backend" class="header-mark"></a>启动 Siwi-backend</h4><p>大家可以直接 clone 我的代码：<code>git clone https://github.com/wey-gu/nebula-siwi/</code></p>
-<p>然后安装、启动 Siwi Backend：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="nb">cd</span> nebula-siwi
-
-<span class="c1"># Install dependencies</span>
-python3 -m pip install -r src/requirements.txt
-
-<span class="c1"># Install siwi backend</span>
-python3 -m build
-
-<span class="c1"># Configure Nebula Graph Endpoint</span>
-<span class="nb">export</span> <span class="nv">NG_ENDPOINTS</span><span class="o">=</span>127.0.0.1:9669
-
-<span class="c1"># Run Backend API server</span>
-gunicorn --bind :5000 wsgi --workers <span class="m">1</span> --threads <span class="m">1</span> --timeout <span class="m">60</span>
-</code></pre></td></tr></table>
-</div>
-</div><p>启动之后，我们可以另外开窗口，通过 cURL 去发起问题给 backend，更多细节大家可以参考 GitHub 上的 README：</p>
-<p><a href="https://github.com/wey-gu/nebula-siwi/blob/main/images/backend-demo.webp" target="_blank" rel="noopener noreffer"></a></p>
-<p>至此，我们已经写好了 QA 系统的重要的代码啦，大家是不是对一个 KBQA 的构成有了更清晰的概念了呢？</p>
-<p>接下来，我们为它增加一个界面！</p>
-<h2 id="siwi-frontend" class="headerLink">
-    <a href="#siwi-frontend" class="header-mark"></a>Siwi-frontend</h2><h3 id="聊天界面" class="headerLink">
-    <a href="#%e8%81%8a%e5%a4%a9%e7%95%8c%e9%9d%a2" class="header-mark"></a>聊天界面</h3><p>我们利用 <a href="https://github.com/juzser/vue-bot-ui" target="_blank" rel="noopener noreffer">Vue Bot UI</a> 这个可爱的机器人界面的 Vue 实现可以很容易构造一个</p>
-<p>代码段：<code>src/siwi/frontend/src/App.vue</code></p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-vue" data-lang="vue"><span class="p">&lt;</span><span class="nt">template</span><span class="p">&gt;</span>
-  <span class="p">&lt;</span><span class="nt">div</span> <span class="na">id</span><span class="o">=</span><span class="s">&#34;app&#34;</span><span class="p">&gt;</span>
-    <span class="p">&lt;</span><span class="nt">VueBotUI</span>
-      <span class="nt">:messages</span><span class="s">=&#34;msg&#34;</span>
-      <span class="nt">:options</span><span class="s">=&#34;botOptions&#34;</span>
-      <span class="nt">:bot-typing</span><span class="s">=&#34;locking&#34;</span>
-      <span class="nt">:input-disable</span><span class="s">=&#34;locking&#34;</span>
-      <span class="nt">@msg-send</span><span class="s">=&#34;msgSender&#34;</span>
-    <span class="p">/&gt;</span>
-  <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
-<span class="p">&lt;/</span><span class="nt">template</span><span class="p">&gt;</span>
-<span class="p">&lt;</span><span class="nt">script</span><span class="p">&gt;</span>
-<span class="kr">import</span> <span class="p">{</span> <span class="nx">VueBotUI</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;vue-bot-ui&#39;</span>
-</code></pre></td></tr></table>
-</div>
-</div><p><a href="https://github.com/wey-gu/nebula-siwi/blob/main/src/siwi_frontend/images/demo.webp" target="_blank" rel="noopener noreffer"></a></p>
-<p>注意到那个小飞机按钮了吧，它是发出问题请求的按键，我们要在按下它的时候对后端做出请求。</p>
-<h3 id="访问后端" class="headerLink">
-    <a href="#%e8%ae%bf%e9%97%ae%e5%90%8e%e7%ab%af" class="header-mark"></a>访问后端</h3><p>这部分用到了<a href="https://github.com/axios/axios" target="_blank" rel="noopener noreffer">Axios</a>，它是浏览器里访问其他地址的 HTTP 客户端。</p>
-<ol>
-<li>在按下的时候，<code>@msg-send=&quot;msgSender&quot;</code> 会触发 <code>msgSender()</code></li>
-<li><code> msgSender()</code>去构造<code>axios.post(this.apiEndpoint, { &quot;question&quot;: data.text })</code> 的请求给 Siwi 的后端</li>
-<li>后端的结果被 <code>push()</code> 到界面的聊天消息里，渲染出来 <code>this.msg.push()</code></li>
-</ol>
-<p>代码段：<code>src/siwi/frontend/src/App.vue</code></p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
-</span><span class="lnt">28
-</span><span class="lnt">29
-</span><span class="lnt">30
-</span><span class="lnt">31
-</span><span class="lnt">32
-</span><span class="lnt">33
-</span><span class="lnt">34
-</span><span class="lnt">35
-</span><span class="lnt">36
-</span><span class="lnt">37
-</span><span class="lnt">38
-</span><span class="lnt">39
-</span><span class="lnt">40
-</span><span class="lnt">41
-</span><span class="lnt">42
-</span><span class="lnt">43
-</span><span class="lnt">44
-</span><span class="lnt">45
-</span><span class="lnt">46
-</span><span class="lnt">47
-</span><span class="lnt">48
-</span><span class="lnt">49
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-vue" data-lang="vue"><span class="p">&lt;</span><span class="nt">template</span><span class="p">&gt;</span>
-  <span class="p">&lt;</span><span class="nt">div</span> <span class="na">id</span><span class="o">=</span><span class="s">&#34;app&#34;</span><span class="p">&gt;</span>
-
-     <span class="p">&lt;</span><span class="nt">VueBotUI</span>
-      <span class="nt">:messages</span><span class="s">=&#34;msg&#34;</span>
-      <span class="nt">:options</span><span class="s">=&#34;botOptions&#34;</span>
-      <span class="nt">:bot-typing</span><span class="s">=&#34;locking&#34;</span>
-      <span class="nt">:input-disable</span><span class="s">=&#34;locking&#34;</span>
-      <span class="nt">@msg-send</span><span class="s">=&#34;msgSender&#34;</span>         <span class="err">----------------</span> <span class="na">1.</span>
-    <span class="p">/&gt;</span>
-  <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
-<span class="p">&lt;/</span><span class="nt">template</span><span class="p">&gt;</span>
-
-<span class="p">&lt;</span><span class="nt">script</span><span class="p">&gt;</span>
-<span class="kr">import</span> <span class="p">{</span> <span class="nx">VueBotUI</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;vue-bot-ui&#39;</span>
-<span class="kr">import</span> <span class="nx">axios</span> <span class="nx">from</span> <span class="s2">&#34;axios&#34;</span><span class="p">;</span>
-
-<span class="kr">export</span> <span class="k">default</span> <span class="p">{</span>
-  <span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;App&#39;</span><span class="p">,</span>
-  <span class="nx">components</span><span class="o">:</span> <span class="p">{</span>
-    <span class="nx">VueBotUI</span><span class="p">,</span>
-  <span class="p">},</span>
-  <span class="nx">methods</span><span class="o">:</span> <span class="p">{</span>
-    <span class="nx">msgSender</span><span class="p">(</span><span class="nx">data</span><span class="p">)</span> <span class="p">{</span>
-      <span class="k">this</span><span class="p">.</span><span class="nx">msg</span><span class="p">.</span><span class="nx">push</span><span class="p">({</span>
-        <span class="nx">agent</span><span class="o">:</span> <span class="s2">&#34;user&#34;</span><span class="p">,</span>
-        <span class="nx">type</span><span class="o">:</span> <span class="s2">&#34;text&#34;</span><span class="p">,</span>
-        <span class="nx">text</span><span class="o">:</span> <span class="nx">data</span><span class="p">.</span><span class="nx">text</span><span class="p">,</span>
-      <span class="p">});</span>
-
-      <span class="k">this</span><span class="p">.</span><span class="nx">locking</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
-
-      <span class="nx">axios</span><span class="p">.</span><span class="nx">post</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">apiEndpoint</span><span class="p">,</span> <span class="p">{</span> <span class="s2">&#34;question&#34;</span><span class="o">:</span> <span class="nx">data</span><span class="p">.</span><span class="nx">text</span> <span class="p">}).</span><span class="nx">then</span><span class="p">((</span><span class="nx">response</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
-        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">response</span><span class="p">);</span>   <span class="o">-----------------</span> <span class="mf">2.</span>
-
-        <span class="k">this</span><span class="p">.</span><span class="nx">msg</span><span class="p">.</span><span class="nx">push</span><span class="p">({</span>          <span class="o">-----------------</span> <span class="mf">3.</span>
-          <span class="nx">agent</span><span class="o">:</span> <span class="s2">&#34;bot&#34;</span><span class="p">,</span>
-          <span class="nx">type</span><span class="o">:</span> <span class="s2">&#34;text&#34;</span><span class="p">,</span>
-          <span class="nx">text</span><span class="o">:</span> <span class="nx">response</span><span class="p">.</span><span class="nx">data</span><span class="p">.</span><span class="nx">answer</span><span class="p">,</span>
-        <span class="p">});</span>
-
-        <span class="k">this</span><span class="p">.</span><span class="nx">synthText</span> <span class="o">=</span> <span class="nx">response</span><span class="p">.</span><span class="nx">data</span><span class="p">.</span><span class="nx">answer</span><span class="p">;</span>
-        <span class="k">this</span><span class="p">.</span><span class="nx">agentSpeak</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
-
-        <span class="k">this</span><span class="p">.</span><span class="nx">locking</span> <span class="o">=</span> <span class="kc">false</span><span class="p">;</span>
-      <span class="p">});</span>
-    <span class="p">},</span>
-  <span class="p">}</span>
-<span class="p">}</span>
-</code></pre></td></tr></table>
-</div>
-</div><p>现在，我们已经有了一个图形界面的机器人啦，不过，更进一步，我们可以利用现代浏览器的接口，实现语音识别和机器人说话！</p>
-<h3 id="语音识别" class="headerLink">
-    <a href="#%e8%af%ad%e9%9f%b3%e8%af%86%e5%88%ab" class="header-mark"></a>语音识别</h3><p>我们借助于 <a href="https://github.com/Drackokacka/vue-web-speech" target="_blank" rel="noopener noreffer">Vue Web Speech</a>, 这个语音 API 的 VueJS 的绑定，可以很容易在按下 🎙️ 的时候接收人的语音，并把语音转换成文字发出去，在回答被返回之后，它（还是他/她😁？）也会把回答的句子读出来给用户。</p>
-<ol>
-<li><code>record</code> 在 <code>🎙️</code> 被按下之后，变成 <code>👂</code></li>
-<li>触发 <code>onResults()</code> 监听</li>
-<li>把返回结果发给 <code>this.synthText</code> 合成器，准备读出</li>
-<li><code>&lt;vue-web-speech-synth&gt;</code> 把语音读出</li>
-</ol>
-<p>代码段：<code>src/siwi/frontend/src/App.vue</code></p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
-</span><span class="lnt">28
-</span><span class="lnt">29
-</span><span class="lnt">30
-</span><span class="lnt">31
-</span><span class="lnt">32
-</span><span class="lnt">33
-</span><span class="lnt">34
-</span><span class="lnt">35
-</span><span class="lnt">36
-</span><span class="lnt">37
-</span><span class="lnt">38
-</span><span class="lnt">39
-</span><span class="lnt">40
-</span><span class="lnt">41
-</span><span class="lnt">42
-</span><span class="lnt">43
-</span><span class="lnt">44
-</span><span class="lnt">45
-</span><span class="lnt">46
-</span><span class="lnt">47
-</span><span class="lnt">48
-</span><span class="lnt">49
-</span><span class="lnt">50
-</span><span class="lnt">51
-</span><span class="lnt">52
-</span><span class="lnt">53
-</span><span class="lnt">54
-</span><span class="lnt">55
-</span><span class="lnt">56
-</span><span class="lnt">57
-</span><span class="lnt">58
-</span><span class="lnt">59
-</span><span class="lnt">60
-</span><span class="lnt">61
-</span><span class="lnt">62
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-vue" data-lang="vue"><span class="p">&lt;</span><span class="nt">template</span><span class="p">&gt;</span>
-  <span class="p">&lt;</span><span class="nt">div</span> <span class="na">id</span><span class="o">=</span><span class="s">&#34;app&#34;</span><span class="p">&gt;</span>
-    <span class="p">&lt;</span><span class="nt">button</span> <span class="na">id</span><span class="o">=</span><span class="s">&#34;mic_btn&#34;</span> <span class="err">@</span><span class="na">click</span><span class="o">=</span><span class="s">&#34;record = !record&#34;</span><span class="p">&gt;</span>
-        <span class="p">{{</span><span class="nx">record</span><span class="o">?</span><span class="s1">&#39;👂&#39;</span><span class="o">:</span><span class="s1">&#39;🎙️&#39;</span><span class="p">}}</span>      <span class="o">--------------------------&gt;</span> <span class="mf">1.</span>
-    <span class="p">&lt;/</span><span class="nt">button</span><span class="p">&gt;</span>
-
-    <span class="p">&lt;</span><span class="nt">vue-web-speech</span>
-      <span class="na">v</span><span class="nt">-model</span><span class="err">=&#34;</span><span class="na">record</span><span class="err">&#34;</span>
-      <span class="nt">@results</span><span class="s">=&#34;onResults&#34;</span>       <span class="err">--------------------------</span><span class="p">&gt;</span> <span class="mf">1.</span>
-      <span class="err">@</span><span class="nx">unrecognized</span><span class="o">=</span><span class="s2">&#34;unrecognized&#34;</span>
-    <span class="o">&gt;</span>
-    <span class="o">&lt;</span><span class="err">/vue-web-speech&gt;</span>
-
-<span class="p">...</span>
-    <span class="p">&lt;</span><span class="nt">vue-web-speech-synth</span>
-      <span class="na">v</span><span class="nt">-model</span><span class="err">=&#34;</span><span class="na">agentSpeak</span><span class="err">&#34;</span>
-      <span class="nt">:voice</span><span class="s">=&#34;synthVoice&#34;</span>
-      <span class="nt">:text</span><span class="s">=&#34;synthText&#34;</span>
-      <span class="nt">@list-voices</span><span class="s">=&#34;listVoices&#34;</span>  <span class="err">--------------------------</span><span class="p">&gt;</span> <span class="mf">4.</span>
-    <span class="o">/&gt;</span>
-
-  <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
-<span class="p">&lt;/</span><span class="nt">template</span><span class="p">&gt;</span>
-
-<span class="p">&lt;</span><span class="nt">script</span><span class="p">&gt;</span>
-<span class="kr">import</span> <span class="p">{</span> <span class="nx">VueBotUI</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;vue-bot-ui&#39;</span>
-<span class="kr">import</span> <span class="nx">axios</span> <span class="nx">from</span> <span class="s2">&#34;axios&#34;</span><span class="p">;</span>
-
-<span class="kr">export</span> <span class="k">default</span> <span class="p">{</span>
-  <span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;App&#39;</span><span class="p">,</span>
-  <span class="nx">components</span><span class="o">:</span> <span class="p">{</span>
-    <span class="nx">VueBotUI</span><span class="p">,</span>
-  <span class="p">},</span>
-  <span class="nx">onResults</span> <span class="p">(</span><span class="nx">data</span><span class="p">)</span> <span class="p">{</span>             <span class="o">-------------------------&gt;</span> <span class="mf">2.</span>
-      <span class="k">this</span><span class="p">.</span><span class="nx">results</span> <span class="o">=</span> <span class="nx">data</span><span class="p">;</span>
-      <span class="k">this</span><span class="p">.</span><span class="nx">locking</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
-
-      <span class="k">this</span><span class="p">.</span><span class="nx">msg</span><span class="p">.</span><span class="nx">push</span><span class="p">({</span>
-        <span class="nx">agent</span><span class="o">:</span> <span class="s2">&#34;user&#34;</span><span class="p">,</span>
-        <span class="nx">type</span><span class="o">:</span> <span class="s2">&#34;text&#34;</span><span class="p">,</span>
-        <span class="nx">text</span><span class="o">:</span> <span class="nx">data</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-      <span class="p">});</span>
-
-      <span class="k">this</span><span class="p">.</span><span class="nx">locking</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
-      <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span>
-      <span class="nx">axios</span><span class="p">.</span><span class="nx">post</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">apiEndpoint</span><span class="p">,</span> <span class="p">{</span> <span class="s2">&#34;question&#34;</span><span class="o">:</span> <span class="nx">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="p">}).</span><span class="nx">then</span><span class="p">((</span><span class="nx">response</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
-        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">response</span><span class="p">.</span><span class="nx">data</span><span class="p">);</span>
-
-        <span class="k">this</span><span class="p">.</span><span class="nx">msg</span><span class="p">.</span><span class="nx">push</span><span class="p">({</span>
-          <span class="nx">agent</span><span class="o">:</span> <span class="s2">&#34;bot&#34;</span><span class="p">,</span>
-          <span class="nx">type</span><span class="o">:</span> <span class="s2">&#34;text&#34;</span><span class="p">,</span>
-          <span class="nx">text</span><span class="o">:</span> <span class="nx">response</span><span class="p">.</span><span class="nx">data</span><span class="p">.</span><span class="nx">answer</span><span class="p">,</span>
-        <span class="p">});</span>
-
-        <span class="k">this</span><span class="p">.</span><span class="nx">synthText</span> <span class="o">=</span> <span class="nx">response</span><span class="p">.</span><span class="nx">data</span><span class="p">.</span><span class="nx">answer</span><span class="p">;</span>  <span class="o">----------&gt;</span> <span class="mf">3.</span>
-        <span class="k">this</span><span class="p">.</span><span class="nx">agentSpeak</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
-      <span class="p">});</span>
-      <span class="k">this</span><span class="p">.</span><span class="nx">locking</span> <span class="o">=</span> <span class="kc">false</span><span class="p">;</span>
-    <span class="p">},</span>
-  <span class="p">}</span>
-<span class="p">}</span>
-<span class="p">&lt;/</span><span class="nt">script</span><span class="p">&gt;</span>
-</code></pre></td></tr></table>
-</div>
-</div><h2 id="总结" class="headerLink">
-    <a href="#%e6%80%bb%e7%bb%93" class="header-mark"></a>总结</h2><p>至此，我们已经学会了搭建自己的第一个 KBQA：知识图谱驱动的问答系统。</p>
-<p>回顾下它的代码结构：</p>
-<ul>
-<li><code>src/siwi</code> 对应后端
-<ul>
-<li>App 是 Flask API 处理的部分</li>
-<li>Bot 是处理请求、访问 Nebula Graph 的部分</li>
-</ul>
-</li>
-<li><code>src/siwi_frontend</code> 是前端</li>
-</ul>
-<p>希望大家在这个简陋的基础之上，多多探索，做出来更加成熟的聊天机器人，欢迎你来给我邮件、留言告诉我呀，这里：https://siwei.io/about 有我的联系方式。</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">.
-├── README.md
-├── src
-│   ├── siwi                        <span class="c1"># Siwi-API Backend</span>
-│   │   ├── app                     <span class="c1"># Web Server, take HTTP requests and calls Bot API</span>
-│   │   └── bot                     <span class="c1"># Bot API</span>
-│   │       ├── actions             <span class="c1"># Take Intent, Slots, Query Knowledge Graph here</span>
-│   │       ├── bot                 <span class="c1"># Entrypoint of the Bot API</span>
-│   │       ├── classifier          <span class="c1"># Symentic Parsing, Intent Matching, Slot Filling</span>
-│   │       └── <span class="nb">test</span>                <span class="c1"># Example Data Source as equivalent/mocked module</span>
-│   └── siwi_frontend               <span class="c1"># Browser End</span>
-│       ├── README.md
-│       ├── package.json
-│       └── src
-│           ├── App.vue             <span class="c1"># Listening to user and pass Questions to Siwi-API</span>
-│           └── main.js
-└── wsgi.py
-</code></pre></td></tr></table>
-</div>
-</div><p>如果你很喜欢这样的小项目，欢迎来看看我之前的分享： 「<a href="https://siwei.io/corp-rel-graph/" target="_blank" rel="noopener noreffer">从0-1：如何构建一个企业股权图谱系统？</a>」哦。</p>
-<blockquote>
-<p>💡：你知道吗，我其实借助于 Katacoda 已经为大家搭建了一个交互式体验 Siwi + Nebula 的部署的环境，如果您的网络条件够快（Katacoda服务器在国外），可以在<a href="https://siwei.io/learn/nebula-101-siwi-kgqa/" target="_blank" rel="noopener noreffer">这里</a>点点鼠标就交互式体验它。</p>
-<p>视频介绍</p>
-<iframe src="//player.bilibili.com/player.html?aid=421964672&bvid=BV1Rm4y1Q7B5&cid=448090671&page=1" scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true"> </iframe>
-</blockquote>
-<h2 id="感谢用到的开源项目-" class="headerLink">
-    <a href="#%e6%84%9f%e8%b0%a2%e7%94%a8%e5%88%b0%e7%9a%84%e5%bc%80%e6%ba%90%e9%a1%b9%e7%9b%ae-" class="header-mark"></a>感谢用到的开源项目 ❤️</h2><p>这个小项目里我们用到了好多开源的项目，非常感谢这些贡献者们的慷慨与无私，开源是不是很酷呢？</p>
-<h3 id="backend" class="headerLink">
-    <a href="#backend" class="header-mark"></a>Backend</h3><ul>
-<li><a href="https://github.com/liuhuanyong/QASystemOnMedicalKG" target="_blank" rel="noopener noreffer">KGQA on MedicalKG</a> by <a href="https://liuhuanyong.github.io/" target="_blank" rel="noopener noreffer">Huanyong Liu</a></li>
-<li><a href="https://github.com/pallets/flask" target="_blank" rel="noopener noreffer">Flask</a></li>
-<li><a href="https://github.com/WojciechMula/pyahocorasick" target="_blank" rel="noopener noreffer">pyahocorasick</a> created by <a href="http://0x80.pl/" target="_blank" rel="noopener noreffer">Wojciech Muła</a></li>
-<li><a href="https://pyyaml.org/" target="_blank" rel="noopener noreffer">PyYaml</a></li>
-</ul>
-<h3 id="frontend" class="headerLink">
-    <a href="#frontend" class="header-mark"></a>Frontend</h3><ul>
-<li><a href="https://vuejs.org/" target="_blank" rel="noopener noreffer">VueJS</a> for frontend framework</li>
-<li><a href="https://github.com/juzser/vue-bot-ui" target="_blank" rel="noopener noreffer">Vue Bot UI</a>, as a lovely bot UI in vue</li>
-<li><a href="https://github.com/Drackokacka/vue-web-speech" target="_blank" rel="noopener noreffer">Vue Web Speech</a>, for speech API vue wrapper</li>
-<li><a href="https://github.com/axios/axios" target="_blank" rel="noopener noreffer">Axios</a> for browser http client</li>
-<li><a href="https://en.wikipedia.org/wiki/Solarized_%28color_scheme%29" target="_blank" rel="noopener noreffer">Solarized</a> for color scheme</li>
-<li><a href="https://github.com/alvarosaburido/vitesome" target="_blank" rel="noopener noreffer">Vitesome</a> for landing page design</li>
-</ul>
-<h3 id="graph-database" class="headerLink">
-    <a href="#graph-database" class="header-mark"></a>Graph Database</h3><ul>
-<li><a href="https://github.com/vesoft-inc/nebula/" target="_blank" rel="noopener noreffer">Nebula Graph</a> 高性能、云原生的开源分布式图数据库</li>
-</ul>]]></description>
-</item><item>
+            <webMaster>weyl.gu@gmail.com (Wey Gu)</webMaster><lastBuildDate>Fri, 10 Dec 2021 16:03:07 &#43;0800</lastBuildDate><atom:link href="https://siwei.io/posts/" rel="self" type="application/rss+xml" /><item>
     <title>快速搭建调试 Nebula Graph Python Storage 客户端的环境</title>
     <link>https://siwei.io/nebula-python-storage-docker-guide/</link>
     <pubDate>Fri, 10 Dec 2021 16:03:07 &#43;0800</pubDate><author>
@@ -5577,5 +4291,859 @@ E0817 08:03:28.611912   <span class="m">169</span> StorageHttpIngestHandler.cpp:
 </code></pre></td></tr></table>
 </div>
 </div>]]></description>
+</item><item>
+    <title>Nebula Operator Kind，一键单机玩转 Nebula K8s 集群</title>
+    <link>https://siwei.io/nebula-operator-kind/</link>
+    <pubDate>Wed, 09 Jun 2021 19:27:00 &#43;0800</pubDate><author>
+        <name>Wey Gu</name>
+    </author><guid>https://siwei.io/nebula-operator-kind/</guid>
+    <description><![CDATA[<div class="featured-image">
+                <img src="/featured-image.webp" referrerpolicy="no-referrer">
+            </div><blockquote>
+<p>Nebula-Kind，无需依赖，一键安装尝鲜基于 Nebula Operator 的 K8s Nebula Graph Cluster。</p>
+<p>注： KIND 是一个 K8s 的 SIG，代表 K8s in Docker。</p>
+</blockquote>
+<h2 id="nebula-operator-kind-是什么" class="headerLink">
+    <a href="#nebula-operator-kind-%e6%98%af%e4%bb%80%e4%b9%88" class="header-mark"></a>Nebula-Operator-Kind 是什么</h2><p>Nebula Graph 作为云原生的分布式开源图数据库，有开源的 <a href="https://github.com/vesoft-inc/nebula-operator" target="_blank" rel="noopener noreffer">K8s Operator</a> 供大家在 K8s 上方便的通过 CRD 去维护、部署 Nebula Graph 集群。</p>
+<p>对于手头没有方便的 K8s 环境的同学，如果想尝鲜、学习 Nebula Graph 的 K8s Operator 的话，可能需要耗费一些精力才能搭起来一整套的控制平面的依赖。</p>
+<p>作为一个懒人，我做利用 K8s in Docker(<a href="https://kind.sigs.K8s.io/" target="_blank" rel="noopener noreffer">KIND</a>)，和之前做 <a href="https://github.com/wey-gu/nebula-up" target="_blank" rel="noopener noreffer">Nebula-Up</a> 的 shell 脚本架子，快速的搞了一个一键安装工具：Nebula-Operator-Kind</p>
+<p>它能直接帮我们：</p>
+<ul>
+<li>安装 Docker</li>
+<li>安装 K8s(KIND)</li>
+<li>安装 PV Provider</li>
+<li>安装 Nebula-Operator 以及依赖</li>
+<li>安装 Nebula-Console</li>
+<li>配置 nodePort 用以一键直连 Nebula 集群</li>
+<li>安装 kubectl 用来体验 Nebula-Operator 的 CRD 配置</li>
+</ul>
+<h2 id="如何使用" class="headerLink">
+    <a href="#%e5%a6%82%e4%bd%95%e4%bd%bf%e7%94%a8" class="header-mark"></a>如何使用</h2><p>安装：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">curl -sL nebula-kind.siwei.io/install.sh <span class="p">|</span> bash
+</code></pre></td></tr></table>
+</div>
+</div><p>成功之后：
+</p>
+<p>用 <code>~/.nebula-kind/bin/console</code> 一行连接集群：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">~/.nebula-kind/bin/console -u user -p password --address<span class="o">=</span>127.0.0.1 --port<span class="o">=</span><span class="m">30000</span>
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="详细信息" class="headerLink">
+    <a href="#%e8%af%a6%e7%bb%86%e4%bf%a1%e6%81%af" class="header-mark"></a>详细信息</h2><p>Repo 的地址是：https://github.com/wey-gu/nebula-operator-kind ，里边有更多的信息，欢迎大家试用、反馈、PR 哈！</p>
+<blockquote>
+<p>Updated Sept. 2021</p>
+</blockquote>
+<p>如果在 KubeSphere All-in-one 环境安装：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">curl -sL nebula-kind.siwei.io/install-ks-1.sh <span class="p">|</span> bash
+</code></pre></td></tr></table>
+</div>
+</div><p>如果在 Minikube、其他 K8s 之中安装</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">curl -sL nebula-kind.siwei.io/install-on-k8s.sh <span class="p">|</span> bash
+</code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>题图版权：<a href="https://unsplash.com/photos/a4Gz2DD4dX0" target="_blank" rel="noopener noreffer">Maik Hankemann</a></p>
+</blockquote>]]></description>
+</item><item>
+    <title>用图数据库可视化探索 Chia Network 区块链数据</title>
+    <link>https://siwei.io/nebula-chia/</link>
+    <pubDate>Wed, 26 May 2021 21:17:04 &#43;0800</pubDate><author>
+        <name>Wey Gu</name>
+    </author><guid>https://siwei.io/nebula-chia/</guid>
+    <description><![CDATA[<div class="featured-image">
+                <img src="/featured-image.webp" referrerpolicy="no-referrer">
+            </div><blockquote>
+<p>这篇文章里，我全网首次地分析了 Chia Network 的全链数据，并做了将全链数据导入图数据库：Nebula Graph 之中的尝试，从而可视化地探索了 Chia 图中数据之间的关联关系。</p>
+<p>我把涉及的代码开源在了这里：https://github.com/wey-gu/nebula-chia</p>
+</blockquote>
+<h2 id="1-chia-是什么" class="headerLink">
+    <a href="#1-chia-%e6%98%af%e4%bb%80%e4%b9%88" class="header-mark"></a>1. Chia 是什么?</h2><p>Chia Network 是由 BitTorrent 的作者 Bram Cohen 的团队在 2017 年创建的区块链项目。</p>
+<h3 id="11-为什么再搞一个区块链" class="headerLink">
+    <a href="#11-%e4%b8%ba%e4%bb%80%e4%b9%88%e5%86%8d%e6%90%9e%e4%b8%80%e4%b8%aa%e5%8c%ba%e5%9d%97%e9%93%be" class="header-mark"></a>1.1 为什么再搞一个区块链?</h3><p>Chia 用了全新的中本聪共识算法，这个算法通过不允许并行计算，让挖矿（Proof of Work）所需算力和能耗降到非常低，这使得超大组织、玩家没法像在其他的区块链项目那样有算力的绝对优势，也一定程度上规避了能源的浪费。</p>
+<h3 id="12-如何连接chia" class="headerLink">
+    <a href="#12-%e5%a6%82%e4%bd%95%e8%bf%9e%e6%8e%a5chia" class="header-mark"></a>1.2 如何连接Chia?</h3><p>我们可以通过 Chia Network 的客户端来访问它，这个客户端是 Electron + Python 的程序，天然跨平台，既有 GUI 又有 CLI 的方式。</p>
+<h4 id="121-安装" class="headerLink">
+    <a href="#121-%e5%ae%89%e8%a3%85" class="header-mark"></a>1.2.1 安装</h4><p>只需要按照官方的 Guide 来下载安装就好， <a href="https://github.com/Chia-Network/chia-blockchain/wiki/INSTALL" target="_blank" rel="noopener noreffer">https://github.com/Chia-Network/chia-blockchain/wiki/INSTALL</a>，我在 M1 Mac 下安装的时候脚本出了点小问题，大概是因为拉取二进制 wheel 文件网络出问题走到了编译 wheel的逻辑，而那里是依赖 <code>cargo</code>的，如果大家遇到了这个问题，可以提前手动安装一下 rust，或者 cherry-pick 我的这个 <a href="https://github.com/Chia-Network/chia-blockchain/pull/3789" target="_blank" rel="noopener noreffer">PR</a> 。</p>
+<h4 id="122-运行" class="headerLink">
+    <a href="#122-%e8%bf%90%e8%a1%8c" class="header-mark"></a>1.2.2 运行</h4><ul>
+<li>按照官方 guide，比如 macOS 来说，最后一步执行<code>npm run electron &amp;</code> 就是运行它的GUI客户端。</li>
+<li>如果大家像我一样喜欢 CLI，直接在执行完 <code>. ./activate</code> 之后就可以 <code>chia --help</code>了哈☺，里边有只启动部分服务的方式（相比 GUI 启动所有来说)。</li>
+</ul>
+<p>在运行之后，如果你的网络不是多层 NAT 的那种，理论上您可以连到 <code>mainnet</code> 并且自动和主链同步数据了，如果您是第二次运行，连接主链，一开始可能有一阵子同步的<code>block</code> 数是不变的，也没有 <code>peer</code> 连过来，不必惊慌，等一下就好了。</p>
+<blockquote>
+<p>Tips:</p>
+<ul>
+<li>第一次连到 Chia Network 的同学们，客户端会自动生成一个钱包，及的保存那一串词，它们就是你的私钥哦。</li>
+<li>万一，如果真的连不上的话，可能需要在路由上配置，<a href="https://www.homenethowto.com/ports-and-nat/upnp-automatic-port-forward/" target="_blank" rel="noopener noreffer">UPnP</a>，防火墙要允许 8444。</li>
+</ul>
+</blockquote>
+<h4 id="123-访问-chia-的数据" class="headerLink">
+    <a href="#123-%e8%ae%bf%e9%97%ae-chia-%e7%9a%84%e6%95%b0%e6%8d%ae" class="header-mark"></a>1.2.3 访问 Chia 的数据</h4><p>Chia 的客户端把数据存在了几个 SQLite 数据库里，它们的路径是我们安装客户端的用户的家目录：<code>~/.chia/mainnet</code></p>
+<p>下边就是运行起来 Chia 之后生成的主要的两个数据库的二进制文件：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">~/.chia/mainnet/db 
+❯ ll -h
+total 4350416
+-rw-r--r--  1 weyl  staff   2.0G May  6 12:06 blockchain_v1_mainnet.sqlite
+-rw-r--r--  1 weyl  staff    64K May  6 11:17 blockchain_v1_mainnet.sqlite-shm
+-rw-r--r--  1 weyl  staff    20M May  6 12:10 blockchain_v1_mainnet.sqlite-wal
+-rw-r--r--  1 weyl  staff   1.8M May  6 11:46 peer_table_node.sqlite
+-rw-r--r--  1 weyl  staff    32K May  5 17:30 peer_table_node.sqlite-shm
+-rw-r--r--  1 weyl  staff   5.4M May  6 11:46 peer_table_node.sqlite-wal
+
+~/.chia/mainnet/wallet/db
+❯ ll -h 
+total 3055848
+-rw-r--r--  1 weyl  staff   1.4G May  7 15:32 blockchain_wallet_v1_mainnet_903996200.sqlite
+-rw-r--r--  1 weyl  staff    32K May  7 15:24 blockchain_wallet_v1_mainnet_903996200.sqlite-shm
+-rw-r--r--  1 weyl  staff   4.0M May  7 15:32 blockchain_wallet_v1_mainnet_903996200.sqlite-wal
+-rw-r--r--  1 weyl  staff    16K May  7 15:24 wallet_peers.sqlite
+</code></pre></td></tr></table>
+</div>
+</div><p>然后，我们可以先用 SQLite Browser，一个 SQlite 数据库（文件）的浏览器来看看它。</p>
+<p>SQlite 浏览器的官网是 <a href="https://sqlitebrowser.org/" target="_blank" rel="noopener noreffer">https://sqlitebrowser.org/</a> 。在下载，安装之后，我们可以通过点击 <code>Open Database/打开数据库</code> 选择浏览上边列出来的两个 <code>.sqlite</code> 扩展名的数据库文件。</p>
+<p>打开数据库之后，我们可以选择第一个标签 <code>Database Schema</code> 来看看表的结构。</p>
+<p></p>
+<p>我们还能像类似于 Excel 一样去看表的数据，还可以 Filter/过滤、Sort/排序任意列。</p>
+<p></p>
+<p>下一部分，我们来简单看看表里的数据。</p>
+<blockquote>
+<p>Tips:</p>
+<p>这里边，<code>~/.chia/mainnet/wallet</code> 和裸目录 <code>~/.chia/mainnet </code> 下边的 <code>db</code> 里分别都有表文件，他们的信息是有重复的，大家可以分别打开看看哦，即使是相同的表的名字，比如 <code>block_record</code> 内里的信息也略有差别，如果大家知道为什么有这样的差别，欢迎浏览告诉大家哈，可能要仔细研究一下客户端、钱包等代码才行，幸运的是，它们相对比较好阅读，是 Python 写的： <a href="https://github.com/Chia-Network/chia-blockchain" target="_blank" rel="noopener noreffer">https://github.com/Chia-Network/chia-blockchain</a> 。</p>
+</blockquote>
+<h2 id="2-分析-chia-的数据" class="headerLink">
+    <a href="#2-%e5%88%86%e6%9e%90-chia-%e7%9a%84%e6%95%b0%e6%8d%ae" class="header-mark"></a>2. 分析 Chia 的数据</h2><p>如果大家仔细看了上边表结构定义的截图，就能注意到一些表的主要信息是嵌套二进制 KV Byte，所以只从 SQLite 并不能看到所有 Chia 的数据，所以我们需要（用一个编程语言来）读取表里的 Byte。</p>
+<p>幸运的是，这件事儿因为 Chia 是开源的，而且是 Python 的代码，使得我们可以直接交互式的做。</p>
+<p>我花了一点点时间在 Chia 客户端代码里找到了需要的封装类，借助它，可以比较方便的分析 Chia 客户端在本地的全链数据。</p>
+<p>如果您不感兴趣细节，可以直接看我分析的结论。</p>
+<p>结论之后，我也给大家演示一下是怎么读取它们的。</p>
+<h3 id="20-tldr-结论" class="headerLink">
+    <a href="#20-tldr-%e7%bb%93%e8%ae%ba" class="header-mark"></a>2.0 TL;DR, 结论</h3><p>我们可以从表中读取到区块链记录（Block Record ），Chia 币记录（Coin Record）。</p>
+<p>从区块记录中，我们可以看到关键的涉及交易的信息：</p>
+<ul>
+<li>关联的 Coin ，关联的 Puzzle（地址），Coin 的值(Amount)</li>
+</ul>
+<p>从币记录中，我们可以看到关键的涉及区块的信息：</p>
+<ul>
+<li>生成这个 Coin 所在区块链里的索引高度（Confirmed Index）</li>
+<li>如果这个记录是花费 Coin 的，花费它的索引高度（Spent Index）</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">                                                   ┌──────────────────────┐
+┌────────────────────────────────────────┐         │                      │
+│                                        │         │    Coin Record       │
+│   Block Record                         │         │                      │
+│                                        │         │     Coin Name        │
+│    Height ◄────────────────────────────┼─┐       │                      │
+│                                        │ │     ┌─┼───► Puzzle           │
+│    Header                              │ │     │ │                      │
+│                                        │ │     ├─┼───► Coin Parent      │
+│    Prev Header                         │ │     │ │                      │
+│                                        │ │     ├─┼───► Amount           │
+│    Block Body                          │ │     │ │                      │
+│      farmer_puzzle_hash                │ │     │ │     Time Stamp       │
+│      fees                              │ │     │ │                      │
+│      pool_puzzle_hash                  │ └─────┼─┼─┬─  Confirmed Index  │
+│      prev_transaction_block_hash       │       │ │ │                    │
+│      prev_transaction_block_height     │       │ │ └─  Spent Index      │
+│      transactions_info  ───────────────┼───────┘ │                      │
+│ ┌─── is_transaction_block              │         │     Coinbase         │
+│ │    sub_epoch_summary ────────────────┼───────┐ │                      │
+│ │                                      │       │ └─ ────────────────────┘
+│ │  is Peak                             │       │
+│ └──is Block                            │       │ ┌─────────────────────┐
+│                                        │       │ │                     │
+└────────────────────────────────────────┘       └─┼─► Sub Epoch Segment │
+                                                   │                     │
+                                                   └─────────────────────┘
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="21-准备" class="headerLink">
+    <a href="#21-%e5%87%86%e5%a4%87" class="header-mark"></a>2.1 准备</h3><p>因为安装客户端之后，我们本地实际上已经有了相关的 Python 环境和依赖，只需要在里边跑起来就好。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="c1"># 注意，我们要 cd 到之前安装客户端时候克隆的仓库。</span>
+<span class="nb">cd</span> chia-blockchain
+<span class="c1"># source activate 脚本来切换到仓库安装时候创建的 Python 虚拟环境，并进到 IPython 里。</span>
+<span class="nb">source</span> venv/bin/activate <span class="o">&amp;&amp;</span> pip install ipython <span class="o">&amp;&amp;</span> ipython
+</code></pre></td></tr></table>
+</div>
+</div><p>然后试着导入客户端里边带有的 Python 的 Chia 的封装类试试看。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="kn">import</span> <span class="nn">sqlite3</span>
+   <span class="o">...</span><span class="p">:</span> <span class="kn">from</span> <span class="nn">chia.consensus.block_record</span> <span class="kn">import</span> <span class="n">BlockRecord</span>
+<span class="c1"># 导入成功，没有报错</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="err">!</span><span class="n">pwd</span>
+<span class="c1"># 我的安装克隆目录</span>
+<span class="o">/</span><span class="n">Users</span><span class="o">/</span><span class="n">weyl</span><span class="o">/</span><span class="n">chia</span><span class="o">-</span><span class="n">blockchain</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>恭喜你做好了准备，我们看看 Block Record 里都有什么。</p>
+<h3 id="22-chia-链的数据" class="headerLink">
+    <a href="#22-chia-%e9%93%be%e7%9a%84%e6%95%b0%e6%8d%ae" class="header-mark"></a>2.2 Chia 链的数据</h3><h4 id="221-区块记录" class="headerLink">
+    <a href="#221-%e5%8c%ba%e5%9d%97%e8%ae%b0%e5%bd%95" class="header-mark"></a>2.2.1 区块记录</h4><p>在上一步的 <code>IPython</code> 窗口下。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="c1"># 注意，这里的路径的前缀是我们自己的家目录，不同操作系统，不同的用户都会有所不同。</span>
+<span class="n">chia_db_path</span> <span class="o">=</span> <span class="s2">&#34;/Users/weyl/.chia/mainnet/db/blockchain_v1_mainnet.sqlite&#34;</span>
+
+<span class="n">cur</span> <span class="o">=</span> <span class="n">con</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+<span class="c1"># 这里我们取第 201645 高的区块</span>
+<span class="n">rows</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;SELECT * FROM block_records WHERE height = 201645&#39;</span><span class="p">))</span>
+<span class="c1"># 这里 0 表示 SELECT 结果的第一行，3 表示在 BlockRecord 这个表里边，Block 的二进制 BLOB 是第四列，参考本章底部的表定义部分</span>
+<span class="n">block_records_201645</span> <span class="o">=</span> <span class="n">BlockRecord</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">rows</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">3</span><span class="p">])</span>
+<span class="nb">dir</span><span class="p">(</span><span class="n">block_records_201645</span><span class="p">)</span>
+<span class="c1"># 可以查看一些属性 is_transaction_block，timestamp，reward_claims_incorporated</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">174</span><span class="p">]:</span> <span class="n">block_records_201645</span><span class="o">.</span><span class="n">is_transaction_block</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">174</span><span class="p">]:</span> <span class="kc">True</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">182</span><span class="p">]:</span> <span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">183</span><span class="p">]:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">fromtimestamp</span><span class="p">(</span><span class="n">block_records_201645</span><span class="o">.</span><span class="n">timestamp</span><span class="p">)</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">183</span><span class="p">]:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2021</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">29</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">190</span><span class="p">]:</span> <span class="n">block_records_201645</span><span class="o">.</span><span class="n">reward_claims_incorporated</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">to_json_dict</span><span class="p">()</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">190</span><span class="p">]:</span>
+<span class="p">{</span><span class="s1">&#39;parent_coin_info&#39;</span><span class="p">:</span> <span class="s1">&#39;0xccd5bb71183532bff220ba46c268991a000000000000000000000000000313ab&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;puzzle_hash&#39;</span><span class="p">:</span> <span class="s1">&#39;0xbbb014f41d88c74b78501b36e4863d3382bfda9ae3c4d30a1b6df72b962502b6&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;amount&#39;</span><span class="p">:</span> <span class="mi">1750000000000</span><span class="p">}</span>
+
+<span class="c1"># 可以快速 print 看大部分信息</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">block_records_201645</span><span class="p">)</span>
+</code></pre></td></tr></table>
+</div>
+</div><p><code>block_records_201645</code> 的打印结果如下。</p>
+<blockquote>
+<p>注意，这里我截断了一些数据</p>
+</blockquote>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span><span class="err">&#39;challenge_block_info_hash&#39;:</span> <span class="err">&#39;0x4a562f1ffa7a06fe76b1df74dbdd6bdcfbf63139a6f1fc3291c606d7c976abf6&#39;,</span>
+ <span class="err">&#39;challenge_vdf_output&#39;:</span> <span class="err">{&#39;data&#39;:</span> <span class="err">&#39;0x0200a6b38d6b58d17129d71737088772561f22a44ef302fe45a70a763b878f998abfe35946df720bcb5d78e214b667bce801d597b46c867928c4b8926c342375a961f36cd63ec698bc25e5ce48c45d9a2074eded0e42d24dd1b50a59e699f671f0900100&#39;</span><span class="p">}</span><span class="err">,</span>
+ <span class="err">&#39;deficit&#39;:</span> <span class="mi">16</span><span class="err">,</span>
+ <span class="err">&#39;farmer_puzzle_hash&#39;:</span> <span class="err">&#39;</span><span class="mi">0</span><span class="err">x</span><span class="mi">4</span><span class="err">bc</span><span class="mi">6435</span><span class="err">b</span><span class="mi">409</span><span class="err">bcbabe</span><span class="mi">53870</span><span class="err">dae</span><span class="mi">0</span><span class="err">f</span><span class="mi">03755</span><span class="err">f</span><span class="mi">6</span><span class="err">aabb</span><span class="mi">4594</span><span class="err">c</span><span class="mi">5915</span><span class="err">ec</span><span class="mi">983</span><span class="err">acf</span><span class="mi">12</span><span class="err">a</span><span class="mi">5</span><span class="err">d</span><span class="mi">1</span><span class="err">fba&#39;,</span>
+ <span class="err">&#39;fees&#39;:</span> <span class="mi">0</span><span class="err">,</span>
+ <span class="err">&#39;finished_challenge_slot_hashes&#39;:</span> <span class="p">[</span><span class="err">&#39;</span><span class="mi">0</span><span class="err">x</span><span class="mi">2</span><span class="err">b</span><span class="mi">1</span><span class="err">a</span><span class="mi">7</span><span class="err">b</span><span class="mi">4859</span><span class="err">a</span><span class="mi">8</span><span class="err">d</span><span class="mi">3597</span><span class="err">b</span><span class="mf">8e6</span><span class="err">cbe</span><span class="mi">3</span><span class="err">b</span><span class="mi">27</span><span class="err">ab</span><span class="mi">97212</span><span class="err">be</span><span class="mi">8</span><span class="err">b</span><span class="mf">19e6867</span><span class="err">f</span><span class="mi">2</span><span class="err">a</span><span class="mi">4</span><span class="err">d</span><span class="mi">0</span><span class="err">eef</span><span class="mi">26</span><span class="err">c</span><span class="mi">36340</span><span class="err">f&#39;</span><span class="p">]</span><span class="err">,</span>
+ <span class="err">&#39;finished_infused_challenge_slot_hashes&#39;:</span> <span class="p">[</span><span class="err">&#39;</span><span class="mi">0</span><span class="err">xd</span><span class="mi">0185</span><span class="err">a</span><span class="mi">6493</span><span class="err">b</span><span class="mi">10</span><span class="err">d</span><span class="mf">84e696</span><span class="err">c</span><span class="mi">6</span><span class="err">fc</span><span class="mi">55</span><span class="err">ec</span><span class="mf">1920e8</span><span class="err">a</span><span class="mi">96791</span><span class="err">a</span><span class="mi">604</span><span class="err">dedfe</span><span class="mi">77635</span><span class="err">da</span><span class="mi">460</span><span class="err">f</span><span class="mi">354</span><span class="err">d&#39;</span><span class="p">]</span><span class="err">,</span>
+ <span class="err">&#39;finished_reward_slot_hashes&#39;:</span> <span class="p">[</span><span class="err">&#39;</span><span class="mi">0</span><span class="err">xe</span><span class="mi">2</span><span class="err">bcbf</span><span class="mi">560471131</span><span class="err">a</span><span class="mi">7</span><span class="err">fb</span><span class="mi">87</span><span class="err">ffe</span><span class="mi">3</span><span class="err">f</span><span class="mi">9</span><span class="err">ddde</span><span class="mi">03166</span><span class="err">a</span><span class="mi">9</span><span class="err">b</span><span class="mi">0092</span><span class="err">a</span><span class="mi">50</span><span class="err">f</span><span class="mi">1</span><span class="err">ed</span><span class="mi">1599715857</span><span class="err">c</span><span class="mi">365</span><span class="err">&#39;</span><span class="p">]</span><span class="err">,</span>
+ <span class="err">&#39;header_hash&#39;:</span> <span class="err">&#39;</span><span class="mi">0</span><span class="err">x</span><span class="mf">2791729e1</span><span class="err">c</span><span class="mi">914</span><span class="err">f</span><span class="mi">9</span><span class="err">c</span><span class="mi">3908</span><span class="err">a</span><span class="mi">0</span><span class="err">ad</span><span class="mi">895</span><span class="err">b</span><span class="mi">5846</span><span class="err">c</span><span class="mi">86</span><span class="err">fc</span><span class="mf">4e207</span><span class="err">cc</span><span class="mf">463820123e9</span><span class="err">a</span><span class="mi">299</span><span class="err">c</span><span class="mi">39</span><span class="err">f</span><span class="mi">3</span><span class="err">&#39;,</span>
+ <span class="err">&#39;height&#39;:</span> <span class="mi">201645</span><span class="err">,</span>
+ <span class="err">&#39;infused_challenge_vdf_output&#39;:</span> <span class="err">None,</span>
+ <span class="err">&#39;overflow&#39;:</span> <span class="err">True,</span>
+ <span class="err">&#39;pool_puzzle_hash&#39;:</span> <span class="err">&#39;</span><span class="mi">0</span><span class="err">x</span><span class="mi">4</span><span class="err">bc</span><span class="mi">6435</span><span class="err">b</span><span class="mi">409</span><span class="err">bcbabe</span><span class="mi">53870</span><span class="err">dae</span><span class="mi">0</span><span class="err">f</span><span class="mi">03755</span><span class="err">f</span><span class="mi">6</span><span class="err">aabb</span><span class="mi">4594</span><span class="err">c</span><span class="mi">5915</span><span class="err">ec</span><span class="mi">983</span><span class="err">acf</span><span class="mi">12</span><span class="err">a</span><span class="mi">5</span><span class="err">d</span><span class="mi">1</span><span class="err">fba&#39;,</span>
+ <span class="err">&#39;prev_hash&#39;:</span> <span class="err">&#39;</span><span class="mi">0</span><span class="err">xf</span><span class="mi">126</span><span class="err">ecf</span><span class="mi">64473</span><span class="err">beb</span><span class="mi">9</span><span class="err">ae</span><span class="mi">5</span><span class="err">b</span><span class="mi">84137788100</span><span class="err">feb</span><span class="mi">9</span><span class="err">d</span><span class="mi">731</span><span class="err">c</span><span class="mi">604877</span><span class="err">c</span><span class="mi">0744</span><span class="err">cdc</span><span class="mi">6025</span><span class="err">f</span><span class="mi">4</span><span class="err">cbeb&#39;,</span>
+ <span class="err">&#39;prev_transaction_block_hash&#39;:</span> <span class="err">&#39;</span><span class="mi">0</span><span class="err">x</span><span class="mi">7103</span><span class="err">fe</span><span class="mi">2</span><span class="err">f</span><span class="mi">1</span><span class="err">aa</span><span class="mi">96998</span><span class="err">f</span><span class="mi">9</span><span class="err">ccf</span><span class="mi">6</span><span class="err">fc</span><span class="mi">98561</span><span class="err">b</span><span class="mi">64</span><span class="err">c</span><span class="mi">5</span><span class="err">f</span><span class="mi">7</span><span class="err">a</span><span class="mi">98</span><span class="err">cf</span><span class="mi">942335</span><span class="err">c</span><span class="mi">4</span><span class="err">c</span><span class="mi">927</span><span class="err">fb</span><span class="mi">2</span><span class="err">eaa</span><span class="mi">9325</span><span class="err">a&#39;,</span>
+ <span class="err">&#39;prev_transaction_block_height&#39;:</span> <span class="mi">201643</span><span class="err">,</span>
+ <span class="err">&#39;required_iters&#39;:</span> <span class="mi">95752</span><span class="err">,</span>
+ <span class="err">&#39;reward_claims_incorporated&#39;:</span> <span class="p">[{</span><span class="err">&#39;amount&#39;:</span> <span class="err">1750000000000,</span>
+                                 <span class="err">&#39;parent_coin_info&#39;:</span> <span class="err">&#39;0xccd5bb71183532bff220ba46c268991a000000000000000000000000000313ab&#39;,</span>
+                                 <span class="err">&#39;puzzle_hash&#39;:</span> <span class="err">&#39;0xbbb014f41d88c74b78501b36e4863d3382bfda9ae3c4d30a1b6df72b962502b6&#39;</span><span class="p">},</span>
+                                <span class="p">{</span><span class="err">&#39;amount&#39;:</span> <span class="err">250000000000,</span>
+                                 <span class="err">&#39;parent_coin_info&#39;:</span> <span class="err">&#39;0x3ff07eb358e8255a65c30a2dce0e5fbb000000000000000000000000000313ab&#39;,</span>
+                                 <span class="err">&#39;puzzle_hash&#39;:</span> <span class="err">&#39;0xbbb014f41d88c74b78501b36e4863d3382bfda9ae3c4d30a1b6df72b962502b6&#39;</span><span class="p">},</span>
+                                <span class="p">{</span><span class="err">&#39;amount&#39;:</span> <span class="err">1750000000000,</span>
+                                 <span class="err">&#39;parent_coin_info&#39;:</span> <span class="err">&#39;0xccd5bb71183532bff220ba46c268991a000000000000000000000000000313aa&#39;,</span>
+                                 <span class="err">&#39;puzzle_hash&#39;:</span> <span class="err">&#39;0x4bc6435b409bcbabe53870dae0f03755f6aabb4594c5915ec983acf12a5d1fba&#39;</span><span class="p">},</span>
+                                <span class="p">{</span><span class="err">&#39;amount&#39;:</span> <span class="err">250000000000,</span>
+                                 <span class="err">&#39;parent_coin_info&#39;:</span> <span class="err">&#39;0x3ff07eb358e8255a65c30a2dce0e5fbb000000000000000000000000000313a8&#39;,</span>
+                                 <span class="err">&#39;puzzle_hash&#39;:</span> <span class="err">&#39;0xcf178071f6aa6cb1c92f00943424bcc8cb774449bd60058fc08e9894f49a1ca4&#39;</span><span class="p">}]</span><span class="err">,</span>
+ <span class="err">&#39;reward_infusion_new_challenge&#39;:</span> <span class="err">&#39;</span><span class="mi">0</span><span class="err">x</span><span class="mi">660886</span><span class="err">f</span><span class="mi">4</span><span class="err">ab</span><span class="mi">030</span><span class="err">c</span><span class="mi">07755</span><span class="err">f</span><span class="mi">53362</span><span class="err">ae</span><span class="mi">4253</span><span class="err">dfa</span><span class="mi">93</span><span class="err">ea</span><span class="mi">853</span><span class="err">cbc</span><span class="mi">321218</span><span class="err">f</span><span class="mi">58</span><span class="err">f</span><span class="mi">159</span><span class="err">c</span><span class="mi">75</span><span class="err">adaa&#39;,</span>
+ <span class="err">&#39;signage_point_index&#39;:</span> <span class="mi">63</span><span class="err">,</span>
+ <span class="err">&#39;sub_epoch_summary_included&#39;:</span> <span class="err">None,</span>
+ <span class="err">&#39;sub_slot_iters&#39;:</span> <span class="mi">99614720</span><span class="err">,</span>
+ <span class="err">&#39;timestamp&#39;:</span> <span class="mi">1619662081</span><span class="err">,</span>
+ <span class="err">&#39;total_iters&#39;:</span> <span class="mi">660123219464</span><span class="err">,</span>
+ <span class="err">&#39;weight&#39;:</span> <span class="mi">4121254</span><span class="err">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>另外，我们取的这个表的定义如下。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="nf">block_records</span><span class="p">(</span><span class="w">
+</span><span class="w">  </span><span class="n">header_hash</span><span class="w"> </span><span class="kt">text</span><span class="w"> </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="p">,</span><span class="w"> 
+</span><span class="w">  </span><span class="n">prev_hash</span><span class="w"> </span><span class="kt">text</span><span class="p">,</span><span class="w"> 
+</span><span class="w">  </span><span class="n">height</span><span class="w"> </span><span class="kt">bigint</span><span class="p">,</span><span class="w">
+</span><span class="w">  </span><span class="n">block</span><span class="w"> </span><span class="kt">blob</span><span class="p">,</span><span class="w"> </span><span class="c1">#&lt;----
+</span><span class="c1"></span><span class="w">  </span><span class="n">sub_epoch_summary</span><span class="w"> </span><span class="kt">blob</span><span class="p">,</span><span class="w"> 
+</span><span class="w">  </span><span class="n">is_peak</span><span class="w"> </span><span class="kt">tinyint</span><span class="p">,</span><span class="w"> 
+</span><span class="w">  </span><span class="n">is_block</span><span class="w"> </span><span class="kt">tinyint</span><span class="p">)</span><span class="w">
+</span></code></pre></td></tr></table>
+</div>
+</div><h4 id="222-chia-币记录" class="headerLink">
+    <a href="#222-chia-%e5%b8%81%e8%ae%b0%e5%bd%95" class="header-mark"></a>2.2.2 Chia 币记录</h4><p>类似的，我们可以获取一个 Coin 的记录，这里边，从表的定义可以看到，唯一二进制（不能直接从数据库查询中被人读懂）的字段就是是币值，不存在嵌套的结构，所以也并不需要封装的类才能看清楚里边的信息。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="nf">coin_record</span><span class="p">(</span><span class="w">
+</span><span class="w">  </span><span class="n">coin_name</span><span class="w"> </span><span class="kt">text</span><span class="w"> </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="p">,</span><span class="w">
+</span><span class="w">  </span><span class="n">confirmed_index</span><span class="w"> </span><span class="kt">bigint</span><span class="p">,</span><span class="w">
+</span><span class="w">  </span><span class="n">spent_index</span><span class="w"> </span><span class="kt">bigint</span><span class="p">,</span><span class="w">
+</span><span class="w">  </span><span class="n">spent</span><span class="w"> </span><span class="kt">int</span><span class="p">,</span><span class="w">
+</span><span class="w">  </span><span class="n">coinbase</span><span class="w"> </span><span class="kt">int</span><span class="p">,</span><span class="w">
+</span><span class="w">  </span><span class="n">puzzle_hash</span><span class="w"> </span><span class="kt">text</span><span class="p">,</span><span class="w">
+</span><span class="w">  </span><span class="n">coin_parent</span><span class="w"> </span><span class="kt">text</span><span class="p">,</span><span class="w">
+</span><span class="w">  </span><span class="n">amount</span><span class="w"> </span><span class="kt">blob</span><span class="p">,</span><span class="w">
+</span><span class="w">  </span><span class="kt">timestamp</span><span class="w"> </span><span class="kt">bigint</span><span class="p">)</span><span class="w">
+</span></code></pre></td></tr></table>
+</div>
+</div><p>这里值得注意的信息主要是 <code>spent_index</code> 和 <code>confirmed_index</code>。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">chia.util.ints</span> <span class="kn">import</span> <span class="n">uint64</span>
+
+<span class="n">chia_db_path</span> <span class="o">=</span> <span class="s2">&#34;/Users/weyl/.chia/mainnet/db/blockchain_v1_mainnet.sqlite&#34;</span>
+<span class="n">con</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">chia_db_path</span><span class="p">)</span>
+<span class="n">cur</span> <span class="o">=</span> <span class="n">con</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+<span class="n">rows</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;SELECT * FROM coin_record WHERE confirmed_index = 201645&#39;</span><span class="p">))</span>
+<span class="n">coin_amount</span> <span class="o">=</span> <span class="n">uint64</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">rows</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">7</span><span class="p">])</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">201</span><span class="p">]:</span> <span class="n">rows</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">201</span><span class="p">]:</span>
+<span class="p">(</span><span class="s1">&#39;cf35da0f595b49dde626d676b511ee62bce886f2216751aa51bb8ff851563d35&#39;</span><span class="p">,</span> <span class="c1"># coin_name</span>
+ <span class="mi">201645</span><span class="p">,</span> <span class="c1"># confirmed_index</span>
+ <span class="mi">0</span><span class="p">,</span> <span class="c1"># spent_index，这里没有spent，所以值无效</span>
+ <span class="mi">0</span><span class="p">,</span> <span class="c1"># spent，其实是 bool</span>
+ <span class="mi">1</span><span class="p">,</span> <span class="c1"># coinbase，bool</span>
+ <span class="s1">&#39;bbb014f41d88c74b78501b36e4863d3382bfda9ae3c4d30a1b6df72b962502b6&#39;</span><span class="p">,</span> <span class="c1"># puzzle_hash 对应到地址</span>
+ <span class="s1">&#39;ccd5bb71183532bff220ba46c268991a000000000000000000000000000313ab&#39;</span><span class="p">,</span>
+ <span class="sa">b</span><span class="s1">&#39;</span><span class="se">\x00\x00\x01\x97</span><span class="s1">t </span><span class="se">\xdc\x00</span><span class="s1">&#39;</span><span class="p">,</span> <span class="c1"># uint64</span>
+ <span class="mi">1619662081</span><span class="p">)</span>
+</code></pre></td></tr></table>
+</div>
+</div><h4 id="223-puzzles-address地址" class="headerLink">
+    <a href="#223-puzzles-address%e5%9c%b0%e5%9d%80" class="header-mark"></a>2.2.3 Puzzles/ Address，地址</h4><p>我们可以把 Chia 中的 Puzzle 理解成为交易中的地址，为了方便使用，通常会把 Puzzle 的 hash 用<a href="https://github.com/bitcoin/bips/blob/master/bip-0173.mediawiki" target="_blank" rel="noopener noreffer">bech32m</a> 转换成地址。</p>
+<blockquote>
+<p>Tips:</p>
+<p>这里有一个在线双向转换的在线工具推荐一下: <a href="https://www.chiaexplorer.com/tools/address-puzzlehash-converter" target="_blank" rel="noopener noreffer">https://www.chiaexplorer.com/tools/address-puzzlehash-converter</a></p>
+</blockquote>
+<h2 id="3-如何探索-chia-链" class="headerLink">
+    <a href="#3-%e5%a6%82%e4%bd%95%e6%8e%a2%e7%b4%a2-chia-%e9%93%be" class="header-mark"></a>3. 如何探索 Chia 链</h2><p>随着我们之前分析的信息，自然地，我们可以把 Chia 区块链中的信息取出来，用图（Graph）来表示，这里的图并不是（Graphic）图形、图画的意思，是数学、图论中的图。</p>
+<p>在图的语境下，最主要的两个元素就是顶点（Vertex）和边（Edge）。</p>
+<p>顶点表示一个实体，而边表示实体之间的某种关系，这种关系可以是对等的（无方向的）也可以是有方向的。</p>
+<p>这里我们可以把这里的信息抽象映射到如图的图模型里：</p>
+<ul>
+<li>Block 顶点</li>
+<li>Coin 顶点</li>
+<li>Puzzle 顶点</li>
+<li>spends 边（Block 到 Coin）</li>
+<li>confirms 边 （Block 到 Coin）</li>
+<li>belongs_to 边（Coin 到 Puzzle）</li>
+</ul>
+<p></p>
+<p>这里，我们应用的图是一种叫做属性图的形式，除了点和边的关系之外。这两种实体（点、边）还有其他信息只和它们的一个实例相关，所以再定义为顶点、边就不是很适合，这些信息就作为点、边的属性（preperty）存在。</p>
+<p>这种为了处理实体之间关联、涉及实体、关联的属性信息的，也就是&quot;属性图&quot;的存储信息的方式在计算机领域越来越流行，甚至有专门为此结构而原生开发的数据库——图数据库（Graph Database）。</p>
+<p>这里，我们用的就是一个叫做 Nebula Graph 的图数据库，它是一个现代的、为超大规模分部署架构设计的、原生存储、查询、计算图数据的项目，更棒的是，它是产生于社区的开源产品。</p>
+<blockquote>
+<p>Tips:</p>
+<p><strong>安装 Nebula Graph</strong></p>
+<p>一般来说，面向超大规模数据的分布式系统，天然的都是不容易轻量部署的，大家如果第一次使用的话可以试试我写的一个叫做 nebula-up 的小工具，可以一行指令部署一个用来试用、学习的 Nebula Graph 集群，地址在这里： <a href="https://github.com/wey-gu/nebula-up/" target="_blank" rel="noopener noreffer">https://github.com/wey-gu/nebula-up/</a> 。</p>
+</blockquote>
+<h3 id="31-nebula-graph-导入-chia-数据到图数据库" class="headerLink">
+    <a href="#31-nebula-graph-%e5%af%bc%e5%85%a5-chia-%e6%95%b0%e6%8d%ae%e5%88%b0%e5%9b%be%e6%95%b0%e6%8d%ae%e5%ba%93" class="header-mark"></a>3.1 Nebula Graph 导入 Chia 数据到图数据库</h3><p>我们分两步走，第一步这把 Chia Network 数据转换成 CSV 文件，第二步使用 Nebula 的 <a href="https://github.com/vesoft-inc/nebula-importer/" target="_blank" rel="noopener noreffer">Nebula-Importer</a> 把数据导入 Nebula Graph。</p>
+<h4 id="311-数据转换" class="headerLink">
+    <a href="#311-%e6%95%b0%e6%8d%ae%e8%bd%ac%e6%8d%a2" class="header-mark"></a>3.1.1 数据转换</h4><p>这部分的代码我开源在这里了:</p>
+<p><a href="https://github.com/wey-gu/nebula-chia" target="_blank" rel="noopener noreffer">https://github.com/wey-gu/nebula-chia</a></p>
+<p>使用它只需要在 Chia Network 的 python venv 下安装它:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">python3 -m pip install nebula-chia
+</code></pre></td></tr></table>
+</div>
+</div><p>然后调用 <code>ChaiBatchConvertor</code> 就可以在当前目录下生成两个 CSV 文件。</p>
+<p>这里边有一些可以配置的参数，具体可以参考代码 <code>nebulachia/convertor.py</code></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">nebulachia.convertor</span> <span class="kn">import</span> <span class="n">ChiaBatchConvertor</span>
+<span class="n">c</span> <span class="o">=</span> <span class="n">ChaiBatchConvertor</span><span class="p">(</span>
+    <span class="n">block_record_limit</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">coin_record_limit</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">write_batch_size</span><span class="o">=</span><span class="mi">10000</span><span class="p">)</span>
+<span class="n">c</span><span class="o">.</span><span class="n">convert_block_record</span><span class="p">()</span>
+<span class="n">c</span><span class="o">.</span><span class="n">convert_coin_record</span><span class="p">()</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>生成的文件：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ ls -lth
+
+-rw-r--r--   <span class="m">1</span> weyl  staff   173M May <span class="m">19</span> 13:01 coin_record.csv
+-rw-r--r--   <span class="m">1</span> weyl  staff    77M May <span class="m">19</span> 12:59 block_record.csv
+</code></pre></td></tr></table>
+</div>
+</div><p>这里边字段的含义和类型，可以参考代码中 <code>block_record_row</code> 和 <code>coin_record_row</code> 的 <code>__doc__</code></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span><span class="lnt">67
+</span><span class="lnt">68
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">In</span> <span class="p">[</span><span class="mi">466</span><span class="p">]:</span> <span class="nb">print</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">coin_record_row</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
+
+        <span class="n">Parse</span> <span class="n">row</span> <span class="ow">and</span> <span class="k">return</span> <span class="n">a</span> <span class="n">CSV</span> <span class="n">block</span> <span class="n">coin</span> <span class="n">row</span> <span class="nb">list</span><span class="o">.</span>
+
+        <span class="n">CREATE</span> <span class="n">TABLE</span> <span class="n">coin_record</span><span class="p">(</span>
+          <span class="n">coin_name</span> <span class="n">text</span> <span class="n">PRIMARY</span> <span class="n">KEY</span><span class="p">,</span>
+          <span class="n">confirmed_index</span> <span class="n">bigint</span><span class="p">,</span>
+          <span class="n">spent_index</span> <span class="n">bigint</span><span class="p">,</span>
+          <span class="n">spent</span> <span class="nb">int</span><span class="p">,</span>
+          <span class="n">coinbase</span> <span class="nb">int</span><span class="p">,</span>
+          <span class="n">puzzle_hash</span> <span class="n">text</span><span class="p">,</span>
+          <span class="n">coin_parent</span> <span class="n">text</span><span class="p">,</span>
+          <span class="n">amount</span> <span class="n">blob</span><span class="p">,</span>
+          <span class="n">timestamp</span> <span class="n">bigint</span><span class="p">)</span>
+
+        <span class="n">Coin</span> <span class="n">Record</span> <span class="n">CSV</span> <span class="n">Head</span><span class="p">:</span>
+            <span class="mi">0</span>         <span class="mi">1</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>          <span class="mi">2</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>      <span class="mi">3</span><span class="p">(</span><span class="nb">bool</span><span class="p">)</span>
+            <span class="n">coin_name</span><span class="o">|</span><span class="n">confirmed_index</span><span class="o">|</span><span class="n">spent_index</span><span class="o">|</span><span class="n">spent</span><span class="o">|</span>
+
+            <span class="mi">4</span><span class="p">(</span><span class="nb">bool</span><span class="p">)</span>  <span class="mi">5</span>           <span class="mi">6</span>           <span class="mi">7</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+            <span class="n">coinbase</span><span class="o">|</span><span class="n">puzzle_hash</span><span class="o">|</span><span class="n">coin_parent</span><span class="o">|</span><span class="n">amount</span><span class="o">|</span>
+
+            <span class="mi">8</span><span class="p">(</span><span class="n">timestamp</span><span class="p">)</span>
+            <span class="n">timestamp</span><span class="o">|</span>
+
+            <span class="mi">9</span>              <span class="mi">10</span>
+            <span class="n">confirmed_hash</span><span class="o">|</span><span class="n">spent_hash</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">467</span><span class="p">]:</span> <span class="nb">print</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">block_record_row</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
+
+        <span class="n">Parse</span> <span class="n">row</span> <span class="ow">and</span> <span class="k">return</span> <span class="n">a</span> <span class="n">CSV</span> <span class="n">block</span> <span class="n">record</span> <span class="n">row</span> <span class="nb">list</span><span class="o">.</span>
+
+        <span class="n">CREATE</span> <span class="n">TABLE</span> <span class="n">block_records</span><span class="p">(</span>
+          <span class="n">header_hash</span> <span class="n">text</span> <span class="n">PRIMARY</span> <span class="n">KEY</span><span class="p">,</span>
+          <span class="n">prev_hash</span> <span class="n">text</span><span class="p">,</span>
+          <span class="n">height</span> <span class="n">bigint</span><span class="p">,</span>
+          <span class="n">block</span> <span class="n">blob</span><span class="p">,</span>
+          <span class="n">sub_epoch_summary</span> <span class="n">blob</span><span class="p">,</span>
+          <span class="n">is_peak</span> <span class="n">tinyint</span><span class="p">,</span>
+          <span class="n">is_block</span> <span class="n">tinyint</span><span class="p">)</span>
+
+        <span class="n">Block</span> <span class="n">Record</span> <span class="n">CSV</span> <span class="n">Head</span><span class="p">:</span>
+            <span class="mi">0</span>           <span class="mi">1</span>         <span class="mi">2</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span> <span class="mi">3</span><span class="p">(</span><span class="nb">bool</span><span class="p">)</span> <span class="mi">4</span><span class="p">(</span><span class="nb">bool</span><span class="p">)</span>
+            <span class="n">header_hash</span><span class="o">|</span><span class="n">prev_hash</span><span class="o">|</span><span class="n">height</span><span class="o">|</span><span class="n">is_peak</span><span class="o">|</span><span class="n">is_block</span><span class="o">|</span>
+
+            <span class="mi">5</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+            <span class="n">deficit</span><span class="o">|</span>
+
+            <span class="mi">6</span>
+            <span class="n">challenge_block_info_hash</span><span class="o">|</span>
+
+            <span class="mi">7</span>
+            <span class="n">farmer_puzzle_hash</span><span class="o">|</span>
+
+            <span class="mi">8</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+            <span class="n">fees</span><span class="o">|</span>
+
+            <span class="mi">9</span>
+            <span class="n">prev_transaction_block_hash</span><span class="o">|</span>
+
+            <span class="mi">10</span>
+            <span class="n">prev_transaction_block_height</span><span class="o">|</span>
+
+            <span class="mi">11</span>             <span class="mi">12</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+            <span class="n">required_iters</span><span class="o">|</span><span class="n">signage_point_index</span><span class="o">|</span>
+
+            <span class="mi">13</span><span class="p">(</span><span class="n">timestamp</span><span class="p">)</span>
+            <span class="n">timestamp</span>
+</code></pre></td></tr></table>
+</div>
+</div><h4 id="311-数据导入" class="headerLink">
+    <a href="#311-%e6%95%b0%e6%8d%ae%e5%af%bc%e5%85%a5" class="header-mark"></a>3.1.1 数据导入</h4><p>有了 CSV 文件，我们可以借助 <a href="https://github.com/vesoft-inc/nebula-importer/" target="_blank" rel="noopener noreffer">Nebula-Importer</a> 导入数据到图数据库中。</p>
+<p>这里，我们写好了 nebula-importer 的配置文件，其中包涵了如下信息:</p>
+<ul>
+<li>在 Nebula Graph 中创建需要的数据模型 Schema，这和我们前边做的图映射的信息是等价的</li>
+<li>描述 CSV 文件之中的 Column 的数据到图模型（点，边，点或边的属性）映射关系</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="c1"># 这里，我的 csv 文件和 配置文件都放在 /home/wei.gu/chia 之下</span>
+<span class="c1"># 我使用 docker-compose 默认配置部署的 Nebula Graph,</span>
+<span class="c1"># 它创建了叫 nebula-docker-compose_nebula-net 的 docker 网络</span>
+docker run --rm -ti <span class="se">\
+</span><span class="se"></span>    --network<span class="o">=</span>nebula-docker-compose_nebula-net <span class="se">\
+</span><span class="se"></span>    -v /home/wei.gu/chia/nebula-chia.yaml:/root/nebula-chia.yaml <span class="se">\
+</span><span class="se"></span>    -v /home/wei.gu/chia:/root <span class="se">\
+</span><span class="se"></span>    vesoft/nebula-importer:v2 <span class="se">\
+</span><span class="se"></span>    --config /root/nebula-chia.yaml
+</code></pre></td></tr></table>
+</div>
+</div><p>这里我展示一个导入的结果示例，我在单机部署的 Nebula Graph 里导入了我一两周之前取的全量 Chia Network 数据的结果。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">...
+2021/05/19 09:55:09 <span class="o">[</span>INFO<span class="o">]</span> reader.go:180: Total lines of file<span class="o">(</span>/root/coin_record.csv<span class="o">)</span> is: 547557, error lines: <span class="m">0</span>
+2021/05/19 09:55:09 <span class="o">[</span>INFO<span class="o">]</span> statsmgr.go:61: Done<span class="o">(</span>/root/coin_record.csv<span class="o">)</span>: Time<span class="o">(</span>4385.88s<span class="o">)</span>, Finished<span class="o">(</span>4512927<span class="o">)</span>, Failed<span class="o">(</span>0<span class="o">)</span>, Latency AVG<span class="o">(</span>1305us<span class="o">)</span>, Batches Req AVG<span class="o">(</span>2015us<span class="o">)</span>, Rows AVG<span class="o">(</span>1028.42/s<span class="o">)</span>
+2021/05/19 09:55:10 --- END OF NEBULA IMPORTER ---
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="32-探索-chia-的图数据" class="headerLink">
+    <a href="#32-%e6%8e%a2%e7%b4%a2-chia-%e7%9a%84%e5%9b%be%e6%95%b0%e6%8d%ae" class="header-mark"></a>3.2 探索 Chia 的图数据</h3><h4 id="321-用图数据库的-queries" class="headerLink">
+    <a href="#321-%e7%94%a8%e5%9b%be%e6%95%b0%e6%8d%ae%e5%ba%93%e7%9a%84-queries" class="header-mark"></a>3.2.1 用图数据库的 Queries</h4><p>导入 Chia 链的网络到 Nebula Graph 之后，我们可以在里边快速查询数据之间的关联。</p>
+<p>比如这个查询表示从区块 <code>524aa2013781ff4cd9d2b5dc...</code> 查起，经过三种边 <code>farmer_puzzle, spends, confirms</code> 双向遍历的结果。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="k">GO</span><span class="w"> </span><span class="mi">5</span><span class="w"> </span><span class="n">STEPS</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span><span class="w">   </span><span class="s2">&#34;524aa2013781ff4cd9d2b5dce40647b670d722e2de25bd2e2b79970a8ec435ee&#34;</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span><span class="w">   </span><span class="n">OVER</span><span class="w"> </span><span class="n">farmer_puzzle</span><span class="p">,</span><span class="n">spends</span><span class="p">,</span><span class="n">confirms</span><span class="w"> </span><span class="n">BIDIRECT</span><span class="w">
+</span><span class="w"></span><span class="p">...</span><span class="w">
+</span><span class="w"></span><span class="n">Got</span><span class="w"> </span><span class="mi">419437</span><span class="w"> </span><span class="k">rows</span><span class="w"> </span><span class="p">(</span><span class="n">time</span><span class="w"> </span><span class="n">spent</span><span class="w"> </span><span class="mi">735120</span><span class="o">/</span><span class="mi">1170946</span><span class="w"> </span><span class="n">us</span><span class="p">)</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="n">Wed</span><span class="p">,</span><span class="w"> </span><span class="mi">19</span><span class="w"> </span><span class="n">May</span><span class="w"> </span><span class="mi">2021</span><span class="w"> </span><span class="mi">10</span><span class="p">:</span><span class="mi">11</span><span class="p">:</span><span class="mi">28</span><span class="w"> </span><span class="n">UTC</span><span class="w">
+</span></code></pre></td></tr></table>
+</div>
+</div><p>再比如，计算一个 Puzzle 地址上的余额（所有 coin 的总价值）比如这个puzzle <code>bbe39134ccc32c08fdeff...</code></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="k">GO</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="n">STEP</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="s2">&#34;bbe39134ccc32c08fdeff4d2c19d1d1f4f7e48cdaf79d37397bc3136ce9b3cb7&#34;</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span><span class="w">   </span><span class="n">OVER</span><span class="w"> </span><span class="n">belongs_to</span><span class="w"> </span><span class="n">REVERSELY</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span><span class="w">   </span><span class="n">YIELD</span><span class="w"> </span><span class="k">CASE</span><span class="w"> </span><span class="err">$$</span><span class="p">.</span><span class="n">coin</span><span class="p">.</span><span class="n">is_spent</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span><span class="w">         </span><span class="k">WHEN</span><span class="w"> </span><span class="k">true</span><span class="w"> </span><span class="k">THEN</span><span class="w"> </span><span class="err">$$</span><span class="p">.</span><span class="n">coin</span><span class="p">.</span><span class="n">amount</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span><span class="w">         </span><span class="k">WHEN</span><span class="w"> </span><span class="k">false</span><span class="w"> </span><span class="k">THEN</span><span class="w"> </span><span class="o">-</span><span class="err">$$</span><span class="p">.</span><span class="n">coin</span><span class="p">.</span><span class="n">amount</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span><span class="w">         </span><span class="k">END</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">Amount</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">YIELD</span><span class="w"> </span><span class="k">sum</span><span class="p">(</span><span class="err">$</span><span class="o">-</span><span class="p">.</span><span class="n">Amount</span><span class="p">)</span><span class="w">
+</span></code></pre></td></tr></table>
+</div>
+</div><h4 id="322-用-nebula-studio-可视化探索" class="headerLink">
+    <a href="#322-%e7%94%a8-nebula-studio-%e5%8f%af%e8%a7%86%e5%8c%96%e6%8e%a2%e7%b4%a2" class="header-mark"></a>3.2.2 用 Nebula Studio 可视化探索</h4><p>Nebula Graph 为我们提供了图形化界面，有了它，我们可以用更符合人脑的方式地查看 Chia Network 中的数据。</p>
+<p>比如，我们还是回到上边的那个区块，从这里查询。</p>
+<p></p>
+<p>我们就获得了这个 block 类型的一个点/ vertex。我们可以从他开始进一步探索，先鼠标单击这个点，在拓展条件里把方向选择双向，默认的边类型是所有的边类型，这样我们就可以把所有 <code>步数</code>内相关联的数据一下子全都找出来。</p>
+<p>选择好拓展条件之后，点击拓展就可以。</p>
+<p></p>
+<p>这里，我们选择了步数为 <code>1</code>，点击拓展（或者双击要拓展的点），之后，我们可以快速双击其他的点继续拓展，这是我鼠标点了几次之后看到的样子：</p>
+<p></p>
+<p>我们接下来再试试拓展的步数为 <code>2</code>，点击拓展（或者双击要拓展的点），看起来找到了有意思的信息。</p>
+<p>我们看到了一个有很多边的黑色的点。</p>
+<p></p>
+<p>通过查看这个点和我们开始查看的 block 之间的边，我们知道这个点正是 farm 这个 block 的地址，这个地址下边有非常多的 coin。</p>
+<p></p>
+<p>这只是一个开始，有了这个导入到 Nebula Graph 图数据的基础，我们可以做很多有意思的分析和洞察，大家可以自己试试看，得到更有意思的结果分享给其他同学。</p>
+<h2 id="4-总结" class="headerLink">
+    <a href="#4-%e6%80%bb%e7%bb%93" class="header-mark"></a>4. 总结</h2><p>这篇文章里，在我们简单介绍了 Chia Network 之后，我们首次的带大家一起从安装一个 Chia 终端，到分析终端同步到本地的 Chia 全网数据，借助于 Chia 终端开源的 Python 代码库，我们分析了全网数据里的重要信息。</p>
+<p>之后，我们开源了一个小工具 Nebula-Chia，有了它，就可以把 Chia 的全网数据转换成 CSV 格式，这样，就可以借助 nebula-importer 把所有的数据导入到一个先进的图数据库（Nebula Graph）中。</p>
+<p>Nebula Graph 的项目地址是 <a href="https://github.com/vesoft-inc/nebula-graph" target="_blank" rel="noopener noreffer">https://github.com/vesoft-inc/nebula-graph</a></p>
+<p>Nebula-Chia 我也开源在 <a href="https://github.com/wey-gu/nebula-chia" target="_blank" rel="noopener noreffer">https://github.com/wey-gu/nebula-chia</a></p>
+<p>在图数据库中，我们展示了做基本 Query 的例子和借助图数据库自带的可视化工具，我们可以轻易地获取 Chia 全网数据之间关联关系，有了这个作为基础，这些数据中洞察的潜力和可以尝试的有意思事情可以比较直观和高效地进一步探索了！</p>
+<p>是不是很酷？</p>
+<p></p>
+<h2 id="5-引用" class="headerLink">
+    <a href="#5-%e5%bc%95%e7%94%a8" class="header-mark"></a>5. 引用</h2><ul>
+<li><a href="https://www.chia.net/faq/" target="_blank" rel="noopener noreffer">https://www.chia.net/faq/</a></li>
+<li><a href="https://chialisp.com/docs/" target="_blank" rel="noopener noreffer">https://chialisp.com/docs/</a></li>
+<li><a href="https://www.chiaexplorer.com/chia-coins" target="_blank" rel="noopener noreffer">https://www.chiaexplorer.com/chia-coins</a></li>
+<li><a href="https://docs.google.com/document/d/1tmRIb7lgi4QfKkNaxuKOBHRmwbVlGL4f7EsBDr_5xZE" target="_blank" rel="noopener noreffer">https://docs.google.com/document/d/1tmRIb7lgi4QfKkNaxuKOBHRmwbVlGL4f7EsBDr_5xZE</a></li>
+<li><a href="https://github.com/sipa/bech32/tree/master/ref/python" target="_blank" rel="noopener noreffer">https://github.com/sipa/bech32/tree/master/ref/python</a></li>
+<li><a href="https://github.com/Chia-Network/chia-blockchain/blob/main/README.md" target="_blank" rel="noopener noreffer">https://github.com/Chia-Network/chia-blockchain/blob/main/README.md</a></li>
+<li><a href="https://www.chia.net/assets/ChiaGreenPaper.pdf" target="_blank" rel="noopener noreffer">https://www.chia.net/assets/ChiaGreenPaper.pdf</a></li>
+<li><a href="https://docs.nebula-graph.com.cn" target="_blank" rel="noopener noreffer">https://docs.nebula-graph.com.cn</a></li>
+</ul>
+<blockquote>
+<p>题图版权：<a href="https://unsplash.com/photos/Ph5_4TnXXYE?utm_source=unsplash&amp;utm_medium=referral&amp;utm_content=creditShareLink" target="_blank" rel="noopener noreffer">Icons8 Team</a></p>
+</blockquote>]]></description>
 </item></channel>
 </rss>
