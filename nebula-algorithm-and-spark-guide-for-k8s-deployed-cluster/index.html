@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noodp" />
+    <title class="pjax-title">为什么我的 Nebula-Spark-Connector、Nebula-Algorithm 连不上 K8s 部署的 Nebula Graph 集群？ - siwei.io</title><meta name="Description" content="一文了解 K8s 部署的 Nebula Graph 集群的 Nebula-Algorithm 使用方法。"><meta property="og:title" content="为什么我的 Nebula-Spark-Connector、Nebula-Algorithm 连不上 K8s 部署的 Nebula Graph 集群？" />
+<meta property="og:description" content="一文了解 K8s 部署的 Nebula Graph 集群的 Nebula-Algorithm 使用方法。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://siwei.io/nebula-algorithm-and-spark-guide-for-k8s-deployed-cluster/" /><meta property="og:image" content="https://siwei.io/nebula-algorithm-and-spark-guide-for-k8s-deployed-cluster/featured-image.webp"/><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2021-11-25T19:47:53+08:00" />
+<meta property="article:modified_time" content="2021-11-25T19:47:53+08:00" /><meta property="og:site_name" content="siwei.io" />
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://siwei.io/nebula-algorithm-and-spark-guide-for-k8s-deployed-cluster/featured-image.webp"/>
+<meta name="twitter:title" content="为什么我的 Nebula-Spark-Connector、Nebula-Algorithm 连不上 K8s 部署的 Nebula Graph 集群？"/>
+<meta name="twitter:description" content="一文了解 K8s 部署的 Nebula Graph 集群的 Nebula-Algorithm 使用方法。"/>
+<meta name="application-name" content="siwei.io">
+<meta name="apple-mobile-web-app-title" content="siwei.io">
+
+<meta name="theme-color" content="#f8f8f8"><meta name="msapplication-TileColor" content="#da532c"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="canonical" href="https://siwei.io/nebula-algorithm-and-spark-guide-for-k8s-deployed-cluster/" /><link rel="prev" href="https://siwei.io/corp-rel-graph/" /><link rel="next" href="https://siwei.io/nebula-java-happy-parsing-guide/" /><link rel="stylesheet" href="/lib/normalize/normalize.min.css"><link rel="stylesheet" href="/css/style.min.css"><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/fontawesome-free/all.min.css">
+    <noscript><link rel="stylesheet" href="/lib/fontawesome-free/all.min.css"></noscript><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/animate/animate.min.css">
+    <noscript><link rel="stylesheet" href="/lib/animate/animate.min.css"></noscript><meta name="baidu-site-verification" content="code-4R67zl7SwH" /><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "为什么我的 Nebula-Spark-Connector、Nebula-Algorithm 连不上 K8s 部署的 Nebula Graph 集群？",
+        "inLanguage": "zh-CN",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "https:\/\/siwei.io\/nebula-algorithm-and-spark-guide-for-k8s-deployed-cluster\/"
+        },"image": ["https:\/\/siwei.io\/images\/site-feature-image.webp"],"genre": "posts","keywords": "Nebula Graph, 图数据库, Spark-Connector, Nebula-Algorithm, k8s, nebula-operator","wordcount":  2048 ,
+        "url": "https:\/\/siwei.io\/nebula-algorithm-and-spark-guide-for-k8s-deployed-cluster\/","datePublished": "2021-11-25T19:47:53+08:00","dateModified": "2021-11-25T19:47:53+08:00","publisher": {
+            "@type": "Organization",
+            "name": ""},"author": {
+                "@type": "Person",
+                "name": "Wey Gu"
+            },"description": "一文了解 K8s 部署的 Nebula Graph 集群的 Nebula-Algorithm 使用方法。"
+    }
+    </script></head>
+
+<body header-desktop="fixed" header-mobile="auto"><script type="text/javascript">
+        function setTheme(theme) {document.body.setAttribute('theme', theme);}
+        function saveTheme(theme) {window.localStorage && localStorage.setItem('theme', theme);}
+        function getMeta(metaName) {const metas = document.getElementsByTagName('meta'); for (let i = 0; i < metas.length; i++) if (metas[i].getAttribute('name') === metaName) return metas[i]; return '';}
+        if (window.localStorage && localStorage.getItem('theme')) {let theme = localStorage.getItem('theme');theme === 'light' || theme === 'dark' || theme === 'black' ? setTheme(theme) : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light')); } else { if ('auto' === 'light' || 'auto' === 'dark' || 'auto' === 'black') setTheme('auto'), saveTheme('auto'); else saveTheme('auto'), window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light');}
+        let metaColors = {'light': '#f8f8f8','dark': '#252627','black': '#000000'}
+        getMeta('theme-color').content = metaColors[document.body.getAttribute('theme')];
+    </script>
+    <div id="back-to-top"></div>
+    <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/" title="siwei.io"><span class="header-title-pre"><i class="fas fa-code-branch"></i></span>siwei.io</a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="/about/"> 关于 </a><a class="menu-item" href="/projects/"> 项目 </a><a class="menu-item" href="/sketch-notes/"> 手绘 </a><a class="menu-item" href="/posts/"> 博客 </a><a class="menu-item" href="/talk/"> 演讲 </a><a class="menu-item" href="/cources/"> 课程 </a><a class="menu-item" href="https://vesoft.com/cn/careers/" rel="noopener noreffer" target="_blank"> 招聘 </a><a class="menu-item" href="/about/#%E8%81%94%E7%B3%BB%E6%88%91"> 联系 </a><a class="menu-item" href="/path/"> 学习路径 </a><span class="menu-item delimiter"></span><a href="#" onclick="return false;" class="menu-item language" title="选择语言">简体中文<i class="fas fa-chevron-right fa-fw"></i>
+                        <select class="language-select" title="Select Language" id="language-select-desktop" onchange="location = this.value;"><option value="/nebula-algorithm-and-spark-guide-for-k8s-deployed-cluster/" selected>简体中文</option></select>
+                    </a><span class="menu-item search" id="search-desktop">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-desktop">
+                        <a href="#" onclick="return false;" class="search-button search-toggle" id="search-toggle-desktop" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="#" onclick="return false;" class="search-button search-clear" id="search-clear-desktop" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-desktop">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </span><a href="#" onclick="return false;" class="menu-item theme-select" title="切换主题">
+                    <i class="fas fa-adjust fa-fw"></i>
+                    <select class="color-theme-select" id="theme-select-desktop" title="切换主题">
+                        <option value="light">浅色</option>
+                        <option value="dark">深色</option>
+                        <option value="black">黑色</option>
+                        <option value="auto">跟随系统</option>
+                    </select>
+                </a></div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="/" title="siwei.io"><span class="header-title-pre"><i class="fas fa-code-branch"></i></span>siwei.io</a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><div class="search-wrapper">
+                    <div class="search mobile" id="search-mobile">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-mobile">
+                        <a href="#" onclick="return false;" class="search-button search-toggle" id="search-toggle-mobile" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="#" onclick="return false;" class="search-button search-clear" id="search-clear-mobile" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-mobile">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </div>
+                    <a href="#" onclick="return false;" class="search-cancel" id="search-cancel-mobile">
+                        取消
+                    </a>
+                </div><a class="menu-item" href="/about/" title="">关于</a><a class="menu-item" href="/projects/" title="">项目</a><a class="menu-item" href="/sketch-notes/" title="">手绘</a><a class="menu-item" href="/posts/" title="">博客</a><a class="menu-item" href="/talk/" title="">演讲</a><a class="menu-item" href="/cources/" title="">课程</a><a class="menu-item" href="https://vesoft.com/cn/careers/" title="" rel="noopener noreffer" target="_blank">招聘</a><a class="menu-item" href="/about/#%E8%81%94%E7%B3%BB%E6%88%91" title="">联系</a><a class="menu-item" href="/path/" title="">学习路径</a><a href="#" onclick="return false;" class="menu-item theme-select" title="切换主题">
+                <i class="fas fa-adjust fa-fw"></i>
+                <select class="color-theme-select" id="theme-select-mobile" title="切换主题">
+                    <option value="light">浅色</option>
+                    <option value="dark">深色</option>
+                    <option value="black">黑色</option>
+                    <option value="auto">跟随系统</option>
+                </select>
+            </a><a href="#" onclick="return false;" class="menu-item" title="选择语言">简体中文<i class="fas fa-chevron-right fa-fw"></i>
+                    <select class="language-select" title="Select Language" onchange="location = this.value;"><option value="/nebula-algorithm-and-spark-guide-for-k8s-deployed-cluster/" selected>简体中文</option></select>
+                </a></div>
+    </div>
+</header>
+<div class="search-dropdown desktop">
+    <div id="search-dropdown-desktop"></div>
+</div>
+<div class="search-dropdown mobile">
+    <div id="search-dropdown-mobile"></div>
+</div>
+<main class="main">
+            <div class="container"><div class="toc" id="toc-auto">
+        <h2 class="toc-title">目录</h2>
+        <div class="toc-content always-active" id="toc-content-auto"><nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#步骤">步骤</a>
+          <ul>
+            <li><a href="#容易忽略的问题">容易忽略的问题</a></li>
+            <li><a href="#背景知识">背景知识</a></li>
+          </ul>
+        </li>
+        <li><a href="#bonus一键体验-nebula-algorithm--nebula-operator">Bonus：一键体验 nebula-algorithm + nebula-operator</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav></div>
+    </div><script>document.getElementsByTagName("main")[0].setAttribute("pageStyle", "normal")</script><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC", "true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">为什么我的 Nebula-Spark-Connector、Nebula-Algorithm 连不上 K8s 部署的 Nebula Graph 集群？</h1><div class="post-meta">
+            <div class="post-meta-line">
+                <span class="post-author"><i class="author fas fa-user-circle fa-fw"></i><a href="https://siwei.io" title="Author" target="_blank" rel="noopener noreffer author" class="author">Wey Gu</a>
+                </span>&nbsp;<span class="post-category">收录于 </span>&nbsp;<span class="post-category">类别 <a href="/categories/nebula-graph/"><i class="far fa-folder fa-fw"></i>Nebula Graph</a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime="2021-11-25">2021-11-25</time>&nbsp;<i class="far fa-edit fa-fw"></i>&nbsp;<time datetime="2021-11-25">2021-11-25</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;约 2048 字&nbsp;
+                <i class="far fa-clock fa-fw"></i>&nbsp;预计阅读 5 分钟&nbsp;<span id="/nebula-algorithm-and-spark-guide-for-k8s-deployed-cluster/" class="leancloud_visitors" data-flag-title="为什么我的 Nebula-Spark-Connector、Nebula-Algorithm 连不上 K8s 部署的 Nebula Graph 集群？">
+                        <i class="far fa-eye fa-fw"></i>&nbsp;<span class=leancloud-visitors-count></span>&nbsp;次阅读
+                    </span>&nbsp;</div>
+        </div><div class="featured-image"><img
+        class="lazyload"
+        data-src="/nebula-algorithm-and-spark-guide-for-k8s-deployed-cluster/featured-image.webp"
+        data-srcset="/nebula-algorithm-and-spark-guide-for-k8s-deployed-cluster/featured-image.webp, /nebula-algorithm-and-spark-guide-for-k8s-deployed-cluster/featured-image.webp 1.5x, /nebula-algorithm-and-spark-guide-for-k8s-deployed-cluster/featured-image.webp 2x"
+        data-sizes="auto"
+        alt="/nebula-algorithm-and-spark-guide-for-k8s-deployed-cluster/featured-image.webp"
+        title="一文了解 K8s 部署的 Nebula Graph 集群的 Nebula-Algorithm 使用方法。" height="892" width="1740"
+    /></div><div class="details toc" id="toc-static"  kept="">
+                <div class="details-summary toc-title">
+                    <span>目录</span>
+                    <span><i class="details-icon fas fa-angle-right"></i></span>
+                </div>
+                <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#步骤">步骤</a>
+          <ul>
+            <li><a href="#容易忽略的问题">容易忽略的问题</a></li>
+            <li><a href="#背景知识">背景知识</a></li>
+          </ul>
+        </li>
+        <li><a href="#bonus一键体验-nebula-algorithm--nebula-operator">Bonus：一键体验 nebula-algorithm + nebula-operator</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav></div>
+            </div><div class="content" id="content"><blockquote>
+<p>一文了解 K8s 部署的 Nebula Graph 集群的 Nebula-Algorithm 使用方法。</p>
+</blockquote>
+<h2 id="步骤" class="headerLink">
+    <a href="#%e6%ad%a5%e9%aa%a4" class="header-mark"></a>步骤</h2><p>最方便的方法是将 Nebula Algorithm/ Spark 运行在与 Nebula-Operator 相同的网络命名空间里，将 <code>show hosts meta</code> 的 MetaD <code>域名:端口</code> 格式的地址填进配置里就可以了。</p>
+<blockquote>
+<p>注：需要 2.6.2 或者更新的版本，Spark-Connector/Algorithm 才支持域名形式的 MetaD 地址。</p>
+</blockquote>
+<ul>
+<li>获取 MetaD 地址</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="o">(</span>root@nebula<span class="o">)</span> <span class="o">[(</span>none<span class="o">)]</span>&gt; show hosts meta
++------------------------------------------------------------------+------+----------+--------+--------------+---------+
+<span class="p">|</span> Host                                                             <span class="p">|</span> Port <span class="p">|</span> Status   <span class="p">|</span> Role   <span class="p">|</span> Git Info Sha <span class="p">|</span> Version <span class="p">|</span>
++------------------------------------------------------------------+------+----------+--------+--------------+---------+
+<span class="p">|</span> <span class="s2">&#34;nebula-metad-0.nebula-metad-headless.default.svc.cluster.local&#34;</span> <span class="p">|</span> <span class="m">9559</span> <span class="p">|</span> <span class="s2">&#34;ONLINE&#34;</span> <span class="p">|</span> <span class="s2">&#34;META&#34;</span> <span class="p">|</span> <span class="s2">&#34;d113f4a&#34;</span>    <span class="p">|</span> <span class="s2">&#34;2.6.2&#34;</span> <span class="p">|</span>
++------------------------------------------------------------------+------+----------+--------+--------------+---------+
+Got <span class="m">1</span> rows <span class="o">(</span><span class="nb">time</span> spent 1378/2598 us<span class="o">)</span>
+
+Mon, <span class="m">14</span> Feb <span class="m">2022</span> 08:22:33 UTC
+</code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>填写 Algorithm 的配置文件</li>
+</ul>
+<blockquote>
+<p>Ref: <a href="https://github.com/vesoft-inc/nebula-algorithm/blob/master/nebula-algorithm/src/main/resources/application.conf" target="_blank" rel="noopener noreffer">https://github.com/vesoft-inc/nebula-algorithm/blob/master/nebula-algorithm/src/main/resources/application.conf</a></p>
+</blockquote>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-toml" data-lang="toml"><span class="c"># ...</span>
+  <span class="nx">nebula</span><span class="err">:</span> <span class="p">{</span>
+    <span class="c"># algo&#39;s data source from Nebula. If data.source is nebula, then this nebula.read config can be valid.</span>
+    <span class="nx">read</span><span class="err">:</span> <span class="p">{</span>
+        <span class="c"># Nebula metad server address, multiple addresses are split by English comma</span>
+        <span class="nx">metaAddress</span><span class="err">:</span> <span class="s2">&#34;nebula-metad-0.nebula-metad-headless.default.svc.cluster.local:9559&#34;</span>
+<span class="c">#...</span>
+</code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>或者是调用 spark-connector 的代码</li>
+</ul>
+<blockquote>
+<p>Ref: <a href="https://github.com/vesoft-inc/nebula-spark-connector" target="_blank" rel="noopener noreffer">https://github.com/vesoft-inc/nebula-spark-connector</a></p>
+</blockquote>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-scala" data-lang="scala">  <span class="k">val</span> <span class="n">config</span> <span class="k">=</span> <span class="nc">NebulaConnectionConfig</span>
+    <span class="o">.</span><span class="n">builder</span><span class="o">()</span>
+    <span class="o">.</span><span class="n">withMetaAddress</span><span class="o">(</span><span class="s">&#34;nebula-metad-0.nebula-metad-headless.default.svc.cluster.local:9559&#34;</span><span class="o">)</span>
+    <span class="o">.</span><span class="n">withConenctionRetry</span><span class="o">(</span><span class="mi">2</span><span class="o">)</span>
+    <span class="o">.</span><span class="n">build</span><span class="o">()</span>
+  <span class="k">val</span> <span class="n">nebulaReadVertexConfig</span><span class="k">:</span> <span class="kt">ReadNebulaConfig</span> <span class="o">=</span> <span class="nc">ReadNebulaConfig</span>
+    <span class="o">.</span><span class="n">builder</span><span class="o">()</span>
+    <span class="o">.</span><span class="n">withSpace</span><span class="o">(</span><span class="s">&#34;foo_bar_space&#34;</span><span class="o">)</span>
+    <span class="o">.</span><span class="n">withLabel</span><span class="o">(</span><span class="s">&#34;person&#34;</span><span class="o">)</span>
+    <span class="o">.</span><span class="n">withNoColumn</span><span class="o">(</span><span class="kc">false</span><span class="o">)</span>
+    <span class="o">.</span><span class="n">withReturnCols</span><span class="o">(</span><span class="nc">List</span><span class="o">(</span><span class="s">&#34;birthday&#34;</span><span class="o">))</span>
+    <span class="o">.</span><span class="n">withLimit</span><span class="o">(</span><span class="mi">10</span><span class="o">)</span>
+    <span class="o">.</span><span class="n">withPartitionNum</span><span class="o">(</span><span class="mi">10</span><span class="o">)</span>
+    <span class="o">.</span><span class="n">build</span><span class="o">()</span>
+  <span class="k">val</span> <span class="n">vertex</span> <span class="k">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">nebula</span><span class="o">(</span><span class="n">config</span><span class="o">,</span> <span class="n">nebulaReadVertexConfig</span><span class="o">).</span><span class="n">loadVerticesToDF</span><span class="o">()</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>看起来非常简单，那么，为什么这么简单的过程却值得一篇文章呢？</p>
+<h3 id="容易忽略的问题" class="headerLink">
+    <a href="#%e5%ae%b9%e6%98%93%e5%bf%bd%e7%95%a5%e7%9a%84%e9%97%ae%e9%a2%98" class="header-mark"></a>容易忽略的问题</h3><p>这里的问题在于：</p>
+<p>a. 它隐含地需要保证 StorageD 的地址能被 spark 环境访问；</p>
+<p>b. 但是这些 StorageD 地址是从 MetaD 获取的；</p>
+<p>c. Nebula K8s Operator 里，MetaD 中存储的 StorageD 地址（服务发现）的来源是 StorageD 的配置文件，而它是 k8s 的内部地址。</p>
+<h3 id="背景知识" class="headerLink">
+    <a href="#%e8%83%8c%e6%99%af%e7%9f%a5%e8%af%86" class="header-mark"></a>背景知识</h3><p><strong>a.</strong> 的理由比较直接，和 nebula 的架构有关：图的数据都存在 Storage Service 之中，通常用语句的查询是透过 Graph Service 来透传，只需要 GraphD 的连接就足够，而 Spark-Connector 使用 Nebula Graph 的场景是扫描全图或者子图，这时候计算存储分离的设计使得我们可以绕过查询、计算层直接高效读取图数据。</p>
+<p>那么问题来了，为什么需要、且只需要 MetaD 的地址呢？</p>
+<p>这也是和架构有关，Meta Service 里包含了全图的分布数据与分布式的 Storage Service 的各个分片和实例的分布，所以一方面因为只有 Meta 才有全图的信息（需要），另一方面因为从 Meta 可以获得这部分信息（只需要）。到这里 <strong>b.</strong> 的答案也有了。</p>
+<ul>
+<li>详细的 Nebula Graph 架构信息可以参考博客系列文章：<a href="https://nebula-graph.com.cn/tags/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1/" target="_blank" rel="noopener noreffer">nebula-graph.com.cn/tags/架构设计</a></li>
+<li>另外请确保您已经读了架构介绍的文档哦：<a href="https://docs.nebula-graph.com.cn/3.0.0/1.introduction/3.nebula-graph-architecture/1.architecture-overview/" target="_blank" rel="noopener noreffer">Nebula 架构总览</a></li>
+</ul>
+<p><img
+        class="lazyload"
+        data-src="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/nebula-graph-architecture-1.png"
+        data-srcset="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/nebula-graph-architecture-1.png, https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/nebula-graph-architecture-1.png 1.5x, https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/nebula-graph-architecture-1.png 2x"
+        data-sizes="auto"
+        alt="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/nebula-graph-architecture-1.png"
+        title="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/nebula-graph-architecture-1.png"
+    /></p>
+<p>下面我们看看 <strong>c.</strong></p>
+<blockquote>
+<p>c. Nebula K8s Operator 里，MetaD 中存储的 StorageD 地址（服务发现）的来源是 StorageD 的配置文件，而它是 k8s 的内部地址。</p>
+</blockquote>
+<p>这和 Nebula Graph 里的服务发现机制有关：在 Nebula Graph 集群中，Graph Service 和 Storage Service 都是通过心跳将自己的信息上报给 Meta Service 的，而这其中服务自身的地址的来源则来自于他们相应的配置文件中的网络配置。</p>
+<ul>
+<li>
+<p>关于服务自身的地址配置请参考文档：<a href="https://docs.nebula-graph.com.cn/3.0.0/5.configurations-and-logs/1.configurations/4.storage-config/#networking" target="_blank" rel="noopener noreffer">Storage networking 配置</a></p>
+</li>
+<li>
+<p>关于服务发现详细的信息请参考四王的文章：<a href="https://nebula-graph.com.cn/posts/cluster-communication-heartbeat/" target="_blank" rel="noopener noreffer">图数据库 Nebula Graph 集群通信：从心跳说起</a>。</p>
+</li>
+</ul>
+<p><img
+        class="lazyload"
+        data-src="https://www-cdn.nebula-graph.com.cn/nebula-blog/nebula-graph-metad-storaged-graphd-v-r-family.png"
+        data-srcset="https://www-cdn.nebula-graph.com.cn/nebula-blog/nebula-graph-metad-storaged-graphd-v-r-family.png, https://www-cdn.nebula-graph.com.cn/nebula-blog/nebula-graph-metad-storaged-graphd-v-r-family.png 1.5x, https://www-cdn.nebula-graph.com.cn/nebula-blog/nebula-graph-metad-storaged-graphd-v-r-family.png 2x"
+        data-sizes="auto"
+        alt="https://www-cdn.nebula-graph.com.cn/nebula-blog/nebula-graph-metad-storaged-graphd-v-r-family.png"
+        title="metad storaged graphd 通信"
+    /></p>
+<p>最后，我们知道 Nebula Operator 是一个在 K8s 集群中按照配置，自动创建、维护、扩缩容 Nebula 集群的 K8s 控制面的应用，它需要抽象一部分内部资源相关的配置，这就包括了 GraphD 和 StorageD 实例的实际地址，他们是被配置的地址实际上是 <a href="https://kubernetes.io/zh/docs/concepts/services-networking/service/#headless-services" target="_blank" rel="noopener noreffer">headless service 地址</a>。</p>
+<p>而这些地址（如下）默认是没法被 k8s 外部网络访问的，所以针对 GraphD、MetaD 我们可以方便创建服务将其暴露出来。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="p">(</span><span class="n">root</span><span class="o">@</span><span class="n">nebula</span><span class="p">)</span><span class="w"> </span><span class="p">[(</span><span class="k">none</span><span class="p">)]</span><span class="o">&gt;</span><span class="w"> </span><span class="k">show</span><span class="w"> </span><span class="n">hosts</span><span class="w"> </span><span class="n">meta</span><span class="w">
+</span><span class="w"></span><span class="o">+</span><span class="c1">------------------------------------------------------------------+------+----------+--------+--------------+---------+
+</span><span class="c1"></span><span class="o">|</span><span class="w"> </span><span class="k">Host</span><span class="w">                                                             </span><span class="o">|</span><span class="w"> </span><span class="n">Port</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">Status</span><span class="w">   </span><span class="o">|</span><span class="w"> </span><span class="k">Role</span><span class="w">   </span><span class="o">|</span><span class="w"> </span><span class="n">Git</span><span class="w"> </span><span class="n">Info</span><span class="w"> </span><span class="n">Sha</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="k">Version</span><span class="w"> </span><span class="o">|</span><span class="w">
+</span><span class="w"></span><span class="o">+</span><span class="c1">------------------------------------------------------------------+------+----------+--------+--------------+---------+
+</span><span class="c1"></span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;nebula-metad-0.nebula-metad-headless.default.svc.cluster.local&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="mi">9559</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;ONLINE&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;META&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;d113f4a&#34;</span><span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;2.6.2&#34;</span><span class="w"> </span><span class="o">|</span><span class="w">
+</span><span class="w"></span><span class="o">+</span><span class="c1">------------------------------------------------------------------+------+----------+--------+--------------+---------+
+</span><span class="c1"></span><span class="n">Got</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">rows</span><span class="w"> </span><span class="p">(</span><span class="n">time</span><span class="w"> </span><span class="n">spent</span><span class="w"> </span><span class="mi">1378</span><span class="o">/</span><span class="mi">2598</span><span class="w"> </span><span class="n">us</span><span class="p">)</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="n">Mon</span><span class="p">,</span><span class="w"> </span><span class="mi">14</span><span class="w"> </span><span class="n">Feb</span><span class="w"> </span><span class="mi">2022</span><span class="w"> </span><span class="mi">09</span><span class="p">:</span><span class="mi">22</span><span class="p">:</span><span class="mi">33</span><span class="w"> </span><span class="n">UTC</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="p">(</span><span class="n">root</span><span class="o">@</span><span class="n">nebula</span><span class="p">)</span><span class="w"> </span><span class="p">[(</span><span class="k">none</span><span class="p">)]</span><span class="o">&gt;</span><span class="w"> </span><span class="k">show</span><span class="w"> </span><span class="n">hosts</span><span class="w"> </span><span class="n">graph</span><span class="w">
+</span><span class="w"></span><span class="o">+</span><span class="c1">---------------------------------------------------------------+------+----------+---------+--------------+---------+
+</span><span class="c1"></span><span class="o">|</span><span class="w"> </span><span class="k">Host</span><span class="w">                                                          </span><span class="o">|</span><span class="w"> </span><span class="n">Port</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">Status</span><span class="w">   </span><span class="o">|</span><span class="w"> </span><span class="k">Role</span><span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">Git</span><span class="w"> </span><span class="n">Info</span><span class="w"> </span><span class="n">Sha</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="k">Version</span><span class="w"> </span><span class="o">|</span><span class="w">
+</span><span class="w"></span><span class="o">+</span><span class="c1">---------------------------------------------------------------+------+----------+---------+--------------+---------+
+</span><span class="c1"></span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;nebula-graphd-0.nebula-graphd-svc.default.svc.cluster.local&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="mi">9669</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;ONLINE&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;GRAPH&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;d113f4a&#34;</span><span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;2.6.2&#34;</span><span class="w"> </span><span class="o">|</span><span class="w">
+</span><span class="w"></span><span class="o">+</span><span class="c1">---------------------------------------------------------------+------+----------+---------+--------------+---------+
+</span><span class="c1"></span><span class="n">Got</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">rows</span><span class="w"> </span><span class="p">(</span><span class="n">time</span><span class="w"> </span><span class="n">spent</span><span class="w"> </span><span class="mi">2072</span><span class="o">/</span><span class="mi">3403</span><span class="w"> </span><span class="n">us</span><span class="p">)</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="n">Mon</span><span class="p">,</span><span class="w"> </span><span class="mi">14</span><span class="w"> </span><span class="n">Feb</span><span class="w"> </span><span class="mi">2022</span><span class="w"> </span><span class="mi">10</span><span class="p">:</span><span class="mi">03</span><span class="p">:</span><span class="mi">58</span><span class="w"> </span><span class="n">UTC</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="p">(</span><span class="n">root</span><span class="o">@</span><span class="n">nebula</span><span class="p">)</span><span class="w"> </span><span class="p">[(</span><span class="k">none</span><span class="p">)]</span><span class="o">&gt;</span><span class="w"> </span><span class="k">show</span><span class="w"> </span><span class="n">hosts</span><span class="w"> </span><span class="k">storage</span><span class="w">
+</span><span class="w"></span><span class="o">+</span><span class="c1">------------------------------------------------------------------------+------+----------+-----------+--------------+---------+
+</span><span class="c1"></span><span class="o">|</span><span class="w"> </span><span class="k">Host</span><span class="w">                                                                   </span><span class="o">|</span><span class="w"> </span><span class="n">Port</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">Status</span><span class="w">   </span><span class="o">|</span><span class="w"> </span><span class="k">Role</span><span class="w">      </span><span class="o">|</span><span class="w"> </span><span class="n">Git</span><span class="w"> </span><span class="n">Info</span><span class="w"> </span><span class="n">Sha</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="k">Version</span><span class="w"> </span><span class="o">|</span><span class="w">
+</span><span class="w"></span><span class="o">+</span><span class="c1">------------------------------------------------------------------------+------+----------+-----------+--------------+---------+
+</span><span class="c1"></span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;nebula-storaged-0.nebula-storaged-headless.default.svc.cluster.local&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="mi">9779</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;ONLINE&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;STORAGE&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;d113f4a&#34;</span><span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;2.6.2&#34;</span><span class="w"> </span><span class="o">|</span><span class="w">
+</span><span class="w"></span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;nebula-storaged-1.nebula-storaged-headless.default.svc.cluster.local&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="mi">9779</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;ONLINE&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;STORAGE&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;d113f4a&#34;</span><span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;2.6.2&#34;</span><span class="w"> </span><span class="o">|</span><span class="w">
+</span><span class="w"></span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;nebula-storaged-2.nebula-storaged-headless.default.svc.cluster.local&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="mi">9779</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;ONLINE&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;STORAGE&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;d113f4a&#34;</span><span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;2.6.2&#34;</span><span class="w"> </span><span class="o">|</span><span class="w">
+</span><span class="w"></span><span class="o">+</span><span class="c1">------------------------------------------------------------------------+------+----------+-----------+--------------+---------+
+</span><span class="c1"></span><span class="n">Got</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="k">rows</span><span class="w"> </span><span class="p">(</span><span class="n">time</span><span class="w"> </span><span class="n">spent</span><span class="w"> </span><span class="mi">1603</span><span class="o">/</span><span class="mi">2979</span><span class="w"> </span><span class="n">us</span><span class="p">)</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="n">Mon</span><span class="p">,</span><span class="w"> </span><span class="mi">14</span><span class="w"> </span><span class="n">Feb</span><span class="w"> </span><span class="mi">2022</span><span class="w"> </span><span class="mi">10</span><span class="p">:</span><span class="mi">05</span><span class="p">:</span><span class="mi">24</span><span class="w"> </span><span class="n">UTC</span><span class="w">
+</span></code></pre></td></tr></table>
+</div>
+</div><p>然而，因为前边提到的 Spark-Connector 通过 Meta Service 去获取 StorageD 的地址，且这个地址是服务发现而得，所以 Spark-Connector 实际上获取的 StorageD 地址就是上边的这种 headless 的服务地址，没法直接从外部访问。</p>
+<p>所以，我们在有条件的情况下，只需要让 Spark 运行在和 Nebula Cluster 相同的 K8s 网络里，一切就迎刃而解了，否则，我们需要：</p>
+<ol>
+<li>
+<p>将 MetaD 和 StorageD 的地址利用 Ingress 等方式将其 L4（TCP）暴露出来。</p>
+<p>可以参考 Nebula Operator 的文档：<a href="doc/user/client_service.md" rel="">doc/user/client_service.md</a></p>
+</li>
+<li>
+<p>通过反向代理和DNS让这些 headless 服务能被解析到相应的 StorageD。</p>
+<p>参考：TBD</p>
+</li>
+</ol>
+<p>那么，有没有更方便的方式？</p>
+<p>非常抱歉的是，目前最方便的方式依然是如文章最开头所介绍：让 Spark 运行在 Nebula Cluster 内部。实际上，我在努力推进 Nebula Spark 社区去支持可以配置的 StorageAddresses 选项，有了它之后，前边提到的 <strong>2.</strong> 就是不必要的了。</p>
+<h2 id="bonus一键体验-nebula-algorithm--nebula-operator" class="headerLink">
+    <a href="#bonus%e4%b8%80%e9%94%ae%e4%bd%93%e9%aa%8c-nebula-algorithm--nebula-operator" class="header-mark"></a>Bonus：一键体验 nebula-algorithm + nebula-operator</h2><p>为了方便在 k8s 上尝鲜 nebula-graph nebula-algorithm 的同学，这里我要再次安利一下我写的一个小工具 <a href="https://github.com/wey-gu/nebula-operator-kind" target="_blank" rel="noopener noreffer">Neubla-Operator-KinD</a>，它是一个一键在 Docker 环境内部单独部署一个 k8s 集群并在其中部署 Nebula Operator 以及所有依赖（包括 storage provider）并部署一个小 Nebula Cluster 的工具。有点绕，不过可以看下边的步骤哈：</p>
+<p>第一步，部署 K8s+Nebula-Operator+Nebula Cluster：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">curl -sL nebula-kind.siwei.io/install.sh <span class="p">|</span> bash
+</code></pre></td></tr></table>
+</div>
+</div><p><img
+        class="lazyload"
+        data-src="https://github.com/wey-gu/nebula-operator-kind/raw/main/images/install_success.webp"
+        data-srcset="https://github.com/wey-gu/nebula-operator-kind/raw/main/images/install_success.webp, https://github.com/wey-gu/nebula-operator-kind/raw/main/images/install_success.webp 1.5x, https://github.com/wey-gu/nebula-operator-kind/raw/main/images/install_success.webp 2x"
+        data-sizes="auto"
+        alt="https://github.com/wey-gu/nebula-operator-kind/raw/main/images/install_success.webp"
+        title="install_success"
+    /></p>
+<p>第二步，照着工具文档里的 <a href="https://github.com/wey-gu/nebula-operator-kind#whats-next" target="_blank" rel="noopener noreffer">what&rsquo;s next</a></p>
+<p>a. 用 console 连接集群，并加载示例数据集</p>
+<p>b. <a href="https://github.com/wey-gu/nebula-operator-kind/blob/main/README.md#try-nebula-algorithm" target="_blank" rel="noopener noreffer">在这个 k8s 里跑一个图算法</a></p>
+<ul>
+<li>创建一个 Spark 环境</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">kubectl create -f http://nebula-kind.siwei.io/deployment/spark.yaml
+kubectl wait pod --timeout=-1s --for=condition=Ready -l &#39;!job-name&#39;
+</code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>等上边的 wait 都 ready 之后，进入 spark 的 pod。</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">kubectl exec -it deploy/spark-deployment -- bash
+</code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>下载 nebula-algorithm 比如 <code>2.6.2</code> 这个版本，更多版本请参考 <a href="https://github.com/vesoft-inc/nebula-algorithm/" target="_blank" rel="noopener noreffer">https://github.com/vesoft-inc/nebula-algorithm/</a>。</li>
+</ul>
+<blockquote>
+<p>注意：</p>
+<ul>
+<li>官方发布的版本在这里可以获取：https://repo1.maven.org/maven2/com/vesoft/nebula-algorithm/</li>
+<li>因为这个问题 <a href="https://github.com/vesoft-inc/nebula-algorithm/issues/42" target="_blank" rel="noopener noreffer">https://github.com/vesoft-inc/nebula-algorithm/issues/42</a> 只有 <code>2.6.2</code> 或者更新的版本才支持域名访问 MetaD。</li>
+</ul>
+</blockquote>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"># 下载 nebula-algorithm-2.6.2.jar
+wget https://repo1.maven.org/maven2/com/vesoft/nebula-algorithm/2.6.2/nebula-algorithm-2.6.2.jar
+# 下载 nebula-algorthm 配置文件
+wget https://github.com/vesoft-inc/nebula-algorithm/raw/v2.6/nebula-algorithm/src/main/resources/application.conf
+</code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>修改Then we could change the config file of nebula-algorithm on meta and graph addresses:</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">sed -i &#39;/^        metaAddress/c\        metaAddress: \&#34;nebula-metad-0.nebula-metad-headless.default.svc.cluster.local:9559\&#34;&#39; application.conf
+sed -i &#39;/^        graphAddress/c\        graphAddress: \&#34;nebula-graphd-0.nebula-graphd-svc.default.svc.cluster.local:9669\&#34;&#39; application.conf
+##### change space
+sed -i &#39;/^        space/c\        space: basketballplayer&#39; application.conf
+##### read data from nebula graph
+sed -i &#39;/^    source/c\    source: nebula&#39; application.conf
+##### execute algorithm: labelpropagation
+sed -i &#39;/^    executeAlgo/c\    executeAlgo: labelpropagation&#39; application.conf
+</code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>执行 LPA 算法在  basketballplayer 图空间</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">/spark/bin/spark-submit --master &#34;local&#34; --conf spark.rpc.askTimeout=6000s \
+    --class com.vesoft.nebula.algorithm.Main \
+    nebula-algorithm-2.6.2.jar \
+    -p application.conf
+</code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>结果如下：</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">bash-5.0# ls /tmp/count/
+_SUCCESS                                                  part-00000-5475f9f4-66b9-426b-b0c2-704f946e54d3-c000.csv
+bash-5.0# head /tmp/count/part-00000-5475f9f4-66b9-426b-b0c2-704f946e54d3-c000.csv
+_id,lpa
+1100,1104
+2200,2200
+2201,2201
+1101,1104
+2202,2202
+</code></pre></td></tr></table>
+</div>
+</div><p>Happy Graphing!</p>
+<blockquote>
+<p>Picture Credit: <a href="https://unsplash.com/photos/yx20mpDyr2I" target="_blank" rel="noopener noreffer">Timelab Pro</a></p>
+</blockquote></div>
+
+        <div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>更新于 2021-11-25</span>
+            </div>
+            <div class="post-info-license"></div>
+        </div>
+        <div class="post-info-line">
+            <div class="post-info-md"><span><a class="link-to-mardown" href=/nebula-algorithm-and-spark-guide-for-k8s-deployed-cluster/index.md target="_blank" rel="noopener noreferrer">阅读原始文档</a>
+                    </span></div>
+            <div class="post-info-share">
+                <span><a href="#" onclick="return false;" title="分享到 Twitter" data-sharer="twitter" data-url="https://siwei.io/nebula-algorithm-and-spark-guide-for-k8s-deployed-cluster/" data-title="为什么我的 Nebula-Spark-Connector、Nebula-Algorithm 连不上 K8s 部署的 Nebula Graph 集群？" data-via="wey_gu" data-hashtags="Nebula Graph,图数据库,Spark-Connector,Nebula-Algorithm,k8s,nebula-operator"><i class="fab fa-twitter fa-fw"></i></a><a href="#" onclick="return false;" title="分享到 Facebook" data-sharer="facebook" data-url="https://siwei.io/nebula-algorithm-and-spark-guide-for-k8s-deployed-cluster/" data-hashtag="Nebula Graph"><i class="fab fa-facebook-square fa-fw"></i></a><a href="#" onclick="return false;" title="分享到 WhatsApp" data-sharer="whatsapp" data-url="https://siwei.io/nebula-algorithm-and-spark-guide-for-k8s-deployed-cluster/" data-title="为什么我的 Nebula-Spark-Connector、Nebula-Algorithm 连不上 K8s 部署的 Nebula Graph 集群？" data-web><i class="fab fa-whatsapp fa-fw"></i></a><a href="#" onclick="return false;" title="分享到 Line" data-sharer="line" data-url="https://siwei.io/nebula-algorithm-and-spark-guide-for-k8s-deployed-cluster/" data-title="为什么我的 Nebula-Spark-Connector、Nebula-Algorithm 连不上 K8s 部署的 Nebula Graph 集群？"><i data-svg-src="/lib/simple-icons/icons/line.min.svg"></i></a><a href="#" onclick="return false;" title="分享到 微博" data-sharer="weibo" data-url="https://siwei.io/nebula-algorithm-and-spark-guide-for-k8s-deployed-cluster/" data-title="为什么我的 Nebula-Spark-Connector、Nebula-Algorithm 连不上 K8s 部署的 Nebula Graph 集群？" data-image="featured-image.webp" data-ralateuid="siweigu"><i class="fab fa-weibo fa-fw"></i></a><a href="#" onclick="return false;" title="分享到 Myspace" data-sharer="myspace" data-url="https://siwei.io/nebula-algorithm-and-spark-guide-for-k8s-deployed-cluster/" data-title="为什么我的 Nebula-Spark-Connector、Nebula-Algorithm 连不上 K8s 部署的 Nebula Graph 集群？" data-description="一文了解 K8s 部署的 Nebula Graph 集群的 Nebula-Algorithm 使用方法。"><i data-svg-src="/lib/simple-icons/icons/myspace.min.svg"></i></a><a href="#" onclick="return false;" title="分享到 Blogger" data-sharer="blogger" data-url="https://siwei.io/nebula-algorithm-and-spark-guide-for-k8s-deployed-cluster/" data-title="为什么我的 Nebula-Spark-Connector、Nebula-Algorithm 连不上 K8s 部署的 Nebula Graph 集群？" data-description="一文了解 K8s 部署的 Nebula Graph 集群的 Nebula-Algorithm 使用方法。"><i class="fab fa-blogger fa-fw"></i></a><a href="#" onclick="return false;" title="分享到 Evernote" data-sharer="evernote" data-url="https://siwei.io/nebula-algorithm-and-spark-guide-for-k8s-deployed-cluster/" data-title="为什么我的 Nebula-Spark-Connector、Nebula-Algorithm 连不上 K8s 部署的 Nebula Graph 集群？"><i class="fab fa-evernote fa-fw"></i></a></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section class="post-tags"><i class="fas fa-tags fa-fw"></i>&nbsp;<a href="/tags/nebula-graph/">Nebula Graph</a>,&nbsp;<a href="/tags/%E5%9B%BE%E6%95%B0%E6%8D%AE%E5%BA%93/">图数据库</a>,&nbsp;<a href="/tags/spark-connector/">Spark-Connector</a>,&nbsp;<a href="/tags/nebula-algorithm/">Nebula-Algorithm</a>,&nbsp;<a href="/tags/k8s/">k8s</a>,&nbsp;<a href="/tags/nebula-operator/">nebula-operator</a></section>
+        <section>
+            <span><a href="javascript:void(0);" onclick="window.history.back();">返回</a></span>&nbsp;|&nbsp;<span><a href="/">主页</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/corp-rel-graph/" class="prev" rel="prev" title="从零到一：如何构建一个企业股权图谱系统？"><i class="fas fa-angle-left fa-fw"></i>从零到一：如何构建一个企业股权图谱系统？</a>
+            <a href="/nebula-java-happy-parsing-guide/" class="next" rel="next" title="Nebula Graph 的 Java 数据解析实践与指导">Nebula Graph 的 Java 数据解析实践与指导<i class="fas fa-angle-right fa-fw"></i></a></div>
+</div>
+<div id="comments"><div id="waline" class="comment"></div><noscript>
+                Please enable JavaScript to view the comments powered by <a href="https://waline.js.org/">Waline</a>.
+            </noscript></div></article></div>
+        </main><footer class="footer">
+        <div class="footer-container"><div class="footer-line">
+                    由 <a href="https://gohugo.io/" target="_blank" rel="noopener noreffer" title="Hugo 0.91.2">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreffer" title="DoIt 0.2.13"><i class="far fa-edit fa-fw"></i> DoIt</a>
+                </div><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2018 - 2022</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="https://siwei.io" target="_blank" rel="noopener noreferrer">Wey Gu</a></span>&nbsp;|&nbsp;<span class="license"><a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">CC BY-NC 4.0</a></span></div>
+            <div class="footer-line"></div>
+            <div class="footer-line">
+            </div>
+        </div></footer></div>
+
+    <div id="fixed-buttons"><a href="#back-to-top" id="back-to-top-button" class="fixed-button" title="回到顶部">
+            <i class="fas fa-arrow-up fa-fw"></i>
+        </a><a href="#" id="view-comments" class="fixed-button" title="查看评论">
+            <i class="fas fa-comment fa-fw"></i>
+        </a>
+    </div><div class="assets"><script type="text/javascript" src="/lib/autocomplete/autocomplete.min.js"></script><script type="text/javascript" src="/lib/fuse/fuse.min.js"></script><script type="text/javascript" src="/lib/lazysizes/lazysizes.min.js"></script><script type="text/javascript" src="/lib/topbar/topbar.min.js"></script><script type="text/javascript" src="/lib/pjax/pjax.min.js"></script><script type="text/javascript" src="/js/theme.min.js"></script><script type="text/javascript">
+            window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());
+            gtag('config', 'UA-659952-4', { 'anonymize_ip': true });
+        </script><script type="text/javascript" src="https://www.googletagmanager.com/gtag/js?id=UA-659952-4" async></script></div>
+
+<div class="pjax-assets"><script type="text/javascript">window.config={"code":{"copyTitle":"复制到剪贴板","maxShownLines":10},"comment":{"waline":{"copyright":true,"dark":"body[theme='dark'], body[theme='black']","el":"#waline","highlight":true,"lang":"zh-cn","meta":["nick","mail","link"],"pageSize":10,"serverURL":"https://siwei-io.vercel.app","visitor":true}},"lightGallery":{"actualSize":false,"exThumbImage":"data-thumbnail","hideBarsDelay":2000,"selector":".lightgallery","speed":400,"thumbContHeight":80,"thumbWidth":80,"thumbnail":true},"math":{"delimiters":[{"display":true,"left":"$$","right":"$$"},{"display":true,"left":"\\[","right":"\\]"},{"display":false,"left":"$","right":"$"},{"display":false,"left":"\\(","right":"\\)"}],"strict":false},"search":{"distance":100,"findAllMatches":true,"fuseIndexURL":"/index.json","highlightTag":"em","ignoreFieldNorm":false,"ignoreLocation":false,"isCaseSensitive":false,"location":0,"maxResultLength":10,"minMatchCharLength":2,"noResultsFound":"没有找到结果","snippetLength":50,"threshold":0.3,"type":"fuse","useExtendedSearch":false},"sharerjs":true};</script><script type="text/javascript" src="/lib/waline/Waline.min.js" defer></script><script type="text/javascript" src="/js/waline.min.js" defer></script><script type="text/javascript" src="/lib/lightgallery/lightgallery.min.js"></script><script type="text/javascript" src="/lib/lightgallery/lg-thumbnail.min.js"></script><script type="text/javascript" src="/lib/lightgallery/lg-zoom.min.js"></script><script type="text/javascript" src="/lib/clipboard/clipboard.min.js"></script><script type="text/javascript" src="/lib/sharer/sharer.min.js"></script><script type="text/javascript" src="/lib/katex/katex.min.js" defer></script><script type="text/javascript" src="/lib/katex/auto-render.min.js" defer></script><script type="text/javascript" src="/lib/katex/copy-tex.min.js" defer></script><script type="text/javascript" src="/lib/katex/mhchem.min.js" defer></script><script type="text/javascript" src="/js/katex.min.js" defer></script><link rel="stylesheet" href="/lib/lightgallery/lightgallery.min.css"><link rel="stylesheet" href="/lib/katex/katex.min.css"><link rel="stylesheet" href="/lib/katex/copy-tex.min.css"></div>
+</body>
+
+</html>
