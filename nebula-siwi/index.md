@@ -1,16 +1,15 @@
 # Nebula Siwi，基于图数据库的智能问答助手
 
 
-> 从 0 到 1 打造一个基于图数据库的智能问答助手。
->
-> a PoC of Dialog System With Graph Database Backed Knowledge Graph.
+> 一个基于图数据库的智能问答助手项目。
+
 
 <!--more-->
 
-Related GitHub Repo: https://github.com/wey-gu/nebula-siwi/
+GitHub Repo: https://github.com/wey-gu/nebula-siwi/
 
 > 这个项目我也做成了互动教程，可以按照这里的步骤搭建起来 👉🏻 https://siwei.io/cources/ 
-> 
+> update: 写了一篇完整介绍 Siwi 设计的文章 👉🏻 https://siwei.io/siwi
 
 > 您也可以在 Nebula Playground 上直接玩这个数据集啦：https://nebula-graph.com.cn/demo/
 >

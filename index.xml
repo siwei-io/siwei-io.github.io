@@ -367,6 +367,1263 @@ _id,lpa
 <p>Picture Credit: <a href="https://unsplash.com/photos/yx20mpDyr2I" target="_blank" rel="noopener noreffer">Timelab Pro</a></p>
 </blockquote>]]></description>
 </item><item>
+    <title>从零到一：如何构建一个基于知识图谱的智能问答助手？</title>
+    <link>https://siwei.io/siwi/</link>
+    <pubDate>Thu, 30 Dec 2021 14:04:31 &#43;0800</pubDate><author>
+        <name>Wey Gu</name>
+    </author><guid>https://siwei.io/siwi/</guid>
+    <description><![CDATA[<div class="featured-image">
+                <img src="/featured-image.webp" referrerpolicy="no-referrer">
+            </div><blockquote>
+<p>如何利用图数据库从0-1构建一个特定领域问答助手？本文手把手带你构建一个简易版的篮球领域智能问答机器人。</p>
+</blockquote>
+<h2 id="前言" class="headerLink">
+    <a href="#%e5%89%8d%e8%a8%80" class="header-mark"></a>前言</h2><p>「问答机器人」在我们日常生活中并不少见到 ：比如在一些电商客服、智能问诊、技术支持等人工输入与沟通界面的场景下，机器人“智能”问答系统一定程度上可以在无需人力、不需要耗费终端用户心智去做知识库、商品搜索、科室选择等等的情况下实时给出问题答案。</p>
+<p>问答机器人系统背后的技术有多重可能：</p>
+<ul>
+<li>基于检索，全文搜索接近的问题</li>
+<li>基于<a href="https://arxiv.org/abs/1710.10723" target="_blank" rel="noopener noreffer">机器学习阅读理解</a></li>
+<li>基于知识图谱（Knowledge-Based Question Answering system: KBQA）</li>
+<li>其他</li>
+</ul>
+<p>基于知识图谱构建问答系统在以下三个情况下很有优势：</p>
+<ul>
+<li>对于领域类型是结构化数据场景：电商、医药、系统运维（微服务、服务器、事件）、产品支持系统等，其中作为问答系统的参考对象已经是结构化数据；</li>
+<li>问题的解答过程涉及多跳查询，比如“姚明的妻子今年是本命年吗？”，“你们家的产品 A 和 A+ 的区别是什么？”；</li>
+<li>为了解决其他需求（风控、推荐、管理），已经构建了图结构数据、知识图谱的情况。</li>
+</ul>
+<p>为了方便读者最快速了解如何构建 KBQA 系统，我写了非常简陋的小 KBQA 项目，在本文中，我会带领大家从头到尾把它搭起来。</p>
+<blockquote>
+<p>💡：这个小项目叫做 Siwi，它的代码就在 GitHub 上：<a href="https://github.com/wey-gu/nebula-siwi/" target="_blank" rel="noopener noreffer">github.com/wey-gu/nebula-siwi</a></p>
+<p>Siwi 的发音是：<code>/ˈsɪwi/</code> 或者叫：<code>思二为</code> ，它是一个能解答 NBA 相关问题的机器人。</p>
+</blockquote>
+<p>我们开始吧。</p>
+<h2 id="鸟瞰-tldr" class="headerLink">
+    <a href="#%e9%b8%9f%e7%9e%b0-tldr" class="header-mark"></a>鸟瞰 TL;DR</h2><p>KBQA 用一句话说就是把问题解析、转换成在知识图谱中的查询，查询得到结果之后进行筛选、翻译成结果（句子、卡片或者任何方便人理解的答案格式）。</p>
+<blockquote>
+<p>💡：知识图谱的构建实际上是非常重要的过程，在本文中，我们专注在串起来 KBQA 系统的骨架，我们假设需求是基于一个已经有的图谱之上，为其增加一个 QA 系统。</p>
+</blockquote>
+<p>「问题到图谱查询的转换」有不同的方法可以实现。</p>
+<ul>
+<li>可以是对语义进行分析：理解问题的意图，针对不同意图匹配最可能的问题类型，从而构建这个类型问题的图谱查询，查得结果；</li>
+<li>也可以是基于信息的抽取：从问题中抽取主要的实体，在图谱中获取实体的所有知识、关系条目（子图），再对结果根据问题中的约束条件匹配、排序选择结果。</li>
+</ul>
+<blockquote>
+<p>💡：美团技术团队在<a href="https://tech.meituan.com/2021/11/03/knowledge-based-question-answering-in-meituan.html" target="_blank" rel="noopener noreffer">这篇文章</a>里分享了他们的真实世界实践，下图是美团结合了机器学习和 NLP 的方案。</p>
+</blockquote>
+<p></p>
+<p>而在 Siwi 里，我们一切从简，单独选择了语义分析这条路，它的特点是需要人为去标注或者编码一些问题类型的查询方式，但实际上在大多数场景下，尤其单一领域图谱的场景下反而是轻量却效果不差的方案，也是一个便于新手理解 KBQA 的合适的入门方式。</p>
+<p>除了核心的问答部分，我还为 Siwi 增加了语音识别和语音回答（感谢浏览器接口标准的发展）的功能，于是，这个项目的结构和问答调用流程就是这样的了：一个语音问题自上而下分别经过三个部分：</p>
+<ul>
+<li>基于网页的 Siwi Frontend 语音、文字问答界面</li>
+<li>Python Flask 实现的 Siwi Backend/API 系统</li>
+<li><a href="https://nebula-graph.com.cn" target="_blank" rel="noopener noreffer">Nebula Graph</a> 开源分布式高性能图数据库之上的知识图谱</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">┌────────────────┬──────────────────────────────────────┐
+│                │                                      │
+│                │  Speech                              │
+│     ┌──────────▼──────────┐                           │
+│     │            Frontend │   Siwi, /ˈsɪwi/           │
+│     │ Web_Speech_API      │   A PoC of                │
+│     │                     │   Dialog System           │
+│     │ Vue.JS              │   With Graph Database     │
+│     │                     │   Backed Knowledge Graph  │
+│     └──────────┬──────────┘                           │
+│                │  Sentence                            │
+│   ┌────────────┼──────────────────────────────┐       │
+│   │            │              Backend         │       │
+│   │ ┌──────────▼──────────┐                   │       │
+│   │ │ Web API, Flask      │   ./app/          │       │
+│   │ └──────────┬──────────┘                   │       │
+│   │            │  Sentence    ./bot/          │       │
+│   │ ┌──────────▼──────────┐                   │       │
+│   │ │ Intent matching,    │   ./bot/classifier│       │
+│   │ │ Symentic Processing │                   │       │
+│   │ └──────────┬──────────┘                   │       │
+│   │            │  Intent, Entities            │       │
+│   │ ┌──────────▼──────────┐                   │       │
+│   │ │ Intent Actor        │   ./bot/actions   │       │
+│   └─┴──────────┬──────────┴───────────────────┘       │
+│                │  Graph Query                         │
+│     ┌──────────▼──────────┐                           │
+│     │ Graph Database      │    Nebula Graph           │
+│     └─────────────────────┘                           │
+└───────────────────────────────────────────────────────┘
+</code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>💡：图数据库相比于其他知识图谱存储系统来说，因为其设计专注于数据内的数据关系，非常擅长实时获取海量数据下实体之间的复杂关联关系。</p>
+<p>Nebula Graph 的原生分布式设计和 share-nothing 架构使得它擅长于巨大数据量和高并发读写的场景，加上它的开源社区特别活跃，已经被国内很多团队用于支撑生产上的各种业务，<a href="https://nebula-graph.com.cn/cases/" target="_blank" rel="noopener noreffer">这里</a>有一些他们分享的选型、落地实践。</p>
+</blockquote>
+<h2 id="知识图谱" class="headerLink">
+    <a href="#%e7%9f%a5%e8%af%86%e5%9b%be%e8%b0%b1" class="header-mark"></a>知识图谱</h2><p>Siwi 构建于一个篮球相关的知识图谱之上，它其实是 Siwi 采用的开源分布式图数据库 <a href="http://nebula-graph.com.cn/" target="_blank" rel="noopener noreffer">Nebula Graph</a> 社区的官方文档里的示例<a href="https://docs.nebula-graph.com.cn/master/3.ngql-guide/1.nGQL-overview/1.overview/#basketballplayer" target="_blank" rel="noopener noreffer">数据集</a>。</p>
+<p>在这个非常简单的图谱之中，只有两种点：</p>
+<ul>
+<li>player，球员</li>
+<li>team，球队</li>
+</ul>
+<p>两种关系：</p>
+<ul>
+<li>serve 服役于（比如：姚明 <code>-服役于-&gt;</code> 休斯顿火箭）</li>
+<li>follow 关注 （比如：姚明 <code>-关注-&gt;</code> 奥尼尔）</li>
+</ul>
+<blockquote>
+<p>💡：这个数据集在 Nebula 社区上有一个 <a href="https://nebula-graph.com.cn/demo/" target="_blank" rel="noopener noreffer">在线体验</a> 环境，任何人都无需登录，通过<a href="https://docs.nebula-graph.com.cn/2.6.1/nebula-studio/about-studio/st-ug-what-is-graph-studio/" target="_blank" rel="noopener noreffer">Nebula Graph Studio</a> 可视化探索篮球图谱。</p>
+</blockquote>
+<p>下图就是这个图谱的可视化探索截图，可以看到左边的中心节点勇士队（Warriors）有杜兰特（Durant）还有其他几个队员在其中服役（serve）；除了服役之外，还可以看到队员和队员之中也有关注（follow）的关系存在。</p>
+<p></p>
+<p>有了这个知识图谱，咱们接下来就在它之上搭一个简单的基于语法解析的 QA 系统吧😁。</p>
+<h2 id="siwi-backend" class="headerLink">
+    <a href="#siwi-backend" class="header-mark"></a>Siwi-backend</h2><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">┌────────────┼──────────────────────────────┐
+│            │              Backend         │
+│ ┌──────────▼──────────┐                   │
+│ │ Web API, Flask      │   ./app/          │
+│ └──────────┬──────────┘                   │
+│            │  Sentence    ./bot/          │
+│ ┌──────────▼──────────┐                   │
+│ │ Intent matching,    │   ./bot/classifier│
+│ │ Symentic Processing │                   │
+│ └──────────┬──────────┘                   │
+│            │  Intent, Entities            │
+│ ┌──────────▼──────────┐                   │
+│ │ Intent Actor        │   ./bot/actions   │
+└─┴──────────┬──────────┴───────────────────┘
+             │  Graph Query
+  ┌──────────▼──────────┐
+  │ Graph Database      │    Nebula Graph
+  └─────────────────────┘
+</code></pre></td></tr></table>
+</div>
+</div><p>如上图的设计流程，Siwi 的后端部分需要接收问句，处理之后访问知识图谱（图数据库），然后将处理结果返回给用户。</p>
+<h3 id="接收-http-请求app" class="headerLink">
+    <a href="#%e6%8e%a5%e6%94%b6-http-%e8%af%b7%e6%b1%82app" class="header-mark"></a>接收 HTTP 请求(app)</h3><p>对于请求，就简单地用 Flask 作为 web server 来接收 HTTP 的 POST 请求：</p>
+<blockquote>
+<p>💡：还不熟悉 Flask 的同学，可以在 <a href="https://www.freecodecamp.org/news/tag/flask/" target="_blank" rel="noopener noreffer">freeCodeCamp 上搜索一下</a>，有一些不错的课程哈。</p>
+</blockquote>
+<p>下边的代码就是告诉 Flask ：</p>
+<ol>
+<li>如果用户发过来 <code>http://&lt;server&gt;/query</code> 的 POST 请求，提的问题就在请求的 body 里的 <code>question</code> 的 Key 之下。</li>
+<li>取得问题之后，调用把请求传给  <code>siwi_bot</code> 的 <code>query()</code>，得到 <code>answer</code> 。</li>
+</ol>
+<p>代码段：<code>src/siwi/app/__init__.py</code></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="c1">#...</span>
+<span class="kn">from</span> <span class="nn">siwi.bot</span> <span class="kn">import</span> <span class="n">bot</span>
+
+<span class="c1">#...</span>
+<span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s2">&#34;/query&#34;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s2">&#34;POST&#34;</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">query</span><span class="p">():</span>
+    <span class="n">request_data</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">get_json</span><span class="p">()</span>
+    <span class="n">question</span> <span class="o">=</span> <span class="n">request_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;question&#34;</span><span class="p">,</span> <span class="s2">&#34;&#34;</span><span class="p">)</span> <span class="c1"># &lt;----- 1.</span>
+    <span class="k">if</span> <span class="n">question</span><span class="p">:</span>
+        <span class="n">answer</span> <span class="o">=</span> <span class="n">siwi_bot</span><span class="o">.</span><span class="n">query</span><span class="p">(</span>
+            <span class="n">request_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;question&#34;</span><span class="p">,</span> <span class="s2">&#34;&#34;</span><span class="p">))</span>   <span class="c1"># &lt;----- 2.</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">answer</span> <span class="o">=</span> <span class="s2">&#34;Sorry, what did you say?&#34;</span>
+    <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s2">&#34;answer&#34;</span><span class="p">:</span> <span class="n">answer</span><span class="p">})</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>接下来我们来实现 <code>siwi_bot</code>，真正处理提问的逻辑。</p>
+<h3 id="处理请求bot" class="headerLink">
+    <a href="#%e5%a4%84%e7%90%86%e8%af%b7%e6%b1%82bot" class="header-mark"></a>处理请求(bot)</h3><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">│            │  Sentence    ./bot/          │
+│ ┌──────────▼──────────┐                   │
+│ │ Intent matching,    │   ./bot/classifier│
+│ │ Symentic Processing │                   │
+│ └──────────┬──────────┘                   │
+│            │  Intent, Entities            │
+│ ┌──────────▼──────────┐                   │
+│ │ Intent Actor        │   ./bot/actions   │
+└─┴──────────┬──────────┴───────────────────┘
+</code></pre></td></tr></table>
+</div>
+</div><p>前边提到过，KBQA 基本上是</p>
+<p>a. 把问题解析、转换成在知识图谱中的查询</p>
+<p>b. 查询得到结果之后进行筛选、翻译成结果</p>
+<p>这里，我们把 a. 的逻辑放在 <code>classifier</code> 里，b. 的逻辑放在 <code>actions</code>(actor) 里。</p>
+<p>a. HTTP 请求的问题句子 <code>sentence</code> 传过来，用 <code>classifier</code> 解析它的意图和句子实体</p>
+<p>b. 用意图和句子实体构造 <code>action</code>，并链接图数据库执行，获取结果。</p>
+<p>代码段：<code>src/siwi/bot/bot/__init__.py</code></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">siwi.bot.actions</span> <span class="kn">import</span> <span class="n">SiwiActions</span>
+<span class="kn">from</span> <span class="nn">siwi.bot.classifier</span> <span class="kn">import</span> <span class="n">SiwiClassifier</span>
+
+
+<span class="k">class</span> <span class="nc">SiwiBot</span><span class="p">():</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">connection_pool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">classifier</span> <span class="o">=</span> <span class="n">SiwiClassifier</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">actions</span> <span class="o">=</span> <span class="n">SiwiActions</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connection_pool</span> <span class="o">=</span> <span class="n">connection_pool</span>
+
+    <span class="k">def</span> <span class="nf">query</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sentence</span><span class="p">):</span>
+        <span class="n">intent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">classifier</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">sentence</span><span class="p">)</span> <span class="c1"># &lt;--- a.</span>
+        <span class="n">action</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">actions</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">intent</span><span class="p">)</span>      <span class="c1"># &lt;--- b.</span>
+        <span class="k">return</span> <span class="n">action</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">connection_pool</span><span class="p">)</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>首先咱们来进一步实现一下 <code>SiwiClassifier</code> 吧。</p>
+<h4 id="语义解析classifier" class="headerLink">
+    <a href="#%e8%af%ad%e4%b9%89%e8%a7%a3%e6%9e%90classifier" class="header-mark"></a>语义解析(classifier)</h4><p><code>classifier </code> 需要在 <code>get(sentence)</code> 方法里将句子中的实体和句子的意图解析、分类出来。通常来说，这里是需要借助机器学习、NLP去分词、分类实现的，这里只是为了展示这个过程实际上只是各种 <code>if/ else</code>。</p>
+<p>我们这里实现了三类意图的问题：</p>
+<ul>
+<li>关系（A，B）：获得 A 和 B 在图谱中的关系路径，比如姚明和湖人队的关系是？</li>
+<li>服役情况：比如乔纳森在哪里服役？</li>
+<li>关注情况：比如邓肯关注了谁？</li>
+</ul>
+<blockquote>
+<p>❓ 开放问题：</p>
+<p>如果看教程的你觉得这几个问题太没意思了，这里留一个开放问题，你可以在 Siwi 里帮我们实现：「共同好友（A，B）获得 A 和 B 的一度共同好友」这个意图（或者更酷的其他句子）么？欢迎来 Github：github.com/wey-gu/nebula-siwi/ 提 PR 哦，看看谁先实现。</p>
+</blockquote>
+<p>代码片段：<code>src/siwi/bot/classfier/__init__.py</code></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="k">class</span> <span class="nc">SiwiClassifier</span><span class="p">():</span>
+    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sentence</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="s2">&#34;&#34;&#34;
+</span><span class="s2">        Classify Sentences and Fill Slots.
+</span><span class="s2">        This should be done by NLP, here we fake one to demostrate
+</span><span class="s2">        the intent Actor --&gt; Graph DB work flow.
+</span><span class="s2">
+</span><span class="s2">        sentense:
+</span><span class="s2">          relation:
+</span><span class="s2">            - What is the relationship between Yao Ming and Lakers?
+</span><span class="s2">            - How does Tracy McGrady and Lakers connected?
+</span><span class="s2">          serving:
+</span><span class="s2">            - Which team had Jonathon Simmons served?
+</span><span class="s2">          friendship:
+</span><span class="s2">            - Whom does Tim Duncan follow?
+</span><span class="s2">            - Who are Tracy McGrady&#39;s friends?
+</span><span class="s2">
+</span><span class="s2">        returns:
+</span><span class="s2">        {
+</span><span class="s2">            &#34;entities&#34;: entities,
+</span><span class="s2">            &#34;intents&#34;: intents
+</span><span class="s2">        }
+</span><span class="s2">        &#34;&#34;&#34;</span>
+        <span class="n">entities</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_matched_entities</span><span class="p">(</span><span class="n">sentence</span><span class="p">)</span>
+        <span class="n">intents</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_matched_intents</span><span class="p">(</span><span class="n">sentence</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&#34;entities&#34;</span><span class="p">:</span> <span class="n">entities</span><span class="p">,</span>
+            <span class="s2">&#34;intents&#34;</span><span class="p">:</span> <span class="n">intents</span>
+        <span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>这里，我把匹配的规则（等价于 if else&hellip;）写在了 <code>src/siwi/bot/test/data</code> 之下的 YAML 文件里，这样增加 <code>classifier</code> 之中新的规则只需要更新这个文件就可以了：</p>
+<h5 id="意图识别intent" class="headerLink">
+    <a href="#%e6%84%8f%e5%9b%be%e8%af%86%e5%88%abintent" class="header-mark"></a>意图识别(intent)</h5><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="k">def</span> <span class="nf">load_entity_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="c1"># load data from yaml files</span>
+    <span class="n">module_path</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span> <span class="n">siwi</span><span class="o">.</span><span class="n">__path__</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="si">}</span><span class="s2">/bot/test/data&#34;</span>
+    <span class="c1">#...</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span> <span class="n">module_path</span> <span class="si">}</span><span class="s2">/intents.yaml&#34;</span><span class="p">,</span> <span class="s2">&#34;r&#34;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">intents</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">file</span><span class="p">)[</span><span class="s2">&#34;intents&#34;</span><span class="p">]</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>对于每一个意图来说：</p>
+<ul>
+<li><code>intents.&lt;名字&gt;</code> 代表名字</li>
+<li>名字之后的 <code>action</code> 代表后边在要实现的相应的 <code>xxxAction</code> 的类
+<ul>
+<li>比如 <code>RelationshipAction</code> 将是用来处理查询关系（A，B）这样的问题的 Action 类</li>
+</ul>
+</li>
+<li><code>keywords</code> 代表在句子之中匹配的关键词
+<ul>
+<li>比如问句里出现 serve，served，serving 的字眼的时候，将会匹配服役的问题</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>💡：写 if else 条件来对应意图是不容易的，因为不同意图不可能没有关键词相交的情况，我们的实现只是一个非常简陋、不严谨的方式。在实际场景下，训练模型去做匹配效果会更好，有意思的是，那些做的比较好的模型的输入和我们的 YAML 的格式是很类似的。</p>
+</blockquote>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="nn">---</span><span class="w">
+</span><span class="w"></span><span class="nt">intents</span><span class="p">:</span><span class="w">
+</span><span class="w">  </span><span class="nt">fallback</span><span class="p">:</span><span class="w">
+</span><span class="w">    </span><span class="nt">action</span><span class="p">:</span><span class="w">
+</span><span class="w">      </span><span class="l">FallbackAction</span><span class="w">
+</span><span class="w">    </span><span class="nt">keywords</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span><span class="w">
+</span><span class="w">  </span><span class="nt">relationship</span><span class="p">:</span><span class="w">
+</span><span class="w">    </span><span class="nt">action</span><span class="p">:</span><span class="w">
+</span><span class="w">      </span><span class="l">RelationshipAction</span><span class="w">
+</span><span class="w">    </span><span class="nt">keywords</span><span class="p">:</span><span class="w">
+</span><span class="w">      </span>- <span class="l">between</span><span class="w">
+</span><span class="w">      </span>- <span class="l">relation</span><span class="w">
+</span><span class="w">      </span>- <span class="l">relationship</span><span class="w">
+</span><span class="w">      </span>- <span class="l">related</span><span class="w">
+</span><span class="w">      </span>- <span class="l">connect</span><span class="w">
+</span><span class="w">      </span>- <span class="l">correlate</span><span class="w">
+</span><span class="w">  </span><span class="nt">serve</span><span class="p">:</span><span class="w">
+</span><span class="w">    </span><span class="nt">action</span><span class="p">:</span><span class="w">
+</span><span class="w">      </span><span class="l">ServeAction</span><span class="w">
+</span><span class="w">    </span><span class="nt">keywords</span><span class="p">:</span><span class="w">
+</span><span class="w">      </span>- <span class="l">serve</span><span class="w">
+</span><span class="w">      </span>- <span class="l">served</span><span class="w">
+</span><span class="w">      </span>- <span class="l">serving</span><span class="w">
+</span><span class="w">  </span><span class="nt">friend</span><span class="p">:</span><span class="w">
+</span><span class="w">    </span><span class="nt">action</span><span class="p">:</span><span class="w">
+</span><span class="w">      </span><span class="l">FollowAction</span><span class="w">
+</span><span class="w">    </span><span class="nt">keywords</span><span class="p">:</span><span class="w">
+</span><span class="w">      </span>- <span class="l">follows</span><span class="w">
+</span><span class="w">      </span>- <span class="l">followed</span><span class="w">
+</span><span class="w">      </span>- <span class="l">follow</span><span class="w">
+</span><span class="w">      </span>- <span class="l">friend</span><span class="w">
+</span><span class="w">      </span>- <span class="l">friends</span><span class="w">
+</span></code></pre></td></tr></table>
+</div>
+</div><h5 id="实体识别entity" class="headerLink">
+    <a href="#%e5%ae%9e%e4%bd%93%e8%af%86%e5%88%abentity" class="header-mark"></a>实体识别(entity)</h5><p>类似的，实体识别的部分本质上也是 if else，只不过这里利用到了**<a href="https://zh.wikipedia.org/wiki/AC%E8%87%AA%E5%8A%A8%E6%9C%BA%E7%AE%97%E6%B3%95" target="_blank" rel="noopener noreffer">Aho–Corasick算法</a>**来帮助搜索实体，在生产（非玩具）的情况下，应该用 NLP 里的分词的方法来做。</p>
+<blockquote>
+<p>💡：大家可以去了解一下这个 <a href="https://zh.wikipedia.org/wiki/AC%E8%87%AA%E5%8A%A8%E6%9C%BA%E7%AE%97%E6%B3%95" target="_blank" rel="noopener noreffer">AC自动机算法</a></p>
+</blockquote>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="k">def</span> <span class="nf">setup_entity_tree</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">entity_type_map</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+        <span class="n">key</span><span class="p">:</span> <span class="s2">&#34;player&#34;</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">players</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+        <span class="p">})</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">entity_type_map</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+        <span class="n">key</span><span class="p">:</span> <span class="s2">&#34;team&#34;</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">teams</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+        <span class="p">})</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">entity_tree</span> <span class="o">=</span> <span class="n">ahocorasick</span><span class="o">.</span><span class="n">Automaton</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">entity</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">entity_type_map</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">entity_tree</span><span class="o">.</span><span class="n">add_word</span><span class="p">(</span><span class="n">entity</span><span class="p">,</span> <span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">entity</span><span class="p">))</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">entity_tree</span><span class="o">.</span><span class="n">make_automaton</span><span class="p">()</span>
+
+<span class="c1">#...</span>
+
+<span class="k">def</span> <span class="nf">get_matched_entities</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sentence</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+    <span class="s2">&#34;&#34;&#34;
+</span><span class="s2">    Consume a sentence to be matched with ahocorasick
+</span><span class="s2">    Returns a dict: {entity: entity_type}
+</span><span class="s2">    &#34;&#34;&#34;</span>
+    <span class="n">_matched</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">entity_tree</span><span class="o">.</span><span class="n">iter</span><span class="p">(</span><span class="n">sentence</span><span class="p">):</span>
+        <span class="n">entities_matched</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="n">entity</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">entity_type_map</span><span class="p">[</span><span class="n">entity</span><span class="p">]</span> <span class="k">for</span> <span class="n">entity</span> <span class="ow">in</span> <span class="n">_matched</span>
+    <span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>至此，我们的 <code>SiwiClassifier.get(sentence)</code> 已经能返回解析、分类出来的意图和实体了，这时候，它们会被传给 Actions 来让 siwi bot 知道如何去执行知识图谱的查询啦！</p>
+<h4 id="构造图谱查询action" class="headerLink">
+    <a href="#%e6%9e%84%e9%80%a0%e5%9b%be%e8%b0%b1%e6%9f%a5%e8%af%a2action" class="header-mark"></a>构造图谱查询(action)</h4><p>还记得前边的 bot 代码里，最后一步，图谱查询的动作是这么被构造的：</p>
+<p><code>action = self.actions.get(intent)</code></p>
+<p>现在咱们就把它实现一下：</p>
+<ol>
+<li>
+<p>在前边提到过的 <code>intents.yaml</code> 里获取这个意图里配置的意图的类名称</p>
+</li>
+<li>
+<p>导入相应的 Action 类</p>
+</li>
+</ol>
+<p>代码段：<code>src/bot/actions/__init__.py</code></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="k">class</span> <span class="nc">SiwiActions</span><span class="p">():</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">intent_map</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">load_data</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">load_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># load data from yaml files</span>
+        <span class="n">module_path</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span> <span class="n">siwi</span><span class="o">.</span><span class="n">__path__</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="si">}</span><span class="s2">/bot/test/data&#34;</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span> <span class="n">module_path</span> <span class="si">}</span><span class="s2">/intents.yaml&#34;</span><span class="p">,</span> <span class="s2">&#34;r&#34;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">intent_map</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">file</span><span class="p">)[</span><span class="s2">&#34;intents&#34;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">intent</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="s2">&#34;&#34;&#34;
+</span><span class="s2">        returns SiwiActionBase
+</span><span class="s2">        &#34;&#34;&#34;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">intent</span><span class="p">[</span><span class="s2">&#34;intents&#34;</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">intent_name</span> <span class="o">=</span> <span class="n">intent</span><span class="p">[</span><span class="s2">&#34;intents&#34;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">intent_name</span> <span class="o">=</span> <span class="s2">&#34;fallback&#34;</span>
+
+        <span class="n">cls_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">intent_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="n">intent_name</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;action&#34;</span><span class="p">)</span> <span class="c1">#-------&gt; 1.</span>
+        <span class="n">action_cls</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span>          <span class="c1">#-------&gt; 2.</span>
+            <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="s2">&#34;siwi.bot.actions&#34;</span><span class="p">),</span> <span class="n">cls_name</span><span class="p">)</span>
+        <span class="n">action</span> <span class="o">=</span> <span class="n">action_cls</span><span class="p">(</span><span class="n">intent</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">action</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>最后，我们来实现其中一个<code>Action</code> 类，比如 <code>RelationshipAction</code> 对应的代码如下：</p>
+<ol>
+<li>根据提供的 A 和 B，构造并执行图数据库之中的 <code>FIND PATH</code></li>
+<li>将 <code>FIND PATH</code> 的结果进行解析，通过 <code>as_path()</code> 方法的封装，获得 path 类型的数据，并处理一个句子返回给用户</li>
+</ol>
+<blockquote>
+<p>💡：FIND PATH 就是字面意思的查找路径，<a href="https://docs.nebula-graph.com.cn/2.6.1/3.ngql-guide/16.subgraph-and-path/2.find-path/" target="_blank" rel="noopener noreffer">这里</a>有详细的解释哦。</p>
+</blockquote>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="k">class</span> <span class="nc">RelationshipAction</span><span class="p">(</span><span class="n">SiwiActionBase</span><span class="p">):</span>
+    <span class="s2">&#34;&#34;&#34;
+</span><span class="s2">    USE basketballplayer;
+</span><span class="s2">    FIND NOLOOP PATH
+</span><span class="s2">    FROM &#34;player100&#34; TO &#34;team204&#34; OVER * BIDIRECT UPTO 4 STEPS;
+</span><span class="s2">    &#34;&#34;&#34;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">intent</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;[DEBUG] RelationshipAction intent: </span><span class="si">{</span> <span class="n">intent</span> <span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">intent</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">entity_left</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">entity_right</span> <span class="o">=</span> <span class="n">intent</span><span class="p">[</span><span class="s2">&#34;entities&#34;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">left_vid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vid</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">entity_left</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">right_vid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vid</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">entity_right</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&#34;[WARN] RelationshipAction entities recognition Failure &#34;</span>
+                <span class="sa">f</span><span class="s2">&#34;will fallback to FallbackAction, &#34;</span>
+                <span class="sa">f</span><span class="s2">&#34;intent: </span><span class="si">{</span> <span class="n">intent</span> <span class="si">}</span><span class="s2">&#34;</span>
+                <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">error</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">connection_pool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_error_check</span><span class="p">()</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s1">&#39;USE basketballplayer;&#39;</span>
+            <span class="sa">f</span><span class="s1">&#39;FIND NOLOOP PATH &#39;</span>
+            <span class="sa">f</span><span class="s1">&#39;FROM &#34;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">left_vid</span><span class="si">}</span><span class="s1">&#34; TO &#34;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">right_vid</span><span class="si">}</span><span class="s1">&#34; &#39;</span>
+            <span class="sa">f</span><span class="s1">&#39;OVER * BIDIRECT UPTO 4 STEPS;&#39;</span>
+            <span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&#34;[DEBUG] query for RelationshipAction :</span><span class="se">\n\t</span><span class="si">{</span> <span class="n">query</span> <span class="si">}</span><span class="s2">&#34;</span>
+            <span class="p">)</span>
+        <span class="k">with</span> <span class="n">connection_pool</span><span class="o">.</span><span class="n">session_context</span><span class="p">(</span><span class="s2">&#34;root&#34;</span><span class="p">,</span> <span class="s2">&#34;nebula&#34;</span><span class="p">)</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>        <span class="c1">#--------------------&gt; 1.</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">result</span><span class="o">.</span><span class="n">is_succeeded</span><span class="p">():</span>
+            <span class="k">return</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&#34;Something is wrong on Graph Database connection when query &#34;</span>
+                <span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span> <span class="n">query</span> <span class="si">}</span><span class="s2">&#34;</span>
+                <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">is_empty</span><span class="p">():</span>
+            <span class="k">return</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&#34;There is no relationship between &#34;</span>
+                <span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span> <span class="bp">self</span><span class="o">.</span><span class="n">entity_left</span> <span class="si">}</span><span class="s2"> and </span><span class="si">{</span> <span class="bp">self</span><span class="o">.</span><span class="n">entity_right</span> <span class="si">}</span><span class="s2">&#34;</span>
+                <span class="p">)</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">row_values</span><span class="p">(</span><span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">as_path</span><span class="p">()</span>    <span class="c1">#-------------------&gt; 2.</span>
+        <span class="n">relationships</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">relationships</span><span class="p">()</span>
+        <span class="n">relations_str</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">(</span>
+            <span class="n">relationships</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">start_vertex_id</span><span class="p">()</span><span class="o">.</span><span class="n">as_string</span><span class="p">())</span>
+        <span class="k">for</span> <span class="n">rel_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">length</span><span class="p">()):</span>
+            <span class="n">rel</span> <span class="o">=</span> <span class="n">relationships</span><span class="p">[</span><span class="n">rel_index</span><span class="p">]</span>
+            <span class="n">relations_str</span> <span class="o">+=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&#34; </span><span class="si">{</span> <span class="n">rel</span><span class="o">.</span><span class="n">edge_name</span><span class="p">()</span> <span class="si">}</span><span class="s2">s &#34;</span>
+                <span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">(</span><span class="n">rel</span><span class="o">.</span><span class="n">end_vertex_id</span><span class="p">()</span><span class="o">.</span><span class="n">as_string</span><span class="p">())</span> <span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&#34;There are at least </span><span class="si">{</span> <span class="n">result</span><span class="o">.</span><span class="n">row_size</span><span class="p">()</span> <span class="si">}</span><span class="s2"> relations between &#34;</span>
+            <span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span> <span class="bp">self</span><span class="o">.</span><span class="n">entity_left</span> <span class="si">}</span><span class="s2"> and </span><span class="si">{</span> <span class="bp">self</span><span class="o">.</span><span class="n">entity_right</span> <span class="si">}</span><span class="s2">, &#34;</span>
+            <span class="sa">f</span><span class="s2">&#34;one relation path is: </span><span class="si">{</span> <span class="n">relations_str</span> <span class="si">}</span><span class="s2">.&#34;</span>
+            <span class="p">)</span>
+
+</code></pre></td></tr></table>
+</div>
+</div><p>至此，咱们就已经实现了后端的所有功能，我们可以把它启动起来试试了！</p>
+<h3 id="测试一下" class="headerLink">
+    <a href="#%e6%b5%8b%e8%af%95%e4%b8%80%e4%b8%8b" class="header-mark"></a>测试一下</h3><h4 id="启动图数据库" class="headerLink">
+    <a href="#%e5%90%af%e5%8a%a8%e5%9b%be%e6%95%b0%e6%8d%ae%e5%ba%93" class="header-mark"></a>启动图数据库</h4><p>我们在 Nebula Graph 里建立（导入数据）一个篮球的知识图谱。</p>
+<blockquote>
+<p>💡：在导入数据之前，请先部署一个 Nebula Graph 集群。最简便的部署方式是使用 Nebula-UP 这个小工具，只需要一行命令就能在 Linux 机器上同时启动一个 Nebula Graph 核心和可视化图探索工具 <a href="https://docs.nebula-graph.com.cn/2.6.1/nebula-studio/about-studio/st-ug-what-is-graph-studio/" target="_blank" rel="noopener noreffer">Nebula Graph Studio</a>。如果你更愿意用 Docker 部署，请参考<a href="https://docs.nebula-graph.com.cn/2.6.1/4.deployment-and-installation/2.compile-and-install-nebula-graph/3.deploy-nebula-graph-with-docker-compose/" target="_blank" rel="noopener noreffer">这个文档</a>。</p>
+</blockquote>
+<p>本文假设我们使用 <a href="https://siwei.io/nebula-up/" target="_blank" rel="noopener noreffer">Nebula-UP</a> 来部署一个 Nebula Graph：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">curl -fsSL nebula-up.siwei.io/install.sh <span class="p">|</span> bash
+</code></pre></td></tr></table>
+</div>
+</div><p>之后，我们会看到这样的提示：</p>
+<p></p>
+<p>按照提示，我们可以通过这个命令进入到有 Nebula Console 的容器里：</p>
+<blockquote>
+<p>💡：<a href="https://github.com/vesoft-inc/nebula-console" target="_blank" rel="noopener noreffer">Nebula Console</a> 是命令行访问 Nebula Graph 图数据库的客户端，支持 Linux，Windows 和 macOS，下载地址：<a href="https://github.com/vesoft-inc/nebula-console/releases" target="_blank" rel="noopener noreffer">这里</a></p>
+</blockquote>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">~/.nebula-up/console.sh
+</code></pre></td></tr></table>
+</div>
+</div><p>然后，在 <code>#</code> 的提示符下就表示我们进来了，我们在里边可以执行：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">nebula-console -addr graphd -port 9669 -user root -p nebula
+</code></pre></td></tr></table>
+</div>
+</div><p>这样就表示我们连接上了 Nebula Graph 图数据库：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="o">/</span><span class="w"> </span><span class="c1"># nebula-console -addr graphd -port 9669 -user root -p nebula
+</span><span class="c1"></span><span class="n">Welcome</span><span class="w"> </span><span class="k">to</span><span class="w"> </span><span class="n">Nebula</span><span class="w"> </span><span class="n">Graph</span><span class="o">!</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="p">(</span><span class="n">root</span><span class="o">@</span><span class="n">nebula</span><span class="p">)</span><span class="w"> </span><span class="p">[(</span><span class="n">none</span><span class="p">)]</span><span class="o">&gt;</span><span class="w">
+</span></code></pre></td></tr></table>
+</div>
+</div><p>在这里，我们就可以通过 nGQL 去操作 Nebula Graph，不过我们先退出来，执行 <code>exit</code>：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="p">(</span><span class="n">root</span><span class="o">@</span><span class="n">nebula</span><span class="p">)</span><span class="w"> </span><span class="p">[(</span><span class="n">none</span><span class="p">)]</span><span class="o">&gt;</span><span class="w"> </span><span class="k">exit</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="n">Bye</span><span class="w"> </span><span class="n">root</span><span class="o">!</span><span class="w">
+</span><span class="w"></span><span class="n">Fri</span><span class="p">,</span><span class="w"> </span><span class="mi">31</span><span class="w"> </span><span class="kt">Dec</span><span class="w"> </span><span class="mi">2021</span><span class="w"> </span><span class="mi">04</span><span class="p">:</span><span class="mi">11</span><span class="p">:</span><span class="mi">28</span><span class="w"> </span><span class="n">UTC</span><span class="w">
+</span></code></pre></td></tr></table>
+</div>
+</div><p>我们在这个容器内把基于 nGQL 语句的数据下载下来：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">/ <span class="c1"># wget https://docs.nebula-graph.io/2.0/basketballplayer-2.X.ngql</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>然后通过 Nebula Console 的 <code>-f &lt;file_path&gt;</code> 把数据导入进去：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">nebula-console -addr graphd -port <span class="m">9669</span> -user root -p nebula -f basketballplayer-2.X.ngql
+</code></pre></td></tr></table>
+</div>
+</div><p>至此，我们就启动了一个 Nebula Graph 图数据库，还在里边加载了篮球的知识图谱！</p>
+<blockquote>
+<p>💡：还记得前边我们提到的 <a href="https://nebula-graph.com.cn/demo/" target="_blank" rel="noopener noreffer">在线体验</a> 环境么？现在，我们可以在这个利用 Nebula-UP 部署了 Nebula 的环境里启动自己的 Nebula Studio 啦，按照上边 Nebula-UP 的提示：http://&lt;本机IP&gt;:7001 就是它的地址，然后大家可以参考<a href="https://docs.nebula-graph.com.cn/2.6.1/nebula-studio/deploy-connect/st-ug-connect/" target="_blank" rel="noopener noreffer">文档</a>和<a href="https://www.bilibili.com/video/BV1hq4y1177e" target="_blank" rel="noopener noreffer">在线体验介绍</a>去了解更多。</p>
+<p></p>
+</blockquote>
+<h4 id="启动-siwi-backend" class="headerLink">
+    <a href="#%e5%90%af%e5%8a%a8-siwi-backend" class="header-mark"></a>启动 Siwi-backend</h4><p>大家可以直接 clone 我的代码：<code>git clone https://github.com/wey-gu/nebula-siwi/</code></p>
+<p>然后安装、启动 Siwi Backend：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="nb">cd</span> nebula-siwi
+
+<span class="c1"># Install dependencies</span>
+python3 -m pip install -r src/requirements.txt
+
+<span class="c1"># Install siwi backend</span>
+python3 -m build
+
+<span class="c1"># Configure Nebula Graph Endpoint</span>
+<span class="nb">export</span> <span class="nv">NG_ENDPOINTS</span><span class="o">=</span>127.0.0.1:9669
+
+<span class="c1"># Run Backend API server</span>
+gunicorn --bind :5000 wsgi --workers <span class="m">1</span> --threads <span class="m">1</span> --timeout <span class="m">60</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>启动之后，我们可以另外开窗口，通过 cURL 去发起问题给 backend，更多细节大家可以参考 GitHub 上的 README：</p>
+<p><a href="https://github.com/wey-gu/nebula-siwi/blob/main/images/backend-demo.webp" target="_blank" rel="noopener noreffer"></a></p>
+<p>至此，我们已经写好了 QA 系统的重要的代码啦，大家是不是对一个 KBQA 的构成有了更清晰的概念了呢？</p>
+<p>接下来，我们为它增加一个界面！</p>
+<h2 id="siwi-frontend" class="headerLink">
+    <a href="#siwi-frontend" class="header-mark"></a>Siwi-frontend</h2><h3 id="聊天界面" class="headerLink">
+    <a href="#%e8%81%8a%e5%a4%a9%e7%95%8c%e9%9d%a2" class="header-mark"></a>聊天界面</h3><p>我们利用 <a href="https://github.com/juzser/vue-bot-ui" target="_blank" rel="noopener noreffer">Vue Bot UI</a> 这个可爱的机器人界面的 Vue 实现可以很容易构造一个</p>
+<p>代码段：<code>src/siwi/frontend/src/App.vue</code></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-vue" data-lang="vue"><span class="p">&lt;</span><span class="nt">template</span><span class="p">&gt;</span>
+  <span class="p">&lt;</span><span class="nt">div</span> <span class="na">id</span><span class="o">=</span><span class="s">&#34;app&#34;</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">VueBotUI</span>
+      <span class="nt">:messages</span><span class="s">=&#34;msg&#34;</span>
+      <span class="nt">:options</span><span class="s">=&#34;botOptions&#34;</span>
+      <span class="nt">:bot-typing</span><span class="s">=&#34;locking&#34;</span>
+      <span class="nt">:input-disable</span><span class="s">=&#34;locking&#34;</span>
+      <span class="nt">@msg-send</span><span class="s">=&#34;msgSender&#34;</span>
+    <span class="p">/&gt;</span>
+  <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+<span class="p">&lt;/</span><span class="nt">template</span><span class="p">&gt;</span>
+<span class="p">&lt;</span><span class="nt">script</span><span class="p">&gt;</span>
+<span class="kr">import</span> <span class="p">{</span> <span class="nx">VueBotUI</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;vue-bot-ui&#39;</span>
+</code></pre></td></tr></table>
+</div>
+</div><p><a href="https://github.com/wey-gu/nebula-siwi/blob/main/src/siwi_frontend/images/demo.webp" target="_blank" rel="noopener noreffer"></a></p>
+<p>注意到那个小飞机按钮了吧，它是发出问题请求的按键，我们要在按下它的时候对后端做出请求。</p>
+<h3 id="访问后端" class="headerLink">
+    <a href="#%e8%ae%bf%e9%97%ae%e5%90%8e%e7%ab%af" class="header-mark"></a>访问后端</h3><p>这部分用到了<a href="https://github.com/axios/axios" target="_blank" rel="noopener noreffer">Axios</a>，它是浏览器里访问其他地址的 HTTP 客户端。</p>
+<ol>
+<li>在按下的时候，<code>@msg-send=&quot;msgSender&quot;</code> 会触发 <code>msgSender()</code></li>
+<li><code> msgSender()</code>去构造<code>axios.post(this.apiEndpoint, { &quot;question&quot;: data.text })</code> 的请求给 Siwi 的后端</li>
+<li>后端的结果被 <code>push()</code> 到界面的聊天消息里，渲染出来 <code>this.msg.push()</code></li>
+</ol>
+<p>代码段：<code>src/siwi/frontend/src/App.vue</code></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-vue" data-lang="vue"><span class="p">&lt;</span><span class="nt">template</span><span class="p">&gt;</span>
+  <span class="p">&lt;</span><span class="nt">div</span> <span class="na">id</span><span class="o">=</span><span class="s">&#34;app&#34;</span><span class="p">&gt;</span>
+
+     <span class="p">&lt;</span><span class="nt">VueBotUI</span>
+      <span class="nt">:messages</span><span class="s">=&#34;msg&#34;</span>
+      <span class="nt">:options</span><span class="s">=&#34;botOptions&#34;</span>
+      <span class="nt">:bot-typing</span><span class="s">=&#34;locking&#34;</span>
+      <span class="nt">:input-disable</span><span class="s">=&#34;locking&#34;</span>
+      <span class="nt">@msg-send</span><span class="s">=&#34;msgSender&#34;</span>         <span class="err">----------------</span> <span class="na">1.</span>
+    <span class="p">/&gt;</span>
+  <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+<span class="p">&lt;/</span><span class="nt">template</span><span class="p">&gt;</span>
+
+<span class="p">&lt;</span><span class="nt">script</span><span class="p">&gt;</span>
+<span class="kr">import</span> <span class="p">{</span> <span class="nx">VueBotUI</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;vue-bot-ui&#39;</span>
+<span class="kr">import</span> <span class="nx">axios</span> <span class="nx">from</span> <span class="s2">&#34;axios&#34;</span><span class="p">;</span>
+
+<span class="kr">export</span> <span class="k">default</span> <span class="p">{</span>
+  <span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;App&#39;</span><span class="p">,</span>
+  <span class="nx">components</span><span class="o">:</span> <span class="p">{</span>
+    <span class="nx">VueBotUI</span><span class="p">,</span>
+  <span class="p">},</span>
+  <span class="nx">methods</span><span class="o">:</span> <span class="p">{</span>
+    <span class="nx">msgSender</span><span class="p">(</span><span class="nx">data</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">this</span><span class="p">.</span><span class="nx">msg</span><span class="p">.</span><span class="nx">push</span><span class="p">({</span>
+        <span class="nx">agent</span><span class="o">:</span> <span class="s2">&#34;user&#34;</span><span class="p">,</span>
+        <span class="nx">type</span><span class="o">:</span> <span class="s2">&#34;text&#34;</span><span class="p">,</span>
+        <span class="nx">text</span><span class="o">:</span> <span class="nx">data</span><span class="p">.</span><span class="nx">text</span><span class="p">,</span>
+      <span class="p">});</span>
+
+      <span class="k">this</span><span class="p">.</span><span class="nx">locking</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
+
+      <span class="nx">axios</span><span class="p">.</span><span class="nx">post</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">apiEndpoint</span><span class="p">,</span> <span class="p">{</span> <span class="s2">&#34;question&#34;</span><span class="o">:</span> <span class="nx">data</span><span class="p">.</span><span class="nx">text</span> <span class="p">}).</span><span class="nx">then</span><span class="p">((</span><span class="nx">response</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">response</span><span class="p">);</span>   <span class="o">-----------------</span> <span class="mf">2.</span>
+
+        <span class="k">this</span><span class="p">.</span><span class="nx">msg</span><span class="p">.</span><span class="nx">push</span><span class="p">({</span>          <span class="o">-----------------</span> <span class="mf">3.</span>
+          <span class="nx">agent</span><span class="o">:</span> <span class="s2">&#34;bot&#34;</span><span class="p">,</span>
+          <span class="nx">type</span><span class="o">:</span> <span class="s2">&#34;text&#34;</span><span class="p">,</span>
+          <span class="nx">text</span><span class="o">:</span> <span class="nx">response</span><span class="p">.</span><span class="nx">data</span><span class="p">.</span><span class="nx">answer</span><span class="p">,</span>
+        <span class="p">});</span>
+
+        <span class="k">this</span><span class="p">.</span><span class="nx">synthText</span> <span class="o">=</span> <span class="nx">response</span><span class="p">.</span><span class="nx">data</span><span class="p">.</span><span class="nx">answer</span><span class="p">;</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">agentSpeak</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
+
+        <span class="k">this</span><span class="p">.</span><span class="nx">locking</span> <span class="o">=</span> <span class="kc">false</span><span class="p">;</span>
+      <span class="p">});</span>
+    <span class="p">},</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>现在，我们已经有了一个图形界面的机器人啦，不过，更进一步，我们可以利用现代浏览器的接口，实现语音识别和机器人说话！</p>
+<h3 id="语音识别" class="headerLink">
+    <a href="#%e8%af%ad%e9%9f%b3%e8%af%86%e5%88%ab" class="header-mark"></a>语音识别</h3><p>我们借助于 <a href="https://github.com/Drackokacka/vue-web-speech" target="_blank" rel="noopener noreffer">Vue Web Speech</a>, 这个语音 API 的 VueJS 的绑定，可以很容易在按下 🎙️ 的时候接收人的语音，并把语音转换成文字发出去，在回答被返回之后，它（还是他/她😁？）也会把回答的句子读出来给用户。</p>
+<ol>
+<li><code>record</code> 在 <code>🎙️</code> 被按下之后，变成 <code>👂</code></li>
+<li>触发 <code>onResults()</code> 监听</li>
+<li>把返回结果发给 <code>this.synthText</code> 合成器，准备读出</li>
+<li><code>&lt;vue-web-speech-synth&gt;</code> 把语音读出</li>
+</ol>
+<p>代码段：<code>src/siwi/frontend/src/App.vue</code></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-vue" data-lang="vue"><span class="p">&lt;</span><span class="nt">template</span><span class="p">&gt;</span>
+  <span class="p">&lt;</span><span class="nt">div</span> <span class="na">id</span><span class="o">=</span><span class="s">&#34;app&#34;</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">button</span> <span class="na">id</span><span class="o">=</span><span class="s">&#34;mic_btn&#34;</span> <span class="err">@</span><span class="na">click</span><span class="o">=</span><span class="s">&#34;record = !record&#34;</span><span class="p">&gt;</span>
+        <span class="p">{{</span><span class="nx">record</span><span class="o">?</span><span class="s1">&#39;👂&#39;</span><span class="o">:</span><span class="s1">&#39;🎙️&#39;</span><span class="p">}}</span>      <span class="o">--------------------------&gt;</span> <span class="mf">1.</span>
+    <span class="p">&lt;/</span><span class="nt">button</span><span class="p">&gt;</span>
+
+    <span class="p">&lt;</span><span class="nt">vue-web-speech</span>
+      <span class="na">v</span><span class="nt">-model</span><span class="err">=&#34;</span><span class="na">record</span><span class="err">&#34;</span>
+      <span class="nt">@results</span><span class="s">=&#34;onResults&#34;</span>       <span class="err">--------------------------</span><span class="p">&gt;</span> <span class="mf">1.</span>
+      <span class="err">@</span><span class="nx">unrecognized</span><span class="o">=</span><span class="s2">&#34;unrecognized&#34;</span>
+    <span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="err">/vue-web-speech&gt;</span>
+
+<span class="p">...</span>
+    <span class="p">&lt;</span><span class="nt">vue-web-speech-synth</span>
+      <span class="na">v</span><span class="nt">-model</span><span class="err">=&#34;</span><span class="na">agentSpeak</span><span class="err">&#34;</span>
+      <span class="nt">:voice</span><span class="s">=&#34;synthVoice&#34;</span>
+      <span class="nt">:text</span><span class="s">=&#34;synthText&#34;</span>
+      <span class="nt">@list-voices</span><span class="s">=&#34;listVoices&#34;</span>  <span class="err">--------------------------</span><span class="p">&gt;</span> <span class="mf">4.</span>
+    <span class="o">/&gt;</span>
+
+  <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+<span class="p">&lt;/</span><span class="nt">template</span><span class="p">&gt;</span>
+
+<span class="p">&lt;</span><span class="nt">script</span><span class="p">&gt;</span>
+<span class="kr">import</span> <span class="p">{</span> <span class="nx">VueBotUI</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;vue-bot-ui&#39;</span>
+<span class="kr">import</span> <span class="nx">axios</span> <span class="nx">from</span> <span class="s2">&#34;axios&#34;</span><span class="p">;</span>
+
+<span class="kr">export</span> <span class="k">default</span> <span class="p">{</span>
+  <span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;App&#39;</span><span class="p">,</span>
+  <span class="nx">components</span><span class="o">:</span> <span class="p">{</span>
+    <span class="nx">VueBotUI</span><span class="p">,</span>
+  <span class="p">},</span>
+  <span class="nx">onResults</span> <span class="p">(</span><span class="nx">data</span><span class="p">)</span> <span class="p">{</span>             <span class="o">-------------------------&gt;</span> <span class="mf">2.</span>
+      <span class="k">this</span><span class="p">.</span><span class="nx">results</span> <span class="o">=</span> <span class="nx">data</span><span class="p">;</span>
+      <span class="k">this</span><span class="p">.</span><span class="nx">locking</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
+
+      <span class="k">this</span><span class="p">.</span><span class="nx">msg</span><span class="p">.</span><span class="nx">push</span><span class="p">({</span>
+        <span class="nx">agent</span><span class="o">:</span> <span class="s2">&#34;user&#34;</span><span class="p">,</span>
+        <span class="nx">type</span><span class="o">:</span> <span class="s2">&#34;text&#34;</span><span class="p">,</span>
+        <span class="nx">text</span><span class="o">:</span> <span class="nx">data</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+      <span class="p">});</span>
+
+      <span class="k">this</span><span class="p">.</span><span class="nx">locking</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
+      <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span>
+      <span class="nx">axios</span><span class="p">.</span><span class="nx">post</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">apiEndpoint</span><span class="p">,</span> <span class="p">{</span> <span class="s2">&#34;question&#34;</span><span class="o">:</span> <span class="nx">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="p">}).</span><span class="nx">then</span><span class="p">((</span><span class="nx">response</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">response</span><span class="p">.</span><span class="nx">data</span><span class="p">);</span>
+
+        <span class="k">this</span><span class="p">.</span><span class="nx">msg</span><span class="p">.</span><span class="nx">push</span><span class="p">({</span>
+          <span class="nx">agent</span><span class="o">:</span> <span class="s2">&#34;bot&#34;</span><span class="p">,</span>
+          <span class="nx">type</span><span class="o">:</span> <span class="s2">&#34;text&#34;</span><span class="p">,</span>
+          <span class="nx">text</span><span class="o">:</span> <span class="nx">response</span><span class="p">.</span><span class="nx">data</span><span class="p">.</span><span class="nx">answer</span><span class="p">,</span>
+        <span class="p">});</span>
+
+        <span class="k">this</span><span class="p">.</span><span class="nx">synthText</span> <span class="o">=</span> <span class="nx">response</span><span class="p">.</span><span class="nx">data</span><span class="p">.</span><span class="nx">answer</span><span class="p">;</span>  <span class="o">----------&gt;</span> <span class="mf">3.</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">agentSpeak</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
+      <span class="p">});</span>
+      <span class="k">this</span><span class="p">.</span><span class="nx">locking</span> <span class="o">=</span> <span class="kc">false</span><span class="p">;</span>
+    <span class="p">},</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+<span class="p">&lt;/</span><span class="nt">script</span><span class="p">&gt;</span>
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="总结" class="headerLink">
+    <a href="#%e6%80%bb%e7%bb%93" class="header-mark"></a>总结</h2><p>至此，我们已经学会了搭建自己的第一个 KBQA：知识图谱驱动的问答系统。</p>
+<p>回顾下它的代码结构：</p>
+<ul>
+<li><code>src/siwi</code> 对应后端
+<ul>
+<li>App 是 Flask API 处理的部分</li>
+<li>Bot 是处理请求、访问 Nebula Graph 的部分</li>
+</ul>
+</li>
+<li><code>src/siwi_frontend</code> 是前端</li>
+</ul>
+<p>希望大家在这个简陋的基础之上，多多探索，做出来更加成熟的聊天机器人，欢迎你来给我邮件、留言告诉我呀，这里：https://siwei.io/about 有我的联系方式。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">.
+├── README.md
+├── src
+│   ├── siwi                        <span class="c1"># Siwi-API Backend</span>
+│   │   ├── app                     <span class="c1"># Web Server, take HTTP requests and calls Bot API</span>
+│   │   └── bot                     <span class="c1"># Bot API</span>
+│   │       ├── actions             <span class="c1"># Take Intent, Slots, Query Knowledge Graph here</span>
+│   │       ├── bot                 <span class="c1"># Entrypoint of the Bot API</span>
+│   │       ├── classifier          <span class="c1"># Symentic Parsing, Intent Matching, Slot Filling</span>
+│   │       └── <span class="nb">test</span>                <span class="c1"># Example Data Source as equivalent/mocked module</span>
+│   └── siwi_frontend               <span class="c1"># Browser End</span>
+│       ├── README.md
+│       ├── package.json
+│       └── src
+│           ├── App.vue             <span class="c1"># Listening to user and pass Questions to Siwi-API</span>
+│           └── main.js
+└── wsgi.py
+</code></pre></td></tr></table>
+</div>
+</div><p>如果你很喜欢这样的小项目，欢迎来看看我之前的分享： 「<a href="https://siwei.io/corp-rel-graph/" target="_blank" rel="noopener noreffer">从0-1：如何构建一个企业股权图谱系统？</a>」哦。</p>
+<blockquote>
+<p>💡：你知道吗，我其实借助于 Katacoda 已经为大家搭建了一个交互式体验 Siwi + Nebula 的部署的环境，如果您的网络条件够快（Katacoda服务器在国外），可以在<a href="https://siwei.io/learn/nebula-101-siwi-kgqa/" target="_blank" rel="noopener noreffer">这里</a>点点鼠标就交互式体验它。</p>
+<p>视频介绍</p>
+<iframe src="//player.bilibili.com/player.html?aid=421964672&bvid=BV1Rm4y1Q7B5&cid=448090671&page=1" scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true"> </iframe>
+</blockquote>
+<h2 id="感谢用到的开源项目-" class="headerLink">
+    <a href="#%e6%84%9f%e8%b0%a2%e7%94%a8%e5%88%b0%e7%9a%84%e5%bc%80%e6%ba%90%e9%a1%b9%e7%9b%ae-" class="header-mark"></a>感谢用到的开源项目 ❤️</h2><p>这个小项目里我们用到了好多开源的项目，非常感谢这些贡献者们的慷慨与无私，开源是不是很酷呢？</p>
+<h3 id="backend" class="headerLink">
+    <a href="#backend" class="header-mark"></a>Backend</h3><ul>
+<li><a href="https://github.com/liuhuanyong/QASystemOnMedicalKG" target="_blank" rel="noopener noreffer">KGQA on MedicalKG</a> by <a href="https://liuhuanyong.github.io/" target="_blank" rel="noopener noreffer">Huanyong Liu</a></li>
+<li><a href="https://github.com/pallets/flask" target="_blank" rel="noopener noreffer">Flask</a></li>
+<li><a href="https://github.com/WojciechMula/pyahocorasick" target="_blank" rel="noopener noreffer">pyahocorasick</a> created by <a href="http://0x80.pl/" target="_blank" rel="noopener noreffer">Wojciech Muła</a></li>
+<li><a href="https://pyyaml.org/" target="_blank" rel="noopener noreffer">PyYaml</a></li>
+</ul>
+<h3 id="frontend" class="headerLink">
+    <a href="#frontend" class="header-mark"></a>Frontend</h3><ul>
+<li><a href="https://vuejs.org/" target="_blank" rel="noopener noreffer">VueJS</a> for frontend framework</li>
+<li><a href="https://github.com/juzser/vue-bot-ui" target="_blank" rel="noopener noreffer">Vue Bot UI</a>, as a lovely bot UI in vue</li>
+<li><a href="https://github.com/Drackokacka/vue-web-speech" target="_blank" rel="noopener noreffer">Vue Web Speech</a>, for speech API vue wrapper</li>
+<li><a href="https://github.com/axios/axios" target="_blank" rel="noopener noreffer">Axios</a> for browser http client</li>
+<li><a href="https://en.wikipedia.org/wiki/Solarized_%28color_scheme%29" target="_blank" rel="noopener noreffer">Solarized</a> for color scheme</li>
+<li><a href="https://github.com/alvarosaburido/vitesome" target="_blank" rel="noopener noreffer">Vitesome</a> for landing page design</li>
+</ul>
+<h3 id="graph-database" class="headerLink">
+    <a href="#graph-database" class="header-mark"></a>Graph Database</h3><ul>
+<li><a href="https://github.com/vesoft-inc/nebula/" target="_blank" rel="noopener noreffer">Nebula Graph</a> 高性能、云原生的开源分布式图数据库</li>
+</ul>]]></description>
+</item><item>
     <title>快速搭建调试 Nebula Graph Python Storage 客户端的环境</title>
     <link>https://siwei.io/nebula-python-storage-docker-guide/</link>
     <pubDate>Fri, 10 Dec 2021 16:03:07 &#43;0800</pubDate><author>
@@ -2072,12 +3329,12 @@ WHERE id(v) IN [&#34;c_132&#34;] RETURN p LIMIT 100
     <description><![CDATA[<div class="featured-image">
                 <img src="/featured-image.webp" referrerpolicy="no-referrer">
             </div><blockquote>
-<p>从 0 到 1 打造一个基于图数据库的智能问答助手。</p>
-<p>a PoC of Dialog System With Graph Database Backed Knowledge Graph.</p>
+<p>一个基于图数据库的智能问答助手项目。</p>
 </blockquote>
-<p>Related GitHub Repo: <a href="https://github.com/wey-gu/nebula-siwi/" target="_blank" rel="noopener noreffer">https://github.com/wey-gu/nebula-siwi/</a></p>
+<p>GitHub Repo: <a href="https://github.com/wey-gu/nebula-siwi/" target="_blank" rel="noopener noreffer">https://github.com/wey-gu/nebula-siwi/</a></p>
 <blockquote>
-<p>这个项目我也做成了互动教程，可以按照这里的步骤搭建起来 👉🏻 <a href="https://siwei.io/cources/" target="_blank" rel="noopener noreffer">https://siwei.io/cources/</a></p>
+<p>这个项目我也做成了互动教程，可以按照这里的步骤搭建起来 👉🏻 <a href="https://siwei.io/cources/" target="_blank" rel="noopener noreffer">https://siwei.io/cources/</a>
+update: 写了一篇完整介绍 Siwi 设计的文章 👉🏻 <a href="https://siwei.io/siwi" target="_blank" rel="noopener noreffer">https://siwei.io/siwi</a></p>
 </blockquote>
 <blockquote>
 <p>您也可以在 Nebula Playground 上直接玩这个数据集啦：https://nebula-graph.com.cn/demo/</p>
@@ -4653,78 +5910,5 @@ E0817 08:03:28.611912   <span class="m">169</span> StorageHttpIngestHandler.cpp:
 </code></pre></td></tr></table>
 </div>
 </div>]]></description>
-</item><item>
-    <title>Nebula Operator Kind，一键单机玩转 Nebula K8s 集群</title>
-    <link>https://siwei.io/nebula-operator-kind/</link>
-    <pubDate>Wed, 09 Jun 2021 19:27:00 &#43;0800</pubDate><author>
-        <name>Wey Gu</name>
-    </author><guid>https://siwei.io/nebula-operator-kind/</guid>
-    <description><![CDATA[<div class="featured-image">
-                <img src="/featured-image.webp" referrerpolicy="no-referrer">
-            </div><blockquote>
-<p>Nebula-Kind，无需依赖，一键安装尝鲜基于 Nebula Operator 的 K8s Nebula Graph Cluster。</p>
-<p>注： KIND 是一个 K8s 的 SIG，代表 K8s in Docker。</p>
-</blockquote>
-<h2 id="nebula-operator-kind-是什么" class="headerLink">
-    <a href="#nebula-operator-kind-%e6%98%af%e4%bb%80%e4%b9%88" class="header-mark"></a>Nebula-Operator-Kind 是什么</h2><p>Nebula Graph 作为云原生的分布式开源图数据库，有开源的 <a href="https://github.com/vesoft-inc/nebula-operator" target="_blank" rel="noopener noreffer">K8s Operator</a> 供大家在 K8s 上方便的通过 CRD 去维护、部署 Nebula Graph 集群。</p>
-<p>对于手头没有方便的 K8s 环境的同学，如果想尝鲜、学习 Nebula Graph 的 K8s Operator 的话，可能需要耗费一些精力才能搭起来一整套的控制平面的依赖。</p>
-<p>作为一个懒人，我做利用 K8s in Docker(<a href="https://kind.sigs.K8s.io/" target="_blank" rel="noopener noreffer">KIND</a>)，和之前做 <a href="https://github.com/wey-gu/nebula-up" target="_blank" rel="noopener noreffer">Nebula-Up</a> 的 shell 脚本架子，快速的搞了一个一键安装工具：Nebula-Operator-Kind</p>
-<p>它能直接帮我们：</p>
-<ul>
-<li>安装 Docker</li>
-<li>安装 K8s(KIND)</li>
-<li>安装 PV Provider</li>
-<li>安装 Nebula-Operator 以及依赖</li>
-<li>安装 Nebula-Console</li>
-<li>配置 nodePort 用以一键直连 Nebula 集群</li>
-<li>安装 kubectl 用来体验 Nebula-Operator 的 CRD 配置</li>
-</ul>
-<h2 id="如何使用" class="headerLink">
-    <a href="#%e5%a6%82%e4%bd%95%e4%bd%bf%e7%94%a8" class="header-mark"></a>如何使用</h2><p>安装：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">curl -sL nebula-kind.siwei.io/install.sh <span class="p">|</span> bash
-</code></pre></td></tr></table>
-</div>
-</div><p>成功之后：
-</p>
-<p>用 <code>~/.nebula-kind/bin/console</code> 一行连接集群：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">~/.nebula-kind/bin/console -u user -p password --address<span class="o">=</span>127.0.0.1 --port<span class="o">=</span><span class="m">30000</span>
-</code></pre></td></tr></table>
-</div>
-</div><h2 id="详细信息" class="headerLink">
-    <a href="#%e8%af%a6%e7%bb%86%e4%bf%a1%e6%81%af" class="header-mark"></a>详细信息</h2><p>Repo 的地址是：https://github.com/wey-gu/nebula-operator-kind ，里边有更多的信息，欢迎大家试用、反馈、PR 哈！</p>
-<blockquote>
-<p>Updated Sept. 2021</p>
-</blockquote>
-<p>如果在 KubeSphere All-in-one 环境安装：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">curl -sL nebula-kind.siwei.io/install-ks-1.sh <span class="p">|</span> bash
-</code></pre></td></tr></table>
-</div>
-</div><p>如果在 Minikube、其他 K8s 之中安装</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">curl -sL nebula-kind.siwei.io/install-on-k8s.sh <span class="p">|</span> bash
-</code></pre></td></tr></table>
-</div>
-</div><blockquote>
-<p>题图版权：<a href="https://unsplash.com/photos/a4Gz2DD4dX0" target="_blank" rel="noopener noreffer">Maik Hankemann</a></p>
-</blockquote>]]></description>
 </item></channel>
 </rss>
