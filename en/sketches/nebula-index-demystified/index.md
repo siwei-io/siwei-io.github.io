@@ -3,9 +3,9 @@
 
 <!--more-->
 
-![nebula-index-demystified](./nebula-index-demystified.webp)
+![nebula-index-demystified](./nebula-index-demystified-en.webp)
 
-> Nebula Graph Native Index Demystified
+> Nebula Graph Native Index Demystified(Chinese only now, English version will be soon uploaded)
 
 - Index Demystified [0:33](https://www.youtube.com/watch?v=fII4hAM6S60&t=33s)
 - When should we use index? [06:37](https://www.youtube.com/watch?v=fII4hAM6S60&t=397s)
