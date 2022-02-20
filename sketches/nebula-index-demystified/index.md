@@ -1,4 +1,4 @@
-# Nebula Index Demystified
+# Nebula Graph Index Demystified
 
 
 <!--more-->

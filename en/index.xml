@@ -4,9 +4,303 @@
         <link>https://siwei.io/en/</link>
         <description>Siwei(思为) builds things and believes in Open Source.</description>
         <generator>Hugo -- gohugo.io</generator><language>en</language><managingEditor>weyl.gu@gmail.com (Wey Gu)</managingEditor>
-            <webMaster>weyl.gu@gmail.com (Wey Gu)</webMaster><lastBuildDate>Thu, 25 Nov 2021 19:47:53 &#43;0800</lastBuildDate>
+            <webMaster>weyl.gu@gmail.com (Wey Gu)</webMaster><lastBuildDate>Sun, 20 Feb 2022 16:35:53 &#43;0800</lastBuildDate>
             <atom:link href="https://siwei.io/en/index.xml" rel="self" type="application/rss+xml" />
         <item>
+    <title>Nebula Index Explained</title>
+    <link>https://siwei.io/en/nebula-index-explained/</link>
+    <pubDate>Sun, 20 Feb 2022 16:35:53 &#43;0800</pubDate><author>
+        <name>Wey Gu</name>
+    </author><guid>https://siwei.io/en/nebula-index-explained/</guid>
+    <description><![CDATA[<div class="featured-image">
+                <img src="/featured-image.webp" referrerpolicy="no-referrer">
+            </div><blockquote>
+<p>Nebula Graph Native Index explained, why <code>index not found</code>? When should I use Nebula Index and full-text index?</p>
+</blockquote>
+<p>The term of Nebula Graph Index is quite similar to index in RDBMS, while, they are not the same. It&rsquo;s noticed when getting started with Nebula Graph, the index confused some of the users in first glance on</p>
+<ul>
+<li>What exactly Nebula Graph Index is.</li>
+<li>When I should use it.</li>
+<li>How it impacts the performance.</li>
+</ul>
+<p>Today I&rsquo;m gonna walk you through the index in Nebula Graph.</p>
+<p>Let&rsquo;s get started!</p>
+<h2 id="what-exactly-nebula-graph-index-is" class="headerLink">
+    <a href="#what-exactly-nebula-graph-index-is" class="header-mark"></a>What exactly Nebula Graph Index is</h2><p>TL;DR, Nebula Graph Index is only to be used to enable pure-prop-condition queries</p>
+<ul>
+<li>Not for graph walking through edges.</li>
+<li>It&rsquo;s an prerequisite for such query.</li>
+</ul>
+<h3 id="pure-prop-condition-queries" class="headerLink">
+    <a href="#pure-prop-condition-queries" class="header-mark"></a>pure-prop-condition queries</h3><p>We know that in RDBMS, an INDEX is to create a duplicated sorted DATA to enable QUERY with condition filtering on the sorted data, to <strong>accelerate the query in read</strong> and involves extra writes during the write.</p>
+<blockquote>
+<p>Note: in RDBMS/Tabular DB, an INDEX on some columns means to create extra data that are sorted on those columns to make query with those columns' condition to be scanned faster, rather than scanning from the original table data sorted based on the key only.</p>
+</blockquote>
+<p>In Nebula Graph, the INDEX is to create a duplicated sorted <strong>Vertex/Edge PROP DATA</strong> to <strong>enable the part of QUERY</strong>(it&rsquo;s a must rather than accelerate it) like The following to GET data from PROP Conditions: or I call it the pure-prop-condition queries:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="o">####</span><span class="w"> </span><span class="n">Queries</span><span class="w"> </span><span class="n">relying</span><span class="w"> </span><span class="k">on</span><span class="w"> </span><span class="n">Nebula</span><span class="w"> </span><span class="n">Graph</span><span class="w"> </span><span class="k">Index</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="o">#</span><span class="w"> </span><span class="n">query</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="n">pure</span><span class="o">-</span><span class="n">prop</span><span class="o">-</span><span class="n">condition</span><span class="w"> </span><span class="n">query</span><span class="w">
+</span><span class="w"></span><span class="n">LOOKUP</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">tag1</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">col1</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">col2</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&#34;foo&#34;</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span><span class="w">    </span><span class="n">YIELD</span><span class="w"> </span><span class="n">tag1</span><span class="p">.</span><span class="n">col1</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">col1</span><span class="p">,</span><span class="w"> </span><span class="n">tag1</span><span class="p">.</span><span class="n">col3</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">col3</span><span class="p">;</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="o">#</span><span class="w"> </span><span class="n">query</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="n">pure</span><span class="o">-</span><span class="n">prop</span><span class="o">-</span><span class="n">condition</span><span class="w"> </span><span class="n">query</span><span class="w">
+</span><span class="w"></span><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">v</span><span class="p">:</span><span class="n">player</span><span class="w"> </span><span class="err">{</span><span class="w"> </span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;Tim Duncan&#39;</span><span class="w"> </span><span class="err">}</span><span class="p">)</span><span class="c1">--&gt;(v2:player) \
+</span><span class="c1"></span><span class="w">        </span><span class="k">RETURN</span><span class="w"> </span><span class="n">v2</span><span class="p">.</span><span class="n">player</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">Name</span><span class="p">;</span><span class="w">
+</span></code></pre></td></tr></table>
+</div>
+</div><p>The pure-prop-condition queries, like above nGQL lines are literally to &ldquo;Find VID/EDGE only based on given the propertiy condtions&rdquo;. On the contrary, the following, are not pure-prop-condition queries:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="o">####</span><span class="w"> </span><span class="n">Queries</span><span class="w"> </span><span class="k">not</span><span class="w"> </span><span class="n">based</span><span class="w"> </span><span class="k">on</span><span class="w"> </span><span class="n">Nebula</span><span class="w"> </span><span class="n">Graph</span><span class="w"> </span><span class="k">Index</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="o">#</span><span class="w"> </span><span class="n">query</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">walk</span><span class="w"> </span><span class="n">query</span><span class="w"> </span><span class="n">starting</span><span class="w"> </span><span class="k">from</span><span class="w"> </span><span class="n">given</span><span class="w"> </span><span class="n">vertex</span><span class="w"> </span><span class="n">VID</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;player100&#34;</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="k">GO</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="s2">&#34;player100&#34;</span><span class="w"> </span><span class="n">OVER</span><span class="w"> </span><span class="n">follow</span><span class="w"> </span><span class="n">REVERSELY</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span><span class="w">        </span><span class="n">YIELD</span><span class="w"> </span><span class="n">src</span><span class="p">(</span><span class="n">edge</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span><span class="w">    </span><span class="k">GO</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="err">$</span><span class="o">-</span><span class="p">.</span><span class="n">id</span><span class="w"> </span><span class="n">OVER</span><span class="w"> </span><span class="n">serve</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span><span class="w">        </span><span class="k">WHERE</span><span class="w"> </span><span class="n">properties</span><span class="p">(</span><span class="err">$</span><span class="o">^</span><span class="p">).</span><span class="n">age</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">20</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span><span class="w">        </span><span class="n">YIELD</span><span class="w"> </span><span class="n">properties</span><span class="p">(</span><span class="err">$</span><span class="o">^</span><span class="p">).</span><span class="n">name</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">FriendOf</span><span class="p">,</span><span class="w"> </span><span class="n">properties</span><span class="p">(</span><span class="err">$$</span><span class="p">).</span><span class="n">name</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">Team</span><span class="p">;</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="o">#</span><span class="w"> </span><span class="n">query</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="n">walk</span><span class="w"> </span><span class="n">query</span><span class="w"> </span><span class="n">starting</span><span class="w"> </span><span class="k">from</span><span class="w"> </span><span class="n">given</span><span class="w"> </span><span class="n">vertex</span><span class="w"> </span><span class="n">VID</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;player101&#34;</span><span class="w"> </span><span class="k">or</span><span class="w"> </span><span class="s2">&#34;player102&#34;</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">v</span><span class="p">:</span><span class="n">player</span><span class="w"> </span><span class="err">{</span><span class="w"> </span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;Tim Duncan&#39;</span><span class="w"> </span><span class="err">}</span><span class="p">)</span><span class="c1">--(v2) \
+</span><span class="c1"></span><span class="w">        </span><span class="k">WHERE</span><span class="w"> </span><span class="n">id</span><span class="p">(</span><span class="n">v2</span><span class="p">)</span><span class="w"> </span><span class="k">IN</span><span class="w"> </span><span class="p">[</span><span class="s2">&#34;player101&#34;</span><span class="p">,</span><span class="w"> </span><span class="s2">&#34;player102&#34;</span><span class="p">]</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span><span class="w">        </span><span class="k">RETURN</span><span class="w"> </span><span class="n">v2</span><span class="p">.</span><span class="n">player</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">Name</span><span class="p">;</span><span class="w">
+</span></code></pre></td></tr></table>
+</div>
+</div><p>If we look into <code>query 1</code> and <code>query 3</code>, where condition on vertex on tag:player are both <code>{ name: 'Tim Duncan' }</code> though:</p>
+<ul>
+<li>For <code>query 3</code> , the index is not required as the query will be started from known vertex ID in <code>[&quot;player101&quot;, &quot;player102&quot;]</code> and thus:
+<ul>
+<li>It&rsquo;ll directly fetch vertex Data from <code>v2</code>&rsquo;s vertex IDs</li>
+<li>then to GetNeighbors(): walk through edges of <code>v2</code>, GetVertices() for next hop: <code>v</code> and filter based on property: <code>name</code></li>
+</ul>
+</li>
+<li>For <code>query 1</code> , the query has to start from <code>v</code> due to no known vertex IDs were provided:
+<ul>
+<li>It&rsquo;ll do IndexScan() first to find all vertices only with property condtion of <code>{ name: 'Tim Duncan' }</code></li>
+<li>Then, GetNeighbors(): walk through edges of <code>v</code>, GetVertices() for next hop: <code>v2</code></li>
+</ul>
+</li>
+</ul>
+<p>Now, we could know the whole point is on <strong>whether to know the vertexID(s)</strong>. You could check their execution plan with PROFILE or EXPLAIN like the follow:</p>
+<table>
+<thead>
+<tr>
+<th><code>query 1</code>, requires/based on index(on tag: player), pure prop condition query</th>
+<th><code>query 3</code>, no index required, query starting from known vertex IDs</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="why-nebula-graph-index-is-a-must-in-pure-prop-condition-queries" class="headerLink">
+    <a href="#why-nebula-graph-index-is-a-must-in-pure-prop-condition-queries" class="header-mark"></a>Why Nebula Graph index is a must in pure-prop-condition queries</h3><p>It&rsquo;s because Nebula Graph stores data in a distributed and graph-oriented way, the full scan of data was condiser too expensive to be allowed(<code>index not found</code> will occur when it&rsquo;s not created in pure-prop-condition queries).</p>
+<blockquote>
+<p>Note: from v3.0, it&rsquo;s possible to do TopN Scan without INDEX, where the <code>LIMIT &lt;n&gt;</code> is used, this is different from the fullscan case(INDEX is a must), which will be explained later.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">MATCH (v:player { name: &#39;Tim Duncan&#39; })--&gt;(v2:player) \
+        RETURN v2.player.name AS Name LIMIT 3;
+</code></pre></td></tr></table>
+</div>
+</div></blockquote>
+<h3 id="why-pure-prop-condition-queries-onlyrequiring-index" class="headerLink">
+    <a href="#why-pure-prop-condition-queries-onlyrequiring-index" class="header-mark"></a>Why pure-prop-condition queries only(requiring index)</h3><p><strong>graph-queries</strong> vs <strong>pure-prop-condition queries</strong></p>
+<ul>
+<li>graph-queries, see <code>query 2</code> and <code>query 3</code>, are to walk through edges all the way for the given vertices</li>
+<li>pure-prop-condition queries, see <code>query 0</code> and <code>query 1</code>, are to find vertex only on given prop condtions</li>
+</ul>
+<p>In Nebula Graph, the data is structured in a way to enable fast graph-queries, and is already indexed/sorted on vertex ID(for both vertex and edge) in raw data, where GetNeighbors() of given vertex is cheap and fast due to the locality/stored continuously(pysically linked).</p>
+<p>So in summary:</p>
+<blockquote>
+<p>Nebula Graph Index is sorted prop data to find vertex or edge on given pure prop conditions.</p>
+</blockquote>
+<h2 id="facts-on-nebula-graph-index" class="headerLink">
+    <a href="#facts-on-nebula-graph-index" class="header-mark"></a>Facts on Nebula Graph Index</h2><p>To understand more details/limitations/cost of Nebula, let&rsquo;s reveal more on its design and here are some facts:</p>
+<ul>
+<li>
+<p>Index Data is stored and sharded together with Vertex Data</p>
+</li>
+<li>
+<p>Only Left Match: It&rsquo;s RocksDB Prefix Scan under the hood</p>
+</li>
+<li>
+<p>Cost:</p>
+<ul>
+<li>Write Path: Extra Data + Extra Read</li>
+<li>Read Path: RBO, Fan Out, TopN Push Down</li>
+</ul>
+</li>
+<li>
+<p>Data Full Scan TopN Sample(not fullscan) is supported w/o Index</p>
+<ul>
+<li>
+<p><code>LOOKUP ON t YIELD t.name | LIMIT 1</code></p>
+</li>
+<li>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">MATCH (v:player { name: &#39;Tim Duncan&#39; })--&gt;(v2:player) \
+        RETURN v2.player.name AS Name LIMIT 3;
+</code></pre></td></tr></table>
+</div>
+</div></li>
+</ul>
+</li>
+</ul>
+<p>The key info can be seen from one of my <a href="https://www.siwei.io/en/sketch-notes/" target="_blank" rel="noopener noreffer">sketch notes</a>:</p>
+<p></p>
+<blockquote>
+<p>We should notice that only the left match is supported in pure-prop-condition queries. For queries like wildcard or reguler-expression, Full-text Index/Search is to be used, which leveraged an external elastic search integrated with nebula: please check <a href="https://docs.nebula-graph.io/3.0.0/4.deployment-and-installation/6.deploy-text-based-index/2.deploy-es/" target="_blank" rel="noopener noreffer">Nebula Graph Full text index</a> for more.</p>
+</blockquote>
+<p>With this sketch note, we could see</p>
+<ul>
+<li>
+<p>Local Index Design</p>
+<ul>
+<li>The index is stored and shared locally together with the graph data.</li>
+<li>It&rsquo;s sorting based on prop value, and the matching is underlying a rocksDB prefix scan, that&rsquo;s why only left match is supported()</li>
+</ul>
+</li>
+<li>
+<p>Write path</p>
+<ul>
+<li>The index enables the RDBMS-like Prop Condition Query with cost in the write path including not only the extra write, but also, random read, to ensure the data consistency.</li>
+<li>Index Data write is done in a sync way</li>
+</ul>
+</li>
+<li>
+<p>Read path</p>
+<ul>
+<li>In pure-prop-condition queries, in GraphD, the index will be selected with Rule-based-optimization like this example, where, in a rule, the col2 to be sorted first is considered optimal with the condition: col2 equals &lsquo;foo&rsquo;.</li>
+<li>After the index was chosen, index-scan request will be fanout to storageD instances, and in the case of filters like LIMIT N, it will be pushed down to the storage side to reduce data payload.
+<ul>
+<li>Note: not shown in the sketch but actually from v3.0, the nebula graph allows LIMIT N Sample Prop condition query like this w/o index, which is underlying pushing down the LIMIT filter to storage side.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>Take aways:</p>
+<ul>
+<li>Use index only when we have to, as it&rsquo;s costly in write cases and if limit N sample is allowed and fast enough, we can use that instead, if not: use index.</li>
+<li>Index is left match
+<ul>
+<li>composite index order matters, should be created carefully.</li>
+<li>for full-text search use case, use <a href="https://docs.nebula-graph.io/3.0.0/4.deployment-and-installation/6.deploy-text-based-index/2.deploy-es/" target="_blank" rel="noopener noreffer">full-text index</a> instead.</li>
+</ul>
+</li>
+</ul>
+<h2 id="how-to-use-the-index" class="headerLink">
+    <a href="#how-to-use-the-index" class="header-mark"></a>How to use the index</h2><p>We should always refer to the <a href="https://docs.nebula-graph.io/3.0.0/3.ngql-guide/14.native-index-statements/" target="_blank" rel="noopener noreffer">documentation</a>, and I just put some highlights on this here:</p>
+<ul>
+<li>
+<p>To create an index on a tag or edge type to specify a list of props in the order that we need.</p>
+<ul>
+<li><code>CREATE INDEX</code></li>
+</ul>
+</li>
+<li>
+<p>If an index was created after existing data was inserted, we need to trigger an index async rebuild job, as the index data will be written in sync way only when index is created.</p>
+<ul>
+<li><code>REBUILD INDEX</code></li>
+</ul>
+</li>
+<li>
+<p>We can see the index status after <code>REBUILD INDEX</code> issued.</p>
+<ul>
+<li><code>SHOW INDEX STATUS</code></li>
+</ul>
+</li>
+<li>
+<p>Queries levering index could be LOOKUP, and with the pipeline, in most cases we will do follow-up graph-walk queries like:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="n">LOOKUP</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">player</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span><span class="w">  </span><span class="k">WHERE</span><span class="w"> </span><span class="n">player</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&#34;Kobe Bryant&#34;</span><span class="err">\</span><span class="w">
+</span><span class="w">  </span><span class="n">YIELD</span><span class="w"> </span><span class="n">id</span><span class="p">(</span><span class="n">vertex</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">VertexID</span><span class="p">,</span><span class="w"> </span><span class="n">properties</span><span class="p">(</span><span class="n">vertex</span><span class="p">).</span><span class="n">name</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">|</span><span class="err">\</span><span class="w">
+</span><span class="w">  </span><span class="k">GO</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="err">$</span><span class="o">-</span><span class="p">.</span><span class="n">VertexID</span><span class="w"> </span><span class="n">OVER</span><span class="w"> </span><span class="n">serve</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span><span class="w">  </span><span class="n">YIELD</span><span class="w"> </span><span class="err">$</span><span class="o">-</span><span class="p">.</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">properties</span><span class="p">(</span><span class="n">edge</span><span class="p">).</span><span class="n">start_year</span><span class="p">,</span><span class="w"> </span><span class="n">properties</span><span class="p">(</span><span class="n">edge</span><span class="p">).</span><span class="n">end_year</span><span class="p">,</span><span class="w"> </span><span class="n">properties</span><span class="p">(</span><span class="err">$$</span><span class="p">).</span><span class="n">name</span><span class="p">;</span><span class="w">
+</span></code></pre></td></tr></table>
+</div>
+</div></li>
+<li>
+<p>Or in MATCH query like this, under the hood, v will be searched on index and v2 will be walked by default graph data structure without involving index.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">MATCH (v:player{name:&#34;Tim Duncan&#34;})--&gt;(v2:player) \
+  RETURN v2.player.name AS Name;
+</code></pre></td></tr></table>
+</div>
+</div></li>
+</ul>
+<h2 id="recap" class="headerLink">
+    <a href="#recap" class="header-mark"></a>Recap</h2><p>Finally, Let&rsquo;s Recap</p>
+<ul>
+<li>INDEX is sorting PROP DATA to find data on given PURE PROP CONDITION</li>
+<li>INDEX is <strong>not</strong> for Graph Walk</li>
+<li>INDEX is left match, <strong>not</strong> for full-text search</li>
+<li>INDEX has cost on WRITE</li>
+<li>Remember to REBUILD after CREATE INDEX on existing data</li>
+</ul>
+<p>Happy Graphing!</p>
+<p>Feture image credit to <a href="https://unsplash.com/photos/ZiQkhI7417A" target="_blank" rel="noopener noreffer">Alina</a></p>
+]]></description>
+</item><item>
     <title>Nebula Java Happy Parsing Guide</title>
     <link>https://siwei.io/en/nebula-java-happy-parsing-guide/</link>
     <pubDate>Thu, 25 Nov 2021 19:47:53 &#43;0800</pubDate><author>
@@ -4025,534 +4319,5 @@ docker run --rm -ti <span class="se">\
 <li><a href="https://docs.nebula-graph.io/" target="_blank" rel="noopener noreffer">https://docs.nebula-graph.io/</a></li>
 <li><a href="https://github.com/vesoft-inc/nebula-graph/blob/master/src/parser/scanner.lex" target="_blank" rel="noopener noreffer">https://github.com/vesoft-inc/nebula-graph/blob/master/src/parser/scanner.lex</a></li>
 </ul>]]></description>
-</item><item>
-    <title>Nebula-Insights, How we leverage Serverless Cloud infra to setup Data Pipeline for Nebula Graph Community Insights</title>
-    <link>https://siwei.io/en/nebula-insights/</link>
-    <pubDate>Mon, 03 May 2021 21:11:04 &#43;0800</pubDate><author>
-        <name>Wey Gu</name>
-    </author><guid>https://siwei.io/en/nebula-insights/</guid>
-    <description><![CDATA[<div class="featured-image">
-                <img src="/featured-image.webp" referrerpolicy="no-referrer">
-            </div><blockquote>
-<p>How we leverage Serverless Cloud infra to setup Data Pipeline for Nebula Graph Community Insights. We used Google Cloud Scheduler, Google Cloud Functions, BigQuery, and codes are shared in GitHub</p>
-</blockquote>
-<blockquote>
-<p>这是我首发在 Datawhale 的<a href="http://datawhale.club/t/topic/2089" target="_blank" rel="noopener noreffer">文章</a>，介绍我们如何用公有云 Serverless 技术：Google Cloud Scheduler，Google Cloud Functions 和 BigQuery 搭建数据管道，收集探索开源社区洞察。并将全部代码开源在 GitHub。</p>
-</blockquote>
-<blockquote>
-<p>引子
-我们想要收集一些帮助 Nebula Graph 社区运营的 metrics，希望能从不同来源的数据自动化周期性收集、处理、并方便地展现出来做数据驱动分析的基础设施。</p>
-</blockquote>
-<blockquote>
-<p>Nebula Graph 是一个现代的开源分布式图数据库(Graph Database)，欢迎同学们从:</p>
-<ul>
-<li>官网: <a href="https://nebula-graph.com.cn" target="_blank" rel="noopener noreffer">https://nebula-graph.com.cn </a></li>
-<li>Bilibili: <a href="https://space.bilibili.com/472621355" target="_blank" rel="noopener noreffer">https://space.bilibili.com/472621355</a></li>
-<li>GitHub:https://github.com/vesoft-inc/nebula-graph
-了解我们哈。</li>
-</ul>
-</blockquote>
-<h2 id="需求" class="headerLink">
-    <a href="#%e9%9c%80%e6%b1%82" class="header-mark"></a>需求</h2><ol>
-<li>方便增加新的数据</li>
-<li>数据收集无需人为触发（自动、周期性）</li>
-<li>每天数据量不超过1000条</li>
-<li>数据可以生成 dashboard，也可以支持统计分期 query</li>
-<li>高可用，数据安全</li>
-<li>低预算，尽可能不需要运维人力</li>
-</ol>
-<h3 id="需求分析" class="headerLink">
-    <a href="#%e9%9c%80%e6%b1%82%e5%88%86%e6%9e%90" class="header-mark"></a>需求分析</h3><p>我们需要搭建一个系统能实现</p>
-<ul>
-<li>一个能周期性触发获取数据的事件的服务: scheduler</li>
-<li>一个触发之后，把数据 ETL 到数据库中的服务: ETL worker</li>
-<li>一个数据仓库</li>
-<li>一个能够把数据库作为源，允许用户 query，展示数据的界面: Data-UI</li>
-</ul>
-<p>这个需求的特点是虽然数据量很小、但是要求服务高可用、安全。因为这种情况下自建服务器还需要保证HA和数据安全会一定会消耗昂贵运维人力，所以我们应该尽量避免在自己维护的服务器中搭建 scheduler, 和数据库。</p>
-<p>最终，我们选择了尽量使用公有云的 aaS 的方案:</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
-</span><span class="lnt">28
-</span><span class="lnt">29
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">┌──────────────────────────┐
-│                          │
-│  Google Cloud Scheduler  │
-│                          │
-└────────────┬─────────────┘
-             │                             ┌─────────────────────┐
-             │                             │                     │
-┌────────────▼─────────────┐   ┌───────────►  GitHub API Server  │
-│                          │   │           │                     │
-│  Google Cloud Functions  ├───┤           └─────────────────────┘
-│                          │   │
-└────────────┬─────────────┘   │           ┌─────────────────────────┐
-             │                 │           │                         │
-             │                 ├───────────►  Docker Hub API Server  │
-   ┌─────────▼─────────┐       │           │                         │
-   │                   │       │           │                         │
-   │  Google BigQuery  │       │           └─────────────────────────┘
-   │                   │       ├───────────► ...                   
-   └─────────▲─────────┘       │           ┌──────────────────┐
-             │                 │           │                  │
-             │                 └───────────►  Aliyun OSS API  │
-  ┌──────────┴───────────┐                 │                  │
-  │                      │                 └──────────────────┘
-  │  Google Data Studio  │
-  │       ┌──┐           │
-  │  ┌──┐ │  │ ┌──┐      │
-  │  │  │ │  │ │  │      │
-  │  │  │ │  │ │  │      │
-  └──┴──┴─┴──┴─┴──┴──────┘
-</code></pre></td></tr></table>
-</div>
-</div><p>因为我个人比较熟悉 Google Cloud Platform(GCP)的原因，加上GCP在大数据处理上比较领先，再加上Google提供的 free tier额度非常大方，以至于在我们这个数据量下，所有workload都会是免费的。
-这个方案最后选择了全栈 Google Cloud，然而，这实际上只是一个参考，同学们完全可以在其他公有云提供商那里找到对应的服务。</p>
-<p>这里我简单介绍一下， Google Cloud Scheduler是自解释的，不用多介绍了。
-而 Google Cloud Functions是GCP的无服务器(serverless)的 Function as a Service服务，它的好处是我们可以把无状态的 event-driven 的 workload 代码放上去，它是按需付费（pay as you go)的，类似的服务还有 Google Cloud Run，后者的区别在于我们提供的是一个docker/container（这使得能支持的运行环境可以使任何能跑在容器里的东西），而 Cloud Functions是把我们的代码文件放上去。他们的效果是类似的，因为我准备用Python来做 ETL的东西，Clouf Functions已经支持了，我就直接选择它了。</p>
-<p>在scheduler里边，我定义了每一天它发一个 pub/sub（类似于kafka，这里google可以保证至少发成功一次）消息给 Cloud Functions，然后 Cloud Functions会去做 ETL的工作。</p>
-<p>这里，实际上我的设计里这个触发的函数调会把数据从API那里获取下来，在内存里处理好之后，存储到在对象存储里为 <code>JSON</code> 文件，然后再调用 Google BigQuery 的 API让 BigQuery直接从对对象存储里拉取 <code>JSON</code> 文件，导入记录到相应的表之中。</p>
-<p><code>Google BigQuery</code> 作为GCP 特别有竞争力的一个产品，是它数据仓库，BigQuery 可以无限扩容，支持海量数据导入，支持 SQL-like 的 query，还自带ML算法，通过SQL就能调用这些算法。它可以和很多GCP以及第三方的组件可以集成起来。</p>
-<p><code>Google Data Studio</code> 是GCP的数据 Insights产品，如果大家用过 Google Analytics 应该已经用过它了。</p>
-<h3 id="数据的获取api" class="headerLink">
-    <a href="#%e6%95%b0%e6%8d%ae%e7%9a%84%e8%8e%b7%e5%8f%96api" class="header-mark"></a>数据的获取，API</h3><p>我们第一阶段想要收集的数据来源是 GitHub 上，社区项目的统计数据、Docker Hub上，社区镜像的拉取计数，之后，会增加更多维度的数据。</p>
-<ul>
-<li>Github API, ref: <a href="https://pygithub.readthedocs.io" target="_blank" rel="noopener noreffer">https://pygithub.readthedocs.io</a>
-这里我们利用了一个Github API的一个 Python 封装，下边是在 IDLE/iPython/Jupyter 里尝试的例子</li>
-</ul>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
-</span><span class="lnt">28
-</span><span class="lnt">29
-</span><span class="lnt">30
-</span><span class="lnt">31
-</span><span class="lnt">32
-</span><span class="lnt">33
-</span><span class="lnt">34
-</span><span class="lnt">35
-</span><span class="lnt">36
-</span><span class="lnt">37
-</span><span class="lnt">38
-</span><span class="lnt">39
-</span><span class="lnt">40
-</span><span class="lnt">41
-</span><span class="lnt">42
-</span><span class="lnt">43
-</span><span class="lnt">44
-</span><span class="lnt">45
-</span><span class="lnt">46
-</span><span class="lnt">47
-</span><span class="lnt">48
-</span><span class="lnt">49
-</span><span class="lnt">50
-</span><span class="lnt">51
-</span><span class="lnt">52
-</span><span class="lnt">53
-</span><span class="lnt">54
-</span><span class="lnt">55
-</span><span class="lnt">56
-</span><span class="lnt">57
-</span><span class="lnt">58
-</span><span class="lnt">59
-</span><span class="lnt">60
-</span><span class="lnt">61
-</span><span class="lnt">62
-</span><span class="lnt">63
-</span><span class="lnt">64
-</span><span class="lnt">65
-</span><span class="lnt">66
-</span><span class="lnt">67
-</span><span class="lnt">68
-</span><span class="lnt">69
-</span><span class="lnt">70
-</span><span class="lnt">71
-</span><span class="lnt">72
-</span><span class="lnt">73
-</span><span class="lnt">74
-</span><span class="lnt">75
-</span><span class="lnt">76
-</span><span class="lnt">77
-</span><span class="lnt">78
-</span><span class="lnt">79
-</span><span class="lnt">80
-</span><span class="lnt">81
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"># 实例化一个client
-g = Github(login_or_token=token, timeout=60, retry=Retry(
-           total=10, status_forcelist=(500, 502, 504), backoff_factor=0.3))
-# 配置好要获取的repo的信息
-org_str = &#34;vesoft-inc&#34;
-org = g.get_organization(org_str)
-repos = org.get_repos()
-
-# 这里repos是一个迭代器，方便看到里边的东西，我们把它 list 一下可以看到所有的repo:
-list(repos)
-[Repository(full_name=&#34;vesoft-inc/nebula&#34;),
- Repository(full_name=&#34;vesoft-inc/nebula-docs&#34;),
- Repository(full_name=&#34;vesoft-inc/nebula-dev-docker&#34;),
- Repository(full_name=&#34;vesoft-inc/github-statistics&#34;),
- Repository(full_name=&#34;vesoft-inc/nebula-docker-compose&#34;),
- Repository(full_name=&#34;vesoft-inc/nebula-go&#34;),
- Repository(full_name=&#34;vesoft-inc/nebula-java&#34;),
- Repository(full_name=&#34;vesoft-inc/nebula-python&#34;),
- Repository(full_name=&#34;vesoft-inc/nebula-importer&#34;),
- Repository(full_name=&#34;vesoft-inc/nebula-third-party&#34;),
- Repository(full_name=&#34;vesoft-inc/nebula-storage&#34;),
- Repository(full_name=&#34;vesoft-inc/nebula-graph&#34;),
- Repository(full_name=&#34;vesoft-inc/nebula-common&#34;),
- Repository(full_name=&#34;vesoft-inc/nebula-stats-exporter&#34;),
- Repository(full_name=&#34;vesoft-inc/nebula-web-docker&#34;),
- Repository(full_name=&#34;vesoft-inc/nebula-bench&#34;),
- Repository(full_name=&#34;vesoft-inc/nebula-console&#34;),
- Repository(full_name=&#34;vesoft-inc/nebula-docs-cn&#34;),
- Repository(full_name=&#34;vesoft-inc/nebula-chaos&#34;),
- Repository(full_name=&#34;vesoft-inc/nebula-clients&#34;),
- Repository(full_name=&#34;vesoft-inc/nebula-spark-utils&#34;),
- Repository(full_name=&#34;vesoft-inc/nebula-node&#34;),
- Repository(full_name=&#34;vesoft-inc/nebula-rust&#34;),
- Repository(full_name=&#34;vesoft-inc/nebula-cpp&#34;),
- Repository(full_name=&#34;vesoft-inc/nebula-http-gateway&#34;),
- Repository(full_name=&#34;vesoft-inc/nebula-flink-connector&#34;),
- Repository(full_name=&#34;vesoft-inc/nebula-community&#34;),
- Repository(full_name=&#34;vesoft-inc/nebula-br&#34;),
- Repository(full_name=&#34;vesoft-inc/.github&#34;)]
-
-# repo0 是 vesoft-inc/nebula 这个repo，我们可以通过 get_clones_traffic，get_views_traffic 来获取过去十几天的 clone，view 统计
-
-In [16]: repo0.get_clones_traffic()
-Out[16]:
-{&#39;count&#39;: 362,
- &#39;uniques&#39;: 150,
- &#39;clones&#39;: [Clones(uniques=5, timestamp=2021-04-06 00:00:00, count=16),
-  Clones(uniques=8, timestamp=2021-04-07 00:00:00, count=23),
-  Clones(uniques=13, timestamp=2021-04-08 00:00:00, count=30),
-  Clones(uniques=33, timestamp=2021-04-09 00:00:00, count=45),
-  Clones(uniques=2, timestamp=2021-04-10 00:00:00, count=13),
-  Clones(uniques=6, timestamp=2021-04-11 00:00:00, count=19),
-  Clones(uniques=15, timestamp=2021-04-12 00:00:00, count=28),
-  Clones(uniques=40, timestamp=2021-04-13 00:00:00, count=54),
-  Clones(uniques=9, timestamp=2021-04-14 00:00:00, count=21),
-  Clones(uniques=10, timestamp=2021-04-15 00:00:00, count=34),
-  Clones(uniques=10, timestamp=2021-04-16 00:00:00, count=23),
-  Clones(uniques=5, timestamp=2021-04-17 00:00:00, count=17),
-  Clones(uniques=2, timestamp=2021-04-18 00:00:00, count=13),
-  Clones(uniques=9, timestamp=2021-04-19 00:00:00, count=23),
-  Clones(uniques=3, timestamp=2021-04-20 00:00:00, count=3)]}
-
-In [17]: repo0.get_views_traffic()
-Out[17]:
-{&#39;count&#39;: 6019,
- &#39;uniques&#39;: 1134,
- &#39;views&#39;: [View(uniques=52, timestamp=2021-04-06 00:00:00, count=169),
-  View(uniques=143, timestamp=2021-04-07 00:00:00, count=569),
-  View(uniques=152, timestamp=2021-04-08 00:00:00, count=635),
-  View(uniques=134, timestamp=2021-04-09 00:00:00, count=648),
-  View(uniques=81, timestamp=2021-04-10 00:00:00, count=318),
-  View(uniques=42, timestamp=2021-04-11 00:00:00, count=197),
-  View(uniques=127, timestamp=2021-04-12 00:00:00, count=515),
-  View(uniques=149, timestamp=2021-04-13 00:00:00, count=580),
-  View(uniques=134, timestamp=2021-04-14 00:00:00, count=762),
-  View(uniques=141, timestamp=2021-04-15 00:00:00, count=385),
-  View(uniques=113, timestamp=2021-04-16 00:00:00, count=284),
-  View(uniques=48, timestamp=2021-04-17 00:00:00, count=168),
-  View(uniques=35, timestamp=2021-04-18 00:00:00, count=135),
-  View(uniques=124, timestamp=2021-04-19 00:00:00, count=492),
-  View(uniques=59, timestamp=2021-04-20 00:00:00, count=162)]}
-</code></pre></td></tr></table>
-</div>
-</div><p>除了repo的 <code>clone</code>, <code>view</code>数据，我们还可以获取到 release的数据:</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
-</span><span class="lnt">28
-</span><span class="lnt">29
-</span><span class="lnt">30
-</span><span class="lnt">31
-</span><span class="lnt">32
-</span><span class="lnt">33
-</span><span class="lnt">34
-</span><span class="lnt">35
-</span><span class="lnt">36
-</span><span class="lnt">37
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">In [31]: for rel in repo0.get_releases():
-    ...:     print(rel)
-GitRelease(title=&#34;Nebula Graph v1.2.1&#34;)
-GitRelease(title=&#34;Nebula Graph v1.2.0&#34;)
-GitRelease(title=&#34;Nebula Graph V1.1.0&#34;)
-GitRelease(title=&#34;Nebula Graph v1.0.1&#34;)
-GitRelease(title=&#34;V1.0.0 GA&#34;)
-GitRelease(title=&#34;Nebula Graph v1.0.0-RC4&#34;)
-GitRelease(title=&#34;Nebula Graph v1.0.0-RC3&#34;)
-GitRelease(title=&#34;Nebula Graph Release v1.0.0-RC2&#34;)
-GitRelease(title=&#34;Nebula Graph v1.0.0-rc1&#34;)
-GitRelease(title=&#34;Nebula Graph v1.0.0-beta&#34;)
-GitRelease(title=&#34;Nebula Graph v0.1.0&#34;)
-
-# 每一个 release 对应一个 git tag，其中会有一个或者多个供下载的 asset
-In [33]: release_v121 = rels[0]
-
-In [34]: release_v121.tag_name
-Out[34]: &#39;v1.2.1&#39;
-
-In [35]: list(release_121.get_assets())
-Out[35]:
-[GitReleaseAsset(url=&#34;https://api.github.com/repos/vesoft-inc/nebula/releases/assets/35056357&#34;),
- GitReleaseAsset(url=&#34;https://api.github.com/repos/vesoft-inc/nebula/releases/assets/35056361&#34;),
-...
- GitReleaseAsset(url=&#34;https://api.github.com/repos/vesoft-inc/nebula/releases/assets/35056456&#34;)]
-
-# 每一个assset 的下载量和其他metadata也是可以获取的
-
-In [40]: assets[0].browser_download_url
-Out[40]: &#39;https://github.com/vesoft-inc/nebula/releases/download/v1.2.1/nebula-1.2.1.el6-5.x86_64.rpm&#39;
-
-In [41]: assets[0].download_count
-Out[41]: 45
-
-In [43]: assets[0].name
-Out[43]: &#39;nebula-1.2.1.el6-5.x86_64.rpm&#39;
-</code></pre></td></tr></table>
-</div>
-</div><ul>
-<li>Docker Hub API, ref <a href="https://github.com/amalfra/docker-hub/blob/master/src/libs/docker_hub_client.py" target="_blank" rel="noopener noreffer">https://github.com/amalfra/docker-hub/blob/master/src/libs/docker_hub_client.py</a>
-这里我们服用了 docker-hub 这个开源小项目中的一个库 <code>docker_hub_client.py</code> 来作为 Docker Hub API的 python wrapper</li>
-</ul>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
-</span><span class="lnt">28
-</span><span class="lnt">29
-</span><span class="lnt">30
-</span><span class="lnt">31
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="c1"># 实例化 client
-</span><span class="c1"></span><span class="k">In</span><span class="w"> </span><span class="p">[</span><span class="mi">47</span><span class="p">]:</span><span class="w"> </span><span class="n">dh_client</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">DockerHubClient</span><span class="p">()</span><span class="w">
-</span><span class="w">
-</span><span class="w"></span><span class="c1"># 获取 `vesoft`之下的repo
-</span><span class="c1"></span><span class="k">In</span><span class="w"> </span><span class="p">[</span><span class="mi">48</span><span class="p">]:</span><span class="w"> </span><span class="n">dh_r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dh_client</span><span class="p">.</span><span class="nf">get_repos</span><span class="p">(</span><span class="s2">&#34;vesoft&#34;</span><span class="p">)</span><span class="w">
-</span><span class="w">  
-</span><span class="w"></span><span class="k">In</span><span class="w"> </span><span class="p">[</span><span class="mi">54</span><span class="p">]:</span><span class="w"> </span><span class="n">dh_r</span><span class="p">[</span><span class="s1">&#39;code&#39;</span><span class="p">]</span><span class="w">
-</span><span class="w"></span><span class="k">Out</span><span class="p">[</span><span class="mi">54</span><span class="p">]:</span><span class="w"> </span><span class="mi">200</span><span class="w">
-</span><span class="w">
-</span><span class="w"></span><span class="k">In</span><span class="w"> </span><span class="p">[</span><span class="mi">55</span><span class="p">]:</span><span class="w"> </span><span class="n">dh_r</span><span class="p">[</span><span class="s1">&#39;content&#39;</span><span class="p">].</span><span class="k">keys</span><span class="p">()</span><span class="w">
-</span><span class="w"></span><span class="k">Out</span><span class="p">[</span><span class="mi">55</span><span class="p">]:</span><span class="w"> </span><span class="nf">dict_keys</span><span class="p">([</span><span class="s1">&#39;count&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;next&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;previous&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;results&#39;</span><span class="p">])</span><span class="w">
-</span><span class="w">
-</span><span class="w"></span><span class="c1"># 可以看到这一个返回的API里就有所有（如果多的话是需要翻页的）的 image的 start_count, pull_count的数据
-</span><span class="c1"></span><span class="k">In</span><span class="w"> </span><span class="p">[</span><span class="mi">58</span><span class="p">]:</span><span class="w"> </span><span class="n">dh_r</span><span class="p">[</span><span class="s1">&#39;content&#39;</span><span class="p">][</span><span class="s1">&#39;results&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="w">
-</span><span class="w"></span><span class="k">Out</span><span class="p">[</span><span class="mi">58</span><span class="p">]:</span><span class="w">
-</span><span class="w"></span><span class="err">{</span><span class="s1">&#39;user&#39;</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;vesoft&#39;</span><span class="p">,</span><span class="w">
-</span><span class="w"> </span><span class="s1">&#39;name&#39;</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;nebula-graphd&#39;</span><span class="p">,</span><span class="w">
-</span><span class="w"> </span><span class="s1">&#39;namespace&#39;</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;vesoft&#39;</span><span class="p">,</span><span class="w">
-</span><span class="w"> </span><span class="s1">&#39;repository_type&#39;</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;image&#39;</span><span class="p">,</span><span class="w">
-</span><span class="w"> </span><span class="s1">&#39;status&#39;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
-</span><span class="w"> </span><span class="s1">&#39;description&#39;</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;Nebula Graph Graphd Service Image. https://github.com/vesoft-inc/nebula&#39;</span><span class="p">,</span><span class="w">
-</span><span class="w"> </span><span class="s1">&#39;is_private&#39;</span><span class="p">:</span><span class="w"> </span><span class="no">False</span><span class="p">,</span><span class="w">
-</span><span class="w"> </span><span class="s1">&#39;is_automated&#39;</span><span class="p">:</span><span class="w"> </span><span class="no">False</span><span class="p">,</span><span class="w">
-</span><span class="w"> </span><span class="s1">&#39;can_edit&#39;</span><span class="p">:</span><span class="w"> </span><span class="no">False</span><span class="p">,</span><span class="w">
-</span><span class="w"> </span><span class="s1">&#39;star_count&#39;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w">
-</span><span class="w"> </span><span class="s1">&#39;pull_count&#39;</span><span class="p">:</span><span class="w"> </span><span class="mi">223494</span><span class="p">,</span><span class="w">
-</span><span class="w"> </span><span class="s1">&#39;last_updated&#39;</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;2021-04-19T19:04:20.324010Z&#39;</span><span class="p">,</span><span class="w">
-</span><span class="w"> </span><span class="s1">&#39;is_migrated&#39;</span><span class="p">:</span><span class="w"> </span><span class="no">False</span><span class="p">,</span><span class="w">
-</span><span class="w"> </span><span class="s1">&#39;collaborator_count&#39;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
-</span><span class="w"> </span><span class="s1">&#39;affiliation&#39;</span><span class="p">:</span><span class="w"> </span><span class="n">None</span><span class="p">,</span><span class="w">
-</span><span class="w"> </span><span class="s1">&#39;hub_user&#39;</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;vesoft&#39;</span><span class="err">}</span><span class="w">
-</span></code></pre></td></tr></table>
-</div>
-</div><h2 id="实现" class="headerLink">
-    <a href="#%e5%ae%9e%e7%8e%b0" class="header-mark"></a>实现</h2><h3 id="计划任务调度-with-cloud-scheduler" class="headerLink">
-    <a href="#%e8%ae%a1%e5%88%92%e4%bb%bb%e5%8a%a1%e8%b0%83%e5%ba%a6-with-cloud-scheduler" class="header-mark"></a>计划任务调度 with Cloud Scheduler</h3><p>前边提到，<code>Scheduler --&gt; Functions</code> 中间是通过消息队列实现的可靠事件触发，我们需要在 Google Cloud Pub/Sub里创建一个订阅消息，后边我们会把这个订阅消息从 Scheduler 定期发送，并且在 Function创建的时候定义为触发条件。</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">$ gcloud pubsub topics create nebula-insights-cron-topic
-$ gcloud pubsub subscriptions create cron-sub --topic nebula-insights-cron-topic
-</code></pre></td></tr></table>
-</div>
-</div><p>任务的创建非常直接，在 <a href="https://console.cloud.google.com/cloudscheduler" target="_blank" rel="noopener noreffer">Scheduler Web Console</a> 上直接图形化操作就可以了，记得要选择触发 Pub/Sub 消息为 <code>cron-sub</code>，消息主题为 <code>nebula-insights-cron-topic</code></p>
-<h3 id="etl-worker-with-python--google-functions" class="headerLink">
-    <a href="#etl-worker-with-python--google-functions" class="header-mark"></a>ETL Worker with Python + Google Functions</h3><p>当 Scheduler 每天定时发送消息之后，接收方就是我们要定义的 Google Functions了，它的定义如图
-第一步，选择它的触发类型为 Pub/Sub，同时要定义消息的主题和名字。</p>
-<p></p>
-<p>第二步就是把代码放进去:</p>
-<p></p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">                                              ┌─────────────────────┐
-                                              │                     │
-   ┌──────────────────────────┐   ┌───────────►  GitHub API Server  │
-   │                          │   │           │                     │
-   │  Google Cloud Functions  ◄───►           └─────────────────────┘
-   │                          │   │
-   └────────────▲─────────────┘   │           ┌─────────────────────────┐
-                │                 │           │                         │
-                │                 ├───────────►  Docker Hub API Server  │
-   ┌────────────▼────────────┐    │           │                         │
-   │                         │    │           │                         │
-   │  Google Cloud Storage   │    │           └─────────────────────────┘
-   │                         │    ...
-   └────────────┬────────────┘    │           ┌──────────────────┐
-                │                 │           │                  │
-                │                 └───────────►  Aliyun OSS API  │
-      ┌─────────▼─────────┐                   │                  │
-      │                   │                   └──────────────────┘
-      │  Google BigQuery  │
-      │                   │
-      └───────────────────┘
-</code></pre></td></tr></table>
-</div>
-</div><p>这部分的逻辑就是通过前边分析了的API取得信息，然后组装成需要的格式存到 Cloud Storage(对象存储），然后再导入到 BigQuery（数仓）之中，全部代码在GitHub上:
-<a href="https://github.com/wey-gu/nebula-insights/blob/main/functions/data-fetching-0/main.py" target="_blank" rel="noopener noreffer">https://github.com/wey-gu/nebula-insights/blob/main/functions/data-fetching-0/main.py</a>
-另外，可以参考这个官方教程 <a href="https://cloud.google.com/scheduler/docs/tut-pub-sub" target="_blank" rel="noopener noreffer">https://cloud.google.com/scheduler/docs/tut-pub-sub</a></p>
-<h3 id="数仓表结构定义" class="headerLink">
-    <a href="#%e6%95%b0%e4%bb%93%e8%a1%a8%e7%bb%93%e6%9e%84%e5%ae%9a%e4%b9%89" class="header-mark"></a>数仓表结构定义</h3><p>数仓的表结构比较直接，schema的图贴在下边了，值得注意的是，BigQuery支持嵌套的表结构（而不像一般关系型数据库那样需要把这样的逻辑结构用辅助表来表示），在我们这个场景下非常方便，比如release表中的 assets的三个嵌套字段。
-</p>
-<p>更详细的信息可以参考GitHub上的介绍和代码: <a href="https://github.com/wey-gu/nebula-insights#data-etl-bigquery-and-gcs" target="_blank" rel="noopener noreffer">https://github.com/wey-gu/nebula-insights#data-etl-bigquery-and-gcs</a></p>
-<h3 id="数据可视化" class="headerLink">
-    <a href="#%e6%95%b0%e6%8d%ae%e5%8f%af%e8%a7%86%e5%8c%96" class="header-mark"></a>数据可视化</h3><p>到这里，我们就可以自动在BigQuery里存有每天收集的不同来源的统计数据啦，有了它，我们可以借助 Data Studio 来生成各式各样的可视化表示。</p>
-<p>参考 <a href="https://cloud.google.com/bigquery/docs/visualize-data-studio" target="_blank" rel="noopener noreffer">https://cloud.google.com/bigquery/docs/visualize-data-studio</a></p>
-<h2 id="总结" class="headerLink">
-    <a href="#%e6%80%bb%e7%bb%93" class="header-mark"></a>总结</h2><p>这样，我们实际上不需要任何认为维护的成本和投入，就搭建了一整个数据的流水线，并且只需要按照数据用量付费，在我们的数据量下，及时考虑未来增加数十个新的量度的收集，我们依然没有达到需要付费的用量，是不是很Cool？
-因为数据同时存在于对象存储与数仓里，我们可以方便随时把数据导入任意其他平台上。</p>
-<p>BigQuery还有一些非常常用的，自带的机器学习的功能，只需要写一个SQL-Like的query就能触发然后获得预测结果，如果我们用到这些功能的话也会回到 datawhale 为同学们继续分享哈。</p>
-<p>第一次做数据工程方面的分享，如果有错误的地方欢迎大家不吝指出哈~~</p>
-<p>谢谢！</p>]]></description>
 </item></channel>
 </rss>

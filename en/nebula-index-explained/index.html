@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noodp" />
+    <title class="pjax-title">Nebula Index Explained - siwei.io</title><meta name="Description" content="Nebula Graph Native Index explained, why index not found? When should I use Nebula Index and full-text index?"><meta property="og:title" content="Nebula Index Explained" />
+<meta property="og:description" content="Nebula Graph Native Index explained, why index not found? When should I use Nebula Index and full-text index?" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://siwei.io/en/nebula-index-explained/" /><meta property="og:image" content="https://siwei.io/en/nebula-index-explained/featured-image.png"/><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2022-02-20T16:35:53+08:00" />
+<meta property="article:modified_time" content="2022-02-20T16:35:53+08:00" /><meta property="og:site_name" content="siwei.io" />
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://siwei.io/en/nebula-index-explained/featured-image.png"/>
+<meta name="twitter:title" content="Nebula Index Explained"/>
+<meta name="twitter:description" content="Nebula Graph Native Index explained, why index not found? When should I use Nebula Index and full-text index?"/>
+<meta name="application-name" content="siwei.io">
+<meta name="apple-mobile-web-app-title" content="siwei.io">
+
+<meta name="theme-color" content="#f8f8f8"><meta name="msapplication-TileColor" content="#da532c"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="canonical" href="https://siwei.io/en/nebula-index-explained/" /><link rel="prev" href="https://siwei.io/en/nebula-java-happy-parsing-guide/" /><link rel="stylesheet" href="/lib/normalize/normalize.min.css"><link rel="stylesheet" href="/css/style.min.css"><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/fontawesome-free/all.min.css">
+        <noscript><link rel="stylesheet" href="/lib/fontawesome-free/all.min.css"></noscript><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/animate/animate.min.css">
+        <noscript><link rel="stylesheet" href="/lib/animate/animate.min.css"></noscript><meta name="baidu-site-verification" content="code-4R67zl7SwH" /><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "Nebula Index Explained",
+        "inLanguage": "en",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "https:\/\/siwei.io\/en\/nebula-index-explained\/"
+        },"image": ["https:\/\/siwei.io\/images\/site-feature-image.webp"],"genre": "posts","keywords": "Nebula Graph, index, search, graph database","wordcount":  1273 ,
+        "url": "https:\/\/siwei.io\/en\/nebula-index-explained\/","datePublished": "2022-02-20T16:35:53+08:00","dateModified": "2022-02-20T16:35:53+08:00","publisher": {
+            "@type": "Organization",
+            "name": ""},"author": {
+                "@type": "Person",
+                "name": "Wey Gu"
+            },"description": "Nebula Graph Native Index explained, why index not found? When should I use Nebula Index and full-text index?"
+    }
+    </script></head>
+
+<body header-desktop="fixed" header-mobile="auto"><script type="text/javascript">
+        function setTheme(theme) {document.body.setAttribute('theme', theme);}
+        function saveTheme(theme) {window.localStorage && localStorage.setItem('theme', theme);}
+        function getMeta(metaName) {const metas = document.getElementsByTagName('meta'); for (let i = 0; i < metas.length; i++) if (metas[i].getAttribute('name') === metaName) return metas[i]; return '';}
+        if (window.localStorage && localStorage.getItem('theme')) {let theme = localStorage.getItem('theme');theme === 'light' || theme === 'dark' || theme === 'black' ? setTheme(theme) : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light')); } else { if ('auto' === 'light' || 'auto' === 'dark' || 'auto' === 'black') setTheme('auto'), saveTheme('auto'); else saveTheme('auto'), window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light');}
+        let metaColors = {'light': '#f8f8f8','dark': '#252627','black': '#000000'}
+        getMeta('theme-color').content = metaColors[document.body.getAttribute('theme')];
+    </script>
+    <div id="back-to-top"></div>
+    <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/en/" title="siwei.io"><span class="header-title-pre"><i class="fas fa-code-branch"></i></span>siwei.io</a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="/en/about/"> About </a><a class="menu-item" href="/en/projects/"> Project </a><a class="menu-item" href="/en/sketch-notes/"> Sketches </a><a class="menu-item" href="/en/posts/"> Blog </a><a class="menu-item" href="/en/cources/"> Hands-on </a><a class="menu-item" href="/en/talk/"> Talks </a><a class="menu-item" href="https://vesoft.com/en/careers/" rel="noopener noreffer" target="_blank"> Hire </a><a class="menu-item" href="/en/about/#contact"> Contact </a><span class="menu-item delimiter"></span><a href="#" onclick="return false;" class="menu-item language" title="Select Language">English<i class="fas fa-chevron-right fa-fw"></i>
+                        <select class="language-select" title="Select Language" id="language-select-desktop" onchange="location = this.value;"><option value="/en/nebula-index-explained/" selected>English</option><option value="/nebula-index-explained/">简体中文</option></select>
+                    </a><span class="menu-item search" id="search-desktop">
+                        <input type="text" placeholder="Search titles or contents..." id="search-input-desktop">
+                        <a href="#" onclick="return false;" class="search-button search-toggle" id="search-toggle-desktop" title="Search">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="#" onclick="return false;" class="search-button search-clear" id="search-clear-desktop" title="Clear">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-desktop">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </span><a href="#" onclick="return false;" class="menu-item theme-select" title="Switch Theme">
+                    <i class="fas fa-adjust fa-fw"></i>
+                    <select class="color-theme-select" id="theme-select-desktop" title="Switch Theme">
+                        <option value="light">Light</option>
+                        <option value="dark">Dark</option>
+                        <option value="black">Black</option>
+                        <option value="auto">Auto</option>
+                    </select>
+                </a></div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="/en/" title="siwei.io"><span class="header-title-pre"><i class="fas fa-code-branch"></i></span>siwei.io</a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><div class="search-wrapper">
+                    <div class="search mobile" id="search-mobile">
+                        <input type="text" placeholder="Search titles or contents..." id="search-input-mobile">
+                        <a href="#" onclick="return false;" class="search-button search-toggle" id="search-toggle-mobile" title="Search">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="#" onclick="return false;" class="search-button search-clear" id="search-clear-mobile" title="Clear">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-mobile">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </div>
+                    <a href="#" onclick="return false;" class="search-cancel" id="search-cancel-mobile">
+                        Cancel
+                    </a>
+                </div><a class="menu-item" href="/en/about/" title="">About</a><a class="menu-item" href="/en/projects/" title="">Project</a><a class="menu-item" href="/en/sketch-notes/" title="">Sketches</a><a class="menu-item" href="/en/posts/" title="">Blog</a><a class="menu-item" href="/en/cources/" title="">Hands-on</a><a class="menu-item" href="/en/talk/" title="">Talks</a><a class="menu-item" href="https://vesoft.com/en/careers/" title="" rel="noopener noreffer" target="_blank">Hire</a><a class="menu-item" href="/en/about/#contact" title="">Contact</a><a href="#" onclick="return false;" class="menu-item theme-select" title="Switch Theme">
+                <i class="fas fa-adjust fa-fw"></i>
+                <select class="color-theme-select" id="theme-select-mobile" title="Switch Theme">
+                    <option value="light">Light</option>
+                    <option value="dark">Dark</option>
+                    <option value="black">Black</option>
+                    <option value="auto">Auto</option>
+                </select>
+            </a><a href="#" onclick="return false;" class="menu-item" title="Select Language">English<i class="fas fa-chevron-right fa-fw"></i>
+                    <select class="language-select" title="Select Language" onchange="location = this.value;"><option value="/en/nebula-index-explained/" selected>English</option><option value="/nebula-index-explained/">简体中文</option></select>
+                </a></div>
+    </div>
+</header>
+<div class="search-dropdown desktop">
+    <div id="search-dropdown-desktop"></div>
+</div>
+<div class="search-dropdown mobile">
+    <div id="search-dropdown-mobile"></div>
+</div>
+<main class="main">
+            <div class="container"><div class="toc" id="toc-auto">
+        <h2 class="toc-title">Contents</h2>
+        <div class="toc-content always-active" id="toc-content-auto"><nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#what-exactly-nebula-graph-index-is">What exactly Nebula Graph Index is</a>
+          <ul>
+            <li><a href="#pure-prop-condition-queries">pure-prop-condition queries</a></li>
+            <li><a href="#why-nebula-graph-index-is-a-must-in-pure-prop-condition-queries">Why Nebula Graph index is a must in pure-prop-condition queries</a></li>
+            <li><a href="#why-pure-prop-condition-queries-onlyrequiring-index">Why pure-prop-condition queries only(requiring index)</a></li>
+          </ul>
+        </li>
+        <li><a href="#facts-on-nebula-graph-index">Facts on Nebula Graph Index</a></li>
+        <li><a href="#how-to-use-the-index">How to use the index</a></li>
+        <li><a href="#recap">Recap</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav></div>
+    </div><script>document.getElementsByTagName("main")[0].setAttribute("pageStyle", "normal")</script><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC", "true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Nebula Index Explained</h1><div class="post-meta">
+            <div class="post-meta-line">
+                <span class="post-author"><i class="author fas fa-user-circle fa-fw"></i><a href="https://siwei.io" title="Author" target="_blank" rel="noopener noreffer author" class="author">Wey Gu</a>
+                </span>&nbsp;<span class="post-category">included in </span>&nbsp;<span class="post-category">category <a href="/en/categories/nebula-graph/"><i class="far fa-folder fa-fw"></i>Nebula Graph</a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime="2022-02-20">2022-02-20</time>&nbsp;<i class="far fa-edit fa-fw"></i>&nbsp;<time datetime="2022-02-20">2022-02-20</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;1273 words&nbsp;
+                <i class="far fa-clock fa-fw"></i>&nbsp;6 minutes&nbsp;<span id="/en/nebula-index-explained/" class="leancloud_visitors" data-flag-title="Nebula Index Explained">
+                        <i class="far fa-eye fa-fw"></i>&nbsp;<span class=leancloud-visitors-count></span>&nbsp;views
+                    </span>&nbsp;</div>
+        </div><div class="featured-image"><img
+        class="lazyload"
+        data-src="/en/nebula-index-explained/featured-image.webp"
+        data-srcset="/en/nebula-index-explained/featured-image.webp, /en/nebula-index-explained/featured-image.webp 1.5x, /en/nebula-index-explained/featured-image.webp 2x"
+        data-sizes="auto"
+        alt="/en/nebula-index-explained/featured-image.webp"
+        title="Nebula Graph Native Index explained, why index not found? When should I use Nebula Index and full-text index?" height="914" width="1738"></div><div class="details toc" id="toc-static"  kept="">
+                <div class="details-summary toc-title">
+                    <span>Contents</span>
+                    <span><i class="details-icon fas fa-angle-right"></i></span>
+                </div>
+                <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#what-exactly-nebula-graph-index-is">What exactly Nebula Graph Index is</a>
+          <ul>
+            <li><a href="#pure-prop-condition-queries">pure-prop-condition queries</a></li>
+            <li><a href="#why-nebula-graph-index-is-a-must-in-pure-prop-condition-queries">Why Nebula Graph index is a must in pure-prop-condition queries</a></li>
+            <li><a href="#why-pure-prop-condition-queries-onlyrequiring-index">Why pure-prop-condition queries only(requiring index)</a></li>
+          </ul>
+        </li>
+        <li><a href="#facts-on-nebula-graph-index">Facts on Nebula Graph Index</a></li>
+        <li><a href="#how-to-use-the-index">How to use the index</a></li>
+        <li><a href="#recap">Recap</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav></div>
+            </div><div class="content" id="content"><blockquote>
+<p>Nebula Graph Native Index explained, why <code>index not found</code>? When should I use Nebula Index and full-text index?</p>
+</blockquote>
+<p>The term of Nebula Graph Index is quite similar to index in RDBMS, while, they are not the same. It&rsquo;s noticed when getting started with Nebula Graph, the index confused some of the users in first glance on</p>
+<ul>
+<li>What exactly Nebula Graph Index is.</li>
+<li>When I should use it.</li>
+<li>How it impacts the performance.</li>
+</ul>
+<p>Today I&rsquo;m gonna walk you through the index in Nebula Graph.</p>
+<p>Let&rsquo;s get started!</p>
+<h2 id="what-exactly-nebula-graph-index-is" class="headerLink">
+    <a href="#what-exactly-nebula-graph-index-is" class="header-mark"></a>What exactly Nebula Graph Index is</h2><p>TL;DR, Nebula Graph Index is only to be used to enable pure-prop-condition queries</p>
+<ul>
+<li>Not for graph walking through edges.</li>
+<li>It&rsquo;s an prerequisite for such query.</li>
+</ul>
+<h3 id="pure-prop-condition-queries" class="headerLink">
+    <a href="#pure-prop-condition-queries" class="header-mark"></a>pure-prop-condition queries</h3><p>We know that in RDBMS, an INDEX is to create a duplicated sorted DATA to enable QUERY with condition filtering on the sorted data, to <strong>accelerate the query in read</strong> and involves extra writes during the write.</p>
+<blockquote>
+<p>Note: in RDBMS/Tabular DB, an INDEX on some columns means to create extra data that are sorted on those columns to make query with those columns' condition to be scanned faster, rather than scanning from the original table data sorted based on the key only.</p>
+</blockquote>
+<p>In Nebula Graph, the INDEX is to create a duplicated sorted <strong>Vertex/Edge PROP DATA</strong> to <strong>enable the part of QUERY</strong>(it&rsquo;s a must rather than accelerate it) like The following to GET data from PROP Conditions: or I call it the pure-prop-condition queries:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="o">####</span><span class="w"> </span><span class="n">Queries</span><span class="w"> </span><span class="n">relying</span><span class="w"> </span><span class="k">on</span><span class="w"> </span><span class="n">Nebula</span><span class="w"> </span><span class="n">Graph</span><span class="w"> </span><span class="k">Index</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="o">#</span><span class="w"> </span><span class="n">query</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="n">pure</span><span class="o">-</span><span class="n">prop</span><span class="o">-</span><span class="n">condition</span><span class="w"> </span><span class="n">query</span><span class="w">
+</span><span class="w"></span><span class="n">LOOKUP</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">tag1</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">col1</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">col2</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&#34;foo&#34;</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span><span class="w">    </span><span class="n">YIELD</span><span class="w"> </span><span class="n">tag1</span><span class="p">.</span><span class="n">col1</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">col1</span><span class="p">,</span><span class="w"> </span><span class="n">tag1</span><span class="p">.</span><span class="n">col3</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">col3</span><span class="p">;</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="o">#</span><span class="w"> </span><span class="n">query</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="n">pure</span><span class="o">-</span><span class="n">prop</span><span class="o">-</span><span class="n">condition</span><span class="w"> </span><span class="n">query</span><span class="w">
+</span><span class="w"></span><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">v</span><span class="p">:</span><span class="n">player</span><span class="w"> </span><span class="err">{</span><span class="w"> </span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;Tim Duncan&#39;</span><span class="w"> </span><span class="err">}</span><span class="p">)</span><span class="c1">--&gt;(v2:player) \
+</span><span class="c1"></span><span class="w">        </span><span class="k">RETURN</span><span class="w"> </span><span class="n">v2</span><span class="p">.</span><span class="n">player</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">Name</span><span class="p">;</span><span class="w">
+</span></code></pre></td></tr></table>
+</div>
+</div><p>The pure-prop-condition queries, like above nGQL lines are literally to &ldquo;Find VID/EDGE only based on given the propertiy condtions&rdquo;. On the contrary, the following, are not pure-prop-condition queries:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="o">####</span><span class="w"> </span><span class="n">Queries</span><span class="w"> </span><span class="k">not</span><span class="w"> </span><span class="n">based</span><span class="w"> </span><span class="k">on</span><span class="w"> </span><span class="n">Nebula</span><span class="w"> </span><span class="n">Graph</span><span class="w"> </span><span class="k">Index</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="o">#</span><span class="w"> </span><span class="n">query</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">walk</span><span class="w"> </span><span class="n">query</span><span class="w"> </span><span class="n">starting</span><span class="w"> </span><span class="k">from</span><span class="w"> </span><span class="n">given</span><span class="w"> </span><span class="n">vertex</span><span class="w"> </span><span class="n">VID</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;player100&#34;</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="k">GO</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="s2">&#34;player100&#34;</span><span class="w"> </span><span class="n">OVER</span><span class="w"> </span><span class="n">follow</span><span class="w"> </span><span class="n">REVERSELY</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span><span class="w">        </span><span class="n">YIELD</span><span class="w"> </span><span class="n">src</span><span class="p">(</span><span class="n">edge</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span><span class="w">    </span><span class="k">GO</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="err">$</span><span class="o">-</span><span class="p">.</span><span class="n">id</span><span class="w"> </span><span class="n">OVER</span><span class="w"> </span><span class="n">serve</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span><span class="w">        </span><span class="k">WHERE</span><span class="w"> </span><span class="n">properties</span><span class="p">(</span><span class="err">$</span><span class="o">^</span><span class="p">).</span><span class="n">age</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">20</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span><span class="w">        </span><span class="n">YIELD</span><span class="w"> </span><span class="n">properties</span><span class="p">(</span><span class="err">$</span><span class="o">^</span><span class="p">).</span><span class="n">name</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">FriendOf</span><span class="p">,</span><span class="w"> </span><span class="n">properties</span><span class="p">(</span><span class="err">$$</span><span class="p">).</span><span class="n">name</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">Team</span><span class="p">;</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="o">#</span><span class="w"> </span><span class="n">query</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="n">walk</span><span class="w"> </span><span class="n">query</span><span class="w"> </span><span class="n">starting</span><span class="w"> </span><span class="k">from</span><span class="w"> </span><span class="n">given</span><span class="w"> </span><span class="n">vertex</span><span class="w"> </span><span class="n">VID</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;player101&#34;</span><span class="w"> </span><span class="k">or</span><span class="w"> </span><span class="s2">&#34;player102&#34;</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">v</span><span class="p">:</span><span class="n">player</span><span class="w"> </span><span class="err">{</span><span class="w"> </span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;Tim Duncan&#39;</span><span class="w"> </span><span class="err">}</span><span class="p">)</span><span class="c1">--(v2) \
+</span><span class="c1"></span><span class="w">        </span><span class="k">WHERE</span><span class="w"> </span><span class="n">id</span><span class="p">(</span><span class="n">v2</span><span class="p">)</span><span class="w"> </span><span class="k">IN</span><span class="w"> </span><span class="p">[</span><span class="s2">&#34;player101&#34;</span><span class="p">,</span><span class="w"> </span><span class="s2">&#34;player102&#34;</span><span class="p">]</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span><span class="w">        </span><span class="k">RETURN</span><span class="w"> </span><span class="n">v2</span><span class="p">.</span><span class="n">player</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">Name</span><span class="p">;</span><span class="w">
+</span></code></pre></td></tr></table>
+</div>
+</div><p>If we look into <code>query 1</code> and <code>query 3</code>, where condition on vertex on tag:player are both <code>{ name: 'Tim Duncan' }</code> though:</p>
+<ul>
+<li>For <code>query 3</code> , the index is not required as the query will be started from known vertex ID in <code>[&quot;player101&quot;, &quot;player102&quot;]</code> and thus:
+<ul>
+<li>It&rsquo;ll directly fetch vertex Data from <code>v2</code>&rsquo;s vertex IDs</li>
+<li>then to GetNeighbors(): walk through edges of <code>v2</code>, GetVertices() for next hop: <code>v</code> and filter based on property: <code>name</code></li>
+</ul>
+</li>
+<li>For <code>query 1</code> , the query has to start from <code>v</code> due to no known vertex IDs were provided:
+<ul>
+<li>It&rsquo;ll do IndexScan() first to find all vertices only with property condtion of <code>{ name: 'Tim Duncan' }</code></li>
+<li>Then, GetNeighbors(): walk through edges of <code>v</code>, GetVertices() for next hop: <code>v2</code></li>
+</ul>
+</li>
+</ul>
+<p>Now, we could know the whole point is on <strong>whether to know the vertexID(s)</strong>. You could check their execution plan with PROFILE or EXPLAIN like the follow:</p>
+<table>
+<thead>
+<tr>
+<th><code>query 1</code>, requires/based on index(on tag: player), pure prop condition query</th>
+<th><code>query 3</code>, no index required, query starting from known vertex IDs</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><img
+        class="lazyload"
+        data-src="./query-based-on-index.webp"
+        data-srcset="./query-based-on-index.webp, ./query-based-on-index.webp 1.5x, ./query-based-on-index.webp 2x"
+        data-sizes="auto"
+        alt="./query-based-on-index.webp"
+        title="query-based-on-index"></td>
+<td><img
+        class="lazyload"
+        data-src="./query-requires-no-index.webp"
+        data-srcset="./query-requires-no-index.webp, ./query-requires-no-index.webp 1.5x, ./query-requires-no-index.webp 2x"
+        data-sizes="auto"
+        alt="./query-requires-no-index.webp"
+        title="query-requires-no-index"></td>
+</tr>
+</tbody>
+</table>
+<h3 id="why-nebula-graph-index-is-a-must-in-pure-prop-condition-queries" class="headerLink">
+    <a href="#why-nebula-graph-index-is-a-must-in-pure-prop-condition-queries" class="header-mark"></a>Why Nebula Graph index is a must in pure-prop-condition queries</h3><p>It&rsquo;s because Nebula Graph stores data in a distributed and graph-oriented way, the full scan of data was condiser too expensive to be allowed(<code>index not found</code> will occur when it&rsquo;s not created in pure-prop-condition queries).</p>
+<blockquote>
+<p>Note: from v3.0, it&rsquo;s possible to do TopN Scan without INDEX, where the <code>LIMIT &lt;n&gt;</code> is used, this is different from the fullscan case(INDEX is a must), which will be explained later.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">MATCH (v:player { name: &#39;Tim Duncan&#39; })--&gt;(v2:player) \
+        RETURN v2.player.name AS Name LIMIT 3;
+</code></pre></td></tr></table>
+</div>
+</div></blockquote>
+<h3 id="why-pure-prop-condition-queries-onlyrequiring-index" class="headerLink">
+    <a href="#why-pure-prop-condition-queries-onlyrequiring-index" class="header-mark"></a>Why pure-prop-condition queries only(requiring index)</h3><p><strong>graph-queries</strong> vs <strong>pure-prop-condition queries</strong></p>
+<ul>
+<li>graph-queries, see <code>query 2</code> and <code>query 3</code>, are to walk through edges all the way for the given vertices</li>
+<li>pure-prop-condition queries, see <code>query 0</code> and <code>query 1</code>, are to find vertex only on given prop condtions</li>
+</ul>
+<p>In Nebula Graph, the data is structured in a way to enable fast graph-queries, and is already indexed/sorted on vertex ID(for both vertex and edge) in raw data, where GetNeighbors() of given vertex is cheap and fast due to the locality/stored continuously(pysically linked).</p>
+<p>So in summary:</p>
+<blockquote>
+<p>Nebula Graph Index is sorted prop data to find vertex or edge on given pure prop conditions.</p>
+</blockquote>
+<h2 id="facts-on-nebula-graph-index" class="headerLink">
+    <a href="#facts-on-nebula-graph-index" class="header-mark"></a>Facts on Nebula Graph Index</h2><p>To understand more details/limitations/cost of Nebula, let&rsquo;s reveal more on its design and here are some facts:</p>
+<ul>
+<li>
+<p>Index Data is stored and sharded together with Vertex Data</p>
+</li>
+<li>
+<p>Only Left Match: It&rsquo;s RocksDB Prefix Scan under the hood</p>
+</li>
+<li>
+<p>Cost:</p>
+<ul>
+<li>Write Path: Extra Data + Extra Read</li>
+<li>Read Path: RBO, Fan Out, TopN Push Down</li>
+</ul>
+</li>
+<li>
+<p>Data Full Scan TopN Sample(not fullscan) is supported w/o Index</p>
+<ul>
+<li>
+<p><code>LOOKUP ON t YIELD t.name | LIMIT 1</code></p>
+</li>
+<li>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">MATCH (v:player { name: &#39;Tim Duncan&#39; })--&gt;(v2:player) \
+        RETURN v2.player.name AS Name LIMIT 3;
+</code></pre></td></tr></table>
+</div>
+</div></li>
+</ul>
+</li>
+</ul>
+<p>The key info can be seen from one of my <a href="https://www.siwei.io/en/sketch-notes/" target="_blank" rel="noopener noreffer">sketch notes</a>:</p>
+<p><img
+        class="lazyload"
+        data-src="https://www.siwei.io/sketches/nebula-index-demystified/nebula-index-demystified-en.webp"
+        data-srcset="https://www.siwei.io/sketches/nebula-index-demystified/nebula-index-demystified-en.webp, https://www.siwei.io/sketches/nebula-index-demystified/nebula-index-demystified-en.webp 1.5x, https://www.siwei.io/sketches/nebula-index-demystified/nebula-index-demystified-en.webp 2x"
+        data-sizes="auto"
+        alt="https://www.siwei.io/sketches/nebula-index-demystified/nebula-index-demystified-en.webp"
+        title="https://www.siwei.io/sketches/nebula-index-demystified/nebula-index-demystified-en.webp"></p>
+<blockquote>
+<p>We should notice that only the left match is supported in pure-prop-condition queries. For queries like wildcard or reguler-expression, Full-text Index/Search is to be used, which leveraged an external elastic search integrated with nebula: please check <a href="https://docs.nebula-graph.io/3.0.0/4.deployment-and-installation/6.deploy-text-based-index/2.deploy-es/" target="_blank" rel="noopener noreffer">Nebula Graph Full text index</a> for more.</p>
+</blockquote>
+<p>With this sketch note, we could see</p>
+<ul>
+<li>
+<p>Local Index Design</p>
+<ul>
+<li>The index is stored and shared locally together with the graph data.</li>
+<li>It&rsquo;s sorting based on prop value, and the matching is underlying a rocksDB prefix scan, that&rsquo;s why only left match is supported()</li>
+</ul>
+</li>
+<li>
+<p>Write path</p>
+<ul>
+<li>The index enables the RDBMS-like Prop Condition Query with cost in the write path including not only the extra write, but also, random read, to ensure the data consistency.</li>
+<li>Index Data write is done in a sync way</li>
+</ul>
+</li>
+<li>
+<p>Read path</p>
+<ul>
+<li>In pure-prop-condition queries, in GraphD, the index will be selected with Rule-based-optimization like this example, where, in a rule, the col2 to be sorted first is considered optimal with the condition: col2 equals &lsquo;foo&rsquo;.</li>
+<li>After the index was chosen, index-scan request will be fanout to storageD instances, and in the case of filters like LIMIT N, it will be pushed down to the storage side to reduce data payload.
+<ul>
+<li>Note: not shown in the sketch but actually from v3.0, the nebula graph allows LIMIT N Sample Prop condition query like this w/o index, which is underlying pushing down the LIMIT filter to storage side.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>Take aways:</p>
+<ul>
+<li>Use index only when we have to, as it&rsquo;s costly in write cases and if limit N sample is allowed and fast enough, we can use that instead, if not: use index.</li>
+<li>Index is left match
+<ul>
+<li>composite index order matters, should be created carefully.</li>
+<li>for full-text search use case, use <a href="https://docs.nebula-graph.io/3.0.0/4.deployment-and-installation/6.deploy-text-based-index/2.deploy-es/" target="_blank" rel="noopener noreffer">full-text index</a> instead.</li>
+</ul>
+</li>
+</ul>
+<h2 id="how-to-use-the-index" class="headerLink">
+    <a href="#how-to-use-the-index" class="header-mark"></a>How to use the index</h2><p>We should always refer to the <a href="https://docs.nebula-graph.io/3.0.0/3.ngql-guide/14.native-index-statements/" target="_blank" rel="noopener noreffer">documentation</a>, and I just put some highlights on this here:</p>
+<ul>
+<li>
+<p>To create an index on a tag or edge type to specify a list of props in the order that we need.</p>
+<ul>
+<li><code>CREATE INDEX</code></li>
+</ul>
+</li>
+<li>
+<p>If an index was created after existing data was inserted, we need to trigger an index async rebuild job, as the index data will be written in sync way only when index is created.</p>
+<ul>
+<li><code>REBUILD INDEX</code></li>
+</ul>
+</li>
+<li>
+<p>We can see the index status after <code>REBUILD INDEX</code> issued.</p>
+<ul>
+<li><code>SHOW INDEX STATUS</code></li>
+</ul>
+</li>
+<li>
+<p>Queries levering index could be LOOKUP, and with the pipeline, in most cases we will do follow-up graph-walk queries like:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="n">LOOKUP</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">player</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span><span class="w">  </span><span class="k">WHERE</span><span class="w"> </span><span class="n">player</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&#34;Kobe Bryant&#34;</span><span class="err">\</span><span class="w">
+</span><span class="w">  </span><span class="n">YIELD</span><span class="w"> </span><span class="n">id</span><span class="p">(</span><span class="n">vertex</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">VertexID</span><span class="p">,</span><span class="w"> </span><span class="n">properties</span><span class="p">(</span><span class="n">vertex</span><span class="p">).</span><span class="n">name</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">|</span><span class="err">\</span><span class="w">
+</span><span class="w">  </span><span class="k">GO</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="err">$</span><span class="o">-</span><span class="p">.</span><span class="n">VertexID</span><span class="w"> </span><span class="n">OVER</span><span class="w"> </span><span class="n">serve</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span><span class="w">  </span><span class="n">YIELD</span><span class="w"> </span><span class="err">$</span><span class="o">-</span><span class="p">.</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">properties</span><span class="p">(</span><span class="n">edge</span><span class="p">).</span><span class="n">start_year</span><span class="p">,</span><span class="w"> </span><span class="n">properties</span><span class="p">(</span><span class="n">edge</span><span class="p">).</span><span class="n">end_year</span><span class="p">,</span><span class="w"> </span><span class="n">properties</span><span class="p">(</span><span class="err">$$</span><span class="p">).</span><span class="n">name</span><span class="p">;</span><span class="w">
+</span></code></pre></td></tr></table>
+</div>
+</div></li>
+<li>
+<p>Or in MATCH query like this, under the hood, v will be searched on index and v2 will be walked by default graph data structure without involving index.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">MATCH (v:player{name:&#34;Tim Duncan&#34;})--&gt;(v2:player) \
+  RETURN v2.player.name AS Name;
+</code></pre></td></tr></table>
+</div>
+</div></li>
+</ul>
+<h2 id="recap" class="headerLink">
+    <a href="#recap" class="header-mark"></a>Recap</h2><p>Finally, Let&rsquo;s Recap</p>
+<ul>
+<li>INDEX is sorting PROP DATA to find data on given PURE PROP CONDITION</li>
+<li>INDEX is <strong>not</strong> for Graph Walk</li>
+<li>INDEX is left match, <strong>not</strong> for full-text search</li>
+<li>INDEX has cost on WRITE</li>
+<li>Remember to REBUILD after CREATE INDEX on existing data</li>
+</ul>
+<p>Happy Graphing!</p>
+<p>Feture image credit to <a href="https://unsplash.com/photos/ZiQkhI7417A" target="_blank" rel="noopener noreffer">Alina</a></p>
+</div>
+
+        <div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>Updated on 2022-02-20</span>
+            </div>
+            <div class="post-info-license"></div>
+        </div>
+        <div class="post-info-line">
+            <div class="post-info-md"><span><a class="link-to-mardown" href=/en/nebula-index-explained/index.md target="_blank" rel="noopener noreferrer">Read markdown</a>
+                    </span></div>
+            <div class="post-info-share">
+                <span><a href="#" onclick="return false;" title="Share on Twitter" data-sharer="twitter" data-url="https://siwei.io/en/nebula-index-explained/" data-title="Nebula Index Explained" data-via="wey_gu" data-hashtags="Nebula Graph,index,search,graph database"><i class="fab fa-twitter fa-fw"></i></a><a href="#" onclick="return false;" title="Share on Facebook" data-sharer="facebook" data-url="https://siwei.io/en/nebula-index-explained/" data-hashtag="Nebula Graph"><i class="fab fa-facebook-square fa-fw"></i></a><a href="#" onclick="return false;" title="Share on WhatsApp" data-sharer="whatsapp" data-url="https://siwei.io/en/nebula-index-explained/" data-title="Nebula Index Explained" data-web><i class="fab fa-whatsapp fa-fw"></i></a><a href="#" onclick="return false;" title="Share on Line" data-sharer="line" data-url="https://siwei.io/en/nebula-index-explained/" data-title="Nebula Index Explained"><i data-svg-src="/lib/simple-icons/icons/line.min.svg"></i></a><a href="#" onclick="return false;" title="Share on 微博" data-sharer="weibo" data-url="https://siwei.io/en/nebula-index-explained/" data-title="Nebula Index Explained" data-image="featured-image.webp" data-ralateuid="siweigu"><i class="fab fa-weibo fa-fw"></i></a><a href="#" onclick="return false;" title="Share on Myspace" data-sharer="myspace" data-url="https://siwei.io/en/nebula-index-explained/" data-title="Nebula Index Explained" data-description="Nebula Graph Native Index explained, why index not found? When should I use Nebula Index and full-text index?"><i data-svg-src="/lib/simple-icons/icons/myspace.min.svg"></i></a><a href="#" onclick="return false;" title="Share on Blogger" data-sharer="blogger" data-url="https://siwei.io/en/nebula-index-explained/" data-title="Nebula Index Explained" data-description="Nebula Graph Native Index explained, why index not found? When should I use Nebula Index and full-text index?"><i class="fab fa-blogger fa-fw"></i></a><a href="#" onclick="return false;" title="Share on Evernote" data-sharer="evernote" data-url="https://siwei.io/en/nebula-index-explained/" data-title="Nebula Index Explained"><i class="fab fa-evernote fa-fw"></i></a></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section class="post-tags"><i class="fas fa-tags fa-fw"></i>&nbsp;<a href="/en/tags/nebula-graph/">Nebula Graph</a>,&nbsp;<a href="/en/tags/index/">index</a>,&nbsp;<a href="/en/tags/search/">search</a>,&nbsp;<a href="/en/tags/graph-database/">graph database</a></section>
+        <section>
+            <span><a href="javascript:void(0);" onclick="window.history.back();">Back</a></span>&nbsp;|&nbsp;<span><a href="/en/">Home</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/en/nebula-java-happy-parsing-guide/" class="prev" rel="prev" title="Nebula Java Happy Parsing Guide"><i class="fas fa-angle-left fa-fw"></i>Nebula Java Happy Parsing Guide</a></div>
+</div>
+<div id="comments"><div id="waline" class="comment"></div><noscript>
+                Please enable JavaScript to view the comments powered by <a href="https://waline.js.org/">Waline</a>.
+            </noscript></div></article></div>
+        </main><footer class="footer">
+        <div class="footer-container"><div class="footer-line">
+                    Powered by <a href="https://gohugo.io/" target="_blank" rel="noopener noreffer" title="Hugo 0.91.2">Hugo</a>&nbsp;|&nbsp;Theme - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreffer" title="DoIt 0.2.13"><i class="far fa-edit fa-fw"></i> DoIt</a>
+                </div><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2018 - 2022</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="https://siwei.io" target="_blank" rel="noopener noreferrer">Wey Gu</a></span>&nbsp;|&nbsp;<span class="license"><a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">CC BY-NC 4.0</a></span></div>
+            <div class="footer-line"></div>
+            <div class="footer-line">
+            </div>
+        </div></footer></div>
+
+    <div id="fixed-buttons"><a href="#back-to-top" id="back-to-top-button" class="fixed-button" title="Back to Top">
+            <i class="fas fa-arrow-up fa-fw"></i>
+        </a><a href="#" id="view-comments" class="fixed-button" title="View Comments">
+            <i class="fas fa-comment fa-fw"></i>
+        </a>
+    </div><div class="assets"><script type="text/javascript" src="/lib/autocomplete/autocomplete.min.js"></script><script type="text/javascript" src="/lib/fuse/fuse.min.js"></script><script type="text/javascript" src="/lib/lazysizes/lazysizes.min.js"></script><script type="text/javascript" src="/lib/topbar/topbar.min.js"></script><script type="text/javascript" src="/lib/pjax/pjax.min.js"></script><script type="text/javascript" src="/js/theme.min.js"></script><script type="text/javascript">
+            window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());
+            gtag('config', 'UA-659952-4', { 'anonymize_ip': true });
+        </script><script type="text/javascript" src="https://www.googletagmanager.com/gtag/js?id=UA-659952-4" async></script></div>
+
+<div class="pjax-assets"><script type="text/javascript">window.config={"code":{"copyTitle":"Copy to clipboard","maxShownLines":10},"comment":{"waline":{"copyright":true,"dark":"body[theme='dark'], body[theme='black']","el":"#waline","highlight":true,"lang":"en","meta":["nick","mail","link"],"pageSize":10,"serverURL":"https://siwei-io.vercel.app","visitor":true}},"lightGallery":{"actualSize":false,"exThumbImage":"data-thumbnail","hideBarsDelay":2000,"selector":".lightgallery","speed":400,"thumbContHeight":80,"thumbWidth":80,"thumbnail":true},"math":{"delimiters":[{"display":true,"left":"$$","right":"$$"},{"display":true,"left":"\\[","right":"\\]"},{"display":false,"left":"$","right":"$"},{"display":false,"left":"\\(","right":"\\)"}],"strict":false},"search":{"distance":100,"findAllMatches":true,"fuseIndexURL":"/en/index.json","highlightTag":"em","ignoreFieldNorm":false,"ignoreLocation":false,"isCaseSensitive":false,"location":0,"maxResultLength":10,"minMatchCharLength":2,"noResultsFound":"No results found","snippetLength":50,"threshold":0.3,"type":"fuse","useExtendedSearch":false},"sharerjs":true};</script><script type="text/javascript" src="/lib/waline/Waline.min.js" defer></script><script type="text/javascript" src="/js/waline.min.js" defer></script><script type="text/javascript" src="/lib/lightgallery/lightgallery.min.js"></script><script type="text/javascript" src="/lib/lightgallery/lg-thumbnail.min.js"></script><script type="text/javascript" src="/lib/lightgallery/lg-zoom.min.js"></script><script type="text/javascript" src="/lib/clipboard/clipboard.min.js"></script><script type="text/javascript" src="/lib/sharer/sharer.min.js"></script><script type="text/javascript" src="/lib/katex/katex.min.js" defer></script><script type="text/javascript" src="/lib/katex/auto-render.min.js" defer></script><script type="text/javascript" src="/lib/katex/copy-tex.min.js" defer></script><script type="text/javascript" src="/lib/katex/mhchem.min.js" defer></script><script type="text/javascript" src="/js/katex.min.js" defer></script><link rel="stylesheet" href="/lib/lightgallery/lightgallery.min.css"><link rel="stylesheet" href="/lib/katex/katex.min.css"><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/katex/copy-tex.min.css">
+        <noscript><link rel="stylesheet" href="/lib/katex/copy-tex.min.css"></noscript></div>
+</body>
+
+</html>
