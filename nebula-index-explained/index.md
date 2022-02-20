@@ -1,7 +1,7 @@
 # Nebula Graph 索引详解
 
 
-> `index not found`?找不到索引？为什么我要创建 Nebula Graph 索引？什么时候要用到 Nebula Graph 原生，一问把这些搞清楚。
+> `index not found`?找不到索引？为什么我要创建 Nebula Graph 索引？什么时候要用到 Nebula Graph 原生，一文把这些搞清楚。
 
 Nebula Graph 的索引其实和传统的关系型数据库中的索引很像，但是又有一些容易让人疑惑的区别。刚开始了解 Nebula 的同学会疑惑于：
 
