@@ -4,9 +4,251 @@
         <link>https://siwei.io/</link>
         <description>Siwei(思为) builds things and believes in Open Source.</description>
         <generator>Hugo -- gohugo.io</generator><language>zh-CN</language><managingEditor>weyl.gu@gmail.com (Wey Gu)</managingEditor>
-            <webMaster>weyl.gu@gmail.com (Wey Gu)</webMaster><lastBuildDate>Sun, 20 Feb 2022 16:35:53 &#43;0800</lastBuildDate>
+            <webMaster>weyl.gu@gmail.com (Wey Gu)</webMaster><lastBuildDate>Mon, 28 Feb 2022 19:18:59 &#43;0800</lastBuildDate>
             <atom:link href="https://siwei.io/index.xml" rel="self" type="application/rss+xml" />
         <item>
+    <title>图数据库体操：用 Nebula Graph 搭成语图谱解汉兜</title>
+    <link>https://siwei.io/resolve-wordle/</link>
+    <pubDate>Mon, 28 Feb 2022 19:18:59 &#43;0800</pubDate><author>
+        <name>Wey Gu</name>
+    </author><guid>https://siwei.io/resolve-wordle/</guid>
+    <description><![CDATA[<div class="featured-image">
+                <img src="/featured-image.webp" referrerpolicy="no-referrer">
+            </div><blockquote>
+<p>我发现用 Nebula Graph 的图查询解 Antfu 的汉兜（最好的中文成语版 wordle 👉🏻 handle.antfu.me）特别有意思，很适合每天写图库语句的体操练习，本文揭示如何用知识图谱<del>作弊</del>解汉兜😁</p>
+</blockquote>
+<h2 id="什么是汉兜" class="headerLink">
+    <a href="#%e4%bb%80%e4%b9%88%e6%98%af%e6%b1%89%e5%85%9c" class="header-mark"></a>什么是汉兜？</h2><p>汉兜（https://handle.antfu.me）是由 Vue/Vite 核心团队的 Antfu 的又一个非常酷的作品，一个非常精致的汉字版的 Wordle，他是是一个每日挑战的填字游戏的中文成语版。</p>
+<p>每天，汉兜会发起一个猜成语挑战，人们要在十次内才对它才能获胜，每一步之后都会收到相应的文字、声母、韵母、声调的匹配情况的提示，其中：绿色表示这个因素存在并且位置匹配、橘色表示这个元素存在但是位置不对，详细的规则可见如下的网页截图：</p>
+<p></p>
+<p>汉兜的乐趣就我们在于在有限的尝试过程中，在大脑中搜寻可能的答案，不断去逼近真理，任何试图作弊、讨巧去泄漏结果的行为都是很无趣、倒胃口的（比如从开源的汉兜代码里窃取信息），这个过程就像在做大脑的体操。</p>
+<p>说到大脑的成语词汇量体操，我突然想到，为什么我们不能在大脑之外造一个汉语成语知识图谱，然后基于这个图谱去做图数据库查询语法体操呢？</p>
+<h2 id="构造解决汉兜的成语知识图谱" class="headerLink">
+    <a href="#%e6%9e%84%e9%80%a0%e8%a7%a3%e5%86%b3%e6%b1%89%e5%85%9c%e7%9a%84%e6%88%90%e8%af%ad%e7%9f%a5%e8%af%86%e5%9b%be%e8%b0%b1" class="header-mark"></a>构造解决汉兜的成语知识图谱</h2><h3 id="什么是知识图谱" class="headerLink">
+    <a href="#%e4%bb%80%e4%b9%88%e6%98%af%e7%9f%a5%e8%af%86%e5%9b%be%e8%b0%b1" class="header-mark"></a>什么是知识图谱？</h3><p>简单来说，知识图谱是一个连接实体之间关联关系的网络，它最初由 Google 提出并用来满足搜索引擎中基于知识推理才可获得（而不是网页倒排索引）的搜索问题，比如：”姚明妻子的年龄？“、”火箭队得过几次总冠军？“</p>
+<p>这里边，我们关注的条件。到 2022 年的现在，知识图谱已经被广泛应用在推荐系统、问答系统、安全风控等等更多搜索之外的领域。</p>
+<h3 id="为什么需要用知识图谱解决汉兜" class="headerLink">
+    <a href="#%e4%b8%ba%e4%bb%80%e4%b9%88%e9%9c%80%e8%a6%81%e7%94%a8%e7%9f%a5%e8%af%86%e5%9b%be%e8%b0%b1%e8%a7%a3%e5%86%b3%e6%b1%89%e5%85%9c" class="header-mark"></a>为什么需要用知识图谱解决汉兜？</h3><p><del>原因就是：because I can</del></p>
+<p>实际上，我们在大脑中解决字谜游戏的过程像极了图谱网络中的信息搜寻的过程，汉兜的解谜反馈提示条件天然适合被用图谱的语义来进行表达。在本文后边，你们会发现解谜条件翻译成图语义是非常非常自然的，这个问题就像是一个天然的为图谱而存在的练习一样，我相信这和知识图谱的结构和人脑中的知识结构非常接近有很大的关系。</p>
+<h3 id="如何构建面向汉兜解谜的知识图谱" class="headerLink">
+    <a href="#%e5%a6%82%e4%bd%95%e6%9e%84%e5%bb%ba%e9%9d%a2%e5%90%91%e6%b1%89%e5%85%9c%e8%a7%a3%e8%b0%9c%e7%9a%84%e7%9f%a5%e8%af%86%e5%9b%be%e8%b0%b1" class="header-mark"></a>如何构建面向汉兜解谜的知识图谱？</h3><p>知识图谱是由实体（顶点）和关系（边）组成的，用图数据库管理系统（Graph Database MS）可以很方便进行知识的入库、更改、查询、甚至可视化探索。</p>
+<p>在本文里，我将利用开源的分布式图数据库 Nebula Graph 开实践这个过程，具体图谱系统的搭建我都会放在文末。</p>
+<p>在本章，我们只讨论图谱的建模：如何面向汉兜的解谜去设计“实体”与“关系”。</p>
+<h4 id="图建模" class="headerLink">
+    <a href="#%e5%9b%be%e5%bb%ba%e6%a8%a1" class="header-mark"></a>图建模</h4><h5 id="最初的想法" class="headerLink">
+    <a href="#%e6%9c%80%e5%88%9d%e7%9a%84%e6%83%b3%e6%b3%95" class="header-mark"></a>最初的想法</h5><p>首先，一定存在的实体是：</p>
+<ul>
+<li>成语</li>
+<li>汉字</li>
+</ul>
+<p>成语-[包含]-&gt;汉字，每个汉字-[读作]-&gt;读音。</p>
+<p>其次，因为解谜过程中涉及到了声母、韵母以及声调的条件，考虑到图谱本身的量级非常小（千级别），而且字的读音是一对多的关系，我把读音和声母（包涵声母-initial和韵母-final）也作为实体，他们之间的关系则是顺理成章了：</p>
+<p></p>
+<h5 id="最终的版本" class="headerLink">
+    <a href="#%e6%9c%80%e7%bb%88%e7%9a%84%e7%89%88%e6%9c%ac" class="header-mark"></a>最终的版本</h5><p>然而，我在后边基于图谱进行查询的时候发现最初的建模会使得(成语)&ndash;&gt;(字)&ndash;&gt;(读音)查询过程中丢失了这个字特定的读法的条件，所以我最终的建模是：</p>
+<p></p>
+<p>这样，纯文字的条件只涉及了<code>(成语)--&gt;(字)</code> 这一跳，而读音、声母、声调的条件则是另一条关系路径，既没有最初版本条件的冗余，又可以在一个路径模式匹配里带上两种条件（后边的例子里会涉及这样的表达）。</p>
+<h4 id="构建成语知识图谱" class="headerLink">
+    <a href="#%e6%9e%84%e5%bb%ba%e6%88%90%e8%af%ad%e7%9f%a5%e8%af%86%e5%9b%be%e8%b0%b1" class="header-mark"></a>构建成语知识图谱</h4><p>有了建模、这么简单的图谱的构建就剩下了数据的收集、清洗和入库。</p>
+<p>对于所有成语数据和他们的读音，我一方面直接抽取了汉兜代码内部的<a href="https://github.com/antfu/handle/" target="_blank" rel="noopener noreffer">数据</a>、另一方面利用 <a href="https://pypinyin.readthedocs.io/" target="_blank" rel="noopener noreffer">PyPinyin</a> 这个开源的 Python 库将汉兜数据中没有读音的数据获得读音，同时，我也用到了 PyPinyin 里的很多方便的函数比如获取一个拼音的声母、韵母。</p>
+<p>构建工具的代码在这里：https://github.com/wey-gu/chinese-graph</p>
+<p>更多信息我也放在文末的附录之中。</p>
+<h2 id="开始知识图谱查询体操" class="headerLink">
+    <a href="#%e5%bc%80%e5%a7%8b%e7%9f%a5%e8%af%86%e5%9b%be%e8%b0%b1%e6%9f%a5%e8%af%a2%e4%bd%93%e6%93%8d" class="header-mark"></a>开始知识图谱查询体操</h2><p>至此，我假设咱们都已经有了我帮大家搭建的成语<del>作弊</del>知识图谱了，开始我们的图谱查询体操吧！</p>
+<p>首先，打开汉兜 👉🏻 <a href="https://handle.antfu.me/" target="_blank" rel="noopener noreffer">https://handle.antfu.me/</a></p>
+<p>假设我们想从一个成语开始，如果你没有想法的话可以试试这个：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"># 匹配成语中的一个结果
+MATCH (x:idiom) &#34;爱憎分明&#34; RETURN x LIMIT 1
+
+# 返回结果
+(&#34;爱憎分明&#34; :idiom{pinyin: &#34;[&#39;ai4&#39;, &#39;zeng1&#39;, &#39;fen1&#39;, &#39;ming2&#39;]&#34;})
+</code></pre></td></tr></table>
+</div>
+</div><p>然后我们把它填到汉兜之中，获得第一次尝试的提示条件：</p>
+<p></p>
+<p>我们运气不错，得到了三个位置上的条件！</p>
+<ul>
+<li>有一个非第一个位置的字，拼音是 4 声，韵母是 ai，但不是爱（爱）</li>
+<li>有一个一声的字，不在第二个位置（憎）</li>
+<li>有一个字韵母是 ing，不在第四个位置（明）</li>
+<li>第四个字是二声（明）</li>
+</ul>
+<p>下面，我们开始图数据库语句体操！</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"># 有一个非第一个位置的字，拼音是 4 声，韵母是 ai，但不是爱
+MATCH (char0:character)&lt;-[with_char_0:with_character]-(x:idiom)-[with_pinyin_0:with_pinyin]-&gt;(pinyin_0:character_pinyin)-[:with_pinyin_part]-&gt;(final_part_0:pinyin_part{part_type: &#34;final&#34;})
+WHERE id(final_part_0) == &#34;ai&#34; AND pinyin_0.character_pinyin.tone == 4 AND with_pinyin_0.position != 0 AND with_char_0.position != 0 AND id(char0) != &#34;爱&#34;
+# 有一个一声的字，不在第二个位置
+MATCH (x:idiom) -[with_pinyin_1:with_pinyin]-&gt;(pinyin_1:character_pinyin)
+WHERE pinyin_1.character_pinyin.tone == 1 AND with_pinyin_1.position != 1
+# 有一个字韵母是 ing，不在第四个位置
+MATCH (x:idiom) -[with_pinyin_2:with_pinyin]-&gt;(:character_pinyin)-[:with_pinyin_part]-&gt;(final_part_2:pinyin_part{part_type: &#34;final&#34;})
+WHERE id(final_part_2) == &#34;ing&#34; AND with_pinyin_2.position != 3
+# 第四个字是二声
+MATCH (x:idiom) -[with_pinyin_3:with_pinyin]-&gt;(pinyin_3:character_pinyin)
+WHERE pinyin_3.character_pinyin.tone == 2 AND with_pinyin_3.position == 3
+
+RETURN x, count(x) as c ORDER BY c DESC
+</code></pre></td></tr></table>
+</div>
+</div><p>在图数据库之中运行，得到了 7 个答案：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="err">(</span><span class="s2">&#34;惊愚骇俗&#34;</span> <span class="err">:idiom</span><span class="p">{</span><span class="err">pinyin:</span> <span class="nt">&#34;[&#39;jing1&#39;, &#39;yu2&#39;, &#39;hai4&#39;, &#39;su2&#39;]&#34;</span><span class="p">}</span><span class="err">)</span>
+<span class="err">(</span><span class="s2">&#34;惊世骇俗&#34;</span> <span class="err">:idiom</span><span class="p">{</span><span class="err">pinyin:</span> <span class="nt">&#34;[&#39;jing1&#39;, &#39;shi4&#39;, &#39;hai4&#39;, &#39;su2&#39;]&#34;</span><span class="p">}</span><span class="err">)</span>
+<span class="err">(</span><span class="s2">&#34;惊见骇闻&#34;</span> <span class="err">:idiom</span><span class="p">{</span><span class="err">pinyin:</span> <span class="nt">&#34;[&#39;jing1&#39;, &#39;jian4&#39;, &#39;hai4&#39;, &#39;wen2&#39;]&#34;</span><span class="p">}</span><span class="err">)</span>
+<span class="err">(</span><span class="s2">&#34;沽名卖直&#34;</span> <span class="err">:idiom</span><span class="p">{</span><span class="err">pinyin:</span> <span class="nt">&#34;[&#39;gu1&#39;, &#39;ming2&#39;, &#39;mai4&#39;, &#39;zhi2&#39;]&#34;</span><span class="p">}</span><span class="err">)</span>
+<span class="err">(</span><span class="s2">&#34;惊心骇神&#34;</span> <span class="err">:idiom</span><span class="p">{</span><span class="err">pinyin:</span> <span class="nt">&#34;[&#39;jing1&#39;, &#39;xin1&#39;, &#39;hai4&#39;, &#39;shen2&#39;]&#34;</span><span class="p">}</span><span class="err">)</span>
+<span class="err">(</span><span class="s2">&#34;荆棘载途&#34;</span> <span class="err">:idiom</span><span class="p">{</span><span class="err">pinyin:</span> <span class="nt">&#34;[&#39;jing1&#39;, &#39;ji2&#39;, &#39;zai4&#39;, &#39;tu2&#39;]&#34;</span><span class="p">}</span><span class="err">)</span>
+<span class="err">(</span><span class="s2">&#34;出卖灵魂&#34;</span> <span class="err">:idiom</span><span class="p">{</span><span class="err">pinyin:</span> <span class="nt">&#34;[&#39;chu1&#39;, &#39;mai4&#39;, &#39;ling2&#39;, &#39;hun2&#39;]&#34;</span><span class="p">}</span><span class="err">)</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>看起来 <code>惊世骇俗</code> 比较主流，试试！</p>
+<p></p>
+<p>我们很幸运，借助于成语<del>作弊</del>知识图谱，居然一次就找到了答案，当然这实际上得益于第一次随机选取的词带来的限制条件的个数，不过在大部分情况下，两次尝试获得最终答案的可能性还是非常大的！</p>
+<blockquote>
+<p>注，这中间很长的253分钟是因为我在查询中发现之前代码里构造的图谱有点 bug，是“披枷带锁”这个词引起的读音图谱的错误数据，还好后来被修复了。</p>
+<p>大家知道“披枷带锁”的正确读音么？😭</p>
+</blockquote>
+<p>接下来，我给大家详细解释一下这个语句的意思。</p>
+<h3 id="语句的含义" class="headerLink">
+    <a href="#%e8%af%ad%e5%8f%a5%e7%9a%84%e5%90%ab%e4%b9%89" class="header-mark"></a>语句的含义</h3><p>我们从第一个字的条件开始，这是一个既有声音、又有字形信息的条件。</p>
+<ul>
+<li>声音信息：存在一个韵母为 <code>ai4</code> 的发音，位置不在第一个字</li>
+<li>文字信息：这个韵母为 <code>ai4</code> 的字，不是<code>爱</code>字</li>
+</ul>
+<p>对于声音信息条件，转换为图模式匹配为：(成语)-一个字发音-(拼音) -包含声母-(韵母) WHERE 拼音韵母为 <code>ai4</code> AND 位置不是第一个。</p>
+<p>因为建模的时候，属性名称我用的是英文（其实中文也是支持的），实际上的语句为：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"># 有一个非第一个位置的字，拼音是 4 声，韵母是 ai
+MATCH (x:idiom)-[with_pinyin_0:with_pinyin]-&gt;(pinyin_0:character_pinyin)-[:with_pinyin_part]-&gt;(final_part_0:pinyin_part{part_type: &#34;final&#34;})
+WHERE id(final_part_0) == &#34;ai&#34; AND pinyin_0.character_pinyin.tone == 4 AND with_pinyin_0.position != 0
+# ...
+RETURN x
+</code></pre></td></tr></table>
+</div>
+</div><p>类似的，表示非第一个位置的字，不是<code>爱</code> 的表达是：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"># 有一个非第一个位置的字，拼音是 4 声，韵母是 ai，但不是爱
+MATCH (char0:character)&lt;-[with_char_0:with_character]-(x:idiom)
+WHERE with_char_0.position != 0 AND id(char0) != &#34;爱&#34;
+# ...
+RETURN x, count(x) as c ORDER BY c DESC
+</code></pre></td></tr></table>
+</div>
+</div><p>而因为这两个条件最终描述的是同一个字，所以它们是可以被写在一个路径下的：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"># 有一个非第一个位置的字，拼音是 4 声，韵母是 ai，但不是爱
+MATCH (char0:character)&lt;-[with_char_0:with_character]-(x:idiom)-[with_pinyin_0:with_pinyin]-&gt;(pinyin_0:character_pinyin)-[:with_pinyin_part]-&gt;(final_part_0:pinyin_part{part_type: &#34;final&#34;})
+WHERE id(final_part_0) == &#34;ai&#34; AND pinyin_0.character_pinyin.tone == 4 AND with_pinyin_0.position != 0 AND with_char_0.position != 0 AND id(char0) != &#34;爱&#34;
+# ...
+RETURN x
+</code></pre></td></tr></table>
+</div>
+</div><p>更多的 <code>MATCH</code> 语法和例子细节，请大家参考文档：</p>
+<ul>
+<li>MATCH <a href="https://docs.nebula-graph.com.cn/3.0.0/3.ngql-guide/7.general-query-statements/2.match/" target="_blank" rel="noopener noreffer">https://docs.nebula-graph.com.cn/3.0.0/3.ngql-guide/7.general-query-statements/2.match/</a></li>
+<li>图模式 <a href="https://docs.nebula-graph.com.cn/3.0.0/3.ngql-guide/1.nGQL-overview/3.graph-patterns/" target="_blank" rel="noopener noreffer">https://docs.nebula-graph.com.cn/3.0.0/3.ngql-guide/1.nGQL-overview/3.graph-patterns/</a></li>
+<li>nGQL 命令 cheatsheet <a href="https://docs.nebula-graph.com.cn/3.0.0/2.quick-start/6.cheatsheet-for-ngql-command/" target="_blank" rel="noopener noreffer">https://docs.nebula-graph.com.cn/3.0.0/2.quick-start/6.cheatsheet-for-ngql-command/</a></li>
+</ul>
+<h2 id="可视化展示线索" class="headerLink">
+    <a href="#%e5%8f%af%e8%a7%86%e5%8c%96%e5%b1%95%e7%a4%ba%e7%ba%bf%e7%b4%a2" class="header-mark"></a>可视化展示线索</h2><p>我们把每一个条件的匹配路径作为输出，利用 Nebula Graph 的可视化能力，可以得到：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"># 有一个非第一个位置的字，拼音是 4 声，韵母是 ai，但不是爱
+MATCH p0=(char0:character)&lt;-[with_char_0:with_character]-(x:idiom)-[with_pinyin_0:with_pinyin]-&gt;(pinyin_0:character_pinyin)-[:with_pinyin_part]-&gt;(final_part_0:pinyin_part{part_type: &#34;final&#34;})
+WHERE id(final_part_0) == &#34;ai&#34; AND pinyin_0.character_pinyin.tone == 4 AND with_pinyin_0.position != 0 AND with_char_0.position != 0 AND id(char0) != &#34;爱&#34;
+# 有一个一声的字，不在第二个位置
+MATCH p1=(x:idiom) -[with_pinyin_1:with_pinyin]-&gt;(pinyin_1:character_pinyin)
+WHERE pinyin_1.character_pinyin.tone == 1 AND with_pinyin_1.position != 1
+# 有一个字韵母是 ing，不在第四个位置
+MATCH p2=(x:idiom) -[with_pinyin_2:with_pinyin]-&gt;(:character_pinyin)-[:with_pinyin_part]-&gt;(final_part_2:pinyin_part{part_type: &#34;final&#34;})
+WHERE id(final_part_2) == &#34;ing&#34; AND with_pinyin_2.position != 3
+# 第四个字是二声
+MATCH p3=(x:idiom) -[with_pinyin_3:with_pinyin]-&gt;(pinyin_3:character_pinyin)
+WHERE pinyin_3.character_pinyin.tone == 2 AND with_pinyin_3.position == 3
+
+RETURN p0,p1,p2,p3
+</code></pre></td></tr></table>
+</div>
+</div><p>在可视化工具的 Console 控制台里执行上边的语句之后，选择导入图探索，就可以看到</p>
+<p></p>]]></description>
+</item><item>
     <title>Nebula Graph 索引详解</title>
     <link>https://siwei.io/nebula-index-explained/</link>
     <pubDate>Sun, 20 Feb 2022 16:35:53 &#43;0800</pubDate><author>
@@ -4631,297 +4873,6 @@ Wed, <span class="m">14</span> Jul <span class="m">2021</span> 07:08:06 UTC
 </ul>
 <blockquote>
 <p>Image Credit goes to <a href="https://unsplash.com/photos/3fPXt37X6UQ" target="_blank" rel="noopener noreffer">https://unsplash.com/photos/3fPXt37X6UQ</a></p>
-</blockquote>]]></description>
-</item><item>
-    <title>Nebula LiveJournal，上手 LiveJournal 数据集导入 Nebula Graph 与图算法执行</title>
-    <link>https://siwei.io/nebula-livejournal/</link>
-    <pubDate>Tue, 24 Aug 2021 11:22:55 &#43;0800</pubDate><author>
-        <name>Wey Gu</name>
-    </author><guid>https://siwei.io/nebula-livejournal/</guid>
-    <description><![CDATA[<div class="featured-image">
-                <img src="/featured-image.webp" referrerpolicy="no-referrer">
-            </div><blockquote>
-<p>一个导入 Livejournal 数据集到 Nebula Graph 图数据库，并执行 Nebula Algorithm 图算法的过程分享。</p>
-</blockquote>
-<p>Related GitHub Repo: <a href="https://github.com/wey-gu/nebula-LiveJournal" target="_blank" rel="noopener noreffer">https://github.com/wey-gu/nebula-LiveJournal</a></p>
-<h1 id="nebula-livejournal" class="headerLink">
-    <a href="#nebula-livejournal" class="header-mark"></a>nebula-LiveJournal</h1><p>LiveJournal Dataset is a Social Network Dataset in one file with two columns(FromNodeId, ToNodeId).</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ head soc-LiveJournal1.txt
-<span class="c1"># Directed graph (each unordered pair of nodes is saved once): soc-LiveJournal1.txt</span>
-<span class="c1"># Directed LiveJournal friednship social network</span>
-<span class="c1"># Nodes: 4847571 Edges: 68993773</span>
-<span class="c1"># FromNodeId	ToNodeId</span>
-0	<span class="m">1</span>
-0	<span class="m">2</span>
-0	<span class="m">3</span>
-0	<span class="m">4</span>
-0	<span class="m">5</span>
-0	<span class="m">6</span>
-</code></pre></td></tr></table>
-</div>
-</div><p>It could be accessed in <a href="https://snap.stanford.edu/data/soc-LiveJournal1.html" target="_blank" rel="noopener noreffer">https://snap.stanford.edu/data/soc-LiveJournal1.html</a>.</p>
-<table>
-<thead>
-<tr>
-<th style="text-align:left">Dataset statistics</th>
-<th></th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:left">Nodes</td>
-<td>4847571</td>
-</tr>
-<tr>
-<td style="text-align:left">Edges</td>
-<td>68993773</td>
-</tr>
-<tr>
-<td style="text-align:left">Nodes in largest WCC</td>
-<td>4843953 (0.999)</td>
-</tr>
-<tr>
-<td style="text-align:left">Edges in largest WCC</td>
-<td>68983820 (1.000)</td>
-</tr>
-<tr>
-<td style="text-align:left">Nodes in largest SCC</td>
-<td>3828682 (0.790)</td>
-</tr>
-<tr>
-<td style="text-align:left">Edges in largest SCC</td>
-<td>65825429 (0.954)</td>
-</tr>
-<tr>
-<td style="text-align:left">Average clustering coefficient</td>
-<td>0.2742</td>
-</tr>
-<tr>
-<td style="text-align:left">Number of triangles</td>
-<td>285730264</td>
-</tr>
-<tr>
-<td style="text-align:left">Fraction of closed triangles</td>
-<td>0.04266</td>
-</tr>
-<tr>
-<td style="text-align:left">Diameter (longest shortest path)</td>
-<td>16</td>
-</tr>
-<tr>
-<td style="text-align:left">90-percentile effective diameter</td>
-<td>6.5</td>
-</tr>
-</tbody>
-</table>
-<h2 id="dataset-download-and-preprocessing" class="headerLink">
-    <a href="#dataset-download-and-preprocessing" class="header-mark"></a>Dataset Download and Preprocessing</h2><h3 id="download" class="headerLink">
-    <a href="#download" class="header-mark"></a>Download</h3><p>It is accesissiable from the official web page:</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ <span class="nb">cd</span> nebula-livejournal/data
-$ wget https://snap.stanford.edu/data/soc-LiveJournal1.txt.gz
-</code></pre></td></tr></table>
-</div>
-</div><p>Comments in data file should be removed to make the data import tool happy.</p>
-<h3 id="preprocessing" class="headerLink">
-    <a href="#preprocessing" class="header-mark"></a>Preprocessing</h3><div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ gzip -d soc-LiveJournal1.txt.gz
-$ sed -i <span class="s1">&#39;1,4d&#39;</span> soc-LiveJournal1.txt
-</code></pre></td></tr></table>
-</div>
-</div><h2 id="import-dataset-to-nebula-graph" class="headerLink">
-    <a href="#import-dataset-to-nebula-graph" class="header-mark"></a>Import dataset to Nebula Graph</h2><h3 id="with-nebula-importer" class="headerLink">
-    <a href="#with-nebula-importer" class="header-mark"></a>With Nebula Importer</h3><p><a href="https://github.com/vesoft-inc/nebula-importer" target="_blank" rel="noopener noreffer">Nebula-Importer</a> is a Golang Headless import tool for Nebula Graph.</p>
-<p>You may need to edit the config file under <a href="nebula-importer/importer.yaml" rel="">nebula-importer/importer.yaml</a> on Nebula Graph&rsquo;s address and credential。</p>
-<p>Then, Nebula-Importer could be called in Docker as follow:</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span><span class="lnt">7
-</span><span class="lnt">8
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ <span class="nb">cd</span> nebula-livejournal
-
-$ docker run --rm -ti <span class="se">\
-</span><span class="se"></span>    --network<span class="o">=</span>nebula-net <span class="se">\
-</span><span class="se"></span>    -v nebula-importer/importer.yaml:/root/importer.yaml <span class="se">\
-</span><span class="se"></span>    -v data/:/root <span class="se">\
-</span><span class="se"></span>    vesoft/nebula-importer:v2 <span class="se">\
-</span><span class="se"></span>    --config /root/importer.yaml
-</code></pre></td></tr></table>
-</div>
-</div><p>Or if you have the binary nebula-importer locally:</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ <span class="nb">cd</span> data
-$ &lt;path_to_nebula-importer_binary&gt; --config ../nebula-importer/importer.yaml
-</code></pre></td></tr></table>
-</div>
-</div><h3 id="with-nebula-exchange" class="headerLink">
-    <a href="#with-nebula-exchange" class="header-mark"></a>With Nebula Exchange</h3><p><a href="https://github.com/vesoft-inc/nebula-spark-utils/tree/master/nebula-exchange" target="_blank" rel="noopener noreffer">Nebula-Exchange</a> is a Spark Application to enable batch and streaming data import from multiple data sources to Nebula Graph.</p>
-<p>To be done. (You can refer to <a href="https://siwei.io/nebula-exchange-sst-2.x/" target="_blank" rel="noopener noreffer">https://siwei.io/nebula-exchange-sst-2.x/</a>)</p>
-<h2 id="run-algorithms-with-nebula-graph" class="headerLink">
-    <a href="#run-algorithms-with-nebula-graph" class="header-mark"></a>Run Algorithms with Nebula Graph</h2><p><a href="https://github.com/vesoft-inc/nebula-spark-utils/tree/master/nebula-algorithm" target="_blank" rel="noopener noreffer">Nebula-Algorithm</a> is a Spark/GraphX Application to run Graph Algorithms with data consumed from files or a Nebula Graph Cluster.</p>
-<p>Supported Algorithms for now:</p>
-<table>
-<thead>
-<tr>
-<th>Name</th>
-<th>Use Case</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>PageRank</td>
-<td>page ranking, important node digging</td>
-</tr>
-<tr>
-<td>Louvain</td>
-<td>community digging, hierarchical clustering</td>
-</tr>
-<tr>
-<td>KCore</td>
-<td>community detection, financial risk control</td>
-</tr>
-<tr>
-<td>LabelPropagation</td>
-<td>community detection, consultation propagation, advertising recommendation</td>
-</tr>
-<tr>
-<td>ConnectedComponent</td>
-<td>community detection, isolated island detection</td>
-</tr>
-<tr>
-<td>StronglyConnectedComponent</td>
-<td>community detection</td>
-</tr>
-<tr>
-<td>ShortestPath</td>
-<td>path plan, network plan</td>
-</tr>
-<tr>
-<td>TriangleCount</td>
-<td>network structure analysis</td>
-</tr>
-<tr>
-<td>BetweennessCentrality</td>
-<td>important node digging, node influence calculation</td>
-</tr>
-<tr>
-<td>DegreeStatic</td>
-<td>graph structure analysis</td>
-</tr>
-</tbody>
-</table>
-<h3 id="ad-hoc-spark-env-setup" class="headerLink">
-    <a href="#ad-hoc-spark-env-setup" class="header-mark"></a>Ad-hoc Spark Env setup</h3><p>Here I assume the Nebula Graph was bootstraped with <a href="https://github.com/wey-gu/nebula-up" target="_blank" rel="noopener noreffer">Nebula-Up</a>, thus nebula is running in a Docker Network named <code>nebula-docker-compose_nebula-net</code>.</p>
-<p>Then let&rsquo;s start a single server spark:</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">docker run --name spark-master --network nebula-docker-compose_nebula-net <span class="se">\
-</span><span class="se"></span>    -h spark-master -e <span class="nv">ENABLE_INIT_DAEMON</span><span class="o">=</span><span class="nb">false</span> -d <span class="se">\
-</span><span class="se"></span>    -v nebula-algorithm/:/root <span class="se">\
-</span><span class="se"></span>    bde2020/spark-master:2.4.5-hadoop2.7
-</code></pre></td></tr></table>
-</div>
-</div><p>Thus we could make spark application submt inside this container:</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">docker <span class="nb">exec</span> -it spark-master bash
-<span class="nb">cd</span> /root/
-<span class="c1"># download Nebula-Algorithm Jar Packagem, 2.0.0 for example, for other versions, refer to nebula-algorithm github repo and documentations.</span>
-wget https://repo1.maven.org/maven2/com/vesoft/nebula-algorithm/2.0.0/nebula-algorithm-2.0.0.jar
-</code></pre></td></tr></table>
-</div>
-</div><h3 id="run-algorithms" class="headerLink">
-    <a href="#run-algorithms" class="header-mark"></a>Run Algorithms</h3><p>There are many altorithms supported by Nebula-Algorithm, here some of their configuration files were put under nebula-algorithm as an example.</p>
-<p>Before using them, please first edit and change Nebula Graph Cluster Addresses and credentials.</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">vim nebula-altorithm/algo-pagerank.conf
-</code></pre></td></tr></table>
-</div>
-</div><p>Then we could enter the spark container and call corresponding algorithms as follow.</p>
-<p>Please adjust your <code>--driver-memeory</code> accordingly, i.e. pagerank altorithm:</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">/spark/bin/spark-submit --master <span class="s2">&#34;local&#34;</span> --conf spark.rpc.askTimeout<span class="o">=</span>6000s <span class="se">\
-</span><span class="se"></span>    --class com.vesoft.nebula.algorithm.Main <span class="se">\
-</span><span class="se"></span>    --driver-memory 16g nebula-algorithm-2.0.0.jar <span class="se">\
-</span><span class="se"></span>    -p pagerank.conf
-</code></pre></td></tr></table>
-</div>
-</div><p>After the algorithm finished, the output will be under the path insdie the container defined in conf file:</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-toml" data-lang="toml">    <span class="nx">write</span><span class="err">:</span><span class="p">{</span>
-        <span class="nx">resultPath</span><span class="err">:/</span><span class="nx">output</span><span class="err">/</span>
-    <span class="p">}</span>
-</code></pre></td></tr></table>
-</div>
-</div><blockquote>
-<p>题图版权：<a href="https://unsplash.com/photos/eTgMFFzroGc" target="_blank" rel="noopener noreffer">@sigmund</a></p>
 </blockquote>]]></description>
 </item></channel>
 </rss>
