@@ -245,7 +245,255 @@ RETURN p0,p1,p2,p3
 </code></pre></td></tr></table>
 </div>
 </div><p>在可视化工具的 Console 控制台里执行上边的语句之后，选择导入图探索，就可以看到</p>
-<p></p>]]></description>
+<p></p>
+<h2 id="下一步" class="headerLink">
+    <a href="#%e4%b8%8b%e4%b8%80%e6%ad%a5" class="header-mark"></a>下一步</h2><p>如果大家是从本文第一次了解到 Nebula Graph 图数据库，那么大家可以下一步从 <a href="https://github.com/vesoft-inc/nebula" target="_blank" rel="noopener noreffer">Nebula Graph</a> 项目和 Nebula Graph 社区的官方 Bilibili 站点 👉🏻 <a href="https://space.bilibili.com/472621355" target="_blank" rel="noopener noreffer">https://space.bilibili.com/472621355</a> 了解更多有意思的入门知识。</p>
+<p>另外，<a href="https://nebula-graph.com.cn/demo/" target="_blank" rel="noopener noreffer">这里</a>是 Nebula Graph 的官方线上试玩环境，大家可以照着<a href="https://docs.nebula-graph.com.cn/" target="_blank" rel="noopener noreffer">文档</a>，利用试玩环境尝鲜。</p>
+<p>后边，Nebula Graph 会开展每天的汉兜 nGQL 体操活动，敬请关注哈！</p>
+<p>Happy Graphing!</p>
+<h2 id="附录搭建成语知识图谱" class="headerLink">
+    <a href="#%e9%99%84%e5%bd%95%e6%90%ad%e5%bb%ba%e6%88%90%e8%af%ad%e7%9f%a5%e8%af%86%e5%9b%be%e8%b0%b1" class="header-mark"></a>附录：搭建成语知识图谱</h2><h3 id="收集生成图谱数据" class="headerLink">
+    <a href="#%e6%94%b6%e9%9b%86%e7%94%9f%e6%88%90%e5%9b%be%e8%b0%b1%e6%95%b0%e6%8d%ae" class="header-mark"></a>收集、生成图谱数据</h3><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ python3 graph_data_generator.py
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="导入数据到-nebula-graph-图数据库" class="headerLink">
+    <a href="#%e5%af%bc%e5%85%a5%e6%95%b0%e6%8d%ae%e5%88%b0-nebula-graph-%e5%9b%be%e6%95%b0%e6%8d%ae%e5%ba%93" class="header-mark"></a>导入数据到 Nebula Graph 图数据库</h3><h4 id="部署图数据库" class="headerLink">
+    <a href="#%e9%83%a8%e7%bd%b2%e5%9b%be%e6%95%b0%e6%8d%ae%e5%ba%93" class="header-mark"></a>部署图数据库</h4><blockquote>
+<p>借助于 Nebula-Up <a href="https://github.com/wey-gu/nebula-up/" target="_blank" rel="noopener noreffer">https://github.com/wey-gu/nebula-up/</a> ，一行就可以了。</p>
+</blockquote>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ curl -fsSL nebula-up.siwei.io/install.sh <span class="p">|</span> bash -s -- v3.0.0
+</code></pre></td></tr></table>
+</div>
+</div><p>部署成功的话，会看到这样的结果：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">┌────────────────────────────────────────┐
+│ 🌌 Nebula-Graph Playground is Up now!  │
+├────────────────────────────────────────┤
+│                                        │
+│ 🎉 Congrats! Your Nebula is Up now!    │
+│    $ <span class="nb">cd</span> ~/.nebula-up                   │
+│                                        │
+│ 🌏 You can access it from browser:     │
+│      http://127.0.0.1:7001             │
+│      http://&lt;other_interface&gt;:7001     │
+│                                        │
+│ 🔥 Or access via Nebula Console:       │
+│    $ ~/.nebula-up/console.sh           │
+│                                        │
+│    To remove the playground:           │
+│    $ ~/.nebula-up/uninstall.sh         │
+│                                        │
+│ 🚀 Have Fun!                           │
+│                                        │
+└────────────────────────────────────────┘
+</code></pre></td></tr></table>
+</div>
+</div><h4 id="图谱入库" class="headerLink">
+    <a href="#%e5%9b%be%e8%b0%b1%e5%85%a5%e5%ba%93" class="header-mark"></a>图谱入库</h4><blockquote>
+<p>借助于 Nebula-Importer <a href="https://github.com/vesoft-inc/nebula-importer/" target="_blank" rel="noopener noreffer">https://github.com/vesoft-inc/nebula-importer/</a> ，一行就可以了。</p>
+</blockquote>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ docker run --rm -ti <span class="se">\
+</span><span class="se"></span>    --network<span class="o">=</span>nebula-docker-compose_nebula-net <span class="se">\
+</span><span class="se"></span>    -v <span class="si">${</span><span class="nv">PWD</span><span class="si">}</span>/importer_conf.yaml:/root/importer_conf.yaml <span class="se">\
+</span><span class="se"></span>    -v <span class="si">${</span><span class="nv">PWD</span><span class="si">}</span>/output:/root <span class="se">\
+</span><span class="se"></span>    vesoft/nebula-importer:v3.0.0 <span class="se">\
+</span><span class="se"></span>    --config /root/importer_conf.yaml
+</code></pre></td></tr></table>
+</div>
+</div><p>大概一两分钟数据就导入成功了，命令也会正常退出。</p>
+<blockquote>
+<p>连到图数据库的 console</p>
+</blockquote>
+<p>获得本机第一个网卡的地址，这里是 <code>10.1.1.168</code></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ ip address
+
+2: enp4s0: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu <span class="m">1500</span> qdisc fq_codel state UP group default qlen <span class="m">1000</span>
+    link/ether 2a:32:4c:06:04:c4 brd ff:ff:ff:ff:ff:ff
+    inet 10.1.1.168/24 brd 10.1.1.255 scope global dynamic enp4s0
+</code></pre></td></tr></table>
+</div>
+</div><p>进入 Console 的容器执行下边的命令：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ ~/.nebula-up/console.sh
+
+<span class="c1"># nebula-console -addr 10.1.1.168 -port 9669 -user root -p nebula</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>检查一下导入的数据：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="p">(</span><span class="n">root</span><span class="o">@</span><span class="n">nebula</span><span class="p">)</span><span class="w"> </span><span class="p">[(</span><span class="k">none</span><span class="p">)]</span><span class="o">&gt;</span><span class="w"> </span><span class="k">show</span><span class="w"> </span><span class="n">spaces</span><span class="w">
+</span><span class="w"></span><span class="o">+</span><span class="c1">--------------------+
+</span><span class="c1"></span><span class="o">|</span><span class="w"> </span><span class="n">Name</span><span class="w">               </span><span class="o">|</span><span class="w">
+</span><span class="w"></span><span class="o">+</span><span class="c1">--------------------+
+</span><span class="c1"></span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;chinese_idiom&#34;</span><span class="w">    </span><span class="o">|</span><span class="w">
+</span><span class="w"></span><span class="o">+</span><span class="c1">--------------------+
+</span><span class="c1"></span><span class="w">
+</span><span class="w"></span><span class="p">(</span><span class="n">root</span><span class="o">@</span><span class="n">nebula</span><span class="p">)</span><span class="w"> </span><span class="p">[(</span><span class="k">none</span><span class="p">)]</span><span class="o">&gt;</span><span class="w"> </span><span class="n">use</span><span class="w"> </span><span class="n">chinese_idiom</span><span class="w">
+</span><span class="w"></span><span class="n">Execution</span><span class="w"> </span><span class="n">succeeded</span><span class="w"> </span><span class="p">(</span><span class="n">time</span><span class="w"> </span><span class="n">spent</span><span class="w"> </span><span class="mi">1510</span><span class="o">/</span><span class="mi">2329</span><span class="w"> </span><span class="n">us</span><span class="p">)</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="n">Fri</span><span class="p">,</span><span class="w"> </span><span class="mi">25</span><span class="w"> </span><span class="n">Feb</span><span class="w"> </span><span class="mi">2022</span><span class="w"> </span><span class="mi">08</span><span class="p">:</span><span class="mi">53</span><span class="p">:</span><span class="mi">11</span><span class="w"> </span><span class="n">UTC</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="p">(</span><span class="n">root</span><span class="o">@</span><span class="n">nebula</span><span class="p">)</span><span class="w"> </span><span class="p">[</span><span class="n">chinese_idiom</span><span class="p">]</span><span class="o">&gt;</span><span class="w"> </span><span class="k">match</span><span class="w"> </span><span class="n">p</span><span class="o">=</span><span class="p">(</span><span class="err">成语</span><span class="p">:</span><span class="n">idiom</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="k">limit</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="w"></span><span class="o">+</span><span class="c1">------------------------------------------------------------------+
+</span><span class="c1"></span><span class="o">|</span><span class="w"> </span><span class="n">p</span><span class="w">                                                                </span><span class="o">|</span><span class="w">
+</span><span class="w"></span><span class="o">+</span><span class="c1">------------------------------------------------------------------+
+</span><span class="c1"></span><span class="o">|</span><span class="w"> </span><span class="o">&lt;</span><span class="p">(</span><span class="s2">&#34;一丁不识&#34;</span><span class="w"> </span><span class="p">:</span><span class="n">idiom</span><span class="err">{</span><span class="n">pinyin</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;[&#39;yi1&#39;, &#39;ding1&#39;, &#39;bu4&#39;, &#39;shi2&#39;]&#34;</span><span class="err">}</span><span class="p">)</span><span class="o">&gt;</span><span class="w"> </span><span class="o">|</span><span class="w">
+</span><span class="w"></span><span class="o">|</span><span class="w"> </span><span class="o">&lt;</span><span class="p">(</span><span class="s2">&#34;一丝不挂&#34;</span><span class="w"> </span><span class="p">:</span><span class="n">idiom</span><span class="err">{</span><span class="n">pinyin</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;[&#39;yi1&#39;, &#39;si1&#39;, &#39;bu4&#39;, &#39;gua4&#39;]&#34;</span><span class="err">}</span><span class="p">)</span><span class="o">&gt;</span><span class="w">   </span><span class="o">|</span><span class="w">
+</span><span class="w"></span><span class="o">+</span><span class="c1">------------------------------------------------------------------+
+</span><span class="c1"></span><span class="w">
+</span><span class="w"></span><span class="p">(</span><span class="n">root</span><span class="o">@</span><span class="n">nebula</span><span class="p">)</span><span class="w"> </span><span class="p">[</span><span class="n">chinese_idiom</span><span class="p">]</span><span class="o">&gt;</span><span class="w"> </span><span class="n">SUBMIT</span><span class="w"> </span><span class="n">JOB</span><span class="w"> </span><span class="n">STATS</span><span class="w">
+</span><span class="w"></span><span class="o">+</span><span class="c1">------------+
+</span><span class="c1"></span><span class="o">|</span><span class="w"> </span><span class="k">New</span><span class="w"> </span><span class="n">Job</span><span class="w"> </span><span class="n">Id</span><span class="w"> </span><span class="o">|</span><span class="w">
+</span><span class="w"></span><span class="o">+</span><span class="c1">------------+
+</span><span class="c1"></span><span class="o">|</span><span class="w"> </span><span class="mi">11</span><span class="w">         </span><span class="o">|</span><span class="w">
+</span><span class="w"></span><span class="o">+</span><span class="c1">------------+
+</span><span class="c1"></span><span class="p">(</span><span class="n">root</span><span class="o">@</span><span class="n">nebula</span><span class="p">)</span><span class="w"> </span><span class="p">[</span><span class="n">chinese_idiom</span><span class="p">]</span><span class="o">&gt;</span><span class="w"> </span><span class="k">SHOW</span><span class="w"> </span><span class="n">STATS</span><span class="w">
+</span><span class="w"></span><span class="o">+</span><span class="c1">---------+--------------------+--------+
+</span><span class="c1"></span><span class="o">|</span><span class="w"> </span><span class="k">Type</span><span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">Name</span><span class="w">               </span><span class="o">|</span><span class="w"> </span><span class="k">Count</span><span class="w">  </span><span class="o">|</span><span class="w">
+</span><span class="w"></span><span class="o">+</span><span class="c1">---------+--------------------+--------+
+</span><span class="c1"></span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;Tag&#34;</span><span class="w">   </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;character&#34;</span><span class="w">        </span><span class="o">|</span><span class="w"> </span><span class="mi">4847</span><span class="w">   </span><span class="o">|</span><span class="w">
+</span><span class="w"></span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;Tag&#34;</span><span class="w">   </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;character_pinyin&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="mi">1336</span><span class="w">   </span><span class="o">|</span><span class="w">
+</span><span class="w"></span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;Tag&#34;</span><span class="w">   </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;idiom&#34;</span><span class="w">            </span><span class="o">|</span><span class="w"> </span><span class="mi">29503</span><span class="w">  </span><span class="o">|</span><span class="w">
+</span><span class="w"></span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;Tag&#34;</span><span class="w">   </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;pinyin_part&#34;</span><span class="w">      </span><span class="o">|</span><span class="w"> </span><span class="mi">57</span><span class="w">     </span><span class="o">|</span><span class="w">
+</span><span class="w"></span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;Edge&#34;</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;with_character&#34;</span><span class="w">   </span><span class="o">|</span><span class="w"> </span><span class="mi">116090</span><span class="w"> </span><span class="o">|</span><span class="w">
+</span><span class="w"></span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;Edge&#34;</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;with_pinyin&#34;</span><span class="w">      </span><span class="o">|</span><span class="w"> </span><span class="mi">5943</span><span class="w">   </span><span class="o">|</span><span class="w">
+</span><span class="w"></span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;Edge&#34;</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;with_pinyin_part&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="mi">3290</span><span class="w">   </span><span class="o">|</span><span class="w">
+</span><span class="w"></span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;Space&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;vertices&#34;</span><span class="w">         </span><span class="o">|</span><span class="w"> </span><span class="mi">35739</span><span class="w">  </span><span class="o">|</span><span class="w">
+</span><span class="w"></span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;Space&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;edges&#34;</span><span class="w">            </span><span class="o">|</span><span class="w"> </span><span class="mi">125323</span><span class="w"> </span><span class="o">|</span><span class="w">
+</span><span class="w"></span><span class="o">+</span><span class="c1">---------+--------------------+--------+
+</span></code></pre></td></tr></table>
+</div>
+</div><h2 id="附录图建模的-schema-ngql" class="headerLink">
+    <a href="#%e9%99%84%e5%bd%95%e5%9b%be%e5%bb%ba%e6%a8%a1%e7%9a%84-schema-ngql" class="header-mark"></a>附录：图建模的 Schema nGQL</h2><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="k">CREATE</span><span class="w"> </span><span class="k">SPACE</span><span class="w"> </span><span class="k">IF</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">EXISTS</span><span class="w"> </span><span class="n">chinese_idiom</span><span class="p">(</span><span class="n">partition_num</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="n">replica_factor</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">vid_type</span><span class="o">=</span><span class="n">FIXED_STRING</span><span class="p">(</span><span class="mi">24</span><span class="p">));</span><span class="w">
+</span><span class="w"></span><span class="n">USE</span><span class="w"> </span><span class="n">chinese_idiom</span><span class="p">;</span><span class="w">
+</span><span class="w"></span><span class="o">#</span><span class="w"> </span><span class="err">创建点的类型</span><span class="w">
+</span><span class="w"></span><span class="k">CREATE</span><span class="w"> </span><span class="n">TAG</span><span class="w"> </span><span class="n">idiom</span><span class="p">(</span><span class="n">pinyin</span><span class="w"> </span><span class="n">string</span><span class="p">);</span><span class="w"> </span><span class="o">#</span><span class="err">成语</span><span class="w">
+</span><span class="w"></span><span class="k">CREATE</span><span class="w"> </span><span class="n">TAG</span><span class="w"> </span><span class="nb">character</span><span class="p">();</span><span class="w"> </span><span class="o">#</span><span class="err">汉字</span><span class="w">
+</span><span class="w"></span><span class="k">CREATE</span><span class="w"> </span><span class="n">TAG</span><span class="w"> </span><span class="n">character_pinyin</span><span class="p">(</span><span class="n">tone</span><span class="w"> </span><span class="nb">int</span><span class="p">);</span><span class="w"> </span><span class="o">#</span><span class="err">单字的拼音</span><span class="w">
+</span><span class="w"></span><span class="k">CREATE</span><span class="w"> </span><span class="n">TAG</span><span class="w"> </span><span class="n">pinyin_part</span><span class="p">(</span><span class="n">part_type</span><span class="w"> </span><span class="n">string</span><span class="p">);</span><span class="w"> </span><span class="o">#</span><span class="err">拼音的声部</span><span class="w">
+</span><span class="w"></span><span class="o">#</span><span class="w"> </span><span class="err">创建边的类型</span><span class="w">
+</span><span class="w"></span><span class="k">CREATE</span><span class="w"> </span><span class="n">EDGE</span><span class="w"> </span><span class="n">with_character</span><span class="p">(</span><span class="k">position</span><span class="w"> </span><span class="nb">int</span><span class="p">);</span><span class="w"> </span><span class="o">#</span><span class="err">包含汉字</span><span class="w">
+</span><span class="w"></span><span class="k">CREATE</span><span class="w"> </span><span class="n">EDGE</span><span class="w"> </span><span class="n">with_pinyin</span><span class="p">(</span><span class="k">position</span><span class="w"> </span><span class="nb">int</span><span class="p">);</span><span class="w"> </span><span class="o">#</span><span class="err">读作</span><span class="w">
+</span><span class="w"></span><span class="k">CREATE</span><span class="w"> </span><span class="n">EDGE</span><span class="w"> </span><span class="n">with_pinyin_part</span><span class="p">(</span><span class="n">part_type</span><span class="w"> </span><span class="n">string</span><span class="p">);</span><span class="w"> </span><span class="o">#</span><span class="err">包含声部</span><span class="w">
+</span></code></pre></td></tr></table>
+</div>
+</div>]]></description>
 </item><item>
     <title>Nebula Graph 索引详解</title>
     <link>https://siwei.io/nebula-index-explained/</link>
