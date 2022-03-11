@@ -32,7 +32,7 @@
 </ul>
 </blockquote>
 <h2 id="需求" class="headerLink">
-    <a href="#%e9%9c%80%e6%b1%82" class="header-mark"></a>需求</h2><ol>
+    <a href="#%e9%9c%80%e6%b1%82" class="header-mark"></a>1 需求</h2><ol>
 <li>方便增加新的数据</li>
 <li>数据收集无需人为触发（自动、周期性）</li>
 <li>每天数据量不超过1000条</li>
@@ -41,7 +41,7 @@
 <li>低预算，尽可能不需要运维人力</li>
 </ol>
 <h3 id="需求分析" class="headerLink">
-    <a href="#%e9%9c%80%e6%b1%82%e5%88%86%e6%9e%90" class="header-mark"></a>需求分析</h3><p>我们需要搭建一个系统能实现</p>
+    <a href="#%e9%9c%80%e6%b1%82%e5%88%86%e6%9e%90" class="header-mark"></a>1.1 需求分析</h3><p>我们需要搭建一个系统能实现</p>
 <ul>
 <li>一个能周期性触发获取数据的事件的服务: scheduler</li>
 <li>一个触发之后，把数据 ETL 到数据库中的服务: ETL worker</li>
@@ -123,7 +123,7 @@
 <p><code>Google BigQuery</code> 作为GCP 特别有竞争力的一个产品，是它数据仓库，BigQuery 可以无限扩容，支持海量数据导入，支持 SQL-like 的 query，还自带ML算法，通过SQL就能调用这些算法。它可以和很多GCP以及第三方的组件可以集成起来。</p>
 <p><code>Google Data Studio</code> 是GCP的数据 Insights产品，如果大家用过 Google Analytics 应该已经用过它了。</p>
 <h3 id="数据的获取api" class="headerLink">
-    <a href="#%e6%95%b0%e6%8d%ae%e7%9a%84%e8%8e%b7%e5%8f%96api" class="header-mark"></a>数据的获取，API</h3><p>我们第一阶段想要收集的数据来源是 GitHub 上，社区项目的统计数据、Docker Hub上，社区镜像的拉取计数，之后，会增加更多维度的数据。</p>
+    <a href="#%e6%95%b0%e6%8d%ae%e7%9a%84%e8%8e%b7%e5%8f%96api" class="header-mark"></a>1.2 数据的获取，API</h3><p>我们第一阶段想要收集的数据来源是 GitHub 上，社区项目的统计数据、Docker Hub上，社区镜像的拉取计数，之后，会增加更多维度的数据。</p>
 <ul>
 <li>Github API, ref: <a href="https://pygithub.readthedocs.io" target="_blank" rel="noopener noreffer">https://pygithub.readthedocs.io</a>
 这里我们利用了一个Github API的一个 Python 封装，下边是在 IDLE/iPython/Jupyter 里尝试的例子</li>
@@ -450,8 +450,8 @@ Out[43]: &#39;nebula-1.2.1.el6-5.x86_64.rpm&#39;
 </span></code></pre></td></tr></table>
 </div>
 </div><h2 id="实现" class="headerLink">
-    <a href="#%e5%ae%9e%e7%8e%b0" class="header-mark"></a>实现</h2><h3 id="计划任务调度-with-cloud-scheduler" class="headerLink">
-    <a href="#%e8%ae%a1%e5%88%92%e4%bb%bb%e5%8a%a1%e8%b0%83%e5%ba%a6-with-cloud-scheduler" class="header-mark"></a>计划任务调度 with Cloud Scheduler</h3><p>前边提到，<code>Scheduler --&gt; Functions</code> 中间是通过消息队列实现的可靠事件触发，我们需要在 Google Cloud Pub/Sub里创建一个订阅消息，后边我们会把这个订阅消息从 Scheduler 定期发送，并且在 Function创建的时候定义为触发条件。</p>
+    <a href="#%e5%ae%9e%e7%8e%b0" class="header-mark"></a>2 实现</h2><h3 id="计划任务调度-with-cloud-scheduler" class="headerLink">
+    <a href="#%e8%ae%a1%e5%88%92%e4%bb%bb%e5%8a%a1%e8%b0%83%e5%ba%a6-with-cloud-scheduler" class="header-mark"></a>2.1 计划任务调度 with Cloud Scheduler</h3><p>前边提到，<code>Scheduler --&gt; Functions</code> 中间是通过消息队列实现的可靠事件触发，我们需要在 Google Cloud Pub/Sub里创建一个订阅消息，后边我们会把这个订阅消息从 Scheduler 定期发送，并且在 Function创建的时候定义为触发条件。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
@@ -464,7 +464,7 @@ $ gcloud pubsub subscriptions create cron-sub --topic nebula-insights-cron-topic
 </div>
 </div><p>任务的创建非常直接，在 <a href="https://console.cloud.google.com/cloudscheduler" target="_blank" rel="noopener noreffer">Scheduler Web Console</a> 上直接图形化操作就可以了，记得要选择触发 Pub/Sub 消息为 <code>cron-sub</code>，消息主题为 <code>nebula-insights-cron-topic</code></p>
 <h3 id="etl-worker-with-python--google-functions" class="headerLink">
-    <a href="#etl-worker-with-python--google-functions" class="header-mark"></a>ETL Worker with Python + Google Functions</h3><p>当 Scheduler 每天定时发送消息之后，接收方就是我们要定义的 Google Functions了，它的定义如图
+    <a href="#etl-worker-with-python--google-functions" class="header-mark"></a>2.2 ETL Worker with Python &#43; Google Functions</h3><p>当 Scheduler 每天定时发送消息之后，接收方就是我们要定义的 Google Functions了，它的定义如图
 第一步，选择它的触发类型为 Pub/Sub，同时要定义消息的主题和名字。</p>
 <p></p>
 <p>第二步就是把代码放进去:</p>
@@ -521,14 +521,14 @@ $ gcloud pubsub subscriptions create cron-sub --topic nebula-insights-cron-topic
 <a href="https://github.com/wey-gu/nebula-insights/blob/main/functions/data-fetching-0/main.py" target="_blank" rel="noopener noreffer">https://github.com/wey-gu/nebula-insights/blob/main/functions/data-fetching-0/main.py</a>
 另外，可以参考这个官方教程 <a href="https://cloud.google.com/scheduler/docs/tut-pub-sub" target="_blank" rel="noopener noreffer">https://cloud.google.com/scheduler/docs/tut-pub-sub</a></p>
 <h3 id="数仓表结构定义" class="headerLink">
-    <a href="#%e6%95%b0%e4%bb%93%e8%a1%a8%e7%bb%93%e6%9e%84%e5%ae%9a%e4%b9%89" class="header-mark"></a>数仓表结构定义</h3><p>数仓的表结构比较直接，schema的图贴在下边了，值得注意的是，BigQuery支持嵌套的表结构（而不像一般关系型数据库那样需要把这样的逻辑结构用辅助表来表示），在我们这个场景下非常方便，比如release表中的 assets的三个嵌套字段。
+    <a href="#%e6%95%b0%e4%bb%93%e8%a1%a8%e7%bb%93%e6%9e%84%e5%ae%9a%e4%b9%89" class="header-mark"></a>2.3 数仓表结构定义</h3><p>数仓的表结构比较直接，schema的图贴在下边了，值得注意的是，BigQuery支持嵌套的表结构（而不像一般关系型数据库那样需要把这样的逻辑结构用辅助表来表示），在我们这个场景下非常方便，比如release表中的 assets的三个嵌套字段。
 </p>
 <p>更详细的信息可以参考GitHub上的介绍和代码: <a href="https://github.com/wey-gu/nebula-insights#data-etl-bigquery-and-gcs" target="_blank" rel="noopener noreffer">https://github.com/wey-gu/nebula-insights#data-etl-bigquery-and-gcs</a></p>
 <h3 id="数据可视化" class="headerLink">
-    <a href="#%e6%95%b0%e6%8d%ae%e5%8f%af%e8%a7%86%e5%8c%96" class="header-mark"></a>数据可视化</h3><p>到这里，我们就可以自动在BigQuery里存有每天收集的不同来源的统计数据啦，有了它，我们可以借助 Data Studio 来生成各式各样的可视化表示。</p>
+    <a href="#%e6%95%b0%e6%8d%ae%e5%8f%af%e8%a7%86%e5%8c%96" class="header-mark"></a>2.4 数据可视化</h3><p>到这里，我们就可以自动在BigQuery里存有每天收集的不同来源的统计数据啦，有了它，我们可以借助 Data Studio 来生成各式各样的可视化表示。</p>
 <p>参考 <a href="https://cloud.google.com/bigquery/docs/visualize-data-studio" target="_blank" rel="noopener noreffer">https://cloud.google.com/bigquery/docs/visualize-data-studio</a></p>
 <h2 id="总结" class="headerLink">
-    <a href="#%e6%80%bb%e7%bb%93" class="header-mark"></a>总结</h2><p>这样，我们实际上不需要任何认为维护的成本和投入，就搭建了一整个数据的流水线，并且只需要按照数据用量付费，在我们的数据量下，及时考虑未来增加数十个新的量度的收集，我们依然没有达到需要付费的用量，是不是很Cool？
+    <a href="#%e6%80%bb%e7%bb%93" class="header-mark"></a>3 总结</h2><p>这样，我们实际上不需要任何认为维护的成本和投入，就搭建了一整个数据的流水线，并且只需要按照数据用量付费，在我们的数据量下，及时考虑未来增加数十个新的量度的收集，我们依然没有达到需要付费的用量，是不是很Cool？
 因为数据同时存在于对象存储与数仓里，我们可以方便随时把数据导入任意其他平台上。</p>
 <p>BigQuery还有一些非常常用的，自带的机器学习的功能，只需要写一个SQL-Like的query就能触发然后获得预测结果，如果我们用到这些功能的话也会回到 datawhale 为同学们继续分享哈。</p>
 <p>第一次做数据工程方面的分享，如果有错误的地方欢迎大家不吝指出哈~~</p>

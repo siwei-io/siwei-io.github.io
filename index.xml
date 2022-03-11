@@ -18,25 +18,25 @@
 <p>我发现用 Nebula Graph 的图查询解 Antfu 的汉兜（最好的中文成语版 wordle 👉🏻 handle.antfu.me）特别有意思，很适合每天写图库语句的体操练习，本文揭示如何用知识图谱<del>作弊</del>解汉兜😁</p>
 </blockquote>
 <h2 id="什么是汉兜" class="headerLink">
-    <a href="#%e4%bb%80%e4%b9%88%e6%98%af%e6%b1%89%e5%85%9c" class="header-mark"></a>什么是汉兜？</h2><p>汉兜（https://handle.antfu.me）是由 Vue/Vite 核心团队的 Antfu 的又一个非常酷的作品，一个非常精致的汉字版的 Wordle，他是是一个每日挑战的填字游戏的中文成语版。</p>
+    <a href="#%e4%bb%80%e4%b9%88%e6%98%af%e6%b1%89%e5%85%9c" class="header-mark"></a>1 什么是汉兜？</h2><p>汉兜（https://handle.antfu.me）是由 Vue/Vite 核心团队的 Antfu 的又一个非常酷的作品，一个非常精致的汉字版的 Wordle，他是是一个每日挑战的填字游戏的中文成语版。</p>
 <p>每天，汉兜会发起一个猜成语挑战，人们要在十次内才对它才能获胜，每一步之后都会收到相应的文字、声母、韵母、声调的匹配情况的提示，其中：绿色表示这个因素存在并且位置匹配、橘色表示这个元素存在但是位置不对，详细的规则可见如下的网页截图：</p>
 <p></p>
 <p>汉兜的乐趣就我们在于在有限的尝试过程中，在大脑中搜寻可能的答案，不断去逼近真理，任何试图作弊、讨巧去泄漏结果的行为都是很无趣、倒胃口的（比如从开源的汉兜代码里窃取信息），这个过程就像在做大脑的体操。</p>
 <p>说到大脑的成语词汇量体操，我突然想到，为什么我们不能在大脑之外造一个汉语成语知识图谱，然后基于这个图谱去做图数据库查询语法体操呢？</p>
 <h2 id="构造解决汉兜的成语知识图谱" class="headerLink">
-    <a href="#%e6%9e%84%e9%80%a0%e8%a7%a3%e5%86%b3%e6%b1%89%e5%85%9c%e7%9a%84%e6%88%90%e8%af%ad%e7%9f%a5%e8%af%86%e5%9b%be%e8%b0%b1" class="header-mark"></a>构造解决汉兜的成语知识图谱</h2><h3 id="什么是知识图谱" class="headerLink">
-    <a href="#%e4%bb%80%e4%b9%88%e6%98%af%e7%9f%a5%e8%af%86%e5%9b%be%e8%b0%b1" class="header-mark"></a>什么是知识图谱？</h3><p>简单来说，知识图谱是一个连接实体之间关联关系的网络，它最初由 Google 提出并用来满足搜索引擎中基于知识推理才可获得（而不是网页倒排索引）的搜索问题，比如：”姚明妻子的年龄？“、”火箭队得过几次总冠军？“</p>
+    <a href="#%e6%9e%84%e9%80%a0%e8%a7%a3%e5%86%b3%e6%b1%89%e5%85%9c%e7%9a%84%e6%88%90%e8%af%ad%e7%9f%a5%e8%af%86%e5%9b%be%e8%b0%b1" class="header-mark"></a>2 构造解决汉兜的成语知识图谱</h2><h3 id="什么是知识图谱" class="headerLink">
+    <a href="#%e4%bb%80%e4%b9%88%e6%98%af%e7%9f%a5%e8%af%86%e5%9b%be%e8%b0%b1" class="header-mark"></a>2.1 什么是知识图谱？</h3><p>简单来说，知识图谱是一个连接实体之间关联关系的网络，它最初由 Google 提出并用来满足搜索引擎中基于知识推理才可获得（而不是网页倒排索引）的搜索问题，比如：”姚明妻子的年龄？“、”火箭队得过几次总冠军？“</p>
 <p>这里边，我们关注的条件。到 2022 年的现在，知识图谱已经被广泛应用在推荐系统、问答系统、安全风控等等更多搜索之外的领域。</p>
 <h3 id="为什么需要用知识图谱解决汉兜" class="headerLink">
-    <a href="#%e4%b8%ba%e4%bb%80%e4%b9%88%e9%9c%80%e8%a6%81%e7%94%a8%e7%9f%a5%e8%af%86%e5%9b%be%e8%b0%b1%e8%a7%a3%e5%86%b3%e6%b1%89%e5%85%9c" class="header-mark"></a>为什么需要用知识图谱解决汉兜？</h3><p><del>原因就是：because I can</del></p>
+    <a href="#%e4%b8%ba%e4%bb%80%e4%b9%88%e9%9c%80%e8%a6%81%e7%94%a8%e7%9f%a5%e8%af%86%e5%9b%be%e8%b0%b1%e8%a7%a3%e5%86%b3%e6%b1%89%e5%85%9c" class="header-mark"></a>2.2 为什么需要用知识图谱解决汉兜？</h3><p><del>原因就是：because I can</del></p>
 <p>实际上，我们在大脑中解决字谜游戏的过程像极了图谱网络中的信息搜寻的过程，汉兜的解谜反馈提示条件天然适合被用图谱的语义来进行表达。在本文后边，你们会发现解谜条件翻译成图语义是非常非常自然的，这个问题就像是一个天然的为图谱而存在的练习一样，我相信这和知识图谱的结构和人脑中的知识结构非常接近有很大的关系。</p>
 <h3 id="如何构建面向汉兜解谜的知识图谱" class="headerLink">
-    <a href="#%e5%a6%82%e4%bd%95%e6%9e%84%e5%bb%ba%e9%9d%a2%e5%90%91%e6%b1%89%e5%85%9c%e8%a7%a3%e8%b0%9c%e7%9a%84%e7%9f%a5%e8%af%86%e5%9b%be%e8%b0%b1" class="header-mark"></a>如何构建面向汉兜解谜的知识图谱？</h3><p>知识图谱是由实体（顶点）和关系（边）组成的，用图数据库管理系统（Graph Database MS）可以很方便进行知识的入库、更改、查询、甚至可视化探索。</p>
+    <a href="#%e5%a6%82%e4%bd%95%e6%9e%84%e5%bb%ba%e9%9d%a2%e5%90%91%e6%b1%89%e5%85%9c%e8%a7%a3%e8%b0%9c%e7%9a%84%e7%9f%a5%e8%af%86%e5%9b%be%e8%b0%b1" class="header-mark"></a>2.3 如何构建面向汉兜解谜的知识图谱？</h3><p>知识图谱是由实体（顶点）和关系（边）组成的，用图数据库管理系统（Graph Database MS）可以很方便进行知识的入库、更改、查询、甚至可视化探索。</p>
 <p>在本文里，我将利用开源的分布式图数据库 Nebula Graph 开实践这个过程，具体图谱系统的搭建我都会放在文末。</p>
 <p>在本章，我们只讨论图谱的建模：如何面向汉兜的解谜去设计“实体”与“关系”。</p>
 <h4 id="图建模" class="headerLink">
-    <a href="#%e5%9b%be%e5%bb%ba%e6%a8%a1" class="header-mark"></a>图建模</h4><h5 id="最初的想法" class="headerLink">
-    <a href="#%e6%9c%80%e5%88%9d%e7%9a%84%e6%83%b3%e6%b3%95" class="header-mark"></a>最初的想法</h5><p>首先，一定存在的实体是：</p>
+    <a href="#%e5%9b%be%e5%bb%ba%e6%a8%a1" class="header-mark"></a>2.3.1 图建模</h4><h5 id="最初的想法" class="headerLink">
+    <a href="#%e6%9c%80%e5%88%9d%e7%9a%84%e6%83%b3%e6%b3%95" class="header-mark"></a>2.3.1.1 最初的想法</h5><p>首先，一定存在的实体是：</p>
 <ul>
 <li>成语</li>
 <li>汉字</li>
@@ -45,16 +45,16 @@
 <p>其次，因为解谜过程中涉及到了声母、韵母以及声调的条件，考虑到图谱本身的量级非常小（千级别），而且字的读音是一对多的关系，我把读音和声母（包涵声母-initial和韵母-final）也作为实体，他们之间的关系则是顺理成章了：</p>
 <p></p>
 <h5 id="最终的版本" class="headerLink">
-    <a href="#%e6%9c%80%e7%bb%88%e7%9a%84%e7%89%88%e6%9c%ac" class="header-mark"></a>最终的版本</h5><p>然而，我在后边基于图谱进行查询的时候发现最初的建模会使得(成语)&ndash;&gt;(字)&ndash;&gt;(读音)查询过程中丢失了这个字特定的读法的条件，所以我最终的建模是：</p>
+    <a href="#%e6%9c%80%e7%bb%88%e7%9a%84%e7%89%88%e6%9c%ac" class="header-mark"></a>2.3.1.2 最终的版本</h5><p>然而，我在后边基于图谱进行查询的时候发现最初的建模会使得(成语)&ndash;&gt;(字)&ndash;&gt;(读音)查询过程中丢失了这个字特定的读法的条件，所以我最终的建模是：</p>
 <p></p>
 <p>这样，纯文字的条件只涉及了<code>(成语)--&gt;(字)</code> 这一跳，而读音、声母、声调的条件则是另一条关系路径，既没有最初版本条件的冗余，又可以在一个路径模式匹配里带上两种条件（后边的例子里会涉及这样的表达）。</p>
 <h4 id="构建成语知识图谱" class="headerLink">
-    <a href="#%e6%9e%84%e5%bb%ba%e6%88%90%e8%af%ad%e7%9f%a5%e8%af%86%e5%9b%be%e8%b0%b1" class="header-mark"></a>构建成语知识图谱</h4><p>有了建模、这么简单的图谱的构建就剩下了数据的收集、清洗和入库。</p>
+    <a href="#%e6%9e%84%e5%bb%ba%e6%88%90%e8%af%ad%e7%9f%a5%e8%af%86%e5%9b%be%e8%b0%b1" class="header-mark"></a>2.3.2 构建成语知识图谱</h4><p>有了建模、这么简单的图谱的构建就剩下了数据的收集、清洗和入库。</p>
 <p>对于所有成语数据和他们的读音，我一方面直接抽取了汉兜代码内部的<a href="https://github.com/antfu/handle/" target="_blank" rel="noopener noreffer">数据</a>、另一方面利用 <a href="https://pypinyin.readthedocs.io/" target="_blank" rel="noopener noreffer">PyPinyin</a> 这个开源的 Python 库将汉兜数据中没有读音的数据获得读音，同时，我也用到了 PyPinyin 里的很多方便的函数比如获取一个拼音的声母、韵母。</p>
 <p>构建工具的代码在这里：https://github.com/wey-gu/chinese-graph</p>
 <p>更多信息我也放在文末的附录之中。</p>
 <h2 id="开始知识图谱查询体操" class="headerLink">
-    <a href="#%e5%bc%80%e5%a7%8b%e7%9f%a5%e8%af%86%e5%9b%be%e8%b0%b1%e6%9f%a5%e8%af%a2%e4%bd%93%e6%93%8d" class="header-mark"></a>开始知识图谱查询体操</h2><p>至此，我假设咱们都已经有了我帮大家搭建的成语<del>作弊</del>知识图谱了，开始我们的图谱查询体操吧！</p>
+    <a href="#%e5%bc%80%e5%a7%8b%e7%9f%a5%e8%af%86%e5%9b%be%e8%b0%b1%e6%9f%a5%e8%af%a2%e4%bd%93%e6%93%8d" class="header-mark"></a>3 开始知识图谱查询体操</h2><p>至此，我假设咱们都已经有了我帮大家搭建的成语<del>作弊</del>知识图谱了，开始我们的图谱查询体操吧！</p>
 <p>首先，打开汉兜 👉🏻 <a href="https://handle.antfu.me/" target="_blank" rel="noopener noreffer">https://handle.antfu.me/</a></p>
 <p>假设我们想从一个成语开始，如果你没有想法的话可以试试这个：</p>
 <div class="highlight"><div class="chroma">
@@ -67,7 +67,7 @@
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-GraphQL" data-lang="GraphQL"><span class="c"># 匹配成语中的一个结果</span><span class="w">
-</span><span class="w"></span><span class="py">MATCH</span><span class="w"> </span><span class="p">(</span><span class="py">x</span><span class="p">:</span><span class="nc">idiom</span><span class="p">)</span><span class="w"> </span><span class="py">where</span><span class="w"> </span><span class="py">id</span><span class="p">(</span><span class="py">x</span><span class="p">)</span><span class="w"> </span><span class="p">==</span><span class="w"> </span><span class="s">&#34;爱憎分明&#34;</span><span class="w"> </span><span class="py">RETURN</span><span class="w"> </span><span class="py">x</span><span class="w"> </span><span class="py">LIMIT</span><span class="w"> </span><span class="py">1</span><span class="w">
+</span><span class="w"></span><span class="py">MATCH</span><span class="w"> </span><span class="p">(</span><span class="py">x</span><span class="p">:</span><span class="nc">idiom</span><span class="p">)</span><span class="w"> </span><span class="py">RETURN</span><span class="w"> </span><span class="py">x</span><span class="w"> </span><span class="py">LIMIT</span><span class="w"> </span><span class="py">1</span><span class="w">
 </span><span class="w">
 </span><span class="w"></span><span class="c"># 返回结果</span><span class="w">
 </span><span class="w"></span><span class="p">(</span><span class="s">&#34;爱憎分明&#34;</span><span class="w"> </span><span class="p">:</span><span class="nc">idiom</span><span class="p">{</span><span class="py">pinyin</span><span class="p">:</span><span class="w"> </span><span class="s">&#34;[&#39;ai4&#39;, &#39;zeng1&#39;, &#39;fen1&#39;, &#39;ming2&#39;]&#34;</span><span class="p">})</span><span class="w">
@@ -147,7 +147,7 @@
 </blockquote>
 <p>接下来，我给大家详细解释一下这个语句的意思。</p>
 <h3 id="语句的含义" class="headerLink">
-    <a href="#%e8%af%ad%e5%8f%a5%e7%9a%84%e5%90%ab%e4%b9%89" class="header-mark"></a>语句的含义</h3><p>我们从第一个字的条件开始，这是一个既有声音、又有字形信息的条件。</p>
+    <a href="#%e8%af%ad%e5%8f%a5%e7%9a%84%e5%90%ab%e4%b9%89" class="header-mark"></a>3.1 语句的含义</h3><p>我们从第一个字的条件开始，这是一个既有声音、又有字形信息的条件。</p>
 <ul>
 <li>声音信息：存在一个韵母为 <code>ai4</code> 的发音，位置不在第一个字</li>
 <li>文字信息：这个韵母为 <code>ai4</code> 的字，不是<code>爱</code>字</li>
@@ -211,7 +211,7 @@
 <li>nGQL 命令 cheatsheet <a href="https://docs.nebula-graph.com.cn/3.0.0/2.quick-start/6.cheatsheet-for-ngql-command/" target="_blank" rel="noopener noreffer">https://docs.nebula-graph.com.cn/3.0.0/2.quick-start/6.cheatsheet-for-ngql-command/</a></li>
 </ul>
 <h2 id="可视化展示线索" class="headerLink">
-    <a href="#%e5%8f%af%e8%a7%86%e5%8c%96%e5%b1%95%e7%a4%ba%e7%ba%bf%e7%b4%a2" class="header-mark"></a>可视化展示线索</h2><p>我们把每一个条件的匹配路径作为输出，利用 Nebula Graph 的可视化能力，可以得到：</p>
+    <a href="#%e5%8f%af%e8%a7%86%e5%8c%96%e5%b1%95%e7%a4%ba%e7%ba%bf%e7%b4%a2" class="header-mark"></a>4 可视化展示线索</h2><p>我们把每一个条件的匹配路径作为输出，利用 Nebula Graph 的可视化能力，可以得到：</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -249,13 +249,13 @@
 </div><p>在可视化工具的 Console 控制台里执行上边的语句之后，选择导入图探索，就可以看到</p>
 <p></p>
 <h2 id="下一步" class="headerLink">
-    <a href="#%e4%b8%8b%e4%b8%80%e6%ad%a5" class="header-mark"></a>下一步</h2><p>如果大家是从本文第一次了解到 Nebula Graph 图数据库，那么大家可以下一步从 <a href="https://github.com/vesoft-inc/nebula" target="_blank" rel="noopener noreffer">Nebula Graph</a> 项目和 Nebula Graph 社区的官方 Bilibili 站点 👉🏻 <a href="https://space.bilibili.com/472621355" target="_blank" rel="noopener noreffer">https://space.bilibili.com/472621355</a> 了解更多有意思的入门知识。</p>
+    <a href="#%e4%b8%8b%e4%b8%80%e6%ad%a5" class="header-mark"></a>5 下一步</h2><p>如果大家是从本文第一次了解到 Nebula Graph 图数据库，那么大家可以下一步从 <a href="https://github.com/vesoft-inc/nebula" target="_blank" rel="noopener noreffer">Nebula Graph</a> 项目和 Nebula Graph 社区的官方 Bilibili 站点 👉🏻 <a href="https://space.bilibili.com/472621355" target="_blank" rel="noopener noreffer">https://space.bilibili.com/472621355</a> 了解更多有意思的入门知识。</p>
 <p>另外，<a href="https://nebula-graph.com.cn/demo/" target="_blank" rel="noopener noreffer">这里</a>是 Nebula Graph 的官方线上试玩环境，大家可以照着<a href="https://docs.nebula-graph.com.cn/" target="_blank" rel="noopener noreffer">文档</a>，利用试玩环境尝鲜。</p>
 <p>后边，Nebula Graph 会开展每天的汉兜 nGQL 体操活动，敬请关注哈！</p>
 <p>Happy Graphing!</p>
 <h2 id="附录搭建成语知识图谱" class="headerLink">
-    <a href="#%e9%99%84%e5%bd%95%e6%90%ad%e5%bb%ba%e6%88%90%e8%af%ad%e7%9f%a5%e8%af%86%e5%9b%be%e8%b0%b1" class="header-mark"></a>附录：搭建成语知识图谱</h2><h3 id="收集生成图谱数据" class="headerLink">
-    <a href="#%e6%94%b6%e9%9b%86%e7%94%9f%e6%88%90%e5%9b%be%e8%b0%b1%e6%95%b0%e6%8d%ae" class="header-mark"></a>收集、生成图谱数据</h3><div class="highlight"><div class="chroma">
+    <a href="#%e9%99%84%e5%bd%95%e6%90%ad%e5%bb%ba%e6%88%90%e8%af%ad%e7%9f%a5%e8%af%86%e5%9b%be%e8%b0%b1" class="header-mark"></a>6 附录：搭建成语知识图谱</h2><h3 id="收集生成图谱数据" class="headerLink">
+    <a href="#%e6%94%b6%e9%9b%86%e7%94%9f%e6%88%90%e5%9b%be%e8%b0%b1%e6%95%b0%e6%8d%ae" class="header-mark"></a>6.1 收集、生成图谱数据</h3><div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
@@ -264,8 +264,8 @@
 </code></pre></td></tr></table>
 </div>
 </div><h3 id="导入数据到-nebula-graph-图数据库" class="headerLink">
-    <a href="#%e5%af%bc%e5%85%a5%e6%95%b0%e6%8d%ae%e5%88%b0-nebula-graph-%e5%9b%be%e6%95%b0%e6%8d%ae%e5%ba%93" class="header-mark"></a>导入数据到 Nebula Graph 图数据库</h3><h4 id="部署图数据库" class="headerLink">
-    <a href="#%e9%83%a8%e7%bd%b2%e5%9b%be%e6%95%b0%e6%8d%ae%e5%ba%93" class="header-mark"></a>部署图数据库</h4><blockquote>
+    <a href="#%e5%af%bc%e5%85%a5%e6%95%b0%e6%8d%ae%e5%88%b0-nebula-graph-%e5%9b%be%e6%95%b0%e6%8d%ae%e5%ba%93" class="header-mark"></a>6.2 导入数据到 Nebula Graph 图数据库</h3><h4 id="部署图数据库" class="headerLink">
+    <a href="#%e9%83%a8%e7%bd%b2%e5%9b%be%e6%95%b0%e6%8d%ae%e5%ba%93" class="header-mark"></a>6.2.1 部署图数据库</h4><blockquote>
 <p>借助于 Nebula-Up <a href="https://github.com/wey-gu/nebula-up/" target="_blank" rel="noopener noreffer">https://github.com/wey-gu/nebula-up/</a> ，一行就可以了。</p>
 </blockquote>
 <div class="highlight"><div class="chroma">
@@ -324,7 +324,7 @@
 </code></pre></td></tr></table>
 </div>
 </div><h4 id="图谱入库" class="headerLink">
-    <a href="#%e5%9b%be%e8%b0%b1%e5%85%a5%e5%ba%93" class="header-mark"></a>图谱入库</h4><blockquote>
+    <a href="#%e5%9b%be%e8%b0%b1%e5%85%a5%e5%ba%93" class="header-mark"></a>6.2.2 图谱入库</h4><blockquote>
 <p>借助于 Nebula-Importer <a href="https://github.com/vesoft-inc/nebula-importer/" target="_blank" rel="noopener noreffer">https://github.com/vesoft-inc/nebula-importer/</a> ，一行就可以了。</p>
 </blockquote>
 <div class="highlight"><div class="chroma">
@@ -467,7 +467,7 @@
 </span></code></pre></td></tr></table>
 </div>
 </div><h2 id="附录图建模的-schema-ngql" class="headerLink">
-    <a href="#%e9%99%84%e5%bd%95%e5%9b%be%e5%bb%ba%e6%a8%a1%e7%9a%84-schema-ngql" class="header-mark"></a>附录：图建模的 Schema nGQL</h2><div class="highlight"><div class="chroma">
+    <a href="#%e9%99%84%e5%bd%95%e5%9b%be%e5%bb%ba%e6%a8%a1%e7%9a%84-schema-ngql" class="header-mark"></a>7 附录：图建模的 Schema nGQL</h2><div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
@@ -515,13 +515,13 @@
 </ul>
 <p>这篇文章里，我们就把这些问题回答好。</p>
 <h2 id="到底-nebula-graph-索引是什么" class="headerLink">
-    <a href="#%e5%88%b0%e5%ba%95-nebula-graph-%e7%b4%a2%e5%bc%95%e6%98%af%e4%bb%80%e4%b9%88" class="header-mark"></a>到底 Nebula Graph 索引是什么</h2><p>简而言之，Nebula Graph 索引是用来，且只用来针对纯属性条件出发查询场景的</p>
+    <a href="#%e5%88%b0%e5%ba%95-nebula-graph-%e7%b4%a2%e5%bc%95%e6%98%af%e4%bb%80%e4%b9%88" class="header-mark"></a>1 到底 Nebula Graph 索引是什么</h2><p>简而言之，Nebula Graph 索引是用来，且只用来针对纯属性条件出发查询场景的</p>
 <ul>
 <li>图游走（walk）查询中的属性条件过滤不需要它</li>
 <li>纯属性条件出发查询（注：非采样情况）必须创建索引</li>
 </ul>
 <h3 id="纯属性条件出发查询" class="headerLink">
-    <a href="#%e7%ba%af%e5%b1%9e%e6%80%a7%e6%9d%a1%e4%bb%b6%e5%87%ba%e5%8f%91%e6%9f%a5%e8%af%a2" class="header-mark"></a>纯属性条件出发查询</h3><p>我们知道在传统关系型数据库中，索引是对表数据的一个针对特定<strong>列</strong>重排序的副本，它用来<strong>加速特定列过滤条件的读查询</strong>并带来了额外的数据写入（加速而非这样查询的必须前提）。</p>
+    <a href="#%e7%ba%af%e5%b1%9e%e6%80%a7%e6%9d%a1%e4%bb%b6%e5%87%ba%e5%8f%91%e6%9f%a5%e8%af%a2" class="header-mark"></a>1.1 纯属性条件出发查询</h3><p>我们知道在传统关系型数据库中，索引是对表数据的一个针对特定<strong>列</strong>重排序的副本，它用来<strong>加速特定列过滤条件的读查询</strong>并带来了额外的数据写入（加速而非这样查询的必须前提）。</p>
 <p>在 Nebula Graph 图数据库里，索引则是对<strong>点、边特定属性数据</strong>重排序的副本，用来提供<strong>纯属性条件出发查询</strong>（如下边的查询：从只给定了点边属性条件，而非点的 ID 出发去获取图数据）</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
@@ -617,7 +617,7 @@
 </tbody>
 </table>
 <h3 id="为什么纯属性条件出发查询里必须要索引呢" class="headerLink">
-    <a href="#%e4%b8%ba%e4%bb%80%e4%b9%88%e7%ba%af%e5%b1%9e%e6%80%a7%e6%9d%a1%e4%bb%b6%e5%87%ba%e5%8f%91%e6%9f%a5%e8%af%a2%e9%87%8c%e5%bf%85%e9%a1%bb%e8%a6%81%e7%b4%a2%e5%bc%95%e5%91%a2" class="header-mark"></a>为什么纯属性条件出发查询里必须要索引呢？</h3><p>因为 Nebula Graph 在存储数据的时候，它的结构是面向分布式与关联关系设计的，类似表结构数据库中无索引的全扫描条件搜索实际上更加昂贵，所以设计上被有意禁止了。</p>
+    <a href="#%e4%b8%ba%e4%bb%80%e4%b9%88%e7%ba%af%e5%b1%9e%e6%80%a7%e6%9d%a1%e4%bb%b6%e5%87%ba%e5%8f%91%e6%9f%a5%e8%af%a2%e9%87%8c%e5%bf%85%e9%a1%bb%e8%a6%81%e7%b4%a2%e5%bc%95%e5%91%a2" class="header-mark"></a>1.2 为什么纯属性条件出发查询里必须要索引呢？</h3><p>因为 Nebula Graph 在存储数据的时候，它的结构是面向分布式与关联关系设计的，类似表结构数据库中无索引的全扫描条件搜索实际上更加昂贵，所以设计上被有意禁止了。</p>
 <blockquote>
 <p>注: 如果不追求全部数据，只要采样一部分，3.0 里之后是支持不强制索引 LIMIT <n> 的情况的，如下查询（有 LIMIT）不需要索引：</p>
 <div class="highlight"><div class="chroma">
@@ -632,7 +632,7 @@
 </div>
 </div></blockquote>
 <h3 id="为什么只有纯属性条件出发查询" class="headerLink">
-    <a href="#%e4%b8%ba%e4%bb%80%e4%b9%88%e5%8f%aa%e6%9c%89%e7%ba%af%e5%b1%9e%e6%80%a7%e6%9d%a1%e4%bb%b6%e5%87%ba%e5%8f%91%e6%9f%a5%e8%af%a2" class="header-mark"></a>为什么只有纯属性条件出发查询</h3><p>我们比较一下正常的图查询 <strong>graph-queries</strong> 和纯属性条件出发查询 <strong>pure-prop-condition queries</strong>：</p>
+    <a href="#%e4%b8%ba%e4%bb%80%e4%b9%88%e5%8f%aa%e6%9c%89%e7%ba%af%e5%b1%9e%e6%80%a7%e6%9d%a1%e4%bb%b6%e5%87%ba%e5%8f%91%e6%9f%a5%e8%af%a2" class="header-mark"></a>1.3 为什么只有纯属性条件出发查询</h3><p>我们比较一下正常的图查询 <strong>graph-queries</strong> 和纯属性条件出发查询 <strong>pure-prop-condition queries</strong>：</p>
 <ul>
 <li>graph-queries： 如 <code>query 2</code> 、 <code>query 3</code>是沿着边一路找到特定路径条件的扩展游走</li>
 <li>pure-prop-condition queries：如 <code>query 0</code> and <code>query 1</code>  是只通过一定属性条件（或者是无限制条件）找到满足的点、边</li>
@@ -643,7 +643,7 @@
 <p>Nebula Graph 索引是为了从给定属性条件查点、边的一份属性数据的排序。</p>
 </blockquote>
 <h2 id="一些-nebula-graph-索引的设计细节" class="headerLink">
-    <a href="#%e4%b8%80%e4%ba%9b-nebula-graph-%e7%b4%a2%e5%bc%95%e7%9a%84%e8%ae%be%e8%ae%a1%e7%bb%86%e8%8a%82" class="header-mark"></a>一些 Nebula Graph 索引的设计细节</h2><p>为了更好理解索引的限制、代价、能力，咱们来解释更多他的细节</p>
+    <a href="#%e4%b8%80%e4%ba%9b-nebula-graph-%e7%b4%a2%e5%bc%95%e7%9a%84%e8%ae%be%e8%ae%a1%e7%bb%86%e8%8a%82" class="header-mark"></a>2 一些 Nebula Graph 索引的设计细节</h2><p>为了更好理解索引的限制、代价、能力，咱们来解释更多他的细节</p>
 <ul>
 <li>
 <p>Nebula Graph 索引是在本地（不是分开、中心化）和点数据被一起存储、分片的。</p>
@@ -692,7 +692,7 @@
 </li>
 </ul>
 <h2 id="索引的使用" class="headerLink">
-    <a href="#%e7%b4%a2%e5%bc%95%e7%9a%84%e4%bd%bf%e7%94%a8" class="header-mark"></a>索引的使用</h2><p>具体要参考<a href="https://docs.nebula-graph.io/3.0.0/3.ngql-guide/14.native-index-statements/" target="_blank" rel="noopener noreffer">索引文档</a>一些要点是：</p>
+    <a href="#%e7%b4%a2%e5%bc%95%e7%9a%84%e4%bd%bf%e7%94%a8" class="header-mark"></a>3 索引的使用</h2><p>具体要参考<a href="https://docs.nebula-graph.io/3.0.0/3.ngql-guide/14.native-index-statements/" target="_blank" rel="noopener noreffer">索引文档</a>一些要点是：</p>
 <ul>
 <li>
 <p>在 tag 或者 edge type 上针对想要被条件反查点边的属性创建索引</p>
@@ -746,7 +746,7 @@
 </div></li>
 </ul>
 <h2 id="回顾" class="headerLink">
-    <a href="#%e5%9b%9e%e9%a1%be" class="header-mark"></a>回顾</h2><ul>
+    <a href="#%e5%9b%9e%e9%a1%be" class="header-mark"></a>4 回顾</h2><ul>
 <li>Nebula Graph 索引在只提供属性条件情况下通过对属性的排序副本扫描查点、边</li>
 <li>Nebula Graph 索引<strong>不是</strong>用来图拓展查询的</li>
 <li>Nebula Graph 索引是左匹配，不是用来做模糊全文搜索的</li>
@@ -768,7 +768,7 @@
 <p>一文了解 K8s 部署的 Nebula Graph 集群的 Nebula-Algorithm 使用方法。</p>
 </blockquote>
 <h2 id="步骤" class="headerLink">
-    <a href="#%e6%ad%a5%e9%aa%a4" class="header-mark"></a>步骤</h2><p>最方便的方法是将 Nebula Algorithm/ Spark 运行在与 Nebula-Operator 相同的网络命名空间里，将 <code>show hosts meta</code> 的 MetaD <code>域名:端口</code> 格式的地址填进配置里就可以了。</p>
+    <a href="#%e6%ad%a5%e9%aa%a4" class="header-mark"></a>1 步骤</h2><p>最方便的方法是将 Nebula Algorithm/ Spark 运行在与 Nebula-Operator 相同的网络命名空间里，将 <code>show hosts meta</code> 的 MetaD <code>域名:端口</code> 格式的地址填进配置里就可以了。</p>
 <blockquote>
 <p>注：需要 2.6.2 或者更新的版本，Spark-Connector/Algorithm 才支持域名形式的 MetaD 地址。</p>
 </blockquote>
@@ -869,12 +869,12 @@ Mon, <span class="m">14</span> Feb <span class="m">2022</span> 08:22:33 UTC
 </div>
 </div><p>看起来非常简单，那么，为什么这么简单的过程却值得一篇文章呢？</p>
 <h3 id="容易忽略的问题" class="headerLink">
-    <a href="#%e5%ae%b9%e6%98%93%e5%bf%bd%e7%95%a5%e7%9a%84%e9%97%ae%e9%a2%98" class="header-mark"></a>容易忽略的问题</h3><p>这里的问题在于：</p>
+    <a href="#%e5%ae%b9%e6%98%93%e5%bf%bd%e7%95%a5%e7%9a%84%e9%97%ae%e9%a2%98" class="header-mark"></a>1.1 容易忽略的问题</h3><p>这里的问题在于：</p>
 <p>a. 它隐含地需要保证 StorageD 的地址能被 spark 环境访问；</p>
 <p>b. 但是这些 StorageD 地址是从 MetaD 获取的；</p>
 <p>c. Nebula K8s Operator 里，MetaD 中存储的 StorageD 地址（服务发现）的来源是 StorageD 的配置文件，而它是 k8s 的内部地址。</p>
 <h3 id="背景知识" class="headerLink">
-    <a href="#%e8%83%8c%e6%99%af%e7%9f%a5%e8%af%86" class="header-mark"></a>背景知识</h3><p><strong>a.</strong> 的理由比较直接，和 nebula 的架构有关：图的数据都存在 Storage Service 之中，通常用语句的查询是透过 Graph Service 来透传，只需要 GraphD 的连接就足够，而 Spark-Connector 使用 Nebula Graph 的场景是扫描全图或者子图，这时候计算存储分离的设计使得我们可以绕过查询、计算层直接高效读取图数据。</p>
+    <a href="#%e8%83%8c%e6%99%af%e7%9f%a5%e8%af%86" class="header-mark"></a>1.2 背景知识</h3><p><strong>a.</strong> 的理由比较直接，和 nebula 的架构有关：图的数据都存在 Storage Service 之中，通常用语句的查询是透过 Graph Service 来透传，只需要 GraphD 的连接就足够，而 Spark-Connector 使用 Nebula Graph 的场景是扫描全图或者子图，这时候计算存储分离的设计使得我们可以绕过查询、计算层直接高效读取图数据。</p>
 <p>那么问题来了，为什么需要、且只需要 MetaD 的地址呢？</p>
 <p>这也是和架构有关，Meta Service 里包含了全图的分布数据与分布式的 Storage Service 的各个分片和实例的分布，所以一方面因为只有 Meta 才有全图的信息（需要），另一方面因为从 Meta 可以获得这部分信息（只需要）。到这里 <strong>b.</strong> 的答案也有了。</p>
 <ul>
@@ -981,7 +981,7 @@ Mon, <span class="m">14</span> Feb <span class="m">2022</span> 08:22:33 UTC
 <p>那么，有没有更方便的方式？</p>
 <p>非常抱歉的是，目前最方便的方式依然是如文章最开头所介绍：让 Spark 运行在 Nebula Cluster 内部。实际上，我在努力推进 Nebula Spark 社区去支持可以配置的 StorageAddresses 选项，有了它之后，前边提到的 <strong>2.</strong> 就是不必要的了。</p>
 <h2 id="bonus一键体验-nebula-algorithm--nebula-operator" class="headerLink">
-    <a href="#bonus%e4%b8%80%e9%94%ae%e4%bd%93%e9%aa%8c-nebula-algorithm--nebula-operator" class="header-mark"></a>Bonus：一键体验 nebula-algorithm + nebula-operator</h2><p>为了方便在 k8s 上尝鲜 nebula-graph nebula-algorithm 的同学，这里我要再次安利一下我写的一个小工具 <a href="https://github.com/wey-gu/nebula-operator-kind" target="_blank" rel="noopener noreffer">Neubla-Operator-KinD</a>，它是一个一键在 Docker 环境内部单独部署一个 k8s 集群并在其中部署 Nebula Operator 以及所有依赖（包括 storage provider）并部署一个小 Nebula Cluster 的工具。有点绕，不过可以看下边的步骤哈：</p>
+    <a href="#bonus%e4%b8%80%e9%94%ae%e4%bd%93%e9%aa%8c-nebula-algorithm--nebula-operator" class="header-mark"></a>2 Bonus：一键体验 nebula-algorithm &#43; nebula-operator</h2><p>为了方便在 k8s 上尝鲜 nebula-graph nebula-algorithm 的同学，这里我要再次安利一下我写的一个小工具 <a href="https://github.com/wey-gu/nebula-operator-kind" target="_blank" rel="noopener noreffer">Neubla-Operator-KinD</a>，它是一个一键在 Docker 环境内部单独部署一个 k8s 集群并在其中部署 Nebula Operator 以及所有依赖（包括 storage provider）并部署一个小 Nebula Cluster 的工具。有点绕，不过可以看下边的步骤哈：</p>
 <p>第一步，部署 K8s+Nebula-Operator+Nebula Cluster：</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
@@ -1128,7 +1128,7 @@ _id,lpa
 <p>如何利用图数据库从0-1构建一个特定领域问答助手？本文手把手带你构建一个简易版的篮球领域智能问答机器人。</p>
 </blockquote>
 <h2 id="前言" class="headerLink">
-    <a href="#%e5%89%8d%e8%a8%80" class="header-mark"></a>前言</h2><p>「问答机器人」在我们日常生活中并不少见到 ：比如在一些电商客服、智能问诊、技术支持等人工输入与沟通界面的场景下，机器人“智能”问答系统一定程度上可以在无需人力、不需要耗费终端用户心智去做知识库、商品搜索、科室选择等等的情况下实时给出问题答案。</p>
+    <a href="#%e5%89%8d%e8%a8%80" class="header-mark"></a>1 前言</h2><p>「问答机器人」在我们日常生活中并不少见到 ：比如在一些电商客服、智能问诊、技术支持等人工输入与沟通界面的场景下，机器人“智能”问答系统一定程度上可以在无需人力、不需要耗费终端用户心智去做知识库、商品搜索、科室选择等等的情况下实时给出问题答案。</p>
 <p>问答机器人系统背后的技术有多重可能：</p>
 <ul>
 <li>基于检索，全文搜索接近的问题</li>
@@ -1149,7 +1149,7 @@ _id,lpa
 </blockquote>
 <p>我们开始吧。</p>
 <h2 id="鸟瞰-tldr" class="headerLink">
-    <a href="#%e9%b8%9f%e7%9e%b0-tldr" class="header-mark"></a>鸟瞰 TL;DR</h2><p>KBQA 用一句话说就是把问题解析、转换成在知识图谱中的查询，查询得到结果之后进行筛选、翻译成结果（句子、卡片或者任何方便人理解的答案格式）。</p>
+    <a href="#%e9%b8%9f%e7%9e%b0-tldr" class="header-mark"></a>2 鸟瞰 TL;DR</h2><p>KBQA 用一句话说就是把问题解析、转换成在知识图谱中的查询，查询得到结果之后进行筛选、翻译成结果（句子、卡片或者任何方便人理解的答案格式）。</p>
 <blockquote>
 <p>💡：知识图谱的构建实际上是非常重要的过程，在本文中，我们专注在串起来 KBQA 系统的骨架，我们假设需求是基于一个已经有的图谱之上，为其增加一个 QA 系统。</p>
 </blockquote>
@@ -1240,7 +1240,7 @@ _id,lpa
 <p>Nebula Graph 的原生分布式设计和 share-nothing 架构使得它擅长于巨大数据量和高并发读写的场景，加上它的开源社区特别活跃，已经被国内很多团队用于支撑生产上的各种业务，<a href="https://nebula-graph.com.cn/cases/" target="_blank" rel="noopener noreffer">这里</a>有一些他们分享的选型、落地实践。</p>
 </blockquote>
 <h2 id="知识图谱" class="headerLink">
-    <a href="#%e7%9f%a5%e8%af%86%e5%9b%be%e8%b0%b1" class="header-mark"></a>知识图谱</h2><p>Siwi 构建于一个篮球相关的知识图谱之上，它其实是 Siwi 采用的开源分布式图数据库 <a href="http://nebula-graph.com.cn/" target="_blank" rel="noopener noreffer">Nebula Graph</a> 社区的官方文档里的示例<a href="https://docs.nebula-graph.com.cn/master/3.ngql-guide/1.nGQL-overview/1.overview/#basketballplayer" target="_blank" rel="noopener noreffer">数据集</a>。</p>
+    <a href="#%e7%9f%a5%e8%af%86%e5%9b%be%e8%b0%b1" class="header-mark"></a>3 知识图谱</h2><p>Siwi 构建于一个篮球相关的知识图谱之上，它其实是 Siwi 采用的开源分布式图数据库 <a href="http://nebula-graph.com.cn/" target="_blank" rel="noopener noreffer">Nebula Graph</a> 社区的官方文档里的示例<a href="https://docs.nebula-graph.com.cn/master/3.ngql-guide/1.nGQL-overview/1.overview/#basketballplayer" target="_blank" rel="noopener noreffer">数据集</a>。</p>
 <p>在这个非常简单的图谱之中，只有两种点：</p>
 <ul>
 <li>player，球员</li>
@@ -1258,7 +1258,7 @@ _id,lpa
 <p></p>
 <p>有了这个知识图谱，咱们接下来就在它之上搭一个简单的基于语法解析的 QA 系统吧😁。</p>
 <h2 id="siwi-backend" class="headerLink">
-    <a href="#siwi-backend" class="header-mark"></a>Siwi-backend</h2><div class="highlight"><div class="chroma">
+    <a href="#siwi-backend" class="header-mark"></a>4 Siwi-backend</h2><div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
@@ -1302,7 +1302,7 @@ _id,lpa
 </div>
 </div><p>如上图的设计流程，Siwi 的后端部分需要接收问句，处理之后访问知识图谱（图数据库），然后将处理结果返回给用户。</p>
 <h3 id="接收-http-请求app" class="headerLink">
-    <a href="#%e6%8e%a5%e6%94%b6-http-%e8%af%b7%e6%b1%82app" class="header-mark"></a>接收 HTTP 请求(app)</h3><p>对于请求，就简单地用 Flask 作为 web server 来接收 HTTP 的 POST 请求：</p>
+    <a href="#%e6%8e%a5%e6%94%b6-http-%e8%af%b7%e6%b1%82app" class="header-mark"></a>4.1 接收 HTTP 请求(app)</h3><p>对于请求，就简单地用 Flask 作为 web server 来接收 HTTP 的 POST 请求：</p>
 <blockquote>
 <p>💡：还不熟悉 Flask 的同学，可以在 <a href="https://www.freecodecamp.org/news/tag/flask/" target="_blank" rel="noopener noreffer">freeCodeCamp 上搜索一下</a>，有一些不错的课程哈。</p>
 </blockquote>
@@ -1348,7 +1348,7 @@ _id,lpa
 </div>
 </div><p>接下来我们来实现 <code>siwi_bot</code>，真正处理提问的逻辑。</p>
 <h3 id="处理请求bot" class="headerLink">
-    <a href="#%e5%a4%84%e7%90%86%e8%af%b7%e6%b1%82bot" class="header-mark"></a>处理请求(bot)</h3><div class="highlight"><div class="chroma">
+    <a href="#%e5%a4%84%e7%90%86%e8%af%b7%e6%b1%82bot" class="header-mark"></a>4.2 处理请求(bot)</h3><div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
@@ -1415,7 +1415,7 @@ _id,lpa
 </div>
 </div><p>首先咱们来进一步实现一下 <code>SiwiClassifier</code> 吧。</p>
 <h4 id="语义解析classifier" class="headerLink">
-    <a href="#%e8%af%ad%e4%b9%89%e8%a7%a3%e6%9e%90classifier" class="header-mark"></a>语义解析(classifier)</h4><p><code>classifier </code> 需要在 <code>get(sentence)</code> 方法里将句子中的实体和句子的意图解析、分类出来。通常来说，这里是需要借助机器学习、NLP去分词、分类实现的，这里只是为了展示这个过程实际上只是各种 <code>if/ else</code>。</p>
+    <a href="#%e8%af%ad%e4%b9%89%e8%a7%a3%e6%9e%90classifier" class="header-mark"></a>4.2.1 语义解析(classifier)</h4><p><code>classifier </code> 需要在 <code>get(sentence)</code> 方法里将句子中的实体和句子的意图解析、分类出来。通常来说，这里是需要借助机器学习、NLP去分词、分类实现的，这里只是为了展示这个过程实际上只是各种 <code>if/ else</code>。</p>
 <p>我们这里实现了三类意图的问题：</p>
 <ul>
 <li>关系（A，B）：获得 A 和 B 在图谱中的关系路径，比如姚明和湖人队的关系是？</li>
@@ -1493,7 +1493,7 @@ _id,lpa
 </div>
 </div><p>这里，我把匹配的规则（等价于 if else&hellip;）写在了 <code>src/siwi/bot/test/data</code> 之下的 YAML 文件里，这样增加 <code>classifier</code> 之中新的规则只需要更新这个文件就可以了：</p>
 <h5 id="意图识别intent" class="headerLink">
-    <a href="#%e6%84%8f%e5%9b%be%e8%af%86%e5%88%abintent" class="header-mark"></a>意图识别(intent)</h5><div class="highlight"><div class="chroma">
+    <a href="#%e6%84%8f%e5%9b%be%e8%af%86%e5%88%abintent" class="header-mark"></a>4.2.1.1 意图识别(intent)</h5><div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
@@ -1599,7 +1599,7 @@ _id,lpa
 </span></code></pre></td></tr></table>
 </div>
 </div><h5 id="实体识别entity" class="headerLink">
-    <a href="#%e5%ae%9e%e4%bd%93%e8%af%86%e5%88%abentity" class="header-mark"></a>实体识别(entity)</h5><p>类似的，实体识别的部分本质上也是 if else，只不过这里利用到了**<a href="https://zh.wikipedia.org/wiki/AC%E8%87%AA%E5%8A%A8%E6%9C%BA%E7%AE%97%E6%B3%95" target="_blank" rel="noopener noreffer">Aho–Corasick算法</a>**来帮助搜索实体，在生产（非玩具）的情况下，应该用 NLP 里的分词的方法来做。</p>
+    <a href="#%e5%ae%9e%e4%bd%93%e8%af%86%e5%88%abentity" class="header-mark"></a>4.2.1.2 实体识别(entity)</h5><p>类似的，实体识别的部分本质上也是 if else，只不过这里利用到了**<a href="https://zh.wikipedia.org/wiki/AC%E8%87%AA%E5%8A%A8%E6%9C%BA%E7%AE%97%E6%B3%95" target="_blank" rel="noopener noreffer">Aho–Corasick算法</a>**来帮助搜索实体，在生产（非玩具）的情况下，应该用 NLP 里的分词的方法来做。</p>
 <blockquote>
 <p>💡：大家可以去了解一下这个 <a href="https://zh.wikipedia.org/wiki/AC%E8%87%AA%E5%8A%A8%E6%9C%BA%E7%AE%97%E6%B3%95" target="_blank" rel="noopener noreffer">AC自动机算法</a></p>
 </blockquote>
@@ -1663,7 +1663,7 @@ _id,lpa
 </div>
 </div><p>至此，我们的 <code>SiwiClassifier.get(sentence)</code> 已经能返回解析、分类出来的意图和实体了，这时候，它们会被传给 Actions 来让 siwi bot 知道如何去执行知识图谱的查询啦！</p>
 <h4 id="构造图谱查询action" class="headerLink">
-    <a href="#%e6%9e%84%e9%80%a0%e5%9b%be%e8%b0%b1%e6%9f%a5%e8%af%a2action" class="header-mark"></a>构造图谱查询(action)</h4><p>还记得前边的 bot 代码里，最后一步，图谱查询的动作是这么被构造的：</p>
+    <a href="#%e6%9e%84%e9%80%a0%e5%9b%be%e8%b0%b1%e6%9f%a5%e8%af%a2action" class="header-mark"></a>4.2.2 构造图谱查询(action)</h4><p>还记得前边的 bot 代码里，最后一步，图谱查询的动作是这么被构造的：</p>
 <p><code>action = self.actions.get(intent)</code></p>
 <p>现在咱们就把它实现一下：</p>
 <ol>
@@ -1873,8 +1873,8 @@ _id,lpa
 </div>
 </div><p>至此，咱们就已经实现了后端的所有功能，我们可以把它启动起来试试了！</p>
 <h3 id="测试一下" class="headerLink">
-    <a href="#%e6%b5%8b%e8%af%95%e4%b8%80%e4%b8%8b" class="header-mark"></a>测试一下</h3><h4 id="启动图数据库" class="headerLink">
-    <a href="#%e5%90%af%e5%8a%a8%e5%9b%be%e6%95%b0%e6%8d%ae%e5%ba%93" class="header-mark"></a>启动图数据库</h4><p>我们在 Nebula Graph 里建立（导入数据）一个篮球的知识图谱。</p>
+    <a href="#%e6%b5%8b%e8%af%95%e4%b8%80%e4%b8%8b" class="header-mark"></a>4.3 测试一下</h3><h4 id="启动图数据库" class="headerLink">
+    <a href="#%e5%90%af%e5%8a%a8%e5%9b%be%e6%95%b0%e6%8d%ae%e5%ba%93" class="header-mark"></a>4.3.1 启动图数据库</h4><p>我们在 Nebula Graph 里建立（导入数据）一个篮球的知识图谱。</p>
 <blockquote>
 <p>💡：在导入数据之前，请先部署一个 Nebula Graph 集群。最简便的部署方式是使用 Nebula-UP 这个小工具，只需要一行命令就能在 Linux 机器上同时启动一个 Nebula Graph 核心和可视化图探索工具 <a href="https://docs.nebula-graph.com.cn/2.6.1/nebula-studio/about-studio/st-ug-what-is-graph-studio/" target="_blank" rel="noopener noreffer">Nebula Graph Studio</a>。如果你更愿意用 Docker 部署，请参考<a href="https://docs.nebula-graph.com.cn/2.6.1/4.deployment-and-installation/2.compile-and-install-nebula-graph/3.deploy-nebula-graph-with-docker-compose/" target="_blank" rel="noopener noreffer">这个文档</a>。</p>
 </blockquote>
@@ -1964,7 +1964,7 @@ _id,lpa
 <p></p>
 </blockquote>
 <h4 id="启动-siwi-backend" class="headerLink">
-    <a href="#%e5%90%af%e5%8a%a8-siwi-backend" class="header-mark"></a>启动 Siwi-backend</h4><p>大家可以直接 clone 我的代码：<code>git clone https://github.com/wey-gu/nebula-siwi/</code></p>
+    <a href="#%e5%90%af%e5%8a%a8-siwi-backend" class="header-mark"></a>4.3.2 启动 Siwi-backend</h4><p>大家可以直接 clone 我的代码：<code>git clone https://github.com/wey-gu/nebula-siwi/</code></p>
 <p>然后安装、启动 Siwi Backend：</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
@@ -2003,8 +2003,8 @@ gunicorn --bind :5000 wsgi --workers <span class="m">1</span> --threads <span cl
 <p>至此，我们已经写好了 QA 系统的重要的代码啦，大家是不是对一个 KBQA 的构成有了更清晰的概念了呢？</p>
 <p>接下来，我们为它增加一个界面！</p>
 <h2 id="siwi-frontend" class="headerLink">
-    <a href="#siwi-frontend" class="header-mark"></a>Siwi-frontend</h2><h3 id="聊天界面" class="headerLink">
-    <a href="#%e8%81%8a%e5%a4%a9%e7%95%8c%e9%9d%a2" class="header-mark"></a>聊天界面</h3><p>我们利用 <a href="https://github.com/juzser/vue-bot-ui" target="_blank" rel="noopener noreffer">Vue Bot UI</a> 这个可爱的机器人界面的 Vue 实现可以很容易构造一个</p>
+    <a href="#siwi-frontend" class="header-mark"></a>5 Siwi-frontend</h2><h3 id="聊天界面" class="headerLink">
+    <a href="#%e8%81%8a%e5%a4%a9%e7%95%8c%e9%9d%a2" class="header-mark"></a>5.1 聊天界面</h3><p>我们利用 <a href="https://github.com/juzser/vue-bot-ui" target="_blank" rel="noopener noreffer">Vue Bot UI</a> 这个可爱的机器人界面的 Vue 实现可以很容易构造一个</p>
 <p>代码段：<code>src/siwi/frontend/src/App.vue</code></p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
@@ -2041,7 +2041,7 @@ gunicorn --bind :5000 wsgi --workers <span class="m">1</span> --threads <span cl
 </div><p><a href="https://github.com/wey-gu/nebula-siwi/blob/main/src/siwi_frontend/images/demo.webp" target="_blank" rel="noopener noreffer"></a></p>
 <p>注意到那个小飞机按钮了吧，它是发出问题请求的按键，我们要在按下它的时候对后端做出请求。</p>
 <h3 id="访问后端" class="headerLink">
-    <a href="#%e8%ae%bf%e9%97%ae%e5%90%8e%e7%ab%af" class="header-mark"></a>访问后端</h3><p>这部分用到了<a href="https://github.com/axios/axios" target="_blank" rel="noopener noreffer">Axios</a>，它是浏览器里访问其他地址的 HTTP 客户端。</p>
+    <a href="#%e8%ae%bf%e9%97%ae%e5%90%8e%e7%ab%af" class="header-mark"></a>5.2 访问后端</h3><p>这部分用到了<a href="https://github.com/axios/axios" target="_blank" rel="noopener noreffer">Axios</a>，它是浏览器里访问其他地址的 HTTP 客户端。</p>
 <ol>
 <li>在按下的时候，<code>@msg-send=&quot;msgSender&quot;</code> 会触发 <code>msgSender()</code></li>
 <li><code> msgSender()</code>去构造<code>axios.post(this.apiEndpoint, { &quot;question&quot;: data.text })</code> 的请求给 Siwi 的后端</li>
@@ -2154,7 +2154,7 @@ gunicorn --bind :5000 wsgi --workers <span class="m">1</span> --threads <span cl
 </div>
 </div><p>现在，我们已经有了一个图形界面的机器人啦，不过，更进一步，我们可以利用现代浏览器的接口，实现语音识别和机器人说话！</p>
 <h3 id="语音识别" class="headerLink">
-    <a href="#%e8%af%ad%e9%9f%b3%e8%af%86%e5%88%ab" class="header-mark"></a>语音识别</h3><p>我们借助于 <a href="https://github.com/Drackokacka/vue-web-speech" target="_blank" rel="noopener noreffer">Vue Web Speech</a>, 这个语音 API 的 VueJS 的绑定，可以很容易在按下 🎙️ 的时候接收人的语音，并把语音转换成文字发出去，在回答被返回之后，它（还是他/她😁？）也会把回答的句子读出来给用户。</p>
+    <a href="#%e8%af%ad%e9%9f%b3%e8%af%86%e5%88%ab" class="header-mark"></a>5.3 语音识别</h3><p>我们借助于 <a href="https://github.com/Drackokacka/vue-web-speech" target="_blank" rel="noopener noreffer">Vue Web Speech</a>, 这个语音 API 的 VueJS 的绑定，可以很容易在按下 🎙️ 的时候接收人的语音，并把语音转换成文字发出去，在回答被返回之后，它（还是他/她😁？）也会把回答的句子读出来给用户。</p>
 <ol>
 <li><code>record</code> 在 <code>🎙️</code> 被按下之后，变成 <code>👂</code></li>
 <li>触发 <code>onResults()</code> 监听</li>
@@ -2293,7 +2293,7 @@ gunicorn --bind :5000 wsgi --workers <span class="m">1</span> --threads <span cl
 </code></pre></td></tr></table>
 </div>
 </div><h2 id="总结" class="headerLink">
-    <a href="#%e6%80%bb%e7%bb%93" class="header-mark"></a>总结</h2><p>至此，我们已经学会了搭建自己的第一个 KBQA：知识图谱驱动的问答系统。</p>
+    <a href="#%e6%80%bb%e7%bb%93" class="header-mark"></a>6 总结</h2><p>至此，我们已经学会了搭建自己的第一个 KBQA：知识图谱驱动的问答系统。</p>
 <p>回顾下它的代码结构：</p>
 <ul>
 <li><code>src/siwi</code> 对应后端
@@ -2352,16 +2352,16 @@ gunicorn --bind :5000 wsgi --workers <span class="m">1</span> --threads <span cl
 <iframe src="//player.bilibili.com/player.html?aid=421964672&bvid=BV1Rm4y1Q7B5&cid=448090671&page=1" scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true"> </iframe>
 </blockquote>
 <h2 id="感谢用到的开源项目-" class="headerLink">
-    <a href="#%e6%84%9f%e8%b0%a2%e7%94%a8%e5%88%b0%e7%9a%84%e5%bc%80%e6%ba%90%e9%a1%b9%e7%9b%ae-" class="header-mark"></a>感谢用到的开源项目 ❤️</h2><p>这个小项目里我们用到了好多开源的项目，非常感谢这些贡献者们的慷慨与无私，开源是不是很酷呢？</p>
+    <a href="#%e6%84%9f%e8%b0%a2%e7%94%a8%e5%88%b0%e7%9a%84%e5%bc%80%e6%ba%90%e9%a1%b9%e7%9b%ae-" class="header-mark"></a>7 感谢用到的开源项目 ❤️</h2><p>这个小项目里我们用到了好多开源的项目，非常感谢这些贡献者们的慷慨与无私，开源是不是很酷呢？</p>
 <h3 id="backend" class="headerLink">
-    <a href="#backend" class="header-mark"></a>Backend</h3><ul>
+    <a href="#backend" class="header-mark"></a>7.1 Backend</h3><ul>
 <li><a href="https://github.com/liuhuanyong/QASystemOnMedicalKG" target="_blank" rel="noopener noreffer">KGQA on MedicalKG</a> by <a href="https://liuhuanyong.github.io/" target="_blank" rel="noopener noreffer">Huanyong Liu</a></li>
 <li><a href="https://github.com/pallets/flask" target="_blank" rel="noopener noreffer">Flask</a></li>
 <li><a href="https://github.com/WojciechMula/pyahocorasick" target="_blank" rel="noopener noreffer">pyahocorasick</a> created by <a href="http://0x80.pl/" target="_blank" rel="noopener noreffer">Wojciech Muła</a></li>
 <li><a href="https://pyyaml.org/" target="_blank" rel="noopener noreffer">PyYaml</a></li>
 </ul>
 <h3 id="frontend" class="headerLink">
-    <a href="#frontend" class="header-mark"></a>Frontend</h3><ul>
+    <a href="#frontend" class="header-mark"></a>7.2 Frontend</h3><ul>
 <li><a href="https://vuejs.org/" target="_blank" rel="noopener noreffer">VueJS</a> for frontend framework</li>
 <li><a href="https://github.com/juzser/vue-bot-ui" target="_blank" rel="noopener noreffer">Vue Bot UI</a>, as a lovely bot UI in vue</li>
 <li><a href="https://github.com/Drackokacka/vue-web-speech" target="_blank" rel="noopener noreffer">Vue Web Speech</a>, for speech API vue wrapper</li>
@@ -2370,7 +2370,7 @@ gunicorn --bind :5000 wsgi --workers <span class="m">1</span> --threads <span cl
 <li><a href="https://github.com/alvarosaburido/vitesome" target="_blank" rel="noopener noreffer">Vitesome</a> for landing page design</li>
 </ul>
 <h3 id="graph-database" class="headerLink">
-    <a href="#graph-database" class="header-mark"></a>Graph Database</h3><ul>
+    <a href="#graph-database" class="header-mark"></a>7.3 Graph Database</h3><ul>
 <li><a href="https://github.com/vesoft-inc/nebula/" target="_blank" rel="noopener noreffer">Nebula Graph</a> 高性能、云原生的开源分布式图数据库</li>
 </ul>]]></description>
 </item><item>
@@ -2385,7 +2385,7 @@ gunicorn --bind :5000 wsgi --workers <span class="m">1</span> --threads <span cl
 <p>Python Storage Client 连不上第一次安装的 Nebula Graph？ Docker 部署情况下使用 Python Storage Client 指南</p>
 </blockquote>
 <h2 id="前置条件" class="headerLink">
-    <a href="#%e5%89%8d%e7%bd%ae%e6%9d%a1%e4%bb%b6" class="header-mark"></a>前置条件</h2><blockquote>
+    <a href="#%e5%89%8d%e7%bd%ae%e6%9d%a1%e4%bb%b6" class="header-mark"></a>1 前置条件</h2><blockquote>
 <p>注意：一个重要的前置条件是我们真的需要 Storage Client，如果我们只需要在 Python Client 里通过 nGQL 来请求数据，那么 GraphClient 才是你需要的，可以跳过本文。</p>
 </blockquote>
 <p>对于刚接触 Nebula 的同学，部署集群最快速的方式是用 Docker Compose，安装部署可以参考文档：<a href="https://docs.nebula-graph.com.cn/2.6.1/4.deployment-and-installation/2.compile-and-install-nebula-graph/3.deploy-nebula-graph-with-docker-compose/" target="_blank" rel="noopener noreffer">deploy-nebula-graph-with-docker-compose</a>。</p>
@@ -2502,7 +2502,7 @@ nebula-docker-compose-metad0-1      9560/tcp, 0.0.0.0:61704-&gt;9559/tcp, 0.0.0.
 <p>本质上我们可以通过修改 Compose 的配置文件、通过其他部署或者配置的方式安装 Nebula 来保证 Python Client 能够访问 Storage/Meta 服务，这里只是给出一个无需修改配置的方法：让 Python 运行环境处在 Docker Compose 的 Nebula Cluster 同一个容器网络。</p>
 </blockquote>
 <h3 id="第一步把-python-容器" class="headerLink">
-    <a href="#%e7%ac%ac%e4%b8%80%e6%ad%a5%e6%8a%8a-python-%e5%ae%b9%e5%99%a8" class="header-mark"></a>第一步，把 Python 容器</h3><p>在 <code>nebula-docker-compose_nebula-net</code> 这个容器网络启动一个 Jupyter 的容器。</p>
+    <a href="#%e7%ac%ac%e4%b8%80%e6%ad%a5%e6%8a%8a-python-%e5%ae%b9%e5%99%a8" class="header-mark"></a>1.1 第一步，把 Python 容器</h3><p>在 <code>nebula-docker-compose_nebula-net</code> 这个容器网络启动一个 Jupyter 的容器。</p>
 <blockquote>
 <p>这里采用了 <a href="https://github.com/jupyter/docker-stacks" target="_blank" rel="noopener noreffer">https://github.com/jupyter/docker-stacks</a> 维护的 Docker Image。</p>
 </blockquote>
@@ -2538,7 +2538,7 @@ nebula-docker-compose-metad0-1      9560/tcp, 0.0.0.0:61704-&gt;9559/tcp, 0.0.0.
 </div><p>这时候我们可在浏览器打开 http://127.0.0.1:8888/?token=5beafb26fc6995b081c611d5d2cc96d557897b74bfdaac53.</p>
 <p>在里边新建一个 Notebook。</p>
 <h3 id="第二步安装-nebula-python-sdk" class="headerLink">
-    <a href="#%e7%ac%ac%e4%ba%8c%e6%ad%a5%e5%ae%89%e8%a3%85-nebula-python-sdk" class="header-mark"></a>第二步，安装 Nebula Python SDK</h3><p>我们只需要在 Jupyter 里执行</p>
+    <a href="#%e7%ac%ac%e4%ba%8c%e6%ad%a5%e5%ae%89%e8%a3%85-nebula-python-sdk" class="header-mark"></a>1.2 第二步，安装 Nebula Python SDK</h3><p>我们只需要在 Jupyter 里执行</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
@@ -2549,7 +2549,7 @@ nebula-docker-compose-metad0-1      9560/tcp, 0.0.0.0:61704-&gt;9559/tcp, 0.0.0.
 </div>
 </div><p>就可以了，具体的版本要根据 Nebula Python 的 README 里的<a href="https://github.com/vesoft-inc/nebula-python#how-to-choose-nebula-python" target="_blank" rel="noopener noreffer">版本对应</a>关系来给定。</p>
 <h3 id="第三步实例化-metacache-和-graphstorageclient" class="headerLink">
-    <a href="#%e7%ac%ac%e4%b8%89%e6%ad%a5%e5%ae%9e%e4%be%8b%e5%8c%96-metacache-%e5%92%8c-graphstorageclient" class="header-mark"></a>第三步，实例化 MetaCache 和 GraphStorageClient</h3><div class="highlight"><div class="chroma">
+    <a href="#%e7%ac%ac%e4%b8%89%e6%ad%a5%e5%ae%9e%e4%be%8b%e5%8c%96-metacache-%e5%92%8c-graphstorageclient" class="header-mark"></a>1.3 第三步，实例化 MetaCache 和 GraphStorageClient</h3><div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
@@ -2568,7 +2568,7 @@ nebula-docker-compose-metad0-1      9560/tcp, 0.0.0.0:61704-&gt;9559/tcp, 0.0.0.
 </code></pre></td></tr></table>
 </div>
 </div><h3 id="第四步扫数据" class="headerLink">
-    <a href="#%e7%ac%ac%e5%9b%9b%e6%ad%a5%e6%89%ab%e6%95%b0%e6%8d%ae" class="header-mark"></a>第四步，扫数据</h3><ul>
+    <a href="#%e7%ac%ac%e5%9b%9b%e6%ad%a5%e6%89%ab%e6%95%b0%e6%8d%ae" class="header-mark"></a>1.4 第四步，扫数据</h3><ul>
 <li>按空间、点类型扫点</li>
 </ul>
 <div class="highlight"><div class="chroma">
@@ -2635,7 +2635,7 @@ nebula-docker-compose-metad0-1      9560/tcp, 0.0.0.0:61704-&gt;9559/tcp, 0.0.0.
 <p>如何快速、即时、符合直觉地去处理 Nebula Java Client 中的数据解析？读这一篇就够了。</p>
 </blockquote>
 <h2 id="关键步骤几行准备一个干净的交互式-nebula-java-repl-环境" class="headerLink">
-    <a href="#%e5%85%b3%e9%94%ae%e6%ad%a5%e9%aa%a4%e5%87%a0%e8%a1%8c%e5%87%86%e5%a4%87%e4%b8%80%e4%b8%aa%e5%b9%b2%e5%87%80%e7%9a%84%e4%ba%a4%e4%ba%92%e5%bc%8f-nebula-java-repl-%e7%8e%af%e5%a2%83" class="header-mark"></a>关键步骤：几行准备一个干净的交互式 Nebula Java REPL 环境</h2><p>多亏了 <a href="https://github.com/albertlatacz/java-repl/" target="_blank" rel="noopener noreffer">Java-REPL</a> 我们可以很方便地（像 iPython 那样）去实时交互地调试、分析 Nebula Java 客户端，我们用它的 Docker 镜像可以很干净的去搞定：</p>
+    <a href="#%e5%85%b3%e9%94%ae%e6%ad%a5%e9%aa%a4%e5%87%a0%e8%a1%8c%e5%87%86%e5%a4%87%e4%b8%80%e4%b8%aa%e5%b9%b2%e5%87%80%e7%9a%84%e4%ba%a4%e4%ba%92%e5%bc%8f-nebula-java-repl-%e7%8e%af%e5%a2%83" class="header-mark"></a>1 关键步骤：几行准备一个干净的交互式 Nebula Java REPL 环境</h2><p>多亏了 <a href="https://github.com/albertlatacz/java-repl/" target="_blank" rel="noopener noreffer">Java-REPL</a> 我们可以很方便地（像 iPython 那样）去实时交互地调试、分析 Nebula Java 客户端，我们用它的 Docker 镜像可以很干净的去搞定：</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -2780,7 +2780,7 @@ java -jar ../javarepl/javarepl.jar
 </code></pre></td></tr></table>
 </div>
 </div><h2 id="通过调用-execute-方法获得不太容易懂的-resultset-对象" class="headerLink">
-    <a href="#%e9%80%9a%e8%bf%87%e8%b0%83%e7%94%a8-execute-%e6%96%b9%e6%b3%95%e8%8e%b7%e5%be%97%e4%b8%8d%e5%a4%aa%e5%ae%b9%e6%98%93%e6%87%82%e7%9a%84-resultset-%e5%af%b9%e8%b1%a1" class="header-mark"></a>通过调用 <code>execute</code> 方法获得不太容易懂的 ResultSet 对象</h2><p>刚接触这里的大家一定对这个 ResultSet 对象有些愁，借助我们的环境，咱们来十分钟把它搞通吧，这里我们执行一个简单的返回 Vertex 顶点的结果看看：</p>
+    <a href="#%e9%80%9a%e8%bf%87%e8%b0%83%e7%94%a8-execute-%e6%96%b9%e6%b3%95%e8%8e%b7%e5%be%97%e4%b8%8d%e5%a4%aa%e5%ae%b9%e6%98%93%e6%87%82%e7%9a%84-resultset-%e5%af%b9%e8%b1%a1" class="header-mark"></a>2 通过调用 &lt;code&gt;execute&lt;/code&gt; 方法获得不太容易懂的 ResultSet 对象</h2><p>刚接触这里的大家一定对这个 ResultSet 对象有些愁，借助我们的环境，咱们来十分钟把它搞通吧，这里我们执行一个简单的返回 Vertex 顶点的结果看看：</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
@@ -3078,7 +3078,7 @@ Got 1 rows (time spent 2116/44373 us)
 </div>
 </div><p>我们这里只展示了顶点数据类型的处理、解析方式（<code>RETURN n</code>），像其他的数据类型比如边（edge）路径（path）或者地理数据、时间数据，用这种方式（看有什么方法，再交互地去试试方法怎么用）也是一样的，对吧？</p>
 <h2 id="直接返回-json-的-executejson-方法" class="headerLink">
-    <a href="#%e7%9b%b4%e6%8e%a5%e8%bf%94%e5%9b%9e-json-%e7%9a%84-executejson-%e6%96%b9%e6%b3%95" class="header-mark"></a>直接返回 JSON 的 <code>executeJson</code> 方法</h2><p>最后，好消息是，从 2.6 开始，nebula 可以直接返回 JSON 的 String 了，我们上边的纠结也都不是必要的了：</p>
+    <a href="#%e7%9b%b4%e6%8e%a5%e8%bf%94%e5%9b%9e-json-%e7%9a%84-executejson-%e6%96%b9%e6%b3%95" class="header-mark"></a>3 直接返回 JSON 的 &lt;code&gt;executeJson&lt;/code&gt; 方法</h2><p>最后，好消息是，从 2.6 开始，nebula 可以直接返回 JSON 的 String 了，我们上边的纠结也都不是必要的了：</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -3165,7 +3165,7 @@ Got 1 rows (time spent 2116/44373 us)
 </div>
 </div><p>我相信大家肯定比我更擅长处理 JSON 的结果了哈~~</p>
 <h2 id="结论" class="headerLink">
-    <a href="#%e7%bb%93%e8%ae%ba" class="header-mark"></a>结论</h2><ul>
+    <a href="#%e7%bb%93%e8%ae%ba" class="header-mark"></a>4 结论</h2><ul>
 <li>如果我们有条件（2.6以后）用 JSON，情况会很容易，可能大家不太需要本文的方法（不过有交互环境还是很方便吧？）</li>
 <li>如果我们不得不和 resultSet 打交道，记得用 ValueWrapper ，因为我们可以用 asNode()，asRelationship() 和 asPath() ，封装之后的值比原始的值可爱太多了！
 <ul>
@@ -3198,7 +3198,7 @@ Got 1 rows (time spent 2116/44373 us)
 </ol>
 <p>那么如何构建这样一个系统解决以上挑战呢？</p>
 <h2 id="数据存在哪里" class="headerLink">
-    <a href="#%e6%95%b0%e6%8d%ae%e5%ad%98%e5%9c%a8%e5%93%aa%e9%87%8c" class="header-mark"></a>数据存在哪里？</h2><blockquote>
+    <a href="#%e6%95%b0%e6%8d%ae%e5%ad%98%e5%9c%a8%e5%93%aa%e9%87%8c" class="header-mark"></a>1 数据存在哪里？</h2><blockquote>
 <p>前提：数据集准备，为了更好的给大家演示解决这个问题，我写了一个轮子能随机生成股权结构相关的数据，生成的数据的例子在<a href="https://github.com/wey-gu/nebula-shareholding-example/tree/main/data_sample" target="_blank" rel="noopener noreffer">这里</a>。</p>
 <p>这里，我们有<a href="https://github.com/wey-gu/nebula-shareholding-example/blob/main/data_sample/person.csv" target="_blank" rel="noopener noreffer">法人</a>、<a href="https://github.com/wey-gu/nebula-shareholding-example/blob/main/data_sample/corp.csv" target="_blank" rel="noopener noreffer">公司</a>的数据，更有<a href="https://github.com/wey-gu/nebula-shareholding-example/blob/main/data_sample/corp_rel.csv" target="_blank" rel="noopener noreffer">公司与子公司之间的关系</a>，<a href="https://github.com/wey-gu/nebula-shareholding-example/blob/main/data_sample/corp_share.csv" target="_blank" rel="noopener noreffer">公司持有公司股份</a>，<a href="https://github.com/wey-gu/nebula-shareholding-example/blob/main/data_sample/person_corp_role.csv" target="_blank" rel="noopener noreffer">法人任职公司</a>，<a href="https://github.com/wey-gu/nebula-shareholding-example/blob/main/data_sample/person_corp_share.csv" target="_blank" rel="noopener noreffer">法人持有公司股份</a>和<a href="https://github.com/wey-gu/nebula-shareholding-example/blob/main/data_sample/person_rel.csv" target="_blank" rel="noopener noreffer">法人之间亲密度</a>的关系数据。</p>
 </blockquote>
@@ -3340,7 +3340,7 @@ WHERE a.id = 'p_100')
 </table>
 <p>综上，在本教程里，我们将利用图数据库来进行数据存储。</p>
 <h2 id="图数据建模" class="headerLink">
-    <a href="#%e5%9b%be%e6%95%b0%e6%8d%ae%e5%bb%ba%e6%a8%a1" class="header-mark"></a>图数据建模</h2><p>前面在讨论数据存在哪里的时候，我们已经揭示了在图数据库中建模的方式：本质上，在这张图中，将会有两种实体：</p>
+    <a href="#%e5%9b%be%e6%95%b0%e6%8d%ae%e5%bb%ba%e6%a8%a1" class="header-mark"></a>2 图数据建模</h2><p>前面在讨论数据存在哪里的时候，我们已经揭示了在图数据库中建模的方式：本质上，在这张图中，将会有两种实体：</p>
 <ul>
 <li>人</li>
 <li>公司</li>
@@ -3361,7 +3361,7 @@ WHERE a.id = 'p_100')
 </ul>
 <p></p>
 <h2 id="数据入库" class="headerLink">
-    <a href="#%e6%95%b0%e6%8d%ae%e5%85%a5%e5%ba%93" class="header-mark"></a>数据入库</h2><p>本教程中，我们使用的图数据库叫做 Nebula Graph（星云图数据库），它是一个以 Apache 2.0 许可证开源的分布式图数据库。</p>
+    <a href="#%e6%95%b0%e6%8d%ae%e5%85%a5%e5%ba%93" class="header-mark"></a>3 数据入库</h2><p>本教程中，我们使用的图数据库叫做 Nebula Graph（星云图数据库），它是一个以 Apache 2.0 许可证开源的分布式图数据库。</p>
 <blockquote>
 <p>Nebula Graph in Github: <a href="https://github.com/vesoft-inc/nebula" target="_blank" rel="noopener noreffer">https://github.com/vesoft-inc/nebula</a></p>
 </blockquote>
@@ -3468,7 +3468,7 @@ docker run --rm -ti <span class="se">\
 </span></code></pre></td></tr></table>
 </div>
 </div><h2 id="图库中查询数据" class="headerLink">
-    <a href="#%e5%9b%be%e5%ba%93%e4%b8%ad%e6%9f%a5%e8%af%a2%e6%95%b0%e6%8d%ae" class="header-mark"></a>图库中查询数据</h2><blockquote>
+    <a href="#%e5%9b%be%e5%ba%93%e4%b8%ad%e6%9f%a5%e8%af%a2%e6%95%b0%e6%8d%ae" class="header-mark"></a>4 图库中查询数据</h2><blockquote>
 <p>Tips: 你知道吗，你也可以无需部署安装，通过 <a href="https://nebula-graph.com.cn/demo/" target="_blank" rel="noopener noreffer">Nebula-Playground</a> 之中，找到股权穿透来在线访问同一份数据集。</p>
 </blockquote>
 <p>我们可以借助  <a href="https://docs.nebula-graph.com.cn/2.6.1/nebula-studio/about-studio/st-ug-what-is-graph-studio/" target="_blank" rel="noopener noreffer">Nebula Graph Studio</a> 来访问数据，访问我们部署 Nebula-UP 的服务器地址的 7001 端口就可以了：</p>
@@ -3486,7 +3486,7 @@ docker run --rm -ti <span class="se">\
 <p>之后，我们就可以在里边探索比如一个公司的三跳以内的股权穿透，具体的操作可以参考：<a href="https://nebula-graph.com.cn/demo/shared-holding/" target="_blank" rel="noopener noreffer">股权穿透在线 Playground 的介绍</a>：</p>
 <p></p>
 <h2 id="构建一个图谱系统" class="headerLink">
-    <a href="#%e6%9e%84%e5%bb%ba%e4%b8%80%e4%b8%aa%e5%9b%be%e8%b0%b1%e7%b3%bb%e7%bb%9f" class="header-mark"></a>构建一个图谱系统</h2><blockquote>
+    <a href="#%e6%9e%84%e5%bb%ba%e4%b8%80%e4%b8%aa%e5%9b%be%e8%b0%b1%e7%b3%bb%e7%bb%9f" class="header-mark"></a>5 构建一个图谱系统</h2><blockquote>
 <p>这部分的代码开源在 GitHub 上：</p>
 <p><a href="https://github.com/wey-gu/nebula-corp-rel-search" target="_blank" rel="noopener noreffer">https://github.com/wey-gu/nebula-corp-rel-search</a></p>
 <p>本项目的 Demo 也在 PyCon China 2021 上的演讲中有过展示：<a href="https://www.bilibili.com/video/BV12u411o7Y6" target="_blank" rel="noopener noreffer">视频地址</a></p>
@@ -3540,11 +3540,11 @@ docker run --rm -ti <span class="se">\
 </code></pre></td></tr></table>
 </div>
 </div><h3 id="后端服务--图数据库" class="headerLink">
-    <a href="#%e5%90%8e%e7%ab%af%e6%9c%8d%e5%8a%a1--%e5%9b%be%e6%95%b0%e6%8d%ae%e5%ba%93" class="header-mark"></a>后端服务&ndash;&gt;图数据库</h3><blockquote>
+    <a href="#%e5%90%8e%e7%ab%af%e6%9c%8d%e5%8a%a1--%e5%9b%be%e6%95%b0%e6%8d%ae%e5%ba%93" class="header-mark"></a>5.1 后端服务&amp;ndash;&amp;gt;图数据库</h3><blockquote>
 <p>详细的数据格式分析大家可以参考<a href="https://github.com/wey-gu/nebula-corp-rel-search#data-from-backend-side" target="_blank" rel="noopener noreffer">这里</a></p>
 </blockquote>
 <h4 id="查询语句" class="headerLink">
-    <a href="#%e6%9f%a5%e8%af%a2%e8%af%ad%e5%8f%a5" class="header-mark"></a>查询语句</h4><p>我们假设用户请求的实体是 <code>c_132</code> ，那么请求 1 到 3 步的关系穿透的语法是：</p>
+    <a href="#%e6%9f%a5%e8%af%a2%e8%af%ad%e5%8f%a5" class="header-mark"></a>5.1.1 查询语句</h4><p>我们假设用户请求的实体是 <code>c_132</code> ，那么请求 1 到 3 步的关系穿透的语法是：</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
@@ -3561,7 +3561,7 @@ WHERE id(v) IN [&#34;c_132&#34;] RETURN p LIMIT 100
 <p>现在我们介绍中间<code>[]</code>包裹的部分，这里，它的语义是：经由四种类型的边（<code>:</code>之后的是边的类型，<code>|</code>代表或者）通过可变的跳数：<code>*1..3</code> （一跳到三跳）。</p>
 <p>所以，简单来说整理看开，我们的拓展的路径是：从点 <code>v</code> 开始，经由四种关系一到三跳拓展到点<code>v2</code>，返回整个拓展路径 <code>p</code>，限制 100 个路径结果，其中 <code>v</code> 是 <code>c_132</code>。</p>
 <h4 id="nebula-python-client-sdk" class="headerLink">
-    <a href="#nebula-python-client-sdk" class="header-mark"></a>Nebula Python Client/ SDK</h4><p>我们已经知道了查询语句的语法，那么就只需要在后端程序里根据请求、通过图数据库的客户端来发出查询请求，并处理返回结构就好了。在今天的例子中，我选择使用 Python 来实现后端的逻辑，所以我用了 Nebula-python 这个库，它是 Nebula 的 Python Client。</p>
+    <a href="#nebula-python-client-sdk" class="header-mark"></a>5.1.2 Nebula Python Client/ SDK</h4><p>我们已经知道了查询语句的语法，那么就只需要在后端程序里根据请求、通过图数据库的客户端来发出查询请求，并处理返回结构就好了。在今天的例子中，我选择使用 Python 来实现后端的逻辑，所以我用了 Nebula-python 这个库，它是 Nebula 的 Python Client。</p>
 <blockquote>
 <p>你知道么？截至到现在，Nebula 在 GitHub 上有 Java，GO，Python，C++，Spark，Flink，Rust（未GA），NodeJS（未GA） 的客户端支持，更多的语言的客户端也会慢慢被发布哦。</p>
 </blockquote>
@@ -3715,7 +3715,7 @@ WHERE id(v) IN [&#34;c_132&#34;] RETURN p LIMIT 100
 </code></pre></td></tr></table>
 </div>
 </div><h3 id="前端渲染点边为图" class="headerLink">
-    <a href="#%e5%89%8d%e7%ab%af%e6%b8%b2%e6%9f%93%e7%82%b9%e8%be%b9%e4%b8%ba%e5%9b%be" class="header-mark"></a>前端渲染点边为图</h3><blockquote>
+    <a href="#%e5%89%8d%e7%ab%af%e6%b8%b2%e6%9f%93%e7%82%b9%e8%be%b9%e4%b8%ba%e5%9b%be" class="header-mark"></a>5.2 前端渲染点边为图</h3><blockquote>
 <p>详细的分析大家也可以参考<a href="https://github.com/wey-gu/nebula-corp-rel-search#data-visualization" target="_blank" rel="noopener noreffer">这里</a></p>
 </blockquote>
 <p>为了方便实现，我们采用了 Vue.js 和 <a href="https://github.com/ChenCyl/vue-network-d3" target="_blank" rel="noopener noreffer">vue-network-d3</a>（D3 的 Vue Binding）。</p>
@@ -3738,7 +3738,7 @@ WHERE id(v) IN [&#34;c_132&#34;] RETURN p LIMIT 100
 </div>
 </div><p></p>
 <h3 id="前端--后端" class="headerLink">
-    <a href="#%e5%89%8d%e7%ab%af--%e5%90%8e%e7%ab%af" class="header-mark"></a>前端&lt;&ndash;后端</h3><blockquote>
+    <a href="#%e5%89%8d%e7%ab%af--%e5%90%8e%e7%ab%af" class="header-mark"></a>5.3 前端&amp;lt;&amp;ndash;后端</h3><blockquote>
 <p>详细信息可以参考<a href="https://github.com/wey-gu/nebula-corp-rel-search#the-data-construction-in-back-end" target="_blank" rel="noopener noreffer">这里</a></p>
 </blockquote>
 <p>我们从 D3 的初步研究上可以知道，后端只需要返回如下的 JSON 格式数据就好了</p>
@@ -4028,7 +4028,7 @@ WHERE id(v) IN [&#34;c_132&#34;] RETURN p LIMIT 100
 </code></pre></td></tr></table>
 </div>
 </div><h3 id="放到一起" class="headerLink">
-    <a href="#%e6%94%be%e5%88%b0%e4%b8%80%e8%b5%b7" class="header-mark"></a>放到一起</h3><p>项目的代码都在 GitHub 上，最后其实只有一两百行的代码，把所有东西拼起来之后的代码是：</p>
+    <a href="#%e6%94%be%e5%88%b0%e4%b8%80%e8%b5%b7" class="header-mark"></a>5.4 放到一起</h3><p>项目的代码都在 GitHub 上，最后其实只有一两百行的代码，把所有东西拼起来之后的代码是：</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
@@ -4052,7 +4052,7 @@ WHERE id(v) IN [&#34;c_132&#34;] RETURN p LIMIT 100
 </code></pre></td></tr></table>
 </div>
 </div><h3 id="最终效果" class="headerLink">
-    <a href="#%e6%9c%80%e7%bb%88%e6%95%88%e6%9e%9c" class="header-mark"></a>最终效果</h3><p>我们做出来了一个简陋但是足够具有参考性的小系统，它接受一个用户输入的实体的 ID，再回车之后：</p>
+    <a href="#%e6%9c%80%e7%bb%88%e6%95%88%e6%9e%9c" class="header-mark"></a>5.5 最终效果</h3><p>我们做出来了一个简陋但是足够具有参考性的小系统，它接受一个用户输入的实体的 ID，再回车之后：</p>
 <ul>
 <li>前端程序把请求发给后端</li>
 <li>后端拼接 Nebula Graph 的查询语句，通过 Nebula Python 客户端请求 Nebula Graph</li>
@@ -4064,7 +4064,7 @@ WHERE id(v) IN [&#34;c_132&#34;] RETURN p LIMIT 100
   <source src="./demo.mov" type="video/mp4"> 
 </video>
 <h2 id="总结" class="headerLink">
-    <a href="#%e6%80%bb%e7%bb%93" class="header-mark"></a>总结</h2><p>现在，我们知道得益于图数据库的设计，在它上边构建一个方便的股权分析系统非常自然、高效，我们或者利用图数据库的图探索可视化能力、或者自己搭建，可以为用户提供非常高效、直观的多跳股权穿透分析。</p>
+    <a href="#%e6%80%bb%e7%bb%93" class="header-mark"></a>6 总结</h2><p>现在，我们知道得益于图数据库的设计，在它上边构建一个方便的股权分析系统非常自然、高效，我们或者利用图数据库的图探索可视化能力、或者自己搭建，可以为用户提供非常高效、直观的多跳股权穿透分析。</p>
 <p>如果你想了解更多关于分布式图数据库的知识，欢迎关注 Nebula Graph 这个开源项目，它已经被国内很多团队、公司认可选为图时代数据技术存储层的利器，大家可以访问<a href="https://nebula-graph.com.cn/cases" target="_blank" rel="noopener noreffer">这里</a>，或者<a href="https://nebula-graph.com.cn/posts/" target="_blank" rel="noopener noreffer">这里</a>，了解更多相关的分享和文章。</p>
 <p>未来，我会给大家分享更多图数据库相关的文章、视频和开源示例项目思路分享和教程，欢迎大家关注我的网站: siwei.io。</p>
 <blockquote>
@@ -4112,11 +4112,11 @@ update: 写了一篇完整介绍 Siwi 设计的文章 👉🏻 <a href="https://
 <li>Who are Yao Ming&rsquo;s friends?</li>
 </ul>
 <h2 id="deploy-and-try" class="headerLink">
-    <a href="#deploy-and-try" class="header-mark"></a>Deploy and Try</h2><p>TBD (leveraging docker and nebula-up)</p>
+    <a href="#deploy-and-try" class="header-mark"></a>1 Deploy and Try</h2><p>TBD (leveraging docker and nebula-up)</p>
 <h2 id="how-does-it-work" class="headerLink">
-    <a href="#how-does-it-work" class="header-mark"></a>How does it work?</h2><p>This is one of the most naive pipeline for a specific domain/ single purpose chat bot built on a Knowledge Graph.</p>
+    <a href="#how-does-it-work" class="header-mark"></a>2 How does it work?</h2><p>This is one of the most naive pipeline for a specific domain/ single purpose chat bot built on a Knowledge Graph.</p>
 <h3 id="backend" class="headerLink">
-    <a href="#backend" class="header-mark"></a>Backend</h3><p></p>
+    <a href="#backend" class="header-mark"></a>2.1 Backend</h3><p></p>
 <p>The Backend(Siwi API) is a Flask based API server:</p>
 <ul>
 <li>
@@ -4130,14 +4130,14 @@ update: 写了一篇完整介绍 Siwi 设计的文章 👉🏻 <a href="https://
 </li>
 </ul>
 <h3 id="frontend" class="headerLink">
-    <a href="#frontend" class="header-mark"></a>Frontend</h3><p></p>
+    <a href="#frontend" class="header-mark"></a>2.2 Frontend</h3><p></p>
 <p>The Frontend is a VueJS Single Page Applicaiton(SPA):</p>
 <ul>
 <li>I reused a Vue Bot UI to showcase a chat window in this human-agent interaction, typing is supported.</li>
 <li>In addtion, leverating Chrome&rsquo;s <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Speech_API/Using_the_Web_Speech_API" target="_blank" rel="noopener noreffer">Web Speech API</a>, a button to listen to human voice is introduced</li>
 </ul>
 <h3 id="a-query-flow" class="headerLink">
-    <a href="#a-query-flow" class="header-mark"></a>A Query Flow</h3><div class="highlight"><div class="chroma">
+    <a href="#a-query-flow" class="header-mark"></a>2.3 A Query Flow</h3><div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
@@ -4226,7 +4226,7 @@ update: 写了一篇完整介绍 Siwi 设计的文章 👉🏻 <a href="https://
 </code></pre></td></tr></table>
 </div>
 </div><h3 id="source-code-tree" class="headerLink">
-    <a href="#source-code-tree" class="header-mark"></a>Source Code Tree</h3><div class="highlight"><div class="chroma">
+    <a href="#source-code-tree" class="header-mark"></a>2.4 Source Code Tree</h3><div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
@@ -4267,8 +4267,8 @@ update: 写了一篇完整介绍 Siwi 设计的文章 👉🏻 <a href="https://
 </code></pre></td></tr></table>
 </div>
 </div><h2 id="manually-run-components" class="headerLink">
-    <a href="#manually-run-components" class="header-mark"></a>Manually Run Components</h2><h3 id="backend-1" class="headerLink">
-    <a href="#backend-1" class="header-mark"></a>Backend</h3><p>Install and run.</p>
+    <a href="#manually-run-components" class="header-mark"></a>3 Manually Run Components</h2><h3 id="backend-1" class="headerLink">
+    <a href="#backend-1" class="header-mark"></a>3.1 Backend</h3><p>Install and run.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
@@ -4414,9 +4414,9 @@ docker run --rm --name siwi-api <span class="se">\
 </code></pre></td></tr></table>
 </div>
 </div><h3 id="frontend-1" class="headerLink">
-    <a href="#frontend-1" class="header-mark"></a>Frontend</h3><p>Referring to <a href="https://github.com/wey-gu/nebula-siwi/tree/main/src/siwi_frontend" target="_blank" rel="noopener noreffer">siwi_frontend</a></p>
+    <a href="#frontend-1" class="header-mark"></a>3.2 Frontend</h3><p>Referring to <a href="https://github.com/wey-gu/nebula-siwi/tree/main/src/siwi_frontend" target="_blank" rel="noopener noreffer">siwi_frontend</a></p>
 <h2 id="further-work" class="headerLink">
-    <a href="#further-work" class="header-mark"></a>Further work</h2><ul>
+    <a href="#further-work" class="header-mark"></a>4 Further work</h2><ul>
 <li><i class="far fa-square fa-fw"></i> Use <a href="https://github.com/swar/nba_api" target="_blank" rel="noopener noreffer">NBA-API</a> to fallback undefined pattern questions</li>
 <li><i class="far fa-square fa-fw"></i> Wrap and manage sessions instead of get and release session per request, this is somehow costly actually.</li>
 <li><i class="far fa-square fa-fw"></i> Use NLP methods to implement proper Symentic Parsing, Intent Matching, Slot Filling</li>
@@ -4424,15 +4424,15 @@ docker run --rm --name siwi-api <span class="se">\
 <li><i class="far fa-square fa-fw"></i> Use larger Dataset i.e. from <a href="https://www.kaggle.com/wyattowalsh/basketball" target="_blank" rel="noopener noreffer">wyattowalsh/basketball</a></li>
 </ul>
 <h2 id="thanks-to-upstream-projects-" class="headerLink">
-    <a href="#thanks-to-upstream-projects-" class="header-mark"></a>Thanks to Upstream Projects ❤️</h2><h3 id="backend-2" class="headerLink">
-    <a href="#backend-2" class="header-mark"></a>Backend</h3><ul>
+    <a href="#thanks-to-upstream-projects-" class="header-mark"></a>5 Thanks to Upstream Projects ❤️</h2><h3 id="backend-2" class="headerLink">
+    <a href="#backend-2" class="header-mark"></a>5.1 Backend</h3><ul>
 <li>I learnt a lot from the <a href="https://github.com/liuhuanyong/QASystemOnMedicalKG" target="_blank" rel="noopener noreffer">KGQA on MedicalKG</a> created by <a href="https://liuhuanyong.github.io" target="_blank" rel="noopener noreffer">Huanyong Liu</a></li>
 <li><a href="https://github.com/pallets/flask" target="_blank" rel="noopener noreffer">Flask</a></li>
 <li><a href="https://github.com/WojciechMula/pyahocorasick" target="_blank" rel="noopener noreffer">pyahocorasick</a> created by <a href="http://0x80.pl/" target="_blank" rel="noopener noreffer">Wojciech Muła</a></li>
 <li><a href="https://pyyaml.org/" target="_blank" rel="noopener noreffer">PyYaml</a></li>
 </ul>
 <h3 id="frontend-2" class="headerLink">
-    <a href="#frontend-2" class="header-mark"></a>Frontend</h3><ul>
+    <a href="#frontend-2" class="header-mark"></a>5.2 Frontend</h3><ul>
 <li><a href="https://vuejs.org" target="_blank" rel="noopener noreffer">VueJS</a> for frontend framework</li>
 <li><a href="https://github.com/juzser/vue-bot-ui" target="_blank" rel="noopener noreffer">Vue Bot UI</a>, as a lovely bot UI in vue</li>
 <li><a href="https://github.com/Drackokacka/vue-web-speech" target="_blank" rel="noopener noreffer">Vue Web Speech</a>, for speech API vue wrapper</li>
@@ -4456,7 +4456,7 @@ docker run --rm --name siwi-api <span class="se">\
 </blockquote>
 <p>Related GitHub Repo: <a href="https://github.com/wey-gu/nebula-dev-CLion" target="_blank" rel="noopener noreffer">https://github.com/wey-gu/nebula-dev-CLion</a></p>
 <h2 id="run-docker-env-for-nebula-graph-with-clion" class="headerLink">
-    <a href="#run-docker-env-for-nebula-graph-with-clion" class="header-mark"></a>Run Docker Env for Nebula-Graph with CLion</h2><p>Build Docker Image</p>
+    <a href="#run-docker-env-for-nebula-graph-with-clion" class="header-mark"></a>1 Run Docker Env for Nebula-Graph with CLion</h2><p>Build Docker Image</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
@@ -4532,7 +4532,7 @@ cmake -DENABLE_TESTING<span class="o">=</span>OFF -DCMAKE_BUILD_TYPE<span class=
 </code></pre></td></tr></table>
 </div>
 </div><h2 id="configurations-in-clion" class="headerLink">
-    <a href="#configurations-in-clion" class="header-mark"></a>Configurations in CLion</h2><blockquote>
+    <a href="#configurations-in-clion" class="header-mark"></a>2 Configurations in CLion</h2><blockquote>
 <p>Ref: <a href="https://www.jetbrains.com/help/clion/clion-toolchains-in-docker.html#build-and-run" target="_blank" rel="noopener noreffer">https://www.jetbrains.com/help/clion/clion-toolchains-in-docker.html#build-and-run</a></p>
 </blockquote>
 <p><strong>Toolchains</strong></p>
@@ -4561,8 +4561,8 @@ cmake -DENABLE_TESTING<span class="o">=</span>OFF -DCMAKE_BUILD_TYPE<span class=
 </ul>
 <p></p>
 <h2 id="the-appendix" class="headerLink">
-    <a href="#the-appendix" class="header-mark"></a>The appendix</h2><h3 id="references-of-cmake-output" class="headerLink">
-    <a href="#references-of-cmake-output" class="header-mark"></a>References of CMake output:</h3><div class="highlight"><div class="chroma">
+    <a href="#the-appendix" class="header-mark"></a>3 The appendix</h2><h3 id="references-of-cmake-output" class="headerLink">
+    <a href="#references-of-cmake-output" class="header-mark"></a>3.1 References of CMake output:</h3><div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">  1
 </span><span class="lnt">  2
@@ -4820,8 +4820,8 @@ Vendor          : VEsoft Inc.
 </blockquote>
 <p>This is a demo of Shareholding Relationship Analysis with Distributed open-source Graph Database: Nebula Graph.</p>
 <h2 id="data" class="headerLink">
-    <a href="#data" class="header-mark"></a>Data</h2><h3 id="data-modeling" class="headerLink">
-    <a href="#data-modeling" class="header-mark"></a>Data Modeling</h3><p></p>
+    <a href="#data" class="header-mark"></a>1 Data</h2><h3 id="data-modeling" class="headerLink">
+    <a href="#data-modeling" class="header-mark"></a>1.1 Data Modeling</h3><p></p>
 <p>There are various kinds of relationships when we checking companies' shareholding breakthrough, here let&rsquo;s simplify it with only two kind of entities: person and corp, and with following relationship types.</p>
 <ul>
 <li><code>person</code> can hold a <code>corp</code> in <code>{share} %</code></li>
@@ -4850,7 +4850,7 @@ Vendor          : VEsoft Inc.
 </span></code></pre></td></tr></table>
 </div>
 </div><h3 id="data-generation" class="headerLink">
-    <a href="#data-generation" class="header-mark"></a>Data Generation</h3><p>We just randomly generate some data to help with this demo, you can call <code>data_generator.py</code> directly to generate or reuse what&rsquo;s already done under <code>data_sample</code> folder.</p>
+    <a href="#data-generation" class="header-mark"></a>1.2 Data Generation</h3><p>We just randomly generate some data to help with this demo, you can call <code>data_generator.py</code> directly to generate or reuse what&rsquo;s already done under <code>data_sample</code> folder.</p>
 <p>The generated data are records to be fit in above data model from below <code>.csv</code> files.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
@@ -4881,7 +4881,7 @@ total <span class="m">1688</span>
 </code></pre></td></tr></table>
 </div>
 </div><h3 id="data-import" class="headerLink">
-    <a href="#data-import" class="header-mark"></a>Data Import</h3><p>With those data in <code>.csv</code> files, we can easily import them into a Nebula Graph Cluster with the help of <a href="https://github.com/vesoft-inc/nebula-importer" target="_blank" rel="noopener noreffer">Nebula-Importer</a>. <code>nebula-importer.yaml</code> in this repo describes rules and configurations on how this import will be done by the importer.</p>
+    <a href="#data-import" class="header-mark"></a>1.3 Data Import</h3><p>With those data in <code>.csv</code> files, we can easily import them into a Nebula Graph Cluster with the help of <a href="https://github.com/vesoft-inc/nebula-importer" target="_blank" rel="noopener noreffer">Nebula-Importer</a>. <code>nebula-importer.yaml</code> in this repo describes rules and configurations on how this import will be done by the importer.</p>
 <p>For Nebula Graph Database, plesae refer to <a href="https://docs.nebula-graph.io/" target="_blank" rel="noopener noreffer">Doc</a> , <a href="https://docs.nebula-graph.com.cn/" target="_blank" rel="noopener noreffer">Doc-CN</a> to deploy on any Linux Servers, for study and test, you can run it via Docker following the Quick Start Chapter of the documentation.</p>
 <p>For Nebula-Importer, if you already have Docker env, you can run it as the following without installing anything. Or, if you prefer to install it, it&rsquo;s quite easy as it&rsquo;s written in Golang and you can run its single file binary quite easily, go check both Documentation and Nebula-Importer Repo: <a href="https://github.com/vesoft-inc/nebula-importer" target="_blank" rel="noopener noreffer">https://github.com/vesoft-inc/nebula-importer</a>.</p>
 <blockquote>
@@ -4964,8 +4964,8 @@ $ docker run --rm -ti <span class="se">\
 </code></pre></td></tr></table>
 </div>
 </div><h2 id="corporation-sharehold-relationship-breakthrough" class="headerLink">
-    <a href="#corporation-sharehold-relationship-breakthrough" class="header-mark"></a>Corporation sharehold relationship breakthrough</h2><h4 id="query-in-ngql" class="headerLink">
-    <a href="#query-in-ngql" class="header-mark"></a>Query in nGQL</h4><p>We can query from corp: <code>c_132</code> over <code>*</code>(all relationships) in <code>BIDIRECT</code>:</p>
+    <a href="#corporation-sharehold-relationship-breakthrough" class="header-mark"></a>2 Corporation sharehold relationship breakthrough</h2><h4 id="query-in-ngql" class="headerLink">
+    <a href="#query-in-ngql" class="header-mark"></a>2.0.1 Query in nGQL</h4><p>We can query from corp: <code>c_132</code> over <code>*</code>(all relationships) in <code>BIDIRECT</code>:</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
@@ -5088,7 +5088,7 @@ Wed, <span class="m">14</span> Jul <span class="m">2021</span> 07:08:06 UTC
 </code></pre></td></tr></table>
 </div>
 </div><h4 id="in-a-visual-way" class="headerLink">
-    <a href="#in-a-visual-way" class="header-mark"></a>In a Visual Way</h4><p>Of course, we can also be done in a visual way:</p>
+    <a href="#in-a-visual-way" class="header-mark"></a>2.0.2 In a Visual Way</h4><p>Of course, we can also be done in a visual way:</p>
 <p>Step 1, login from Nebula Graph Studio, explore with one VID: <code>c_132</code>:</p>
 <p></p>
 <p>Step2, click this explored vertex dot, then you can explore from select vertices by selecting:</p>
@@ -5105,13 +5105,13 @@ Wed, <span class="m">14</span> Jul <span class="m">2021</span> 07:08:06 UTC
 <p>Step3, after click Expand, you will see all quried relations with <code>c_132</code> the <code>Chambers LLC</code>.</p>
 <p></p>
 <h2 id="thanks-to-upstream-projects-" class="headerLink">
-    <a href="#thanks-to-upstream-projects-" class="header-mark"></a>Thanks to Upstream Projects ❤️</h2><ul>
+    <a href="#thanks-to-upstream-projects-" class="header-mark"></a>3 Thanks to Upstream Projects ❤️</h2><ul>
 <li>Python Faker <a href="https://github.com/joke2k/faker/" target="_blank" rel="noopener noreffer">https://github.com/joke2k/faker/</a></li>
 <li>pydbgen <a href="https://github.com/tirthajyoti/pydbgen" target="_blank" rel="noopener noreffer">https://github.com/tirthajyoti/pydbgen</a></li>
 <li>Nebula Graph <a href="https://github.com/vesoft-inc/nebula-graph" target="_blank" rel="noopener noreffer">https://github.com/vesoft-inc/nebula-graph</a></li>
 </ul>
 <h3 id="tips" class="headerLink">
-    <a href="#tips" class="header-mark"></a>Tips:</h3><ul>
+    <a href="#tips" class="header-mark"></a>3.1 Tips:</h3><ul>
 <li>You can deploy nebula graph in one line with:
 <ul>
 <li><a href="https://siwei.io/nebula-up/" target="_blank" rel="noopener noreffer">Nebula-UP</a>, it helps install a nebula graph with Docker</li>

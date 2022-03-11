@@ -24,13 +24,13 @@
 <p>Today I&rsquo;m gonna walk you through the index in Nebula Graph.</p>
 <p>Let&rsquo;s get started!</p>
 <h2 id="what-exactly-nebula-graph-index-is" class="headerLink">
-    <a href="#what-exactly-nebula-graph-index-is" class="header-mark"></a>What exactly Nebula Graph Index is</h2><p>TL;DR, Nebula Graph Index is only to be used to enable pure-prop-condition queries</p>
+    <a href="#what-exactly-nebula-graph-index-is" class="header-mark"></a>1 What exactly Nebula Graph Index is</h2><p>TL;DR, Nebula Graph Index is only to be used to enable pure-prop-condition queries</p>
 <ul>
 <li>Not for graph walking through edges.</li>
 <li>It&rsquo;s an prerequisite for such query.</li>
 </ul>
 <h3 id="pure-prop-condition-queries" class="headerLink">
-    <a href="#pure-prop-condition-queries" class="header-mark"></a>pure-prop-condition queries</h3><p>We know that in RDBMS, an INDEX is to create a duplicated sorted DATA to enable QUERY with condition filtering on the sorted data, to <strong>accelerate the query in read</strong> and involves extra writes during the write.</p>
+    <a href="#pure-prop-condition-queries" class="header-mark"></a>1.1 pure-prop-condition queries</h3><p>We know that in RDBMS, an INDEX is to create a duplicated sorted DATA to enable QUERY with condition filtering on the sorted data, to <strong>accelerate the query in read</strong> and involves extra writes during the write.</p>
 <blockquote>
 <p>Note: in RDBMS/Tabular DB, an INDEX on some columns means to create extra data that are sorted on those columns to make query with those columns' condition to be scanned faster, rather than scanning from the original table data sorted based on the key only.</p>
 </blockquote>
@@ -127,7 +127,7 @@
 </tbody>
 </table>
 <h3 id="why-nebula-graph-index-is-a-must-in-pure-prop-condition-queries" class="headerLink">
-    <a href="#why-nebula-graph-index-is-a-must-in-pure-prop-condition-queries" class="header-mark"></a>Why Nebula Graph index is a must in pure-prop-condition queries</h3><p>It&rsquo;s because Nebula Graph stores data in a distributed and graph-oriented way, the full scan of data was condiser too expensive to be allowed(<code>index not found</code> will occur when it&rsquo;s not created in pure-prop-condition queries).</p>
+    <a href="#why-nebula-graph-index-is-a-must-in-pure-prop-condition-queries" class="header-mark"></a>1.2 Why Nebula Graph index is a must in pure-prop-condition queries</h3><p>It&rsquo;s because Nebula Graph stores data in a distributed and graph-oriented way, the full scan of data was condiser too expensive to be allowed(<code>index not found</code> will occur when it&rsquo;s not created in pure-prop-condition queries).</p>
 <blockquote>
 <p>Note: from v3.0, it&rsquo;s possible to do TopN Scan without INDEX, where the <code>LIMIT &lt;n&gt;</code> is used, this is different from the fullscan case(INDEX is a must), which will be explained later.</p>
 <div class="highlight"><div class="chroma">
@@ -142,7 +142,7 @@
 </div>
 </div></blockquote>
 <h3 id="why-pure-prop-condition-queries-onlyrequiring-index" class="headerLink">
-    <a href="#why-pure-prop-condition-queries-onlyrequiring-index" class="header-mark"></a>Why pure-prop-condition queries only(requiring index)</h3><p><strong>graph-queries</strong> vs <strong>pure-prop-condition queries</strong></p>
+    <a href="#why-pure-prop-condition-queries-onlyrequiring-index" class="header-mark"></a>1.3 Why pure-prop-condition queries only(requiring index)</h3><p><strong>graph-queries</strong> vs <strong>pure-prop-condition queries</strong></p>
 <ul>
 <li>graph-queries, see <code>query 2</code> and <code>query 3</code>, are to walk through edges all the way for the given vertices</li>
 <li>pure-prop-condition queries, see <code>query 0</code> and <code>query 1</code>, are to find vertex only on given prop condtions</li>
@@ -153,7 +153,7 @@
 <p>Nebula Graph Index is sorted prop data to find vertex or edge on given pure prop conditions.</p>
 </blockquote>
 <h2 id="facts-on-nebula-graph-index" class="headerLink">
-    <a href="#facts-on-nebula-graph-index" class="header-mark"></a>Facts on Nebula Graph Index</h2><p>To understand more details/limitations/cost of Nebula, let&rsquo;s reveal more on its design and here are some facts:</p>
+    <a href="#facts-on-nebula-graph-index" class="header-mark"></a>2 Facts on Nebula Graph Index</h2><p>To understand more details/limitations/cost of Nebula, let&rsquo;s reveal more on its design and here are some facts:</p>
 <ul>
 <li>
 <p>Index Data is stored and sharded together with Vertex Data</p>
@@ -233,7 +233,7 @@
 </li>
 </ul>
 <h2 id="how-to-use-the-index" class="headerLink">
-    <a href="#how-to-use-the-index" class="header-mark"></a>How to use the index</h2><p>We should always refer to the <a href="https://docs.nebula-graph.io/3.0.0/3.ngql-guide/14.native-index-statements/" target="_blank" rel="noopener noreffer">documentation</a>, and I just put some highlights on this here:</p>
+    <a href="#how-to-use-the-index" class="header-mark"></a>3 How to use the index</h2><p>We should always refer to the <a href="https://docs.nebula-graph.io/3.0.0/3.ngql-guide/14.native-index-statements/" target="_blank" rel="noopener noreffer">documentation</a>, and I just put some highlights on this here:</p>
 <ul>
 <li>
 <p>To create an index on a tag or edge type to specify a list of props in the order that we need.</p>
@@ -287,7 +287,7 @@
 </div></li>
 </ul>
 <h2 id="recap" class="headerLink">
-    <a href="#recap" class="header-mark"></a>Recap</h2><p>Finally, Let&rsquo;s Recap</p>
+    <a href="#recap" class="header-mark"></a>4 Recap</h2><p>Finally, Let&rsquo;s Recap</p>
 <ul>
 <li>INDEX is sorting PROP DATA to find data on given PURE PROP CONDITION</li>
 <li>INDEX is <strong>not</strong> for Graph Walk</li>

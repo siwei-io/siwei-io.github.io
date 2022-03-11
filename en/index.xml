@@ -26,13 +26,13 @@
 <p>Today I&rsquo;m gonna walk you through the index in Nebula Graph.</p>
 <p>Let&rsquo;s get started!</p>
 <h2 id="what-exactly-nebula-graph-index-is" class="headerLink">
-    <a href="#what-exactly-nebula-graph-index-is" class="header-mark"></a>What exactly Nebula Graph Index is</h2><p>TL;DR, Nebula Graph Index is only to be used to enable pure-prop-condition queries</p>
+    <a href="#what-exactly-nebula-graph-index-is" class="header-mark"></a>1 What exactly Nebula Graph Index is</h2><p>TL;DR, Nebula Graph Index is only to be used to enable pure-prop-condition queries</p>
 <ul>
 <li>Not for graph walking through edges.</li>
 <li>It&rsquo;s an prerequisite for such query.</li>
 </ul>
 <h3 id="pure-prop-condition-queries" class="headerLink">
-    <a href="#pure-prop-condition-queries" class="header-mark"></a>pure-prop-condition queries</h3><p>We know that in RDBMS, an INDEX is to create a duplicated sorted DATA to enable QUERY with condition filtering on the sorted data, to <strong>accelerate the query in read</strong> and involves extra writes during the write.</p>
+    <a href="#pure-prop-condition-queries" class="header-mark"></a>1.1 pure-prop-condition queries</h3><p>We know that in RDBMS, an INDEX is to create a duplicated sorted DATA to enable QUERY with condition filtering on the sorted data, to <strong>accelerate the query in read</strong> and involves extra writes during the write.</p>
 <blockquote>
 <p>Note: in RDBMS/Tabular DB, an INDEX on some columns means to create extra data that are sorted on those columns to make query with those columns' condition to be scanned faster, rather than scanning from the original table data sorted based on the key only.</p>
 </blockquote>
@@ -129,7 +129,7 @@
 </tbody>
 </table>
 <h3 id="why-nebula-graph-index-is-a-must-in-pure-prop-condition-queries" class="headerLink">
-    <a href="#why-nebula-graph-index-is-a-must-in-pure-prop-condition-queries" class="header-mark"></a>Why Nebula Graph index is a must in pure-prop-condition queries</h3><p>It&rsquo;s because Nebula Graph stores data in a distributed and graph-oriented way, the full scan of data was condiser too expensive to be allowed(<code>index not found</code> will occur when it&rsquo;s not created in pure-prop-condition queries).</p>
+    <a href="#why-nebula-graph-index-is-a-must-in-pure-prop-condition-queries" class="header-mark"></a>1.2 Why Nebula Graph index is a must in pure-prop-condition queries</h3><p>It&rsquo;s because Nebula Graph stores data in a distributed and graph-oriented way, the full scan of data was condiser too expensive to be allowed(<code>index not found</code> will occur when it&rsquo;s not created in pure-prop-condition queries).</p>
 <blockquote>
 <p>Note: from v3.0, it&rsquo;s possible to do TopN Scan without INDEX, where the <code>LIMIT &lt;n&gt;</code> is used, this is different from the fullscan case(INDEX is a must), which will be explained later.</p>
 <div class="highlight"><div class="chroma">
@@ -144,7 +144,7 @@
 </div>
 </div></blockquote>
 <h3 id="why-pure-prop-condition-queries-onlyrequiring-index" class="headerLink">
-    <a href="#why-pure-prop-condition-queries-onlyrequiring-index" class="header-mark"></a>Why pure-prop-condition queries only(requiring index)</h3><p><strong>graph-queries</strong> vs <strong>pure-prop-condition queries</strong></p>
+    <a href="#why-pure-prop-condition-queries-onlyrequiring-index" class="header-mark"></a>1.3 Why pure-prop-condition queries only(requiring index)</h3><p><strong>graph-queries</strong> vs <strong>pure-prop-condition queries</strong></p>
 <ul>
 <li>graph-queries, see <code>query 2</code> and <code>query 3</code>, are to walk through edges all the way for the given vertices</li>
 <li>pure-prop-condition queries, see <code>query 0</code> and <code>query 1</code>, are to find vertex only on given prop condtions</li>
@@ -155,7 +155,7 @@
 <p>Nebula Graph Index is sorted prop data to find vertex or edge on given pure prop conditions.</p>
 </blockquote>
 <h2 id="facts-on-nebula-graph-index" class="headerLink">
-    <a href="#facts-on-nebula-graph-index" class="header-mark"></a>Facts on Nebula Graph Index</h2><p>To understand more details/limitations/cost of Nebula, let&rsquo;s reveal more on its design and here are some facts:</p>
+    <a href="#facts-on-nebula-graph-index" class="header-mark"></a>2 Facts on Nebula Graph Index</h2><p>To understand more details/limitations/cost of Nebula, let&rsquo;s reveal more on its design and here are some facts:</p>
 <ul>
 <li>
 <p>Index Data is stored and sharded together with Vertex Data</p>
@@ -235,7 +235,7 @@
 </li>
 </ul>
 <h2 id="how-to-use-the-index" class="headerLink">
-    <a href="#how-to-use-the-index" class="header-mark"></a>How to use the index</h2><p>We should always refer to the <a href="https://docs.nebula-graph.io/3.0.0/3.ngql-guide/14.native-index-statements/" target="_blank" rel="noopener noreffer">documentation</a>, and I just put some highlights on this here:</p>
+    <a href="#how-to-use-the-index" class="header-mark"></a>3 How to use the index</h2><p>We should always refer to the <a href="https://docs.nebula-graph.io/3.0.0/3.ngql-guide/14.native-index-statements/" target="_blank" rel="noopener noreffer">documentation</a>, and I just put some highlights on this here:</p>
 <ul>
 <li>
 <p>To create an index on a tag or edge type to specify a list of props in the order that we need.</p>
@@ -289,7 +289,7 @@
 </div></li>
 </ul>
 <h2 id="recap" class="headerLink">
-    <a href="#recap" class="header-mark"></a>Recap</h2><p>Finally, Let&rsquo;s Recap</p>
+    <a href="#recap" class="header-mark"></a>4 Recap</h2><p>Finally, Let&rsquo;s Recap</p>
 <ul>
 <li>INDEX is sorting PROP DATA to find data on given PURE PROP CONDITION</li>
 <li>INDEX is <strong>not</strong> for Graph Walk</li>
@@ -313,7 +313,7 @@
 <p>I will show you an easier way in this article 😁.</p>
 </blockquote>
 <h2 id="prepare-for-the-java-repl" class="headerLink">
-    <a href="#prepare-for-the-java-repl" class="header-mark"></a>Prepare for the Java REPL</h2><p>Thanks to <a href="https://github.com/albertlatacz/java-repl/" target="_blank" rel="noopener noreffer">https://github.com/albertlatacz/java-repl/</a> we could play with/debug this in an interactive way, and all we need is to leverage its docker image to have all the envrioment in a clean and quick way:</p>
+    <a href="#prepare-for-the-java-repl" class="header-mark"></a>1 Prepare for the Java REPL</h2><p>Thanks to <a href="https://github.com/albertlatacz/java-repl/" target="_blank" rel="noopener noreffer">https://github.com/albertlatacz/java-repl/</a> we could play with/debug this in an interactive way, and all we need is to leverage its docker image to have all the envrioment in a clean and quick way:</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -459,7 +459,7 @@ java -jar ../javarepl/javarepl.jar
 </code></pre></td></tr></table>
 </div>
 </div><h2 id="the-execute-for-resultset" class="headerLink">
-    <a href="#the-execute-for-resultset" class="header-mark"></a>The <code>execute</code> for ResultSet</h2><p>First let&rsquo;s check what we can do with a simple query:</p>
+    <a href="#the-execute-for-resultset" class="header-mark"></a>2 The &lt;code&gt;execute&lt;/code&gt; for ResultSet</h2><p>First let&rsquo;s check what we can do with a simple query:</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
@@ -748,7 +748,7 @@ Got 1 rows (time spent 2116/44373 us)
 </div>
 </div><p>We only demestrated the <code>RETURN n</code> case which is a vertex, but for sure you could explore other types like: edge, path or datetime, string etc., right?</p>
 <h2 id="the-executejson-method" class="headerLink">
-    <a href="#the-executejson-method" class="header-mark"></a>The <code>executeJson</code> method</h2><p>Since 2.6, nebule finally supports json string response and we could do this:</p>
+    <a href="#the-executejson-method" class="header-mark"></a>3 The &lt;code&gt;executeJson&lt;/code&gt; method</h2><p>Since 2.6, nebule finally supports json string response and we could do this:</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -837,7 +837,7 @@ Got 1 rows (time spent 2116/44373 us)
 </div>
 </div><p>And I believe you know much better than I do with it.</p>
 <h2 id="conclusion" class="headerLink">
-    <a href="#conclusion" class="header-mark"></a>Conclusion</h2><ul>
+    <a href="#conclusion" class="header-mark"></a>4 Conclusion</h2><ul>
 <li>If we go with JSON response, it&rsquo;ll be easier for you to have everything parsed.</li>
 <li>If we have to deal with resultSet object, just use the ValueWrapper asNode() if the value is a vertex, use asRelationship if value is an edge and asPath() if the value is a path.
 <ul>
@@ -890,11 +890,11 @@ Got 1 rows (time spent 2116/44373 us)
 <li>Who are Yao Ming&rsquo;s friends?</li>
 </ul>
 <h2 id="deploy-and-try" class="headerLink">
-    <a href="#deploy-and-try" class="header-mark"></a>Deploy and Try</h2><p>TBD (leveraging docker and nebula-up)</p>
+    <a href="#deploy-and-try" class="header-mark"></a>1 Deploy and Try</h2><p>TBD (leveraging docker and nebula-up)</p>
 <h2 id="how-does-it-work" class="headerLink">
-    <a href="#how-does-it-work" class="header-mark"></a>How does it work?</h2><p>This is one of the most naive pipeline for a specific domain/ single purpose chat bot built on a Knowledge Graph.</p>
+    <a href="#how-does-it-work" class="header-mark"></a>2 How does it work?</h2><p>This is one of the most naive pipeline for a specific domain/ single purpose chat bot built on a Knowledge Graph.</p>
 <h3 id="backend" class="headerLink">
-    <a href="#backend" class="header-mark"></a>Backend</h3><p></p>
+    <a href="#backend" class="header-mark"></a>2.1 Backend</h3><p></p>
 <p>The Backend(Siwi API) is a Flask based API server:</p>
 <ul>
 <li>
@@ -908,14 +908,14 @@ Got 1 rows (time spent 2116/44373 us)
 </li>
 </ul>
 <h3 id="frontend" class="headerLink">
-    <a href="#frontend" class="header-mark"></a>Frontend</h3><p></p>
+    <a href="#frontend" class="header-mark"></a>2.2 Frontend</h3><p></p>
 <p>The Frontend is a VueJS Single Page Applicaiton(SPA):</p>
 <ul>
 <li>I reused a Vue Bot UI to showcase a chat window in this human-agent interaction, typing is supported.</li>
 <li>In addtion, leverating Chrome&rsquo;s <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Speech_API/Using_the_Web_Speech_API" target="_blank" rel="noopener noreffer">Web Speech API</a>, a button to listen to human voice is introduced</li>
 </ul>
 <h3 id="a-query-flow" class="headerLink">
-    <a href="#a-query-flow" class="header-mark"></a>A Query Flow</h3><div class="highlight"><div class="chroma">
+    <a href="#a-query-flow" class="header-mark"></a>2.3 A Query Flow</h3><div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
@@ -1004,7 +1004,7 @@ Got 1 rows (time spent 2116/44373 us)
 </code></pre></td></tr></table>
 </div>
 </div><h3 id="source-code-tree" class="headerLink">
-    <a href="#source-code-tree" class="header-mark"></a>Source Code Tree</h3><div class="highlight"><div class="chroma">
+    <a href="#source-code-tree" class="header-mark"></a>2.4 Source Code Tree</h3><div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
@@ -1045,8 +1045,8 @@ Got 1 rows (time spent 2116/44373 us)
 </code></pre></td></tr></table>
 </div>
 </div><h2 id="manually-run-components" class="headerLink">
-    <a href="#manually-run-components" class="header-mark"></a>Manually Run Components</h2><h3 id="backend-1" class="headerLink">
-    <a href="#backend-1" class="header-mark"></a>Backend</h3><p>Install and run.</p>
+    <a href="#manually-run-components" class="header-mark"></a>3 Manually Run Components</h2><h3 id="backend-1" class="headerLink">
+    <a href="#backend-1" class="header-mark"></a>3.1 Backend</h3><p>Install and run.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
@@ -1192,9 +1192,9 @@ docker run --rm --name siwi-api <span class="se">\
 </code></pre></td></tr></table>
 </div>
 </div><h3 id="frontend-1" class="headerLink">
-    <a href="#frontend-1" class="header-mark"></a>Frontend</h3><p>Referring to <a href="https://github.com/wey-gu/nebula-siwi/tree/main/src/siwi_frontend" target="_blank" rel="noopener noreffer">siwi_frontend</a></p>
+    <a href="#frontend-1" class="header-mark"></a>3.2 Frontend</h3><p>Referring to <a href="https://github.com/wey-gu/nebula-siwi/tree/main/src/siwi_frontend" target="_blank" rel="noopener noreffer">siwi_frontend</a></p>
 <h2 id="further-work" class="headerLink">
-    <a href="#further-work" class="header-mark"></a>Further work</h2><ul>
+    <a href="#further-work" class="header-mark"></a>4 Further work</h2><ul>
 <li><i class="far fa-square fa-fw"></i> Use <a href="https://github.com/swar/nba_api" target="_blank" rel="noopener noreffer">NBA-API</a> to fallback undefined pattern questions</li>
 <li><i class="far fa-square fa-fw"></i> Wrap and manage sessions instead of get and release session per request, this is somehow costly actually.</li>
 <li><i class="far fa-square fa-fw"></i> Use NLP methods to implement proper Symentic Parsing, Intent Matching, Slot Filling</li>
@@ -1202,15 +1202,15 @@ docker run --rm --name siwi-api <span class="se">\
 <li><i class="far fa-square fa-fw"></i> Use larger Dataset i.e. from <a href="https://www.kaggle.com/wyattowalsh/basketball" target="_blank" rel="noopener noreffer">wyattowalsh/basketball</a></li>
 </ul>
 <h2 id="thanks-to-upstream-projects-" class="headerLink">
-    <a href="#thanks-to-upstream-projects-" class="header-mark"></a>Thanks to Upstream Projects ❤️</h2><h3 id="backend-2" class="headerLink">
-    <a href="#backend-2" class="header-mark"></a>Backend</h3><ul>
+    <a href="#thanks-to-upstream-projects-" class="header-mark"></a>5 Thanks to Upstream Projects ❤️</h2><h3 id="backend-2" class="headerLink">
+    <a href="#backend-2" class="header-mark"></a>5.1 Backend</h3><ul>
 <li>I learnt a lot from the <a href="https://github.com/liuhuanyong/QASystemOnMedicalKG" target="_blank" rel="noopener noreffer">KGQA on MedicalKG</a> created by <a href="https://liuhuanyong.github.io" target="_blank" rel="noopener noreffer">Huanyong Liu</a></li>
 <li><a href="https://github.com/pallets/flask" target="_blank" rel="noopener noreffer">Flask</a></li>
 <li><a href="https://github.com/WojciechMula/pyahocorasick" target="_blank" rel="noopener noreffer">pyahocorasick</a> created by <a href="http://0x80.pl/" target="_blank" rel="noopener noreffer">Wojciech Muła</a></li>
 <li><a href="https://pyyaml.org/" target="_blank" rel="noopener noreffer">PyYaml</a></li>
 </ul>
 <h3 id="frontend-2" class="headerLink">
-    <a href="#frontend-2" class="header-mark"></a>Frontend</h3><ul>
+    <a href="#frontend-2" class="header-mark"></a>5.2 Frontend</h3><ul>
 <li><a href="https://vuejs.org" target="_blank" rel="noopener noreffer">VueJS</a> for frontend framework</li>
 <li><a href="https://github.com/juzser/vue-bot-ui" target="_blank" rel="noopener noreffer">Vue Bot UI</a>, as a lovely bot UI in vue</li>
 <li><a href="https://github.com/Drackokacka/vue-web-speech" target="_blank" rel="noopener noreffer">Vue Web Speech</a>, for speech API vue wrapper</li>
@@ -1234,7 +1234,7 @@ docker run --rm --name siwi-api <span class="se">\
 </blockquote>
 <p>Related GitHub Repo: <a href="https://github.com/wey-gu/nebula-dev-CLion" target="_blank" rel="noopener noreffer">https://github.com/wey-gu/nebula-dev-CLion</a></p>
 <h2 id="run-docker-env-for-nebula-graph-with-clion" class="headerLink">
-    <a href="#run-docker-env-for-nebula-graph-with-clion" class="header-mark"></a>Run Docker Env for Nebula-Graph with CLion</h2><p>Build Docker Image</p>
+    <a href="#run-docker-env-for-nebula-graph-with-clion" class="header-mark"></a>1 Run Docker Env for Nebula-Graph with CLion</h2><p>Build Docker Image</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
@@ -1310,7 +1310,7 @@ cmake -DENABLE_TESTING<span class="o">=</span>OFF -DCMAKE_BUILD_TYPE<span class=
 </code></pre></td></tr></table>
 </div>
 </div><h2 id="configurations-in-clion" class="headerLink">
-    <a href="#configurations-in-clion" class="header-mark"></a>Configurations in CLion</h2><blockquote>
+    <a href="#configurations-in-clion" class="header-mark"></a>2 Configurations in CLion</h2><blockquote>
 <p>Ref: <a href="https://www.jetbrains.com/help/clion/clion-toolchains-in-docker.html#build-and-run" target="_blank" rel="noopener noreffer">https://www.jetbrains.com/help/clion/clion-toolchains-in-docker.html#build-and-run</a></p>
 </blockquote>
 <p><strong>Toolchains</strong></p>
@@ -1339,8 +1339,8 @@ cmake -DENABLE_TESTING<span class="o">=</span>OFF -DCMAKE_BUILD_TYPE<span class=
 </ul>
 <p></p>
 <h2 id="the-appendix" class="headerLink">
-    <a href="#the-appendix" class="header-mark"></a>The appendix</h2><h3 id="references-of-cmake-output" class="headerLink">
-    <a href="#references-of-cmake-output" class="header-mark"></a>References of CMake output:</h3><div class="highlight"><div class="chroma">
+    <a href="#the-appendix" class="header-mark"></a>3 The appendix</h2><h3 id="references-of-cmake-output" class="headerLink">
+    <a href="#references-of-cmake-output" class="header-mark"></a>3.1 References of CMake output:</h3><div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">  1
 </span><span class="lnt">  2
@@ -1596,8 +1596,8 @@ Vendor          : VEsoft Inc.
 </blockquote>
 <p>This is a demo of Shareholding Relationship Analysis with Distributed open-source Graph Database: Nebula Graph.</p>
 <h2 id="data" class="headerLink">
-    <a href="#data" class="header-mark"></a>Data</h2><h3 id="data-modeling" class="headerLink">
-    <a href="#data-modeling" class="header-mark"></a>Data Modeling</h3><p></p>
+    <a href="#data" class="header-mark"></a>1 Data</h2><h3 id="data-modeling" class="headerLink">
+    <a href="#data-modeling" class="header-mark"></a>1.1 Data Modeling</h3><p></p>
 <p>There are various kinds of relationships when we checking companies' shareholding breakthrough, here let&rsquo;s simplify it with only two kind of entities: person and corp, and with following relationship types.</p>
 <ul>
 <li><code>person</code> can hold a <code>corp</code> in <code>{share} %</code></li>
@@ -1626,7 +1626,7 @@ Vendor          : VEsoft Inc.
 </span></code></pre></td></tr></table>
 </div>
 </div><h3 id="data-generation" class="headerLink">
-    <a href="#data-generation" class="header-mark"></a>Data Generation</h3><p>We just randomly generate some data to help with this demo, you can call <code>data_generator.py</code> directly to generate or reuse what&rsquo;s already done under <code>data_sample</code> folder.</p>
+    <a href="#data-generation" class="header-mark"></a>1.2 Data Generation</h3><p>We just randomly generate some data to help with this demo, you can call <code>data_generator.py</code> directly to generate or reuse what&rsquo;s already done under <code>data_sample</code> folder.</p>
 <p>The generated data are records to be fit in above data model from below <code>.csv</code> files.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
@@ -1657,7 +1657,7 @@ total <span class="m">1688</span>
 </code></pre></td></tr></table>
 </div>
 </div><h3 id="data-import" class="headerLink">
-    <a href="#data-import" class="header-mark"></a>Data Import</h3><p>With those data in <code>.csv</code> files, we can easily import them into a Nebula Graph Cluster with the help of <a href="https://github.com/vesoft-inc/nebula-importer" target="_blank" rel="noopener noreffer">Nebula-Importer</a>. <code>nebula-importer.yaml</code> in this repo describes rules and configurations on how this import will be done by the importer.</p>
+    <a href="#data-import" class="header-mark"></a>1.3 Data Import</h3><p>With those data in <code>.csv</code> files, we can easily import them into a Nebula Graph Cluster with the help of <a href="https://github.com/vesoft-inc/nebula-importer" target="_blank" rel="noopener noreffer">Nebula-Importer</a>. <code>nebula-importer.yaml</code> in this repo describes rules and configurations on how this import will be done by the importer.</p>
 <p>For Nebula Graph Database, plesae refer to <a href="https://docs.nebula-graph.io/" target="_blank" rel="noopener noreffer">Doc</a> , <a href="https://docs.nebula-graph.com.cn/" target="_blank" rel="noopener noreffer">Doc-CN</a> to deploy on any Linux Servers, for study and test, you can run it via Docker following the Quick Start Chapter of the documentation.</p>
 <p>For Nebula-Importer, if you already have Docker env, you can run it as the following without installing anything. Or, if you prefer to install it, it&rsquo;s quite easy as it&rsquo;s written in Golang and you can run its single file binary quite easily, go check both Documentation and Nebula-Importer Repo: <a href="https://github.com/vesoft-inc/nebula-importer" target="_blank" rel="noopener noreffer">https://github.com/vesoft-inc/nebula-importer</a>.</p>
 <blockquote>
@@ -1740,8 +1740,8 @@ $ docker run --rm -ti <span class="se">\
 </code></pre></td></tr></table>
 </div>
 </div><h2 id="corporation-sharehold-relationship-breakthrough" class="headerLink">
-    <a href="#corporation-sharehold-relationship-breakthrough" class="header-mark"></a>Corporation sharehold relationship breakthrough</h2><h4 id="query-in-ngql" class="headerLink">
-    <a href="#query-in-ngql" class="header-mark"></a>Query in nGQL</h4><p>We can query from corp: <code>c_132</code> over <code>*</code>(all relationships) in <code>BIDIRECT</code>:</p>
+    <a href="#corporation-sharehold-relationship-breakthrough" class="header-mark"></a>2 Corporation sharehold relationship breakthrough</h2><h4 id="query-in-ngql" class="headerLink">
+    <a href="#query-in-ngql" class="header-mark"></a>2.0.1 Query in nGQL</h4><p>We can query from corp: <code>c_132</code> over <code>*</code>(all relationships) in <code>BIDIRECT</code>:</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
@@ -1864,7 +1864,7 @@ Wed, <span class="m">14</span> Jul <span class="m">2021</span> 07:08:06 UTC
 </code></pre></td></tr></table>
 </div>
 </div><h4 id="in-a-visual-way" class="headerLink">
-    <a href="#in-a-visual-way" class="header-mark"></a>In a Visual Way</h4><p>Of course, we can also be done in a visual way:</p>
+    <a href="#in-a-visual-way" class="header-mark"></a>2.0.2 In a Visual Way</h4><p>Of course, we can also be done in a visual way:</p>
 <p>Step 1, login from Nebula Graph Studio, explore with one VID: <code>c_132</code>:</p>
 <p></p>
 <p>Step2, click this explored vertex dot, then you can explore from select vertices by selecting:</p>
@@ -1881,13 +1881,13 @@ Wed, <span class="m">14</span> Jul <span class="m">2021</span> 07:08:06 UTC
 <p>Step3, after click Expand, you will see all quried relations with <code>c_132</code> the <code>Chambers LLC</code>.</p>
 <p></p>
 <h2 id="thanks-to-upstream-projects-" class="headerLink">
-    <a href="#thanks-to-upstream-projects-" class="header-mark"></a>Thanks to Upstream Projects ❤️</h2><ul>
+    <a href="#thanks-to-upstream-projects-" class="header-mark"></a>3 Thanks to Upstream Projects ❤️</h2><ul>
 <li>Python Faker <a href="https://github.com/joke2k/faker/" target="_blank" rel="noopener noreffer">https://github.com/joke2k/faker/</a></li>
 <li>pydbgen <a href="https://github.com/tirthajyoti/pydbgen" target="_blank" rel="noopener noreffer">https://github.com/tirthajyoti/pydbgen</a></li>
 <li>Nebula Graph <a href="https://github.com/vesoft-inc/nebula-graph" target="_blank" rel="noopener noreffer">https://github.com/vesoft-inc/nebula-graph</a></li>
 </ul>
 <h3 id="tips" class="headerLink">
-    <a href="#tips" class="header-mark"></a>Tips:</h3><ul>
+    <a href="#tips" class="header-mark"></a>3.1 Tips:</h3><ul>
 <li>You can deploy nebula graph in one line with:
 <ul>
 <li><a href="https://siwei.io/nebula-up/" target="_blank" rel="noopener noreffer">Nebula-UP</a>, it helps install a nebula graph with Docker</li>
@@ -1996,8 +1996,8 @@ Wed, <span class="m">14</span> Jul <span class="m">2021</span> 07:08:06 UTC
 </tbody>
 </table>
 <h2 id="dataset-download-and-preprocessing" class="headerLink">
-    <a href="#dataset-download-and-preprocessing" class="header-mark"></a>Dataset Download and Preprocessing</h2><h3 id="download" class="headerLink">
-    <a href="#download" class="header-mark"></a>Download</h3><p>It is accesissiable from the official web page:</p>
+    <a href="#dataset-download-and-preprocessing" class="header-mark"></a>1 Dataset Download and Preprocessing</h2><h3 id="download" class="headerLink">
+    <a href="#download" class="header-mark"></a>1.1 Download</h3><p>It is accesissiable from the official web page:</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
@@ -2010,7 +2010,7 @@ $ wget https://snap.stanford.edu/data/soc-LiveJournal1.txt.gz
 </div>
 </div><p>Comments in data file should be removed to make the data import tool happy.</p>
 <h3 id="preprocessing" class="headerLink">
-    <a href="#preprocessing" class="header-mark"></a>Preprocessing</h3><div class="highlight"><div class="chroma">
+    <a href="#preprocessing" class="header-mark"></a>1.2 Preprocessing</h3><div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
@@ -2021,8 +2021,8 @@ $ sed -i <span class="s1">&#39;1,4d&#39;</span> soc-LiveJournal1.txt
 </code></pre></td></tr></table>
 </div>
 </div><h2 id="import-dataset-to-nebula-graph" class="headerLink">
-    <a href="#import-dataset-to-nebula-graph" class="header-mark"></a>Import dataset to Nebula Graph</h2><h3 id="with-nebula-importer" class="headerLink">
-    <a href="#with-nebula-importer" class="header-mark"></a>With Nebula Importer</h3><p><a href="https://github.com/vesoft-inc/nebula-importer" target="_blank" rel="noopener noreffer">Nebula-Importer</a> is a Golang Headless import tool for Nebula Graph.</p>
+    <a href="#import-dataset-to-nebula-graph" class="header-mark"></a>2 Import dataset to Nebula Graph</h2><h3 id="with-nebula-importer" class="headerLink">
+    <a href="#with-nebula-importer" class="header-mark"></a>2.1 With Nebula Importer</h3><p><a href="https://github.com/vesoft-inc/nebula-importer" target="_blank" rel="noopener noreffer">Nebula-Importer</a> is a Golang Headless import tool for Nebula Graph.</p>
 <p>You may need to edit the config file under <a href="nebula-importer/importer.yaml" rel="">nebula-importer/importer.yaml</a> on Nebula Graph&rsquo;s address and credential。</p>
 <p>Then, Nebula-Importer could be called in Docker as follow:</p>
 <div class="highlight"><div class="chroma">
@@ -2059,10 +2059,10 @@ $ &lt;path_to_nebula-importer_binary&gt; --config ../nebula-importer/importer.ya
 </code></pre></td></tr></table>
 </div>
 </div><h3 id="with-nebula-exchange" class="headerLink">
-    <a href="#with-nebula-exchange" class="header-mark"></a>With Nebula Exchange</h3><p><a href="https://github.com/vesoft-inc/nebula-spark-utils/tree/master/nebula-exchange" target="_blank" rel="noopener noreffer">Nebula-Exchange</a> is a Spark Application to enable batch and streaming data import from multiple data sources to Nebula Graph.</p>
+    <a href="#with-nebula-exchange" class="header-mark"></a>2.2 With Nebula Exchange</h3><p><a href="https://github.com/vesoft-inc/nebula-spark-utils/tree/master/nebula-exchange" target="_blank" rel="noopener noreffer">Nebula-Exchange</a> is a Spark Application to enable batch and streaming data import from multiple data sources to Nebula Graph.</p>
 <p>To be done. (You can refer to <a href="https://siwei.io/nebula-exchange-sst-2.x/" target="_blank" rel="noopener noreffer">https://siwei.io/nebula-exchange-sst-2.x/</a>)</p>
 <h2 id="run-algorithms-with-nebula-graph" class="headerLink">
-    <a href="#run-algorithms-with-nebula-graph" class="header-mark"></a>Run Algorithms with Nebula Graph</h2><p><a href="https://github.com/vesoft-inc/nebula-spark-utils/tree/master/nebula-algorithm" target="_blank" rel="noopener noreffer">Nebula-Algorithm</a> is a Spark/GraphX Application to run Graph Algorithms with data consumed from files or a Nebula Graph Cluster.</p>
+    <a href="#run-algorithms-with-nebula-graph" class="header-mark"></a>3 Run Algorithms with Nebula Graph</h2><p><a href="https://github.com/vesoft-inc/nebula-spark-utils/tree/master/nebula-algorithm" target="_blank" rel="noopener noreffer">Nebula-Algorithm</a> is a Spark/GraphX Application to run Graph Algorithms with data consumed from files or a Nebula Graph Cluster.</p>
 <p>Supported Algorithms for now:</p>
 <table>
 <thead>
@@ -2115,7 +2115,7 @@ $ &lt;path_to_nebula-importer_binary&gt; --config ../nebula-importer/importer.ya
 </tbody>
 </table>
 <h3 id="ad-hoc-spark-env-setup" class="headerLink">
-    <a href="#ad-hoc-spark-env-setup" class="header-mark"></a>Ad-hoc Spark Env setup</h3><p>Here I assume the Nebula Graph was bootstraped with <a href="https://github.com/wey-gu/nebula-up" target="_blank" rel="noopener noreffer">Nebula-Up</a>, thus nebula is running in a Docker Network named <code>nebula-docker-compose_nebula-net</code>.</p>
+    <a href="#ad-hoc-spark-env-setup" class="header-mark"></a>3.1 Ad-hoc Spark Env setup</h3><p>Here I assume the Nebula Graph was bootstraped with <a href="https://github.com/wey-gu/nebula-up" target="_blank" rel="noopener noreffer">Nebula-Up</a>, thus nebula is running in a Docker Network named <code>nebula-docker-compose_nebula-net</code>.</p>
 <p>Then let&rsquo;s start a single server spark:</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
@@ -2147,7 +2147,7 @@ wget https://repo1.maven.org/maven2/com/vesoft/nebula-algorithm/2.0.0/nebula-alg
 </code></pre></td></tr></table>
 </div>
 </div><h3 id="run-algorithms" class="headerLink">
-    <a href="#run-algorithms" class="header-mark"></a>Run Algorithms</h3><p>There are many altorithms supported by Nebula-Algorithm, here some of their configuration files were put under nebula-algorithm as an example.</p>
+    <a href="#run-algorithms" class="header-mark"></a>3.2 Run Algorithms</h3><p>There are many altorithms supported by Nebula-Algorithm, here some of their configuration files were put under nebula-algorithm as an example.</p>
 <p>Before using them, please first edit and change Nebula Graph Cluster Addresses and credentials.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
@@ -2199,7 +2199,7 @@ wget https://repo1.maven.org/maven2/com/vesoft/nebula-algorithm/2.0.0/nebula-alg
                 <img src="/featured-image.webp" referrerpolicy="no-referrer">
             </div><p>这篇文章带大家以最小方式，快速趟一下 Nebula Exchange 中 SST 写入方式的步骤。</p>
 <h2 id="什么是-nebula-exchange-" class="headerLink">
-    <a href="#%e4%bb%80%e4%b9%88%e6%98%af-nebula-exchange-" class="header-mark"></a>什么是 Nebula Exchange ?</h2><p>之前我在 <a href="https://siwei.io/sketches/nebula-data-import-options/" target="_blank" rel="noopener noreffer">Nebula Data Import Options</a> 之中介绍过，<a href="https://github.com/vesoft-inc/nebula-spark-utils/tree/master/nebula-exchange" target="_blank" rel="noopener noreffer">Nebula Exchange</a> 是一个 Nebula Graph 社区开源的 Spark Applicaiton，它专门用来支持批量或者流式地把数据导入 Nebula Graph Database 之中。</p>
+    <a href="#%e4%bb%80%e4%b9%88%e6%98%af-nebula-exchange-" class="header-mark"></a>1 什么是 Nebula Exchange ?</h2><p>之前我在 <a href="https://siwei.io/sketches/nebula-data-import-options/" target="_blank" rel="noopener noreffer">Nebula Data Import Options</a> 之中介绍过，<a href="https://github.com/vesoft-inc/nebula-spark-utils/tree/master/nebula-exchange" target="_blank" rel="noopener noreffer">Nebula Exchange</a> 是一个 Nebula Graph 社区开源的 Spark Applicaiton，它专门用来支持批量或者流式地把数据导入 Nebula Graph Database 之中。</p>
 <p>Nebula Exchange 支持多种多样的数据源（从 Apache Parquet, ORC, JSON, CSV, HBase, Hive MaxCompute 到 Neo4j, MySQL, ClickHouse, 再有 Kafka, Pulsar，更多的数据源也在不断增加之中）。</p>
 <p></p>
 <p>如上图所示，在 Exchange 内部，从除了不同 Reader 可以读取不同数据源之外，在数据经过 Processor 处理之后通过 Writer写入（sink） Nebula Graph 图数据库的时候，除了走正常的 ServerBaseWriter 的写入流程之外，它还可以绕过整个写入流程，利用 Spark 的计算能力并行生成底层 RocksDB 的 SST 文件，从而实现超高性能的数据导入，这个 SST 文件导入的场景就是本文带大家上手熟悉的部分。</p>
@@ -2208,21 +2208,21 @@ wget https://repo1.maven.org/maven2/com/vesoft/nebula-algorithm/2.0.0/nebula-alg
 <p><a href="https://nebula-graph.com.cn/posts/" target="_blank" rel="noopener noreffer">Nebula Graph 官方博客</a>也有更多 Nebula Exchange 的实践文章</p>
 </blockquote>
 <h2 id="步骤概观" class="headerLink">
-    <a href="#%e6%ad%a5%e9%aa%a4%e6%a6%82%e8%a7%82" class="header-mark"></a>步骤概观</h2><ul>
+    <a href="#%e6%ad%a5%e9%aa%a4%e6%a6%82%e8%a7%82" class="header-mark"></a>2 步骤概观</h2><ul>
 <li><a href="#%e5%ae%9e%e9%aa%8c%e7%8e%af%e5%a2%83%e5%87%86%e5%a4%87" rel="">实验环境</a></li>
 <li><a href="#%e9%85%8d%e7%bd%aeExchange" rel="">配置 Exchange</a></li>
 <li><a href="#%e7%94%9f%e6%88%90SST%e6%96%87%e4%bb%b6" rel="">生成 SST 文件</a></li>
 <li><a href="#%e5%86%99%e5%85%a5SST%e6%96%87%e4%bb%b6%e5%88%b0NebulaGraph" rel="">写入 SST 文件到 Nebula Graph</a></li>
 </ul>
 <h2 id="实验环境准备" class="headerLink">
-    <a href="#%e5%ae%9e%e9%aa%8c%e7%8e%af%e5%a2%83%e5%87%86%e5%a4%87" class="header-mark"></a>实验环境准备</h2><p>为了最小化使用 Nebula Exchange 的 SST 功能，我们需要：</p>
+    <a href="#%e5%ae%9e%e9%aa%8c%e7%8e%af%e5%a2%83%e5%87%86%e5%a4%87" class="header-mark"></a>3 实验环境准备</h2><p>为了最小化使用 Nebula Exchange 的 SST 功能，我们需要：</p>
 <ul>
 <li>搭建一个 Nebula Graph 集群，创建导入数据的 Schema，我们选择使用 Docker-Compose 方式、利用 <a href="https://github.com/wey-gu/nebula-up/" target="_blank" rel="noopener noreffer">Nebula-Up</a> 快速部署，并简单修改其网络，以方便同样容器化的 Exchange 程序对其访问。</li>
 <li>搭建容器化的 Spark 运行环境</li>
 <li>搭建容器化的 HDFS</li>
 </ul>
 <h3 id="1-搭建-nebula-graph-集群" class="headerLink">
-    <a href="#1-%e6%90%ad%e5%bb%ba-nebula-graph-%e9%9b%86%e7%be%a4" class="header-mark"></a>1. 搭建 Nebula Graph 集群</h3><p>借助于 <a href="https://github.com/wey-gu/nebula-up/" target="_blank" rel="noopener noreffer">Nebula-Up</a> 我们可以在 Linux 环境下一键部署一套 Nebula Graph 集群：</p>
+    <a href="#1-%e6%90%ad%e5%bb%ba-nebula-graph-%e9%9b%86%e7%be%a4" class="header-mark"></a>3.1 1. 搭建 Nebula Graph 集群</h3><p>借助于 <a href="https://github.com/wey-gu/nebula-up/" target="_blank" rel="noopener noreffer">Nebula-Up</a> 我们可以在 Linux 环境下一键部署一套 Nebula Graph 集群：</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
@@ -2337,7 +2337,7 @@ Welcome to Nebula Graph!
 </span></code></pre></td></tr></table>
 </div>
 </div><h3 id="2-搭建容器化的-spark-环境" class="headerLink">
-    <a href="#2-%e6%90%ad%e5%bb%ba%e5%ae%b9%e5%99%a8%e5%8c%96%e7%9a%84-spark-%e7%8e%af%e5%a2%83" class="header-mark"></a>2. 搭建容器化的 Spark 环境</h3><p>利用 big data europe 做的工作，这个过程非常容易。</p>
+    <a href="#2-%e6%90%ad%e5%bb%ba%e5%ae%b9%e5%99%a8%e5%8c%96%e7%9a%84-spark-%e7%8e%af%e5%a2%83" class="header-mark"></a>3.2 2. 搭建容器化的 Spark 环境</h3><p>利用 big data europe 做的工作，这个过程非常容易。</p>
 <p>值得注意的是：</p>
 <ul>
 <li>现在的 Nebula Exchange 对 Spark 的版本有要求，在现在的 2021 年 8 月，我是用了 spark-2.4.5-hadoop-2.7 的版本。</li>
@@ -2399,7 +2399,7 @@ wget https://repo1.maven.org/maven2/com/vesoft/nebula-exchange/2.1.0/nebula-exch
 </code></pre></td></tr></table>
 </div>
 </div><h3 id="3-搭建容器化的-hdfs" class="headerLink">
-    <a href="#3-%e6%90%ad%e5%bb%ba%e5%ae%b9%e5%99%a8%e5%8c%96%e7%9a%84-hdfs" class="header-mark"></a>3. 搭建容器化的 HDFS</h3><p>同样借助 big-data-euroupe 的工作，这非常简单，不过我们要做一点修改，让它的 <code>docker-compose.yml</code> 文件里使用 <code>nebula-net</code> 这个之前创建的 Docker 网络。</p>
+    <a href="#3-%e6%90%ad%e5%bb%ba%e5%ae%b9%e5%99%a8%e5%8c%96%e7%9a%84-hdfs" class="header-mark"></a>3.3 3. 搭建容器化的 HDFS</h3><p>同样借助 big-data-euroupe 的工作，这非常简单，不过我们要做一点修改，让它的 <code>docker-compose.yml</code> 文件里使用 <code>nebula-net</code> 这个之前创建的 Docker 网络。</p>
 <p>详细修改的部分参考<a href="#%e9%99%84%e5%bd%95%e4%ba%8c" rel="">附录二</a></p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
@@ -2416,7 +2416,7 @@ docker-compose up -d
 </code></pre></td></tr></table>
 </div>
 </div><h2 id="配置exchange" class="headerLink">
-    <a href="#%e9%85%8d%e7%bd%aeexchange" class="header-mark"></a>配置Exchange</h2><p>这个配置主要填入的信息就是 Nebula Graph 集群本身和将要写入数据的 Space Name，以及数据源相关的配置（这里我们用 <code>csv</code> 作为例子），最后再配置输出（sink）为 <code>sst</code></p>
+    <a href="#%e9%85%8d%e7%bd%aeexchange" class="header-mark"></a>4 配置Exchange</h2><p>这个配置主要填入的信息就是 Nebula Graph 集群本身和将要写入数据的 Space Name，以及数据源相关的配置（这里我们用 <code>csv</code> 作为例子），最后再配置输出（sink）为 <code>sst</code></p>
 <ul>
 <li>Nebula Graph
 <ul>
@@ -2451,8 +2451,8 @@ docker-compose up -d
 </code></pre></td></tr></table>
 </div>
 </div><h2 id="生成sst文件" class="headerLink">
-    <a href="#%e7%94%9f%e6%88%90sst%e6%96%87%e4%bb%b6" class="header-mark"></a>生成SST文件</h2><h3 id="1-准备源文件配置文件" class="headerLink">
-    <a href="#1-%e5%87%86%e5%a4%87%e6%ba%90%e6%96%87%e4%bb%b6%e9%85%8d%e7%bd%ae%e6%96%87%e4%bb%b6" class="header-mark"></a>1. 准备源文件、配置文件</h3><div class="highlight"><div class="chroma">
+    <a href="#%e7%94%9f%e6%88%90sst%e6%96%87%e4%bb%b6" class="header-mark"></a>5 生成SST文件</h2><h3 id="1-准备源文件配置文件" class="headerLink">
+    <a href="#1-%e5%87%86%e5%a4%87%e6%ba%90%e6%96%87%e4%bb%b6%e9%85%8d%e7%bd%ae%e6%96%87%e4%bb%b6" class="header-mark"></a>5.1 1. 准备源文件、配置文件</h3><div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span><span class="lnt">2
@@ -2494,7 +2494,7 @@ docker cp player.csv spark-master:/root/
 </code></pre></td></tr></table>
 </div>
 </div><h3 id="2-执行-exchange-程序" class="headerLink">
-    <a href="#2-%e6%89%a7%e8%a1%8c-exchange-%e7%a8%8b%e5%ba%8f" class="header-mark"></a>2. 执行 exchange 程序</h3><p>进入 <code>spark-master</code> 容器，提交执行 <code>exchange</code> 应用。</p>
+    <a href="#2-%e6%89%a7%e8%a1%8c-exchange-%e7%a8%8b%e5%ba%8f" class="header-mark"></a>5.2 2. 执行 exchange 程序</h3><p>进入 <code>spark-master</code> 容器，提交执行 <code>exchange</code> 应用。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
@@ -2571,14 +2571,14 @@ drwxr-xr-x   - root supergroup          <span class="m">0</span> 2021-08-17 03:3
 </code></pre></td></tr></table>
 </div>
 </div><h2 id="写入sst到nebulagraph" class="headerLink">
-    <a href="#%e5%86%99%e5%85%a5sst%e5%88%b0nebulagraph" class="header-mark"></a>写入SST到NebulaGraph</h2><p>这里的操作实际上都是参考文档：<a href="https://docs.nebula-graph.com.cn/master/nebula-exchange/use-exchange/ex-ug-import-from-sst/" target="_blank" rel="noopener noreffer">SST 导入</a>，得来。其中就是从 console 之中执行了两步操作：</p>
+    <a href="#%e5%86%99%e5%85%a5sst%e5%88%b0nebulagraph" class="header-mark"></a>6 写入SST到NebulaGraph</h2><p>这里的操作实际上都是参考文档：<a href="https://docs.nebula-graph.com.cn/master/nebula-exchange/use-exchange/ex-ug-import-from-sst/" target="_blank" rel="noopener noreffer">SST 导入</a>，得来。其中就是从 console 之中执行了两步操作：</p>
 <ul>
 <li>Download</li>
 <li>Ingest</li>
 </ul>
 <p>其中 Download 实际上是触发 Nebula Graph 从服务端发起 HDFS Client 的 download，获取 HDFS 上的 SST 文件，然后放到 storageD 能访问的本地路径下，这里，需要我们在服务端部署 HDFS 的依赖。因为我们是最小实践，我就偷懒手动做了这个 Download 的操作。</p>
 <h3 id="1-手动下载" class="headerLink">
-    <a href="#1-%e6%89%8b%e5%8a%a8%e4%b8%8b%e8%bd%bd" class="header-mark"></a>1. 手动下载</h3><p>这里边手动下载我们就要知道 Nebula Graph 服务端下载的路径，实际上是 <code>/data/storage/nebula/&lt;space_id&gt;/download/</code>，这里的 Space ID 需要手动获取一下：</p>
+    <a href="#1-%e6%89%8b%e5%8a%a8%e4%b8%8b%e8%bd%bd" class="header-mark"></a>6.1 1. 手动下载</h3><p>这里边手动下载我们就要知道 Nebula Graph 服务端下载的路径，实际上是 <code>/data/storage/nebula/&lt;space_id&gt;/download/</code>，这里的 Space ID 需要手动获取一下：</p>
 <p>这个例子里，我们的 Space Name 是 <code>sst</code>，而 Space ID 是 <code>49</code>。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
@@ -2628,7 +2628,7 @@ docker cp sst nebula-docker-compose_storaged2_1:/data/storage/nebula/49/download
 </code></pre></td></tr></table>
 </div>
 </div><h3 id="2-sst-文件导入" class="headerLink">
-    <a href="#2-sst-%e6%96%87%e4%bb%b6%e5%af%bc%e5%85%a5" class="header-mark"></a>2. SST 文件导入</h3><ul>
+    <a href="#2-sst-%e6%96%87%e4%bb%b6%e5%af%bc%e5%85%a5" class="header-mark"></a>6.2 2. SST 文件导入</h3><ul>
 <li>进入 Nebula-Console 所在的容器</li>
 </ul>
 <div class="highlight"><div class="chroma">
@@ -2695,8 +2695,8 @@ E0817 08:03:28.611912   <span class="m">169</span> StorageHttpIngestHandler.cpp:
 <p>题图版权：<a href="https://unsplash.com/photos/n6B49lTx7NM" target="_blank" rel="noopener noreffer">Pietro Jeng</a></p>
 </blockquote>
 <h2 id="附录" class="headerLink">
-    <a href="#%e9%99%84%e5%bd%95" class="header-mark"></a>附录</h2><h3 id="附录一" class="headerLink">
-    <a href="#%e9%99%84%e5%bd%95%e4%b8%80" class="header-mark"></a>附录一</h3><p><code>docker-compose.yaml</code></p>
+    <a href="#%e9%99%84%e5%bd%95" class="header-mark"></a>7 附录</h2><h3 id="附录一" class="headerLink">
+    <a href="#%e9%99%84%e5%bd%95%e4%b8%80" class="header-mark"></a>7.1 附录一</h3><p><code>docker-compose.yaml</code></p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">  1
@@ -3130,7 +3130,7 @@ E0817 08:03:28.611912   <span class="m">169</span> StorageHttpIngestHandler.cpp:
 </span></code></pre></td></tr></table>
 </div>
 </div><h3 id="附录二" class="headerLink">
-    <a href="#%e9%99%84%e5%bd%95%e4%ba%8c" class="header-mark"></a>附录二</h3><p><a href="https://github.com/big-data-europe/docker-hadoop" target="_blank" rel="noopener noreffer">https://github.com/big-data-europe/docker-hadoop</a> 的 <code>docker-compose.yml</code></p>
+    <a href="#%e9%99%84%e5%bd%95%e4%ba%8c" class="header-mark"></a>7.2 附录二</h3><p><a href="https://github.com/big-data-europe/docker-hadoop" target="_blank" rel="noopener noreffer">https://github.com/big-data-europe/docker-hadoop</a> 的 <code>docker-compose.yml</code></p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -3248,7 +3248,7 @@ E0817 08:03:28.611912   <span class="m">169</span> StorageHttpIngestHandler.cpp:
 </span></code></pre></td></tr></table>
 </div>
 </div><h3 id="附录三" class="headerLink">
-    <a href="#%e9%99%84%e5%bd%95%e4%b8%89" class="header-mark"></a>附录三</h3><p><code>nebula-exchange-sst.conf</code></p>
+    <a href="#%e9%99%84%e5%bd%95%e4%b8%89" class="header-mark"></a>7.3 附录三</h3><p><code>nebula-exchange-sst.conf</code></p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -3448,7 +3448,7 @@ E0817 08:03:28.611912   <span class="m">169</span> StorageHttpIngestHandler.cpp:
 <p>Nebula-Kind, an one-liner command to try K8s Operator based Nebula Graph Cluster on your machine, with the help of KIND (K8s in Docker)</p>
 </blockquote>
 <h2 id="nebula-operator-kind" class="headerLink">
-    <a href="#nebula-operator-kind" class="header-mark"></a>Nebula-Operator-Kind</h2><p>As a Cloud Native Distributed Database, Nebula Graph comes with an open-source <a href="https://github.com/vesoft-inc/nebula-operator" target="_blank" rel="noopener noreffer">K8s Operator</a> to enable boostrap and maintain Nebula Graph Cluster from a K8s CRD.</p>
+    <a href="#nebula-operator-kind" class="header-mark"></a>1 Nebula-Operator-Kind</h2><p>As a Cloud Native Distributed Database, Nebula Graph comes with an open-source <a href="https://github.com/vesoft-inc/nebula-operator" target="_blank" rel="noopener noreffer">K8s Operator</a> to enable boostrap and maintain Nebula Graph Cluster from a K8s CRD.</p>
 <p>Normally it takes you some time to setup all the dependencies and control plane resources of the Nebula Operator. If you are as lazy as I am, this Nebula-Operator-Kind is made for you to quick start and play with Nebula Graph in <a href="https://kind.sigs.K8s.io/" target="_blank" rel="noopener noreffer">KIND</a>.</p>
 <p>Nebula-Operator-Kind is the one-liner for setup everything for you including:</p>
 <ul>
@@ -3461,7 +3461,7 @@ E0817 08:03:28.611912   <span class="m">169</span> StorageHttpIngestHandler.cpp:
 <li>Kubectl for playing with KIND and Nebula Operator</li>
 </ul>
 <h2 id="how-to-use" class="headerLink">
-    <a href="#how-to-use" class="header-mark"></a>How To Use</h2><p>Install Nebula-Operator-Kind:</p>
+    <a href="#how-to-use" class="header-mark"></a>2 How To Use</h2><p>Install Nebula-Operator-Kind:</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
@@ -3482,7 +3482,7 @@ E0817 08:03:28.611912   <span class="m">169</span> StorageHttpIngestHandler.cpp:
 </code></pre></td></tr></table>
 </div>
 </div><h2 id="more" class="headerLink">
-    <a href="#more" class="header-mark"></a>More</h2><p>It&rsquo;s in GitHub with more information you may be intrested in ;-), please try and feedback there~
+    <a href="#more" class="header-mark"></a>3 More</h2><p>It&rsquo;s in GitHub with more information you may be intrested in ;-), please try and feedback there~
 <a href="https://github.com/wey-gu/nebula-operator-kind" target="_blank" rel="noopener noreffer">https://github.com/wey-gu/nebula-operator-kind</a></p>
 <blockquote>
 <p>Updated Sept. 2021</p>
@@ -3521,15 +3521,15 @@ E0817 08:03:28.611912   <span class="m">169</span> StorageHttpIngestHandler.cpp:
 <p>我把涉及的代码开源在了这里：https://github.com/wey-gu/nebula-chia</p>
 </blockquote>
 <h2 id="1-what-is-chia-network" class="headerLink">
-    <a href="#1-what-is-chia-network" class="header-mark"></a>1. What is Chia Network?</h2><p>Chia Network 是由 BitTorrent 的作者 Bram Cohen 的团队在 2017 年创建的区块链项目。</p>
+    <a href="#1-what-is-chia-network" class="header-mark"></a>1 1. What is Chia Network?</h2><p>Chia Network 是由 BitTorrent 的作者 Bram Cohen 的团队在 2017 年创建的区块链项目。</p>
 <h3 id="11-why-yet-another-blockchain-为什么再搞一个区块链" class="headerLink">
-    <a href="#11-why-yet-another-blockchain-%e4%b8%ba%e4%bb%80%e4%b9%88%e5%86%8d%e6%90%9e%e4%b8%80%e4%b8%aa%e5%8c%ba%e5%9d%97%e9%93%be" class="header-mark"></a>1.1 Why yet another Blockchain? 为什么再搞一个区块链?</h3><p>Chia 用了全新的中本聪共识算法，这个算法通过不允许并行计算，让挖矿（Proof of Work）所需算力和能耗降到非常低，这使得超大组织、玩家没法像在其他的区块链项目那样有算力的绝对优势，也一定程度上规避了能源的浪费。</p>
+    <a href="#11-why-yet-another-blockchain-%e4%b8%ba%e4%bb%80%e4%b9%88%e5%86%8d%e6%90%9e%e4%b8%80%e4%b8%aa%e5%8c%ba%e5%9d%97%e9%93%be" class="header-mark"></a>1.1 1.1 Why yet another Blockchain? 为什么再搞一个区块链?</h3><p>Chia 用了全新的中本聪共识算法，这个算法通过不允许并行计算，让挖矿（Proof of Work）所需算力和能耗降到非常低，这使得超大组织、玩家没法像在其他的区块链项目那样有算力的绝对优势，也一定程度上规避了能源的浪费。</p>
 <h3 id="12-how-can-i-access-chia-network-如何连接chia" class="headerLink">
-    <a href="#12-how-can-i-access-chia-network-%e5%a6%82%e4%bd%95%e8%bf%9e%e6%8e%a5chia" class="header-mark"></a>1.2 How Can I access Chia Network? 如何连接Chia?</h3><p>我们可以通过 Chia Network 的客户端来访问它，这个客户端是 Electron + Python 的程序，天然跨平台，既有 GUI 又有 CLI 的方式。</p>
+    <a href="#12-how-can-i-access-chia-network-%e5%a6%82%e4%bd%95%e8%bf%9e%e6%8e%a5chia" class="header-mark"></a>1.2 1.2 How Can I access Chia Network? 如何连接Chia?</h3><p>我们可以通过 Chia Network 的客户端来访问它，这个客户端是 Electron + Python 的程序，天然跨平台，既有 GUI 又有 CLI 的方式。</p>
 <h4 id="安装" class="headerLink">
-    <a href="#%e5%ae%89%e8%a3%85" class="header-mark"></a>安装</h4><p>只需要按照官方的 Guide 来下载安装就好， <a href="https://github.com/Chia-Network/chia-blockchain/wiki/INSTALL" target="_blank" rel="noopener noreffer">https://github.com/Chia-Network/chia-blockchain/wiki/INSTALL</a>，我在 M1 Mac 下安装的时候脚本出了点小问题，大概是因为拉取二进制 wheel 文件网络出问题走到了编译 wheel的逻辑，而那里是依赖 <code>cargo</code>的，如果大家遇到了这个问题，可以提前手动安装一下 rust，或者 cherry-pick 我的这个 <a href="https://github.com/Chia-Network/chia-blockchain/pull/3789" target="_blank" rel="noopener noreffer">PR</a> 。</p>
+    <a href="#%e5%ae%89%e8%a3%85" class="header-mark"></a>1.2.1 安装</h4><p>只需要按照官方的 Guide 来下载安装就好， <a href="https://github.com/Chia-Network/chia-blockchain/wiki/INSTALL" target="_blank" rel="noopener noreffer">https://github.com/Chia-Network/chia-blockchain/wiki/INSTALL</a>，我在 M1 Mac 下安装的时候脚本出了点小问题，大概是因为拉取二进制 wheel 文件网络出问题走到了编译 wheel的逻辑，而那里是依赖 <code>cargo</code>的，如果大家遇到了这个问题，可以提前手动安装一下 rust，或者 cherry-pick 我的这个 <a href="https://github.com/Chia-Network/chia-blockchain/pull/3789" target="_blank" rel="noopener noreffer">PR</a> 。</p>
 <h4 id="运行" class="headerLink">
-    <a href="#%e8%bf%90%e8%a1%8c" class="header-mark"></a>运行</h4><ul>
+    <a href="#%e8%bf%90%e8%a1%8c" class="header-mark"></a>1.2.2 运行</h4><ul>
 <li>按照官方 guide，比如 macOS 来说，最后一步执行<code>npm run electron &amp;</code> 就是运行它的GUI客户端。</li>
 <li>如果大家像我一样喜欢 CLI，直接在执行完 <code>. ./activate</code> 之后就可以 <code>chia --help</code>了哈☺，里边有只启动部分服务的方式（相比 GUI 启动所有来说)。</li>
 </ul>
@@ -3542,7 +3542,7 @@ E0817 08:03:28.611912   <span class="m">169</span> StorageHttpIngestHandler.cpp:
 </ul>
 </blockquote>
 <h4 id="访问-chia-的数据" class="headerLink">
-    <a href="#%e8%ae%bf%e9%97%ae-chia-%e7%9a%84%e6%95%b0%e6%8d%ae" class="header-mark"></a>访问 Chia 的数据</h4><p>Chia 的客户端把数据存在了几个 SQLite 数据库里，它们的路径是我们安装客户端的用户的家目录：<code>~/.chia/mainnet</code></p>
+    <a href="#%e8%ae%bf%e9%97%ae-chia-%e7%9a%84%e6%95%b0%e6%8d%ae" class="header-mark"></a>1.2.3 访问 Chia 的数据</h4><p>Chia 的客户端把数据存在了几个 SQLite 数据库里，它们的路径是我们安装客户端的用户的家目录：<code>~/.chia/mainnet</code></p>
 <p>下边就是运行起来 Chia 之后生成的主要的两个数据库的二进制文件：</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
@@ -3598,13 +3598,13 @@ total 3055848
 </ul>
 </blockquote>
 <h2 id="2-inspect-the-chia-network-分析-chia-的数据" class="headerLink">
-    <a href="#2-inspect-the-chia-network-%e5%88%86%e6%9e%90-chia-%e7%9a%84%e6%95%b0%e6%8d%ae" class="header-mark"></a>2. Inspect the Chia Network, 分析 Chia 的数据</h2><p>如果大家仔细看了上边表结构定义的截图，就能注意到一些表的主要信息是嵌套二进制 KV Byte，所以只从 SQLite 并不能看到所有 Chia 的数据，所以我们需要（用一个编程语言来）读取表里的 Byte。</p>
+    <a href="#2-inspect-the-chia-network-%e5%88%86%e6%9e%90-chia-%e7%9a%84%e6%95%b0%e6%8d%ae" class="header-mark"></a>2 2. Inspect the Chia Network, 分析 Chia 的数据</h2><p>如果大家仔细看了上边表结构定义的截图，就能注意到一些表的主要信息是嵌套二进制 KV Byte，所以只从 SQLite 并不能看到所有 Chia 的数据，所以我们需要（用一个编程语言来）读取表里的 Byte。</p>
 <p>幸运的是，这件事儿因为 Chia 是开源的，而且是 Python 的代码，使得我们可以直接交互式的做。</p>
 <p>我花了一点点时间在 Chia 客户端代码里找到了需要的封装类，借助它，可以比较方便的分析 Chia 客户端在本地的全链数据。</p>
 <p>如果您不感兴趣细节，可以直接看我分析的结论。</p>
 <p>结论之后，我也给大家演示一下是怎么读取它们的。</p>
 <h3 id="20-tldr-结论" class="headerLink">
-    <a href="#20-tldr-%e7%bb%93%e8%ae%ba" class="header-mark"></a>2.0 TL;DR, 结论</h3><p>我们可以从表中读取到区块链记录（Block Record ），Chia 币记录（Coin Record）。</p>
+    <a href="#20-tldr-%e7%bb%93%e8%ae%ba" class="header-mark"></a>2.1 2.0 TL;DR, 结论</h3><p>我们可以从表中读取到区块链记录（Block Record ），Chia 币记录（Coin Record）。</p>
 <p>从区块记录中，我们可以看到关键的涉及交易的信息：</p>
 <ul>
 <li>关联的 Coin ，关联的 Puzzle（地址），Coin 的值(Amount)</li>
@@ -3675,7 +3675,7 @@ total 3055848
 </code></pre></td></tr></table>
 </div>
 </div><h3 id="21-preperation-准备" class="headerLink">
-    <a href="#21-preperation-%e5%87%86%e5%a4%87" class="header-mark"></a>2.1 Preperation, 准备</h3><p>因为安装客户端之后，我们本地实际上已经有了相关的 Python 环境和依赖，只需要在里边跑起来就好。</p>
+    <a href="#21-preperation-%e5%87%86%e5%a4%87" class="header-mark"></a>2.2 2.1 Preperation, 准备</h3><p>因为安装客户端之后，我们本地实际上已经有了相关的 Python 环境和依赖，只需要在里边跑起来就好。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
@@ -3711,7 +3711,7 @@ total 3055848
 </div>
 </div><p>恭喜你做好了准备，我们看看 Block Record 里都有什么。</p>
 <h3 id="block-record-chain区块记录" class="headerLink">
-    <a href="#block-record-chain%e5%8c%ba%e5%9d%97%e8%ae%b0%e5%bd%95" class="header-mark"></a>Block Record Chain，区块记录</h3><p>在上一步的 <code>IPython</code> 窗口下。</p>
+    <a href="#block-record-chain%e5%8c%ba%e5%9d%97%e8%ae%b0%e5%bd%95" class="header-mark"></a>2.3 Block Record Chain，区块记录</h3><p>在上一步的 <code>IPython</code> 窗口下。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -3874,7 +3874,7 @@ total 3055848
 </span></code></pre></td></tr></table>
 </div>
 </div><h3 id="coin-record-chainchia-币记录" class="headerLink">
-    <a href="#coin-record-chainchia-%e5%b8%81%e8%ae%b0%e5%bd%95" class="header-mark"></a>Coin Record Chain，Chia 币记录</h3><p>类似的，我们可以获取一个 Coin 的记录，这里边，从表的定义可以看到，唯一二进制（不能直接从数据库查询中被人读懂）的字段就是是币值，不存在嵌套的结构，所以也并不需要封装的类才能看清楚里边的信息。</p>
+    <a href="#coin-record-chainchia-%e5%b8%81%e8%ae%b0%e5%bd%95" class="header-mark"></a>2.4 Coin Record Chain，Chia 币记录</h3><p>类似的，我们可以获取一个 Coin 的记录，这里边，从表的定义可以看到，唯一二进制（不能直接从数据库查询中被人读懂）的字段就是是币值，不存在嵌套的结构，所以也并不需要封装的类才能看清楚里边的信息。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -3947,13 +3947,13 @@ total 3055848
 </code></pre></td></tr></table>
 </div>
 </div><h3 id="puzzles-address地址" class="headerLink">
-    <a href="#puzzles-address%e5%9c%b0%e5%9d%80" class="header-mark"></a>Puzzles/ Address，地址</h3><p>我们可以把 Chia 中的 Puzzle 理解成为交易中的地址，为了方便使用，通常会把 Puzzle 的 hash 用<a href="https://github.com/bitcoin/bips/blob/master/bip-0173.mediawiki" target="_blank" rel="noopener noreffer">bech32m</a> 转换成地址。</p>
+    <a href="#puzzles-address%e5%9c%b0%e5%9d%80" class="header-mark"></a>2.5 Puzzles/ Address，地址</h3><p>我们可以把 Chia 中的 Puzzle 理解成为交易中的地址，为了方便使用，通常会把 Puzzle 的 hash 用<a href="https://github.com/bitcoin/bips/blob/master/bip-0173.mediawiki" target="_blank" rel="noopener noreffer">bech32m</a> 转换成地址。</p>
 <blockquote>
 <p>Tips:</p>
 <p>这里有一个在线双向转换的在线工具推荐一下: <a href="https://www.chiaexplorer.com/tools/address-puzzlehash-converter" target="_blank" rel="noopener noreffer">https://www.chiaexplorer.com/tools/address-puzzlehash-converter</a></p>
 </blockquote>
 <h2 id="3-how-to-explore-chia-network-如何探索-chia-链" class="headerLink">
-    <a href="#3-how-to-explore-chia-network-%e5%a6%82%e4%bd%95%e6%8e%a2%e7%b4%a2-chia-%e9%93%be" class="header-mark"></a>3. How to explore Chia Network? 如何探索 Chia 链</h2><p>随着我们之前分析的信息，自然地，我们可以把 Chia 区块链中的信息取出来，用图（Graph）来表示，这里的图并不是（Graphic）图形、图画的意思，是数学、图论中的图。</p>
+    <a href="#3-how-to-explore-chia-network-%e5%a6%82%e4%bd%95%e6%8e%a2%e7%b4%a2-chia-%e9%93%be" class="header-mark"></a>3 3. How to explore Chia Network? 如何探索 Chia 链</h2><p>随着我们之前分析的信息，自然地，我们可以把 Chia 区块链中的信息取出来，用图（Graph）来表示，这里的图并不是（Graphic）图形、图画的意思，是数学、图论中的图。</p>
 <p>在图的语境下，最主要的两个元素就是顶点（Vertex）和边（Edge）。</p>
 <p>顶点表示一个实体，而边表示实体之间的某种关系，这种关系可以是对等的（无方向的）也可以是有方向的。</p>
 <p>这里我们可以把这里的信息抽象映射到如图的图模型里：</p>
@@ -3975,9 +3975,9 @@ total 3055848
 <p>一般来说，面向超大规模数据的分布式系统，天然的都是不容易轻量部署的，大家如果第一次使用的话可以试试我写的一个叫做 nebula-up 的小工具，可以一行指令部署一个用来试用、学习的 Nebula Graph 集群，地址在这里： <a href="https://github.com/wey-gu/nebula-up/" target="_blank" rel="noopener noreffer">https://github.com/wey-gu/nebula-up/</a> 。</p>
 </blockquote>
 <h3 id="31-import-the-chia-to-a-graph-database-nebula-graph-导入-chia-数据到图数据库" class="headerLink">
-    <a href="#31-import-the-chia-to-a-graph-database-nebula-graph-%e5%af%bc%e5%85%a5-chia-%e6%95%b0%e6%8d%ae%e5%88%b0%e5%9b%be%e6%95%b0%e6%8d%ae%e5%ba%93" class="header-mark"></a>3.1 Import the Chia to a Graph Database, Nebula Graph 导入 Chia 数据到图数据库</h3><p>我们分两步走，第一步这把 Chia Network 数据转换成 CSV 文件，第二步使用 Nebula 的 <a href="https://github.com/vesoft-inc/nebula-importer/" target="_blank" rel="noopener noreffer">Nebula-Importer</a> 把数据导入 Nebula Graph。</p>
+    <a href="#31-import-the-chia-to-a-graph-database-nebula-graph-%e5%af%bc%e5%85%a5-chia-%e6%95%b0%e6%8d%ae%e5%88%b0%e5%9b%be%e6%95%b0%e6%8d%ae%e5%ba%93" class="header-mark"></a>3.1 3.1 Import the Chia to a Graph Database, Nebula Graph 导入 Chia 数据到图数据库</h3><p>我们分两步走，第一步这把 Chia Network 数据转换成 CSV 文件，第二步使用 Nebula 的 <a href="https://github.com/vesoft-inc/nebula-importer/" target="_blank" rel="noopener noreffer">Nebula-Importer</a> 把数据导入 Nebula Graph。</p>
 <h4 id="311-data-conversion-数据转换" class="headerLink">
-    <a href="#311-data-conversion-%e6%95%b0%e6%8d%ae%e8%bd%ac%e6%8d%a2" class="header-mark"></a>3.1.1 Data conversion 数据转换</h4><p>这部分的代码我开源在这里了:</p>
+    <a href="#311-data-conversion-%e6%95%b0%e6%8d%ae%e8%bd%ac%e6%8d%a2" class="header-mark"></a>3.1.1 3.1.1 Data conversion 数据转换</h4><p>这部分的代码我开源在这里了:</p>
 <p><a href="https://github.com/wey-gu/nebula-chia" target="_blank" rel="noopener noreffer">https://github.com/wey-gu/nebula-chia</a></p>
 <p>使用它只需要在 Chia Network 的 python venv 下安装它:</p>
 <div class="highlight"><div class="chroma">
@@ -4165,7 +4165,7 @@ total 3055848
 </code></pre></td></tr></table>
 </div>
 </div><h4 id="311-data-import-数据导入" class="headerLink">
-    <a href="#311-data-import-%e6%95%b0%e6%8d%ae%e5%af%bc%e5%85%a5" class="header-mark"></a>3.1.1 Data import 数据导入</h4><p>有了 CSV 文件，我们可以借助 <a href="https://github.com/vesoft-inc/nebula-importer/" target="_blank" rel="noopener noreffer">Nebula-Importer</a> 导入数据到图数据库中。</p>
+    <a href="#311-data-import-%e6%95%b0%e6%8d%ae%e5%af%bc%e5%85%a5" class="header-mark"></a>3.1.2 3.1.1 Data import 数据导入</h4><p>有了 CSV 文件，我们可以借助 <a href="https://github.com/vesoft-inc/nebula-importer/" target="_blank" rel="noopener noreffer">Nebula-Importer</a> 导入数据到图数据库中。</p>
 <p>这里，我们写好了 nebula-importer 的配置文件，其中包涵了如下信息:</p>
 <ul>
 <li>在 Nebula Graph 中创建需要的数据模型 Schema，这和我们前边做的图映射的信息是等价的</li>
@@ -4211,8 +4211,8 @@ docker run --rm -ti <span class="se">\
 </code></pre></td></tr></table>
 </div>
 </div><h3 id="32-explore-the-chia-graph-探索-chia-的数据" class="headerLink">
-    <a href="#32-explore-the-chia-graph-%e6%8e%a2%e7%b4%a2-chia-%e7%9a%84%e6%95%b0%e6%8d%ae" class="header-mark"></a>3.2 Explore the Chia Graph 探索 Chia 的数据</h3><h4 id="graph-db-queries" class="headerLink">
-    <a href="#graph-db-queries" class="header-mark"></a>Graph DB Queries</h4><p>导入 Chia 链的网络到 Nebula Graph 之后，我们可以在里边快速查询数据之间的关联。</p>
+    <a href="#32-explore-the-chia-graph-%e6%8e%a2%e7%b4%a2-chia-%e7%9a%84%e6%95%b0%e6%8d%ae" class="header-mark"></a>3.2 3.2 Explore the Chia Graph 探索 Chia 的数据</h3><h4 id="graph-db-queries" class="headerLink">
+    <a href="#graph-db-queries" class="header-mark"></a>3.2.1 Graph DB Queries</h4><p>导入 Chia 链的网络到 Nebula Graph 之后，我们可以在里边快速查询数据之间的关联。</p>
 <p>比如这个查询表示从区块 <code>524aa2013781ff4cd9d2b5dc...</code> 查起，经过三种边 <code>farmer_puzzle, spends, confirms</code> 双向遍历的结果。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
@@ -4254,7 +4254,7 @@ docker run --rm -ti <span class="se">\
 </span></code></pre></td></tr></table>
 </div>
 </div><h4 id="the-visulized-way-with-nebula-studio" class="headerLink">
-    <a href="#the-visulized-way-with-nebula-studio" class="header-mark"></a>The Visulized way with Nebula Studio</h4><p>Nebula Graph 为我们提供了图形化界面，有了它，我们可以用更符合人脑的方式地查看 Chia Network 中的数据。</p>
+    <a href="#the-visulized-way-with-nebula-studio" class="header-mark"></a>3.2.2 The Visulized way with Nebula Studio</h4><p>Nebula Graph 为我们提供了图形化界面，有了它，我们可以用更符合人脑的方式地查看 Chia Network 中的数据。</p>
 <p>比如，我们还是回到上边的那个区块，从这里查询。</p>
 <p></p>
 <p>我们就获得了这个 block 类型的一个点/ vertex。我们可以从他开始进一步探索，先鼠标单击这个点，在拓展条件里把方向选择双向，默认的边类型是所有的边类型，这样我们就可以把所有 <code>步数</code>内相关联的数据一下子全都找出来。</p>
@@ -4269,7 +4269,7 @@ docker run --rm -ti <span class="se">\
 <p></p>
 <p>这只是一个开始，有了这个导入到 Nebula Graph 图数据的基础，我们可以做很多有意思的分析和洞察，大家可以自己试试看，得到更有意思的结果分享给其他同学。</p>
 <h2 id="4-summary-总结" class="headerLink">
-    <a href="#4-summary-%e6%80%bb%e7%bb%93" class="header-mark"></a>4. Summary 总结</h2><p>这篇文章里，在我们简单介绍了 Chia Network 之后，我们首次的带大家一起从安装一个 Chia 终端，到分析终端同步到本地的 Chia 全网数据，借助于 Chia 终端开源的 Python 代码库，我们分析了全网数据里的重要信息。</p>
+    <a href="#4-summary-%e6%80%bb%e7%bb%93" class="header-mark"></a>4 4. Summary 总结</h2><p>这篇文章里，在我们简单介绍了 Chia Network 之后，我们首次的带大家一起从安装一个 Chia 终端，到分析终端同步到本地的 Chia 全网数据，借助于 Chia 终端开源的 Python 代码库，我们分析了全网数据里的重要信息。</p>
 <p>之后，我们开源了一个小工具 Nebula-Chia，有了它，就可以把 Chia 的全网数据转换成 CSV 格式，这样，就可以借助 nebula-importer 把所有的数据导入到一个先进的图数据库（Nebula Graph）中。</p>
 <p>Nebula Graph 的项目地址是 <a href="https://github.com/vesoft-inc/nebula-graph" target="_blank" rel="noopener noreffer">https://github.com/vesoft-inc/nebula-graph</a></p>
 <p>Nebula-Chia 我也开源在 <a href="https://github.com/wey-gu/nebula-chia" target="_blank" rel="noopener noreffer">https://github.com/wey-gu/nebula-chia</a></p>
@@ -4277,7 +4277,7 @@ docker run --rm -ti <span class="se">\
 <p>是不是很酷？</p>
 <p></p>
 <h2 id="5-references" class="headerLink">
-    <a href="#5-references" class="header-mark"></a>5. References</h2><ul>
+    <a href="#5-references" class="header-mark"></a>5 5. References</h2><ul>
 <li><a href="https://www.chia.net/faq/" target="_blank" rel="noopener noreffer">https://www.chia.net/faq/</a></li>
 <li><a href="https://chialisp.com/docs/" target="_blank" rel="noopener noreffer">https://chialisp.com/docs/</a></li>
 <li><a href="https://www.chiaexplorer.com/chia-coins" target="_blank" rel="noopener noreffer">https://www.chiaexplorer.com/chia-coins</a></li>
@@ -4304,18 +4304,18 @@ docker run --rm -ti <span class="se">\
 <h1 id="vs-code-ngql-syntax-highlight" class="headerLink">
     <a href="#vs-code-ngql-syntax-highlight" class="header-mark"></a>VS Code nGQL Syntax Highlight</h1><p></p>
 <h2 id="download" class="headerLink">
-    <a href="#download" class="header-mark"></a>Download</h2><p>Search ngql from the market or click <a href="https://marketplace.visualstudio.com/items?itemName=wey-gu.vscode-ngql" target="_blank" rel="noopener noreffer">here</a>.</p>
+    <a href="#download" class="header-mark"></a>1 Download</h2><p>Search ngql from the market or click <a href="https://marketplace.visualstudio.com/items?itemName=wey-gu.vscode-ngql" target="_blank" rel="noopener noreffer">here</a>.</p>
 <h2 id="features" class="headerLink">
-    <a href="#features" class="header-mark"></a>Features</h2><ul>
+    <a href="#features" class="header-mark"></a>2 Features</h2><ul>
 <li>Highlighting all Keywords, Functions of a given <code>.ngql</code> file</li>
 </ul>
 <h2 id="release-notes" class="headerLink">
-    <a href="#release-notes" class="header-mark"></a>Release Notes</h2><h3 id="001" class="headerLink">
-    <a href="#001" class="header-mark"></a>0.0.1</h3><p>Initial release, only <code>.ngql</code> Syntax is supported.</p>
+    <a href="#release-notes" class="header-mark"></a>3 Release Notes</h2><h3 id="001" class="headerLink">
+    <a href="#001" class="header-mark"></a>3.1 0.0.1</h3><p>Initial release, only <code>.ngql</code> Syntax is supported.</p>
 <h3 id="002" class="headerLink">
-    <a href="#002" class="header-mark"></a>0.0.2</h3><p>Lower supported vscode version till <code>^1.50.1</code></p>
+    <a href="#002" class="header-mark"></a>3.2 0.0.2</h3><p>Lower supported vscode version till <code>^1.50.1</code></p>
 <h2 id="reference" class="headerLink">
-    <a href="#reference" class="header-mark"></a>Reference</h2><ul>
+    <a href="#reference" class="header-mark"></a>4 Reference</h2><ul>
 <li><a href="https://docs.nebula-graph.io/" target="_blank" rel="noopener noreffer">https://docs.nebula-graph.io/</a></li>
 <li><a href="https://github.com/vesoft-inc/nebula-graph/blob/master/src/parser/scanner.lex" target="_blank" rel="noopener noreffer">https://github.com/vesoft-inc/nebula-graph/blob/master/src/parser/scanner.lex</a></li>
 </ul>]]></description>

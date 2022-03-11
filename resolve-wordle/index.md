@@ -86,7 +86,7 @@
 
 ```GraphQL
 # 匹配成语中的一个结果
-MATCH (x:idiom) where id(x) == "爱憎分明" RETURN x LIMIT 1
+MATCH (x:idiom) RETURN x LIMIT 1
 
 # 返回结果
 ("爱憎分明" :idiom{pinyin: "['ai4', 'zeng1', 'fen1', 'ming2']"})
