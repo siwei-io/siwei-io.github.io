@@ -4,9 +4,170 @@
         <link>https://siwei.io/</link>
         <description>Siwei(思为) builds things and believes in Open Source.</description>
         <generator>Hugo -- gohugo.io</generator><language>zh-CN</language><managingEditor>weyl.gu@gmail.com (Wey Gu)</managingEditor>
-            <webMaster>weyl.gu@gmail.com (Wey Gu)</webMaster><lastBuildDate>Mon, 28 Feb 2022 19:18:59 &#43;0800</lastBuildDate>
+            <webMaster>weyl.gu@gmail.com (Wey Gu)</webMaster><lastBuildDate>Wed, 23 Mar 2022 22:11:03 &#43;0800</lastBuildDate>
             <atom:link href="https://siwei.io/index.xml" rel="self" type="application/rss+xml" />
         <item>
+    <title>Nebula Graph on Pi</title>
+    <link>https://siwei.io/nebula-graph-on-pi/</link>
+    <pubDate>Wed, 23 Mar 2022 22:11:03 &#43;0800</pubDate><author>
+        <name>Wey Gu</name>
+    </author><guid>https://siwei.io/nebula-graph-on-pi/</guid>
+    <description><![CDATA[<div class="featured-image">
+                <img src="/featured-image.webp" referrerpolicy="no-referrer">
+            </div><blockquote>
+<p>得益于 Nebula 的原生 ARM64v8 的支持，在树莓派等 ARM 单板上跑 Nebula Graph 非常容易。</p>
+</blockquote>
+<h2 id="背景" class="headerLink">
+    <a href="#%e8%83%8c%e6%99%af" class="header-mark"></a>1 背景</h2><p>最近，在 Nebula Graph 社区 Yee 老师的（再）一次修复了 Nebula Graph 的构建依赖的 ARM 支持问题（<a href="https://github.com/vesoft-inc/nebula-third-party/pull/37" target="_blank" rel="noopener noreffer">nebula-third-party#37</a>）之后，我们又可以愉快地在 M1 Mac 上玩这个分布式开源图数据库了。</p>
+<p>苦于树莓派的价格，一直没找机会把 Nebula 跑在小板子上玩玩。至于为什么要跑在树莓派上我的回答当然是 <del>Because I can</del> 在非常非常边缘计算的场景下（这里挖个坑，我一定要找一个这样的场景分享出来）。</p>
+<p>终于，一周多之前在 <a href="https://twitter.com/laixintao" target="_blank" rel="noopener noreffer">@laixintao</a> 和 <a href="https://twitter.com/andelf/status/1504295476958404608" target="_blank" rel="noopener noreffer">@andelf</a> 的一个讨论下我决定找一个树莓派的 alternative，最后下单了 <a href="https://wiki.radxa.com/Rock3/" target="_blank" rel="noopener noreffer">Rock Pi 3A</a>，在因为深圳疫情影响下拖到了这个礼拜才终于发货了！</p>
+<p></p>
+<p>它看起来真的很棒！</p>
+<p></p>
+<h2 id="在-arm64-板子上装-nebula-graph-图数据库" class="headerLink">
+    <a href="#%e5%9c%a8-arm64-%e6%9d%bf%e5%ad%90%e4%b8%8a%e8%a3%85-nebula-graph-%e5%9b%be%e6%95%b0%e6%8d%ae%e5%ba%93" class="header-mark"></a>2 在 ARM64 板子上装 Nebula Graph 图数据库</h2><blockquote>
+<p>实际上 Nebula Graph 在 3.0 之后提供了一个<a href="https://docs.nebula-graph.com.cn/3.0.1/4.deployment-and-installation/standalone-deployment/" target="_blank" rel="noopener noreffer">单机版</a>，这使得 Nebula 在边缘计算情况下有了更小的 footprint，不过这次我还没有使用这个版本，下次试试再给大家分享。</p>
+</blockquote>
+<p>我在附录列出了安装 Ubuntu Server 的步骤，这里假设大家已经在树莓派或者其他单板 ARM 电脑里拉起来了 64 位的 Linux Server。</p>
+<h3 id="第-0-步安装-docker-和-docker-compose" class="headerLink">
+    <a href="#%e7%ac%ac-0-%e6%ad%a5%e5%ae%89%e8%a3%85-docker-%e5%92%8c-docker-compose" class="header-mark"></a>2.1 第 0 步，安装 Docker 和 Docker-Compose</h3><p>这里，我假设是 Debian/Ubuntu，其他分发版直接参考<a href="https://docs.docker.com/engine/install/" target="_blank" rel="noopener noreffer">这里</a>就好。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">sudo apt-get update
+sudo apt-get install <span class="se">\
+</span><span class="se"></span>    ca-certificates <span class="se">\
+</span><span class="se"></span>    curl <span class="se">\
+</span><span class="se"></span>    gnupg <span class="se">\
+</span><span class="se"></span>    lsb-release
+
+<span class="nb">echo</span> <span class="se">\
+</span><span class="se"></span>  <span class="s2">&#34;deb [arch=</span><span class="k">$(</span>dpkg --print-architecture<span class="k">)</span><span class="s2"> signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
+</span><span class="s2">  </span><span class="k">$(</span>lsb_release -cs<span class="k">)</span><span class="s2"> stable&#34;</span> <span class="p">|</span> sudo tee /etc/apt/sources.list.d/docker.list &gt; /dev/null
+
+sudo apt-get update
+sudo apt-get install docker-ce docker-ce-cli containerd.io
+
+<span class="c1"># follow https://docs.docker.com/engine/install/linux-postinstall/</span>
+sudo groupadd docker
+sudo usermod -aG docker <span class="nv">$USER</span>
+<span class="nb">exit</span>
+<span class="c1"># login again</span>
+newgrp docker
+</code></pre></td></tr></table>
+</div>
+</div><p>安装好了 Docker 之后，安装 Compose，它 Docker 官方的步骤是有问题的，因为它其实是一个 Python 的包，我们通过 PIP 去装就好了。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">sudo apt-get install -y python3 python3-pip
+sudo pip3 install docker-compose
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="第-1-步拉起-nebula-graph" class="headerLink">
+    <a href="#%e7%ac%ac-1-%e6%ad%a5%e6%8b%89%e8%b5%b7-nebula-graph" class="header-mark"></a>2.2 第 1 步，拉起 Nebula Graph</h3><p>首先，我们克隆 Nebula Docker Compose 这个 Repo，在 Master Branch，用 Compose 把服务拉起来。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">git clone https://github.com/vesoft-inc/nebula-docker-compose.git <span class="o">&amp;&amp;</span> <span class="nb">cd</span> nebula-docker-compose
+docker-compose up -d
+</code></pre></td></tr></table>
+</div>
+</div><p>然后，我们下载 Console，连上 GraphD 服务。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">wget https://github.com/vesoft-inc/nebula-console/releases/download/v3.0.0/nebula-console-linux-arm64-v3.0.0
+chmod +x nebula-console-linux-arm64-v3.0.0
+
+./nebula-console-linux-arm64-v3.0.0 -addr localhost -port <span class="m">9669</span> -u root -p nebula
+</code></pre></td></tr></table>
+</div>
+</div><p>并激活 Storage 服务。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">ADD HOSTS <span class="s2">&#34;storaged0&#34;</span>:9779,<span class="s2">&#34;storaged1&#34;</span>:9779,<span class="s2">&#34;storaged2&#34;</span>:9779<span class="p">;</span>
+SHOW HOSTS<span class="p">;</span>
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="第-2-步玩转-nebula-graph-on-pi" class="headerLink">
+    <a href="#%e7%ac%ac-2-%e6%ad%a5%e7%8e%a9%e8%bd%ac-nebula-graph-on-pi" class="header-mark"></a>2.3 第 2 步，玩转 Nebula Graph on Pi</h3><p>这时候，透过 <code>SHOW HOSTS</code> 看到三个 StorageD 服务都是 ONLINE 之后，我们可以给 Nebula 里加载进去测试数据集。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$:play basketballplayer<span class="p">;</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>差不多一分钟之后，数据库加载成功，我们进入这个图空间，玩一下吧！</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">USE basketballplayer<span class="p">;</span>
+
+GO FROM <span class="s2">&#34;player100&#34;</span> OVER follow YIELD dst<span class="o">(</span>edge<span class="o">)</span><span class="p">;</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>Check this out and&hellip;</p>
+<p>Happy Graphing!</p>
+<p></p>
+<h2 id="附录安装-ubuntu-server-在-rock-pi-3a-上" class="headerLink">
+    <a href="#%e9%99%84%e5%bd%95%e5%ae%89%e8%a3%85-ubuntu-server-%e5%9c%a8-rock-pi-3a-%e4%b8%8a" class="header-mark"></a>3 附录：安装 Ubuntu Server 在 Rock Pi 3A 上</h2><ul>
+<li>
+<p>准备一个 micro SD card，在  <a href="https://wiki.radxa.com/Rock3/downloads" target="_blank" rel="noopener noreffer">https://wiki.radxa.com/Rock3/downloads</a> 下载镜像，解压为 <code>.img</code> 文件</p>
+</li>
+<li>
+<p>把镜像写进 SD card，比如用 <a href="https://www.balena.io/etcher/" target="_blank" rel="noopener noreffer">etcher</a></p>
+</li>
+<li>
+<p>插入电源（5V，3A）启动！</p>
+</li>
+</ul>
+<blockquote>
+<p>feature image credit: <a href="https://unsplash.com/@_louisreed" target="_blank" rel="noopener noreffer">@_louisreed</a></p>
+</blockquote>]]></description>
+</item><item>
     <title>图数据库体操：用 Nebula Graph 搭成语图谱解汉兜</title>
     <link>https://siwei.io/resolve-wordle/</link>
     <pubDate>Mon, 28 Feb 2022 19:18:59 &#43;0800</pubDate><author>
@@ -4777,333 +4938,6 @@ Vendor          : VEsoft Inc.
 </div>
 </div><blockquote>
 <p>题图版权：<a href="https://unsplash.com/@glencarrie" target="_blank" rel="noopener noreffer">@glencarrie</a></p>
-</blockquote>]]></description>
-</item><item>
-    <title>Nebula Holdshare Dataset，图数据库的股权穿透</title>
-    <link>https://siwei.io/nebula-holdshare-dataset/</link>
-    <pubDate>Sat, 28 Aug 2021 13:54:03 &#43;0800</pubDate><author>
-        <name>Wey Gu</name>
-    </author><guid>https://siwei.io/nebula-holdshare-dataset/</guid>
-    <description><![CDATA[<div class="featured-image">
-                <img src="/featured-image.webp" referrerpolicy="no-referrer">
-            </div><blockquote>
-<p>A demo of Shareholding Breakthrough with Distributed open-source Graph Database: Nebula Graph. 图数据库应用示例：股权关系穿透</p>
-</blockquote>
-<p>Related GitHub Repo: <a href="https://github.com/wey-gu/nebula-shareholding-example" target="_blank" rel="noopener noreffer">https://github.com/wey-gu/nebula-shareholding-example</a></p>
-<blockquote>
-<p>更新：在这个数据集生成的工作基础上，我又做了一个全栈示例项目 👉🏻 <a href="https://siwei.io/corp-rel-graph/" target="_blank" rel="noopener noreffer">https://siwei.io/corp-rel-graph/</a></p>
-</blockquote>
-<blockquote>
-<p>这个项目我也做成了互动教程，可以按照这里的步骤搭建起来 👉🏻 <a href="https://siwei.io/cources/" target="_blank" rel="noopener noreffer">https://siwei.io/cources/</a></p>
-<p>I created the Katacoda Interactive Env for this project 👉🏻 <a href="https://siwei.io/cources/" target="_blank" rel="noopener noreffer">https://siwei.io/cources/</a></p>
-</blockquote>
-<blockquote>
-<p>您也可以在 Nebula Playground 上直接玩这个数据集啦：https://nebula-graph.com.cn/demo/</p>
-<p>Now you can play with the data on Nebula Playground: <a href="https://nebula-graph.io/demo/" target="_blank" rel="noopener noreffer">https://nebula-graph.io/demo/</a></p>
-</blockquote>
-<p>This is a demo of Shareholding Relationship Analysis with Distributed open-source Graph Database: Nebula Graph.</p>
-<h2 id="data" class="headerLink">
-    <a href="#data" class="header-mark"></a>1 Data</h2><h3 id="data-modeling" class="headerLink">
-    <a href="#data-modeling" class="header-mark"></a>1.1 Data Modeling</h3><p></p>
-<p>There are various kinds of relationships when we checking companies' shareholding breakthrough, here let&rsquo;s simplify it with only two kind of entities: person and corp, and with following relationship types.</p>
-<ul>
-<li><code>person</code> can hold a <code>corp</code> in <code>{share} %</code></li>
-<li><code>person</code> can be relative with another <code>person</code></li>
-<li><code>corp</code> can hold another <code>corp</code> in <code>{share} %</code></li>
-<li><code>corp</code> can be a branch of another <code>corp</code></li>
-<li><code>person</code> can be as a role of a <code>corp</code></li>
-</ul>
-<p>Below is the lines to reflect this graph modele in Nebula Graph, it&rsquo;s quite straightforward, right?</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="k">CREATE</span><span class="w"> </span><span class="n">TAG</span><span class="w"> </span><span class="n">person</span><span class="p">(</span><span class="n">name</span><span class="w"> </span><span class="n">string</span><span class="p">);</span><span class="w">
-</span><span class="w"></span><span class="k">CREATE</span><span class="w"> </span><span class="n">TAG</span><span class="w"> </span><span class="n">corp</span><span class="p">(</span><span class="n">name</span><span class="w"> </span><span class="n">string</span><span class="p">);</span><span class="w">
-</span><span class="w"></span><span class="k">CREATE</span><span class="w"> </span><span class="n">EDGE</span><span class="w"> </span><span class="n">role_as</span><span class="p">(</span><span class="k">role</span><span class="w"> </span><span class="n">string</span><span class="p">);</span><span class="w">
-</span><span class="w"></span><span class="k">CREATE</span><span class="w"> </span><span class="n">EDGE</span><span class="w"> </span><span class="n">is_branch_of</span><span class="p">();</span><span class="w">
-</span><span class="w"></span><span class="k">CREATE</span><span class="w"> </span><span class="n">EDGE</span><span class="w"> </span><span class="n">hold_share</span><span class="p">(</span><span class="k">share</span><span class="w"> </span><span class="nb">float</span><span class="p">);</span><span class="w">
-</span><span class="w"></span><span class="k">CREATE</span><span class="w"> </span><span class="n">EDGE</span><span class="w"> </span><span class="n">reletive_with</span><span class="p">(</span><span class="n">degree</span><span class="w"> </span><span class="nb">int</span><span class="p">);</span><span class="w">
-</span></code></pre></td></tr></table>
-</div>
-</div><h3 id="data-generation" class="headerLink">
-    <a href="#data-generation" class="header-mark"></a>1.2 Data Generation</h3><p>We just randomly generate some data to help with this demo, you can call <code>data_generator.py</code> directly to generate or reuse what&rsquo;s already done under <code>data_sample</code> folder.</p>
-<p>The generated data are records to be fit in above data model from below <code>.csv</code> files.</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ pip install <span class="nv">Faker</span><span class="o">==</span>2.0.5 <span class="nv">pydbgen</span><span class="o">==</span>1.0.5
-$ python3 data_generator.py
-$ ls -l data
-total <span class="m">1688</span>
--rw-r--r--  <span class="m">1</span> weyl  staff   <span class="m">23941</span> Jul <span class="m">14</span> 13:28 corp.csv
--rw-r--r--  <span class="m">1</span> weyl  staff    <span class="m">1277</span> Jul <span class="m">14</span> 13:26 corp_rel.csv
--rw-r--r--  <span class="m">1</span> weyl  staff    <span class="m">3048</span> Jul <span class="m">14</span> 13:26 corp_share.csv
--rw-r--r--  <span class="m">1</span> weyl  staff  <span class="m">211661</span> Jul <span class="m">14</span> 13:26 person.csv
--rw-r--r--  <span class="m">1</span> weyl  staff  <span class="m">179770</span> Jul <span class="m">14</span> 13:26 person_corp_role.csv
--rw-r--r--  <span class="m">1</span> weyl  staff  <span class="m">322965</span> Jul <span class="m">14</span> 13:26 person_corp_share.csv
--rw-r--r--  <span class="m">1</span> weyl  staff   <span class="m">17689</span> Jul <span class="m">14</span> 13:26 person_rel.csv
-</code></pre></td></tr></table>
-</div>
-</div><h3 id="data-import" class="headerLink">
-    <a href="#data-import" class="header-mark"></a>1.3 Data Import</h3><p>With those data in <code>.csv</code> files, we can easily import them into a Nebula Graph Cluster with the help of <a href="https://github.com/vesoft-inc/nebula-importer" target="_blank" rel="noopener noreffer">Nebula-Importer</a>. <code>nebula-importer.yaml</code> in this repo describes rules and configurations on how this import will be done by the importer.</p>
-<p>For Nebula Graph Database, plesae refer to <a href="https://docs.nebula-graph.io/" target="_blank" rel="noopener noreffer">Doc</a> , <a href="https://docs.nebula-graph.com.cn/" target="_blank" rel="noopener noreffer">Doc-CN</a> to deploy on any Linux Servers, for study and test, you can run it via Docker following the Quick Start Chapter of the documentation.</p>
-<p>For Nebula-Importer, if you already have Docker env, you can run it as the following without installing anything. Or, if you prefer to install it, it&rsquo;s quite easy as it&rsquo;s written in Golang and you can run its single file binary quite easily, go check both Documentation and Nebula-Importer Repo: <a href="https://github.com/vesoft-inc/nebula-importer" target="_blank" rel="noopener noreffer">https://github.com/vesoft-inc/nebula-importer</a>.</p>
-<blockquote>
-<p>Let&rsquo;s start! Below is the commands I used to import our data into a Nebula Graph Database.</p>
-</blockquote>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
-</span><span class="lnt">28
-</span><span class="lnt">29
-</span><span class="lnt">30
-</span><span class="lnt">31
-</span><span class="lnt">32
-</span><span class="lnt">33
-</span><span class="lnt">34
-</span><span class="lnt">35
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="c1"># put generated data &amp; nebula-importor.yaml to nebula-importer server</span>
-$ scp -r data nebula_graph_host:~
-$ scp nebula-importer.yaml data nebula_graph_host:~/data
-$ ssh nebula_graph_host
-$ ls -l <span class="si">${</span><span class="nv">HOME</span><span class="si">}</span>/data
-total <span class="m">756</span>
--rw-r--r--. <span class="m">1</span> wei.gu wei.gu  <span class="m">23941</span> Jul <span class="m">14</span> 05:44 corp.csv
--rw-r--r--. <span class="m">1</span> wei.gu wei.gu   <span class="m">1277</span> Jul <span class="m">14</span> 05:44 corp_rel.csv
--rw-r--r--. <span class="m">1</span> wei.gu wei.gu   <span class="m">3048</span> Jul <span class="m">14</span> 05:44 corp_share.csv
--rw-r--r--. <span class="m">1</span> wei.gu wei.gu   <span class="m">3893</span> Jul <span class="m">14</span> 05:44 nebula-importer.yaml
--rw-r--r--. <span class="m">1</span> wei.gu wei.gu <span class="m">211661</span> Jul <span class="m">14</span> 05:44 person.csv
--rw-r--r--. <span class="m">1</span> wei.gu wei.gu <span class="m">179770</span> Jul <span class="m">14</span> 05:44 person_corp_role.csv
--rw-r--r--. <span class="m">1</span> wei.gu wei.gu <span class="m">322965</span> Jul <span class="m">14</span> 05:44 person_corp_share.csv
--rw-r--r--. <span class="m">1</span> wei.gu wei.gu  <span class="m">17689</span> Jul <span class="m">14</span> 05:44 person_rel.csv
-
-<span class="c1"># import data into our nebula graph database</span>
-$ docker run --rm -ti <span class="se">\
-</span><span class="se"></span>    --network<span class="o">=</span>nebula-docker-compose_nebula-net <span class="se">\
-</span><span class="se"></span>    -v <span class="si">${</span><span class="nv">HOME</span><span class="si">}</span>/data/nebula-importer.yaml:/root/nebula-importer.yaml <span class="se">\
-</span><span class="se"></span>    -v <span class="si">${</span><span class="nv">HOME</span><span class="si">}</span>/data:/root <span class="se">\
-</span><span class="se"></span>    vesoft/nebula-importer:v2 <span class="se">\
-</span><span class="se"></span>    --config /root/nebula-importer.yaml
-
-2021/07/14 05:49:32 --- START OF NEBULA IMPORTER ---
-2021/07/14 05:49:32 <span class="o">[</span>WARN<span class="o">]</span> config.go:491: Not <span class="nb">set</span> files<span class="o">[</span>0<span class="o">]</span>.schema.vertex.vid.Type, reset to default value <span class="sb">`</span>string<span class="err">&#39;</span>
-...
-2021/07/14 05:49:43 <span class="o">[</span>INFO<span class="o">]</span> reader.go:180: Total lines of file<span class="o">(</span>/root/person_corp_role.csv<span class="o">)</span> is: 5000, error lines: <span class="m">1287</span>
-2021/07/14 05:49:43 <span class="o">[</span>INFO<span class="o">]</span> statsmgr.go:61: Done<span class="o">(</span>/root/person_corp_role.csv<span class="o">)</span>: Time<span class="o">(</span>11.39s<span class="o">)</span>, Finished<span class="o">(</span>12523<span class="o">)</span>, Failed<span class="o">(</span>0<span class="o">)</span>, Latency AVG<span class="o">(</span>1514us<span class="o">)</span>, Batches Req AVG<span class="o">(</span>1824us<span class="o">)</span>, Rows AVG<span class="o">(</span>1099.43/s<span class="o">)</span>
-2021/07/14 05:49:47 <span class="o">[</span>INFO<span class="o">]</span> statsmgr.go:61: Tick: Time<span class="o">(</span>15.00s<span class="o">)</span>, Finished<span class="o">(</span>25807<span class="o">)</span>, Failed<span class="o">(</span>0<span class="o">)</span>, Latency AVG<span class="o">(</span>1500us<span class="o">)</span>, Batches Req AVG<span class="o">(</span>1805us<span class="o">)</span>, Rows AVG<span class="o">(</span>1720.46/s<span class="o">)</span>
-2021/07/14 05:49:48 <span class="o">[</span>INFO<span class="o">]</span> reader.go:180: Total lines of file<span class="o">(</span>/root/person.csv<span class="o">)</span> is: 10000, error lines: <span class="m">0</span>
-2021/07/14 05:49:48 <span class="o">[</span>INFO<span class="o">]</span> statsmgr.go:61: Done<span class="o">(</span>/root/person.csv<span class="o">)</span>: Time<span class="o">(</span>16.10s<span class="o">)</span>, Finished<span class="o">(</span>29731<span class="o">)</span>, Failed<span class="o">(</span>0<span class="o">)</span>, Latency AVG<span class="o">(</span>1505us<span class="o">)</span>, Batches Req AVG<span class="o">(</span>1810us<span class="o">)</span>, Rows AVG<span class="o">(</span>1847.17/s<span class="o">)</span>
-2021/07/14 05:49:50 <span class="o">[</span>INFO<span class="o">]</span> reader.go:180: Total lines of file<span class="o">(</span>/root/person_corp_share.csv<span class="o">)</span> is: 20000, error lines: <span class="m">0</span>
-2021/07/14 05:49:50 <span class="o">[</span>INFO<span class="o">]</span> statsmgr.go:61: Done<span class="o">(</span>/root/person_corp_share.csv<span class="o">)</span>: Time<span class="o">(</span>17.74s<span class="o">)</span>, Finished<span class="o">(</span>36013<span class="o">)</span>, Failed<span class="o">(</span>0<span class="o">)</span>, Latency AVG<span class="o">(</span>1531us<span class="o">)</span>, Batches Req AVG<span class="o">(</span>1844us<span class="o">)</span>, Rows AVG<span class="o">(</span>2030.29/s<span class="o">)</span>
-2021/07/14 05:49:50 Finish import data, consume time: 18.25s
-2021/07/14 05:49:51 --- END OF NEBULA IMPORTER ---
-</code></pre></td></tr></table>
-</div>
-</div><h2 id="corporation-sharehold-relationship-breakthrough" class="headerLink">
-    <a href="#corporation-sharehold-relationship-breakthrough" class="header-mark"></a>2 Corporation sharehold relationship breakthrough</h2><h4 id="query-in-ngql" class="headerLink">
-    <a href="#query-in-ngql" class="header-mark"></a>2.0.1 Query in nGQL</h4><p>We can query from corp: <code>c_132</code> over <code>*</code>(all relationships) in <code>BIDIRECT</code>:</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="k">GO</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">TO</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="n">STEPS</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="s2">&#34;c_132&#34;</span><span class="w"> </span><span class="n">over</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">BIDIRECT</span><span class="w">
-</span></code></pre></td></tr></table>
-</div>
-</div><p>Below are lines I call this query in <a href="https://github.com/vesoft-inc/nebula-console" target="_blank" rel="noopener noreffer">nebula-console</a>:</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
-</span><span class="lnt">28
-</span><span class="lnt">29
-</span><span class="lnt">30
-</span><span class="lnt">31
-</span><span class="lnt">32
-</span><span class="lnt">33
-</span><span class="lnt">34
-</span><span class="lnt">35
-</span><span class="lnt">36
-</span><span class="lnt">37
-</span><span class="lnt">38
-</span><span class="lnt">39
-</span><span class="lnt">40
-</span><span class="lnt">41
-</span><span class="lnt">42
-</span><span class="lnt">43
-</span><span class="lnt">44
-</span><span class="lnt">45
-</span><span class="lnt">46
-</span><span class="lnt">47
-</span><span class="lnt">48
-</span><span class="lnt">49
-</span><span class="lnt">50
-</span><span class="lnt">51
-</span><span class="lnt">52
-</span><span class="lnt">53
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">/ <span class="c1"># nebula-console  -addr 192.168.8.128 -port 9669 -user user -password password</span>
-2021/07/14 07:07:41 <span class="o">[</span>INFO<span class="o">]</span> connection pool is initialized successfully
-
-Welcome to Nebula Graph!
-
-<span class="o">(</span>user@nebula<span class="o">)</span> <span class="o">[(</span>none<span class="o">)]</span>&gt; show spaces
-+--------------------+
-<span class="p">|</span> Name               <span class="p">|</span>
-+--------------------+
-<span class="p">|</span> <span class="s2">&#34;basketballplayer&#34;</span> <span class="p">|</span>
-+--------------------+
-<span class="p">|</span> <span class="s2">&#34;shareholding&#34;</span>     <span class="p">|</span>
-+--------------------+
-Got <span class="m">2</span> rows <span class="o">(</span><span class="nb">time</span> spent 3851/4595 us<span class="o">)</span>
-
-Wed, <span class="m">14</span> Jul <span class="m">2021</span> 07:07:57 UTC
-
-<span class="o">(</span>user@nebula<span class="o">)</span> <span class="o">[(</span>none<span class="o">)]</span>&gt; use shareholding
-Execution succeeded <span class="o">(</span><span class="nb">time</span> spent 1822/2342 us<span class="o">)</span>
-
-Wed, <span class="m">14</span> Jul <span class="m">2021</span> 07:08:02 UTC
-
-<span class="o">(</span>user@nebula<span class="o">)</span> <span class="o">[</span>shareholding<span class="o">]</span>&gt; GO <span class="m">1</span> TO <span class="m">3</span> STEPS FROM <span class="s2">&#34;c_132&#34;</span> over * BIDIRECT
-+--------------+-------------------+-----------------+--------------------+
-<span class="p">|</span> role_as._dst <span class="p">|</span> is_branch_of._dst <span class="p">|</span> hold_share._dst <span class="p">|</span> reletive_with._dst <span class="p">|</span>
-+--------------+-------------------+-----------------+--------------------+
-<span class="p">|</span> <span class="s2">&#34;p_2024&#34;</span>     <span class="p">|</span>                   <span class="p">|</span>                 <span class="p">|</span>                    <span class="p">|</span>
-+--------------+-------------------+-----------------+--------------------+
-<span class="p">|</span> <span class="s2">&#34;p_4000&#34;</span>     <span class="p">|</span>                   <span class="p">|</span>                 <span class="p">|</span>                    <span class="p">|</span>
-+--------------+-------------------+-----------------+--------------------+
-<span class="p">|</span>              <span class="p">|</span>                   <span class="p">|</span> <span class="s2">&#34;c_245&#34;</span>         <span class="p">|</span>                    <span class="p">|</span>
-+--------------+-------------------+-----------------+--------------------+
-<span class="p">|</span>              <span class="p">|</span>                   <span class="p">|</span> <span class="s2">&#34;p_1039&#34;</span>        <span class="p">|</span>                    <span class="p">|</span>
-+--------------+-------------------+-----------------+--------------------+
-<span class="p">|</span>              <span class="p">|</span>                   <span class="p">|</span> <span class="s2">&#34;p_1399&#34;</span>        <span class="p">|</span>                    <span class="p">|</span>
-+--------------+-------------------+-----------------+--------------------+
-<span class="p">|</span>              <span class="p">|</span>                   <span class="p">|</span> <span class="s2">&#34;p_1767&#34;</span>        <span class="p">|</span>                    <span class="p">|</span>
-...
-+--------------+-------------------+-----------------+--------------------+
-<span class="p">|</span>              <span class="p">|</span>                   <span class="p">|</span> <span class="s2">&#34;c_132&#34;</span>         <span class="p">|</span>                    <span class="p">|</span>
-+--------------+-------------------+-----------------+--------------------+
-<span class="p">|</span>              <span class="p">|</span>                   <span class="p">|</span> <span class="s2">&#34;c_245&#34;</span>         <span class="p">|</span>                    <span class="p">|</span>
-+--------------+-------------------+-----------------+--------------------+
-<span class="p">|</span>              <span class="p">|</span>                   <span class="p">|</span> <span class="s2">&#34;c_25&#34;</span>          <span class="p">|</span>                    <span class="p">|</span>
-+--------------+-------------------+-----------------+--------------------+
-<span class="p">|</span>              <span class="p">|</span>                   <span class="p">|</span> <span class="s2">&#34;c_649&#34;</span>         <span class="p">|</span>                    <span class="p">|</span>
-+--------------+-------------------+-----------------+--------------------+
-<span class="p">|</span>              <span class="p">|</span>                   <span class="p">|</span> <span class="s2">&#34;c_753&#34;</span>         <span class="p">|</span>                    <span class="p">|</span>
-+--------------+-------------------+-----------------+--------------------+
-Got <span class="m">1519</span> rows <span class="o">(</span><span class="nb">time</span> spent 12190/14702 us<span class="o">)</span>
-
-Wed, <span class="m">14</span> Jul <span class="m">2021</span> 07:08:06 UTC
-
-</code></pre></td></tr></table>
-</div>
-</div><h4 id="in-a-visual-way" class="headerLink">
-    <a href="#in-a-visual-way" class="header-mark"></a>2.0.2 In a Visual Way</h4><p>Of course, we can also be done in a visual way:</p>
-<p>Step 1, login from Nebula Graph Studio, explore with one VID: <code>c_132</code>:</p>
-<p></p>
-<p>Step2, click this explored vertex dot, then you can explore from select vertices by selecting:</p>
-<ul>
-<li>Edge Type</li>
-<li>Direction</li>
-<li>Steps</li>
-<li>Query Limit(Optional)</li>
-</ul>
-<blockquote>
-<p>note, you can click the 👁️ icon to add options to show fields of the graph,</p>
-</blockquote>
-<p></p>
-<p>Step3, after click Expand, you will see all quried relations with <code>c_132</code> the <code>Chambers LLC</code>.</p>
-<p></p>
-<h2 id="thanks-to-upstream-projects-" class="headerLink">
-    <a href="#thanks-to-upstream-projects-" class="header-mark"></a>3 Thanks to Upstream Projects ❤️</h2><ul>
-<li>Python Faker <a href="https://github.com/joke2k/faker/" target="_blank" rel="noopener noreffer">https://github.com/joke2k/faker/</a></li>
-<li>pydbgen <a href="https://github.com/tirthajyoti/pydbgen" target="_blank" rel="noopener noreffer">https://github.com/tirthajyoti/pydbgen</a></li>
-<li>Nebula Graph <a href="https://github.com/vesoft-inc/nebula-graph" target="_blank" rel="noopener noreffer">https://github.com/vesoft-inc/nebula-graph</a></li>
-</ul>
-<h3 id="tips" class="headerLink">
-    <a href="#tips" class="header-mark"></a>3.1 Tips:</h3><ul>
-<li>You can deploy nebula graph in one line with:
-<ul>
-<li><a href="https://siwei.io/nebula-up/" target="_blank" rel="noopener noreffer">Nebula-UP</a>, it helps install a nebula graph with Docker</li>
-<li><a href="https://siwei.io/nebula-operator-kind/" target="_blank" rel="noopener noreffer">Nebula-operator-KIND</a> , it helps setup all dependencies of Nebula-K8s-Operator including a K8s in Docker, PV Provider and then install a Nebula Graph with Nebula-Operator in K8s.</li>
-</ul>
-</li>
-</ul>
-<blockquote>
-<p>Image Credit goes to <a href="https://unsplash.com/photos/3fPXt37X6UQ" target="_blank" rel="noopener noreffer">https://unsplash.com/photos/3fPXt37X6UQ</a></p>
 </blockquote>]]></description>
 </item></channel>
 </rss>

@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noodp" />
+    <title class="pjax-title">Nebula Graph on Pi - siwei.io</title><meta name="Description" content="得益于 Nebula 的原生 ARM64v8 的支持，在树莓派等 ARM 单板上跑 Nebula Graph 也非常容易。"><meta property="og:title" content="Nebula Graph on Pi" />
+<meta property="og:description" content="得益于 Nebula 的原生 ARM64v8 的支持，在树莓派等 ARM 单板上跑 Nebula Graph 也非常容易。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://siwei.io/nebula-graph-on-pi/" /><meta property="og:image" content="https://siwei.io/nebula-graph-on-pi/featured-image.png"/><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2022-03-23T22:11:03+08:00" />
+<meta property="article:modified_time" content="2022-03-23T22:11:03+08:00" /><meta property="og:site_name" content="siwei.io" />
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://siwei.io/nebula-graph-on-pi/featured-image.png"/>
+<meta name="twitter:title" content="Nebula Graph on Pi"/>
+<meta name="twitter:description" content="得益于 Nebula 的原生 ARM64v8 的支持，在树莓派等 ARM 单板上跑 Nebula Graph 也非常容易。"/>
+<meta name="application-name" content="siwei.io">
+<meta name="apple-mobile-web-app-title" content="siwei.io">
+
+<meta name="theme-color" content="#f8f8f8"><meta name="msapplication-TileColor" content="#da532c"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="manifest" href="/site.webmanifest"><link rel="canonical" href="https://siwei.io/nebula-graph-on-pi/" /><link rel="prev" href="https://siwei.io/resolve-wordle/" /><link rel="stylesheet" href="/lib/normalize/normalize.min.css"><link rel="stylesheet" href="/css/style.min.css"><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/fontawesome-free/all.min.css">
+        <noscript><link rel="stylesheet" href="/lib/fontawesome-free/all.min.css"></noscript><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/animate/animate.min.css">
+        <noscript><link rel="stylesheet" href="/lib/animate/animate.min.css"></noscript>
+    
+    
+    
+    <meta name="baidu-site-verification" content="code-4R67zl7SwH" /><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "Nebula Graph on Pi",
+        "inLanguage": "zh-CN",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "https:\/\/siwei.io\/nebula-graph-on-pi\/"
+        },"image": ["https:\/\/siwei.io\/images\/site-feature-image.webp"],"genre": "posts","keywords": "Nebula Graph, ARM, Respberry Pi","wordcount":  906 ,
+        "url": "https:\/\/siwei.io\/nebula-graph-on-pi\/","datePublished": "2022-03-23T22:11:03+08:00","dateModified": "2022-03-23T22:11:03+08:00","publisher": {
+            "@type": "Organization",
+            "name": "Wey Gu","logo": "https:\/\/siwei.io\/images\/site-feature-image.webp"},"author": {
+                "@type": "Person",
+                "name": "Wey Gu"
+            },"description": "得益于 Nebula 的原生 ARM64v8 的支持，在树莓派等 ARM 单板上跑 Nebula Graph 也非常容易。"
+    }
+    </script></head>
+
+<body header-desktop="fixed" header-mobile="auto"><script type="text/javascript">
+        function setTheme(theme) {document.body.setAttribute('theme', theme);}
+        function saveTheme(theme) {window.localStorage && localStorage.setItem('theme', theme);}
+        function getMeta(metaName) {const metas = document.getElementsByTagName('meta'); for (let i = 0; i < metas.length; i++) if (metas[i].getAttribute('name') === metaName) return metas[i]; return '';}
+        if (window.localStorage && localStorage.getItem('theme')) {let theme = localStorage.getItem('theme');theme === 'light' || theme === 'dark' || theme === 'black' ? setTheme(theme) : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light')); } else { if ('auto' === 'light' || 'auto' === 'dark' || 'auto' === 'black') setTheme('auto'), saveTheme('auto'); else saveTheme('auto'), window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light');}
+        let metaColors = {'light': '#f8f8f8','dark': '#252627','black': '#000000'}
+        getMeta('theme-color').content = metaColors[document.body.getAttribute('theme')];
+    </script>
+    <div id="back-to-top"></div>
+    <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/" title="siwei.io"><span class="header-title-pre"><i class="fas fa-code-branch"></i></span>siwei.io</a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="/about/"> 关于 </a><a class="menu-item" href="/projects/"> 项目 </a><a class="menu-item" href="/sketch-notes/"> 手绘 </a><a class="menu-item" href="/posts/"> 博客 </a><a class="menu-item" href="/talk/"> 演讲 </a><a class="menu-item" href="/cources/"> 课程 </a><a class="menu-item" href="https://vesoft.com/cn/careers/" rel="noopener noreffer" target="_blank"> 招聘 </a><a class="menu-item" href="/about/#%E8%81%94%E7%B3%BB%E6%88%91"> 联系 </a><a class="menu-item" href="/path/"> 学习路径 </a><span class="menu-item delimiter"></span><a href="#" onclick="return false;" class="menu-item language" title="选择语言">简体中文<i class="fas fa-chevron-right fa-fw"></i>
+                        <select class="language-select" title="Select Language" id="language-select-desktop" onchange="location = this.value;"><option value="/nebula-graph-on-pi/" selected>简体中文</option></select>
+                    </a><span class="menu-item search" id="search-desktop">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-desktop">
+                        <a href="#" onclick="return false;" class="search-button search-toggle" id="search-toggle-desktop" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="#" onclick="return false;" class="search-button search-clear" id="search-clear-desktop" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-desktop">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </span><a href="#" onclick="return false;" class="menu-item theme-select" title="切换主题">
+                    <i class="fas fa-adjust fa-fw"></i>
+                    <select class="color-theme-select" id="theme-select-desktop" title="切换主题">
+                        <option value="light">浅色</option>
+                        <option value="dark">深色</option>
+                        <option value="black">黑色</option>
+                        <option value="auto">跟随系统</option>
+                    </select>
+                </a></div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="/" title="siwei.io"><span class="header-title-pre"><i class="fas fa-code-branch"></i></span>siwei.io</a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><div class="search-wrapper">
+                    <div class="search mobile" id="search-mobile">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-mobile">
+                        <a href="#" onclick="return false;" class="search-button search-toggle" id="search-toggle-mobile" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="#" onclick="return false;" class="search-button search-clear" id="search-clear-mobile" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-mobile">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </div>
+                    <a href="#" onclick="return false;" class="search-cancel" id="search-cancel-mobile">
+                        取消
+                    </a>
+                </div><a class="menu-item" href="/about/" title="">关于</a><a class="menu-item" href="/projects/" title="">项目</a><a class="menu-item" href="/sketch-notes/" title="">手绘</a><a class="menu-item" href="/posts/" title="">博客</a><a class="menu-item" href="/talk/" title="">演讲</a><a class="menu-item" href="/cources/" title="">课程</a><a class="menu-item" href="https://vesoft.com/cn/careers/" title="" rel="noopener noreffer" target="_blank">招聘</a><a class="menu-item" href="/about/#%E8%81%94%E7%B3%BB%E6%88%91" title="">联系</a><a class="menu-item" href="/path/" title="">学习路径</a><a href="#" onclick="return false;" class="menu-item theme-select" title="切换主题">
+                <i class="fas fa-adjust fa-fw"></i>
+                <select class="color-theme-select" id="theme-select-mobile" title="切换主题">
+                    <option value="light">浅色</option>
+                    <option value="dark">深色</option>
+                    <option value="black">黑色</option>
+                    <option value="auto">跟随系统</option>
+                </select>
+            </a><a href="#" onclick="return false;" class="menu-item" title="选择语言">简体中文<i class="fas fa-chevron-right fa-fw"></i>
+                    <select class="language-select" title="Select Language" onchange="location = this.value;"><option value="/nebula-graph-on-pi/" selected>简体中文</option></select>
+                </a></div>
+    </div>
+</header>
+<div class="search-dropdown desktop">
+    <div id="search-dropdown-desktop"></div>
+</div>
+<div class="search-dropdown mobile">
+    <div id="search-dropdown-mobile"></div>
+</div>
+<main class="main">
+            <div class="container"><div class="toc" id="toc-auto">
+        <h2 class="toc-title">目录</h2>
+        <div class="toc-content always-active" id="toc-content-auto"><nav id="TableOfContents">
+  <ol>
+    <li><a href="#背景">背景</a></li>
+    <li><a href="#在-arm64-板子上装-nebula-graph-图数据库">在 ARM64 板子上装 Nebula Graph 图数据库</a>
+      <ol>
+        <li><a href="#第-0-步安装-docker-和-docker-compose">第 0 步，安装 Docker 和 Docker-Compose</a></li>
+        <li><a href="#第-1-步拉起-nebula-graph">第 1 步，拉起 Nebula Graph</a></li>
+        <li><a href="#第-2-步玩转-nebula-graph-on-pi">第 2 步，玩转 Nebula Graph on Pi</a></li>
+      </ol>
+    </li>
+    <li><a href="#附录安装-ubuntu-server-在-rock-pi-3a-上">附录：安装 Ubuntu Server 在 Rock Pi 3A 上</a></li>
+  </ol>
+</nav></div>
+    </div><script>document.getElementsByTagName("main")[0].setAttribute("pageStyle", "normal")</script><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC", "true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Nebula Graph on Pi</h1><div class="post-meta">
+            <div class="post-meta-line">
+                <span class="post-author"><i class="author fas fa-user-circle fa-fw"></i><a href="https://siwei.io" title="Author" target="_blank" rel="noopener noreffer author" class="author">Wey Gu</a>
+                </span>&nbsp;<span class="post-category">收录于 </span>&nbsp;<span class="post-category">类别 <a href="/categories/nebula-graph/"><i class="far fa-folder fa-fw"></i>Nebula Graph</a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime="2022-03-23">2022-03-23</time>&nbsp;<i class="far fa-edit fa-fw"></i>&nbsp;<time datetime="2022-03-23">2022-03-23</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;约 906 字&nbsp;
+                <i class="far fa-clock fa-fw"></i>&nbsp;预计阅读 2 分钟&nbsp;<span id="/nebula-graph-on-pi/" class="leancloud_visitors" data-flag-title="Nebula Graph on Pi">
+                        <i class="far fa-eye fa-fw"></i>&nbsp;<span class=leancloud-visitors-count></span>&nbsp;次阅读
+                    </span>&nbsp;</div>
+        </div><div class="featured-image"><img
+        class="lazyload"
+        data-src="/nebula-graph-on-pi/featured-image.webp"
+        data-srcset="/nebula-graph-on-pi/featured-image.webp, /nebula-graph-on-pi/featured-image.webp 1.5x, /nebula-graph-on-pi/featured-image.webp 2x"
+        data-sizes="auto"
+        alt="/nebula-graph-on-pi/featured-image.webp"
+        title="得益于 Nebula 的原生 ARM64v8 的支持，在树莓派等 ARM 单板上跑 Nebula Graph 也非常容易。" height="908" width="1736"></div><div class="details toc" id="toc-static"  kept="">
+                <div class="details-summary toc-title">
+                    <span>目录</span>
+                    <span><i class="details-icon fas fa-angle-right"></i></span>
+                </div>
+                <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ol>
+    <li><a href="#背景">背景</a></li>
+    <li><a href="#在-arm64-板子上装-nebula-graph-图数据库">在 ARM64 板子上装 Nebula Graph 图数据库</a>
+      <ol>
+        <li><a href="#第-0-步安装-docker-和-docker-compose">第 0 步，安装 Docker 和 Docker-Compose</a></li>
+        <li><a href="#第-1-步拉起-nebula-graph">第 1 步，拉起 Nebula Graph</a></li>
+        <li><a href="#第-2-步玩转-nebula-graph-on-pi">第 2 步，玩转 Nebula Graph on Pi</a></li>
+      </ol>
+    </li>
+    <li><a href="#附录安装-ubuntu-server-在-rock-pi-3a-上">附录：安装 Ubuntu Server 在 Rock Pi 3A 上</a></li>
+  </ol>
+</nav></div>
+            </div><div class="content" id="content"><blockquote>
+<p>得益于 Nebula 的原生 ARM64v8 的支持，在树莓派等 ARM 单板上跑 Nebula Graph 非常容易。</p>
+</blockquote>
+<h2 id="背景" class="headerLink">
+    <a href="#%e8%83%8c%e6%99%af" class="header-mark"></a>1 背景</h2><p>最近，在 Nebula Graph 社区 Yee 老师的（再）一次修复了 Nebula Graph 的构建依赖的 ARM 支持问题（<a href="https://github.com/vesoft-inc/nebula-third-party/pull/37" target="_blank" rel="noopener noreffer">nebula-third-party#37</a>）之后，我们又可以愉快地在 M1 Mac 上玩这个分布式开源图数据库了。</p>
+<p>苦于树莓派的价格，一直没找机会把 Nebula 跑在小板子上玩玩。至于为什么要跑在树莓派上我的回答当然是 <del>Because I can</del> 在非常非常边缘计算的场景下（这里挖个坑，我一定要找一个这样的场景分享出来）。</p>
+<p>终于，一周多之前在 <a href="https://twitter.com/laixintao" target="_blank" rel="noopener noreffer">@laixintao</a> 和 <a href="https://twitter.com/andelf/status/1504295476958404608" target="_blank" rel="noopener noreffer">@andelf</a> 的一个讨论下我决定找一个树莓派的 alternative，最后下单了 <a href="https://wiki.radxa.com/Rock3/" target="_blank" rel="noopener noreffer">Rock Pi 3A</a>，在因为深圳疫情影响下拖到了这个礼拜才终于发货了！</p>
+<p><img
+        class="lazyload"
+        data-src="./tweet-RPi-alternative.webp"
+        data-srcset="./tweet-RPi-alternative.webp, ./tweet-RPi-alternative.webp 1.5x, ./tweet-RPi-alternative.webp 2x"
+        data-sizes="auto"
+        alt="./tweet-RPi-alternative.webp"
+        title="tweet-RPi-alternative"></p>
+<p>它看起来真的很棒！</p>
+<p><img
+        class="lazyload"
+        data-src="./rockspi_before.webp"
+        data-srcset="./rockspi_before.webp, ./rockspi_before.webp 1.5x, ./rockspi_before.webp 2x"
+        data-sizes="auto"
+        alt="./rockspi_before.webp"
+        title="rockspi_before"></p>
+<h2 id="在-arm64-板子上装-nebula-graph-图数据库" class="headerLink">
+    <a href="#%e5%9c%a8-arm64-%e6%9d%bf%e5%ad%90%e4%b8%8a%e8%a3%85-nebula-graph-%e5%9b%be%e6%95%b0%e6%8d%ae%e5%ba%93" class="header-mark"></a>2 在 ARM64 板子上装 Nebula Graph 图数据库</h2><blockquote>
+<p>实际上 Nebula Graph 在 3.0 之后提供了一个<a href="https://docs.nebula-graph.com.cn/3.0.1/4.deployment-and-installation/standalone-deployment/" target="_blank" rel="noopener noreffer">单机版</a>，这使得 Nebula 在边缘计算情况下有了更小的 footprint，不过这次我还没有使用这个版本，下次试试再给大家分享。</p>
+</blockquote>
+<p>我在附录列出了安装 Ubuntu Server 的步骤，这里假设大家已经在树莓派或者其他单板 ARM 电脑里拉起来了 64 位的 Linux Server。</p>
+<h3 id="第-0-步安装-docker-和-docker-compose" class="headerLink">
+    <a href="#%e7%ac%ac-0-%e6%ad%a5%e5%ae%89%e8%a3%85-docker-%e5%92%8c-docker-compose" class="header-mark"></a>2.1 第 0 步，安装 Docker 和 Docker-Compose</h3><p>这里，我假设是 Debian/Ubuntu，其他分发版直接参考<a href="https://docs.docker.com/engine/install/" target="_blank" rel="noopener noreffer">这里</a>就好。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">sudo apt-get update
+sudo apt-get install <span class="se">\
+</span><span class="se"></span>    ca-certificates <span class="se">\
+</span><span class="se"></span>    curl <span class="se">\
+</span><span class="se"></span>    gnupg <span class="se">\
+</span><span class="se"></span>    lsb-release
+
+<span class="nb">echo</span> <span class="se">\
+</span><span class="se"></span>  <span class="s2">&#34;deb [arch=</span><span class="k">$(</span>dpkg --print-architecture<span class="k">)</span><span class="s2"> signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
+</span><span class="s2">  </span><span class="k">$(</span>lsb_release -cs<span class="k">)</span><span class="s2"> stable&#34;</span> <span class="p">|</span> sudo tee /etc/apt/sources.list.d/docker.list &gt; /dev/null
+
+sudo apt-get update
+sudo apt-get install docker-ce docker-ce-cli containerd.io
+
+<span class="c1"># follow https://docs.docker.com/engine/install/linux-postinstall/</span>
+sudo groupadd docker
+sudo usermod -aG docker <span class="nv">$USER</span>
+<span class="nb">exit</span>
+<span class="c1"># login again</span>
+newgrp docker
+</code></pre></td></tr></table>
+</div>
+</div><p>安装好了 Docker 之后，安装 Compose，它 Docker 官方的步骤是有问题的，因为它其实是一个 Python 的包，我们通过 PIP 去装就好了。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">sudo apt-get install -y python3 python3-pip
+sudo pip3 install docker-compose
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="第-1-步拉起-nebula-graph" class="headerLink">
+    <a href="#%e7%ac%ac-1-%e6%ad%a5%e6%8b%89%e8%b5%b7-nebula-graph" class="header-mark"></a>2.2 第 1 步，拉起 Nebula Graph</h3><p>首先，我们克隆 Nebula Docker Compose 这个 Repo，在 Master Branch，用 Compose 把服务拉起来。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">git clone https://github.com/vesoft-inc/nebula-docker-compose.git <span class="o">&amp;&amp;</span> <span class="nb">cd</span> nebula-docker-compose
+docker-compose up -d
+</code></pre></td></tr></table>
+</div>
+</div><p>然后，我们下载 Console，连上 GraphD 服务。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">wget https://github.com/vesoft-inc/nebula-console/releases/download/v3.0.0/nebula-console-linux-arm64-v3.0.0
+chmod +x nebula-console-linux-arm64-v3.0.0
+
+./nebula-console-linux-arm64-v3.0.0 -addr localhost -port <span class="m">9669</span> -u root -p nebula
+</code></pre></td></tr></table>
+</div>
+</div><p>并激活 Storage 服务。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">ADD HOSTS <span class="s2">&#34;storaged0&#34;</span>:9779,<span class="s2">&#34;storaged1&#34;</span>:9779,<span class="s2">&#34;storaged2&#34;</span>:9779<span class="p">;</span>
+SHOW HOSTS<span class="p">;</span>
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="第-2-步玩转-nebula-graph-on-pi" class="headerLink">
+    <a href="#%e7%ac%ac-2-%e6%ad%a5%e7%8e%a9%e8%bd%ac-nebula-graph-on-pi" class="header-mark"></a>2.3 第 2 步，玩转 Nebula Graph on Pi</h3><p>这时候，透过 <code>SHOW HOSTS</code> 看到三个 StorageD 服务都是 ONLINE 之后，我们可以给 Nebula 里加载进去测试数据集。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$:play basketballplayer<span class="p">;</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>差不多一分钟之后，数据库加载成功，我们进入这个图空间，玩一下吧！</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">USE basketballplayer<span class="p">;</span>
+
+GO FROM <span class="s2">&#34;player100&#34;</span> OVER follow YIELD dst<span class="o">(</span>edge<span class="o">)</span><span class="p">;</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>Check this out and&hellip;</p>
+<p>Happy Graphing!</p>
+<p><img
+        class="lazyload"
+        data-src="./Nebula-on-Pi.webp"
+        data-srcset="./Nebula-on-Pi.webp, ./Nebula-on-Pi.webp 1.5x, ./Nebula-on-Pi.webp 2x"
+        data-sizes="auto"
+        alt="./Nebula-on-Pi.webp"
+        title="Nebula-on-Pi"></p>
+<h2 id="附录安装-ubuntu-server-在-rock-pi-3a-上" class="headerLink">
+    <a href="#%e9%99%84%e5%bd%95%e5%ae%89%e8%a3%85-ubuntu-server-%e5%9c%a8-rock-pi-3a-%e4%b8%8a" class="header-mark"></a>3 附录：安装 Ubuntu Server 在 Rock Pi 3A 上</h2><ul>
+<li>
+<p>准备一个 micro SD card，在  <a href="https://wiki.radxa.com/Rock3/downloads" target="_blank" rel="noopener noreffer">https://wiki.radxa.com/Rock3/downloads</a> 下载镜像，解压为 <code>.img</code> 文件</p>
+</li>
+<li>
+<p>把镜像写进 SD card，比如用 <a href="https://www.balena.io/etcher/" target="_blank" rel="noopener noreffer">etcher</a></p>
+</li>
+<li>
+<p>插入电源（5V，3A）启动！</p>
+</li>
+</ul>
+<blockquote>
+<p>feature image credit: <a href="https://unsplash.com/@_louisreed" target="_blank" rel="noopener noreffer">@_louisreed</a></p>
+</blockquote></div>
+
+        <div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>更新于 2022-03-23</span>
+            </div>
+            <div class="post-info-license"></div>
+        </div>
+        <div class="post-info-line">
+            <div class="post-info-md"><span><a class="link-to-mardown" href=/nebula-graph-on-pi/index.md target="_blank" rel="noopener noreferrer">阅读原始文档</a>
+                    </span></div>
+            <div class="post-info-share">
+                <span><a href="#" onclick="return false;" title="分享到 Twitter" data-sharer="twitter" data-url="https://siwei.io/nebula-graph-on-pi/" data-title="Nebula Graph on Pi" data-via="wey_gu" data-hashtags="Nebula Graph,ARM,Respberry Pi"><i class="fab fa-twitter fa-fw"></i></a><a href="#" onclick="return false;" title="分享到 Facebook" data-sharer="facebook" data-url="https://siwei.io/nebula-graph-on-pi/" data-hashtag="Nebula Graph"><i class="fab fa-facebook-square fa-fw"></i></a><a href="#" onclick="return false;" title="分享到 WhatsApp" data-sharer="whatsapp" data-url="https://siwei.io/nebula-graph-on-pi/" data-title="Nebula Graph on Pi" data-web><i class="fab fa-whatsapp fa-fw"></i></a><a href="#" onclick="return false;" title="分享到 Line" data-sharer="line" data-url="https://siwei.io/nebula-graph-on-pi/" data-title="Nebula Graph on Pi"><i data-svg-src="/lib/simple-icons/icons/line.min.svg"></i></a><a href="#" onclick="return false;" title="分享到 微博" data-sharer="weibo" data-url="https://siwei.io/nebula-graph-on-pi/" data-title="Nebula Graph on Pi" data-image="featured-image.webp" data-ralateuid="siweigu"><i class="fab fa-weibo fa-fw"></i></a><a href="#" onclick="return false;" title="分享到 Myspace" data-sharer="myspace" data-url="https://siwei.io/nebula-graph-on-pi/" data-title="Nebula Graph on Pi" data-description="得益于 Nebula 的原生 ARM64v8 的支持，在树莓派等 ARM 单板上跑 Nebula Graph 也非常容易。"><i data-svg-src="/lib/simple-icons/icons/myspace.min.svg"></i></a><a href="#" onclick="return false;" title="分享到 Blogger" data-sharer="blogger" data-url="https://siwei.io/nebula-graph-on-pi/" data-title="Nebula Graph on Pi" data-description="得益于 Nebula 的原生 ARM64v8 的支持，在树莓派等 ARM 单板上跑 Nebula Graph 也非常容易。"><i class="fab fa-blogger fa-fw"></i></a><a href="#" onclick="return false;" title="分享到 Evernote" data-sharer="evernote" data-url="https://siwei.io/nebula-graph-on-pi/" data-title="Nebula Graph on Pi"><i class="fab fa-evernote fa-fw"></i></a></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section class="post-tags"><i class="fas fa-tags fa-fw"></i>&nbsp;<a href="/tags/nebula-graph/">Nebula Graph</a>,&nbsp;<a href="/tags/arm/">ARM</a>,&nbsp;<a href="/tags/respberry-pi/">Respberry Pi</a></section>
+        <section>
+            <span><a href="javascript:void(0);" onclick="window.history.back();">返回</a></span>&nbsp;|&nbsp;<span><a href="/">主页</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/resolve-wordle/" class="prev" rel="prev" title="图数据库体操：用 Nebula Graph 搭成语图谱解汉兜"><i class="fas fa-angle-left fa-fw"></i>图数据库体操：用 Nebula Graph 搭成语图谱解汉兜</a></div>
+</div>
+<div id="comments"><div id="waline" class="comment"></div><noscript>
+                Please enable JavaScript to view the comments powered by <a href="https://waline.js.org/">Waline</a>.
+            </noscript></div></article></div>
+        </main><footer class="footer">
+        <div class="footer-container"><div class="footer-line">
+                    由 <a href="https://gohugo.io/" target="_blank" rel="noopener noreffer" title="Hugo 0.91.2">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreffer" title="DoIt 0.2.13"><i class="far fa-edit fa-fw"></i> DoIt</a>
+                </div><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2018 - 2022</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="https://siwei.io" target="_blank" rel="noopener noreferrer">Wey Gu</a></span>&nbsp;|&nbsp;<span class="license"><a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">CC BY-NC 4.0</a></span></div>
+            <div class="footer-line"></div>
+            <div class="footer-line">
+            </div>
+        </div><script>
+                    if('serviceWorker' in navigator) {
+                        navigator.serviceWorker
+                            .register('/sw.min.js', { scope: '/' })
+                            .then(function(registration) {
+                            });
+                
+                        navigator.serviceWorker
+                            .ready
+                            .then(function(registration) {
+                            });
+                    }
+                </script></footer></div>
+
+    <div id="fixed-buttons"><a href="#back-to-top" id="back-to-top-button" class="fixed-button" title="回到顶部">
+            <i class="fas fa-arrow-up fa-fw"></i>
+        </a><a href="#" id="view-comments" class="fixed-button" title="查看评论">
+            <i class="fas fa-comment fa-fw"></i>
+        </a>
+    </div><div class="assets"><script type="text/javascript" src="/lib/autocomplete/autocomplete.min.js"></script><script type="text/javascript" src="/lib/fuse/fuse.min.js"></script><script type="text/javascript" src="/lib/lazysizes/lazysizes.min.js"></script><script type="text/javascript" src="/lib/tablesort/tablesort.min.js"></script><script type="text/javascript" src="/lib/topbar/topbar.min.js"></script><script type="text/javascript" src="/lib/pjax/pjax.min.js"></script><script type="text/javascript" src="/js/theme.min.js" defer></script><script type="text/javascript">
+            window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());
+            gtag('config', 'UA-659952-4', { 'anonymize_ip': true });
+        </script><script type="text/javascript" src="https://www.googletagmanager.com/gtag/js?id=UA-659952-4" async></script></div>
+
+<div class="pjax-assets"><script type="text/javascript">window.config={"code":{"copyTitle":"复制到剪贴板","maxShownLines":10},"comment":{"waline":{"copyright":true,"dark":"body[theme='dark'], body[theme='black']","el":"#waline","highlight":true,"lang":"zh-cn","meta":["nick","mail","link"],"pageSize":10,"serverURL":"https://siwei-io.vercel.app","visitor":true}},"math":{"delimiters":[{"display":true,"left":"$$","right":"$$"},{"display":true,"left":"\\[","right":"\\]"},{"display":false,"left":"$","right":"$"},{"display":false,"left":"\\(","right":"\\)"}],"strict":false},"search":{"distance":100,"findAllMatches":true,"fuseIndexURL":"/index.json","highlightTag":"em","ignoreFieldNorm":false,"ignoreLocation":false,"isCaseSensitive":false,"location":0,"maxResultLength":10,"minMatchCharLength":2,"noResultsFound":"没有找到结果","snippetLength":50,"threshold":0.3,"type":"fuse","useExtendedSearch":false},"sharerjs":true,"table":{"sort":true}};</script><script type="text/javascript" src="/lib/waline/Waline.min.js" defer></script><script type="text/javascript" src="/js/waline.min.js" defer></script><script type="text/javascript" src="/lib/clipboard/clipboard.min.js"></script><script type="text/javascript" src="/lib/sharer/sharer.min.js"></script><script type="text/javascript" src="/lib/katex/katex.min.js" defer></script><script type="text/javascript" src="/lib/katex/auto-render.min.js" defer></script><script type="text/javascript" src="/lib/katex/copy-tex.min.js" defer></script><script type="text/javascript" src="/lib/katex/mhchem.min.js" defer></script><script type="text/javascript" src="/js/katex.min.js" defer></script><link rel="stylesheet" href="/lib/katex/katex.min.css"><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/katex/copy-tex.min.css">
+        <noscript><link rel="stylesheet" href="/lib/katex/copy-tex.min.css"></noscript></div>
+</body>
+
+</html>
