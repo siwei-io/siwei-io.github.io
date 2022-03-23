@@ -141,7 +141,7 @@ So, if we visit the "handle" game 👉🏻 https://handle.antfu.me/. We could st
 
 We will get hint of the first guess as:
 
-![](/Users/weyl/dev/siwei.io/siwei.io/content/posts/resolve-wordle/initial_word.webp)
+![](./initial_word.webp)
 
 Not bad, we have three of the charactor with informative hints!
 
