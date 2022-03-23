@@ -4,9 +4,172 @@
         <link>https://siwei.io/en/</link>
         <description>Siwei(思为) builds things and believes in Open Source.</description>
         <generator>Hugo -- gohugo.io</generator><language>en</language><managingEditor>weyl.gu@gmail.com (Wey Gu)</managingEditor>
-            <webMaster>weyl.gu@gmail.com (Wey Gu)</webMaster><lastBuildDate>Mon, 28 Feb 2022 19:18:59 &#43;0800</lastBuildDate>
+            <webMaster>weyl.gu@gmail.com (Wey Gu)</webMaster><lastBuildDate>Wed, 23 Mar 2022 22:11:03 &#43;0800</lastBuildDate>
             <atom:link href="https://siwei.io/en/index.xml" rel="self" type="application/rss+xml" />
         <item>
+    <title>Nebula Graph on Pi</title>
+    <link>https://siwei.io/en/nebula-graph-on-pi/</link>
+    <pubDate>Wed, 23 Mar 2022 22:11:03 &#43;0800</pubDate><author>
+        <name>Wey Gu</name>
+    </author><guid>https://siwei.io/en/nebula-graph-on-pi/</guid>
+    <description><![CDATA[<div class="featured-image">
+                <img src="/featured-image.webp" referrerpolicy="no-referrer">
+            </div><blockquote>
+<p>With the ARM64 Docker Image of Nebula Graph, it&rsquo;s actually quite easy to run it on SBC/Respberry Pi!</p>
+</blockquote>
+<h2 id="background" class="headerLink">
+    <a href="#background" class="header-mark"></a>1 Background</h2><p>Recently, after Yee from Nebula Graph Community fixed ARM build on <a href="https://github.com/vesoft-inc/nebula-third-party/pull/37" target="_blank" rel="noopener noreffer">nebula-third-party#37</a>, we could play with Nebula Graph on M1 Chip Macbook. While, I didn&rsquo;t get the chance to run it on a SBC/Pi.</p>
+<p>A couple of weeks before, in a twitter thread with <a href="https://twitter.com/laixintao" target="_blank" rel="noopener noreffer">@laixintao</a> and <a href="https://twitter.com/andelf/status/1504295476958404608" target="_blank" rel="noopener noreffer">@andelf</a> I decided to purchase a <a href="https://wiki.radxa.com/Rock3/" target="_blank" rel="noopener noreffer">Rock Pi 3A</a>:</p>
+<p></p>
+<p>And it looks nice!(Even come with a NPU inside)</p>
+<p></p>
+<h2 id="the-guide-of-running-nebula-graph-on-a-pi-sbc" class="headerLink">
+    <a href="#the-guide-of-running-nebula-graph-on-a-pi-sbc" class="header-mark"></a>2 The Guide of running Nebula Graph on a Pi SBC</h2><blockquote>
+<p>Actually, since v3.0.0, Nebula comes with a <a href="https://docs.nebula-graph.io/3.0.1/4.deployment-and-installation/standalone-deployment/" target="_blank" rel="noopener noreffer">standalone version</a>, which suits the deep edge deployment more, but today, I will only setup the cluster version as the Docker Image is out of box to be used. I will share more on standalone version in upcoming weeks.</p>
+</blockquote>
+<p>I put the Ubuntu Server installation steps in the appendix, and now I assumed we already have an ARM64 Linux up and running on a Pi SBC.</p>
+<h3 id="step-0-install-docker-compose-on-pi" class="headerLink">
+    <a href="#step-0-install-docker-compose-on-pi" class="header-mark"></a>2.1 Step 0, Install Docker-Compose on Pi</h3><p>I am using debian/ubuntu here, while it should be the same for other distros, referring to <a href="https://docs.docker.com/engine/install/" target="_blank" rel="noopener noreffer">https://docs.docker.com/engine/install/</a>.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">sudo apt-get update
+sudo apt-get install <span class="se">\
+</span><span class="se"></span>    ca-certificates <span class="se">\
+</span><span class="se"></span>    curl <span class="se">\
+</span><span class="se"></span>    gnupg <span class="se">\
+</span><span class="se"></span>    lsb-release
+
+<span class="nb">echo</span> <span class="se">\
+</span><span class="se"></span>  <span class="s2">&#34;deb [arch=</span><span class="k">$(</span>dpkg --print-architecture<span class="k">)</span><span class="s2"> signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
+</span><span class="s2">  </span><span class="k">$(</span>lsb_release -cs<span class="k">)</span><span class="s2"> stable&#34;</span> <span class="p">|</span> sudo tee /etc/apt/sources.list.d/docker.list &gt; /dev/null
+
+sudo apt-get update
+sudo apt-get install docker-ce docker-ce-cli containerd.io
+
+<span class="c1"># follow https://docs.docker.com/engine/install/linux-postinstall/</span>
+sudo groupadd docker
+sudo usermod -aG docker <span class="nv">$USER</span>
+<span class="nb">exit</span>
+<span class="c1"># login again</span>
+newgrp docker
+</code></pre></td></tr></table>
+</div>
+</div><p>After Docker being installed, we install compose here, there could be issues encounterred from the Docker website on Compose installation. While, due to compose is just a python package, let&rsquo;s do it via python3-pip install:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">sudo apt-get install -y python3 python3-pip
+sudo pip3 install docker-compose
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="step-1-bootstrap-nebula-graph-cluster-on-pi" class="headerLink">
+    <a href="#step-1-bootstrap-nebula-graph-cluster-on-pi" class="header-mark"></a>2.2 Step 1, bootstrap Nebula Graph Cluster on Pi</h3><p>We clone the compose file for nebula cluster first:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">git clone https://github.com/vesoft-inc/nebula-docker-compose.git <span class="o">&amp;&amp;</span> <span class="nb">cd</span> nebula-docker-compose
+docker-compose up -d
+</code></pre></td></tr></table>
+</div>
+</div><p>Then, let&rsquo;s download the client: nebula-console, and connect to the GraphD service:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">wget https://github.com/vesoft-inc/nebula-console/releases/download/v3.0.0/nebula-console-linux-arm64-v3.0.0
+chmod +x nebula-console-linux-arm64-v3.0.0
+
+./nebula-console-linux-arm64-v3.0.0 -addr localhost -port <span class="m">9669</span> -u root -p nebula
+</code></pre></td></tr></table>
+</div>
+</div><p>Activate the storageD services:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">ADD HOSTS <span class="s2">&#34;storaged0&#34;</span>:9779,<span class="s2">&#34;storaged1&#34;</span>:9779,<span class="s2">&#34;storaged2&#34;</span>:9779<span class="p">;</span>
+SHOW HOSTS<span class="p">;</span>
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="step-2-play-nebula-graph-on-pi" class="headerLink">
+    <a href="#step-2-play-nebula-graph-on-pi" class="header-mark"></a>2.3 Step 2, Play Nebula Graph on Pi</h3><p>WIth the <code>SHOW HOSTS</code> we should see StorageD services are all ONLINE, then we could run this from the console session to load the test dataset.</p>
+<blockquote>
+<p>Referennce: <a href="https://docs.nebula-graph.io/3.0.1/nebula-console/#import_a_testing_dataset" target="_blank" rel="noopener noreffer">https://docs.nebula-graph.io/3.0.1/nebula-console/#import_a_testing_dataset</a></p>
+</blockquote>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$:play basketballplayer<span class="p">;</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>The test data will be loaded in around 1 minute. Then, we could query something like:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">USE basketballplayer<span class="p">;</span>
+
+GO FROM <span class="s2">&#34;player100&#34;</span> OVER follow YIELD dst<span class="o">(</span>edge<span class="o">)</span><span class="p">;</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>Check this out and&hellip;</p>
+<p>Happy Graphing!</p>
+<p></p>
+<h2 id="appendix-installing-ubuntu-server-on-rock-pi-3a-sbc" class="headerLink">
+    <a href="#appendix-installing-ubuntu-server-on-rock-pi-3a-sbc" class="header-mark"></a>3 Appendix: Installing Ubuntu Server on Rock Pi 3A SBC</h2><ul>
+<li>
+<p>Get the image from <a href="https://wiki.radxa.com/Rock3/downloads" target="_blank" rel="noopener noreffer">https://wiki.radxa.com/Rock3/downloads</a> decompressing the file into <code>.img</code></p>
+</li>
+<li>
+<p>Write the image to a micro SD card with <a href="https://www.balena.io/etcher/" target="_blank" rel="noopener noreffer">etcher</a></p>
+</li>
+<li>
+<p>Boot it!</p>
+</li>
+</ul>
+<blockquote>
+<p>feature image credit: <a href="https://unsplash.com/@_louisreed" target="_blank" rel="noopener noreffer">@_louisreed</a></p>
+</blockquote>]]></description>
+</item><item>
     <title>What happens to Wordle and Chinese idiom Knowledge Graph?</title>
     <link>https://siwei.io/en/resolve-wordle/</link>
     <pubDate>Mon, 28 Feb 2022 19:18:59 &#43;0800</pubDate><author>
@@ -3853,788 +4016,6 @@ E0817 08:03:28.611912   <span class="m">169</span> StorageHttpIngestHandler.cpp:
 </div>
 </div><blockquote>
 <p>Banner Picture Credit: <a href="https://unsplash.com/photos/a4Gz2DD4dX0" target="_blank" rel="noopener noreffer">Maik Hankemann</a></p>
-</blockquote>]]></description>
-</item><item>
-    <title>Explore Chia Network in a Visualized Way</title>
-    <link>https://siwei.io/en/nebula-chia/</link>
-    <pubDate>Wed, 26 May 2021 21:17:04 &#43;0800</pubDate><author>
-        <name>Wey Gu</name>
-    </author><guid>https://siwei.io/en/nebula-chia/</guid>
-    <description><![CDATA[<div class="featured-image">
-                <img src="/featured-image.webp" referrerpolicy="no-referrer">
-            </div><blockquote>
-<p>本文分析了 Chia Network 的全链数据，并做了将全链数据导入图数据库：Nebula Graph 之中的尝试，从而可视化地探索了 Chia 图中数据之间的关联关系。</p>
-<p>我把涉及的代码开源在了这里：https://github.com/wey-gu/nebula-chia</p>
-</blockquote>
-<h2 id="1-what-is-chia-network" class="headerLink">
-    <a href="#1-what-is-chia-network" class="header-mark"></a>1 1. What is Chia Network?</h2><p>Chia Network 是由 BitTorrent 的作者 Bram Cohen 的团队在 2017 年创建的区块链项目。</p>
-<h3 id="11-why-yet-another-blockchain-为什么再搞一个区块链" class="headerLink">
-    <a href="#11-why-yet-another-blockchain-%e4%b8%ba%e4%bb%80%e4%b9%88%e5%86%8d%e6%90%9e%e4%b8%80%e4%b8%aa%e5%8c%ba%e5%9d%97%e9%93%be" class="header-mark"></a>1.1 1.1 Why yet another Blockchain? 为什么再搞一个区块链?</h3><p>Chia 用了全新的中本聪共识算法，这个算法通过不允许并行计算，让挖矿（Proof of Work）所需算力和能耗降到非常低，这使得超大组织、玩家没法像在其他的区块链项目那样有算力的绝对优势，也一定程度上规避了能源的浪费。</p>
-<h3 id="12-how-can-i-access-chia-network-如何连接chia" class="headerLink">
-    <a href="#12-how-can-i-access-chia-network-%e5%a6%82%e4%bd%95%e8%bf%9e%e6%8e%a5chia" class="header-mark"></a>1.2 1.2 How Can I access Chia Network? 如何连接Chia?</h3><p>我们可以通过 Chia Network 的客户端来访问它，这个客户端是 Electron + Python 的程序，天然跨平台，既有 GUI 又有 CLI 的方式。</p>
-<h4 id="安装" class="headerLink">
-    <a href="#%e5%ae%89%e8%a3%85" class="header-mark"></a>1.2.1 安装</h4><p>只需要按照官方的 Guide 来下载安装就好， <a href="https://github.com/Chia-Network/chia-blockchain/wiki/INSTALL" target="_blank" rel="noopener noreffer">https://github.com/Chia-Network/chia-blockchain/wiki/INSTALL</a>，我在 M1 Mac 下安装的时候脚本出了点小问题，大概是因为拉取二进制 wheel 文件网络出问题走到了编译 wheel的逻辑，而那里是依赖 <code>cargo</code>的，如果大家遇到了这个问题，可以提前手动安装一下 rust，或者 cherry-pick 我的这个 <a href="https://github.com/Chia-Network/chia-blockchain/pull/3789" target="_blank" rel="noopener noreffer">PR</a> 。</p>
-<h4 id="运行" class="headerLink">
-    <a href="#%e8%bf%90%e8%a1%8c" class="header-mark"></a>1.2.2 运行</h4><ul>
-<li>按照官方 guide，比如 macOS 来说，最后一步执行<code>npm run electron &amp;</code> 就是运行它的GUI客户端。</li>
-<li>如果大家像我一样喜欢 CLI，直接在执行完 <code>. ./activate</code> 之后就可以 <code>chia --help</code>了哈☺，里边有只启动部分服务的方式（相比 GUI 启动所有来说)。</li>
-</ul>
-<p>在运行之后，如果你的网络不是多层 NAT 的那种，理论上您可以连到 <code>mainnet</code> 并且自动和主链同步数据了，如果您是第二次运行，连接主链，一开始可能有一阵子同步的<code>block</code> 数是不变的，也没有 <code>peer</code> 连过来，不必惊慌，等一下就好了。</p>
-<blockquote>
-<p>Tips:</p>
-<ul>
-<li>第一次连到 Chia Network 的同学们，客户端会自动生成一个钱包，及的保存那一串词，它们就是你的私钥哦。</li>
-<li>万一，如果真的连不上的话，可能需要在路由上配置，<a href="https://www.homenethowto.com/ports-and-nat/upnp-automatic-port-forward/" target="_blank" rel="noopener noreffer">UPnP</a>，防火墙要允许 8444。</li>
-</ul>
-</blockquote>
-<h4 id="访问-chia-的数据" class="headerLink">
-    <a href="#%e8%ae%bf%e9%97%ae-chia-%e7%9a%84%e6%95%b0%e6%8d%ae" class="header-mark"></a>1.2.3 访问 Chia 的数据</h4><p>Chia 的客户端把数据存在了几个 SQLite 数据库里，它们的路径是我们安装客户端的用户的家目录：<code>~/.chia/mainnet</code></p>
-<p>下边就是运行起来 Chia 之后生成的主要的两个数据库的二进制文件：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">~/.chia/mainnet/db 
-❯ ll -h
-total 4350416
--rw-r--r--  1 weyl  staff   2.0G May  6 12:06 blockchain_v1_mainnet.sqlite
--rw-r--r--  1 weyl  staff    64K May  6 11:17 blockchain_v1_mainnet.sqlite-shm
--rw-r--r--  1 weyl  staff    20M May  6 12:10 blockchain_v1_mainnet.sqlite-wal
--rw-r--r--  1 weyl  staff   1.8M May  6 11:46 peer_table_node.sqlite
--rw-r--r--  1 weyl  staff    32K May  5 17:30 peer_table_node.sqlite-shm
--rw-r--r--  1 weyl  staff   5.4M May  6 11:46 peer_table_node.sqlite-wal
-
-~/.chia/mainnet/wallet/db
-❯ ll -h 
-total 3055848
--rw-r--r--  1 weyl  staff   1.4G May  7 15:32 blockchain_wallet_v1_mainnet_903996200.sqlite
--rw-r--r--  1 weyl  staff    32K May  7 15:24 blockchain_wallet_v1_mainnet_903996200.sqlite-shm
--rw-r--r--  1 weyl  staff   4.0M May  7 15:32 blockchain_wallet_v1_mainnet_903996200.sqlite-wal
--rw-r--r--  1 weyl  staff    16K May  7 15:24 wallet_peers.sqlite
-</code></pre></td></tr></table>
-</div>
-</div><p>然后，我们可以先用 SQLite Browser，一个 SQlite 数据库（文件）的浏览器来看看它。</p>
-<p>SQlite 浏览器的官网是 <a href="https://sqlitebrowser.org/" target="_blank" rel="noopener noreffer">https://sqlitebrowser.org/</a> 。在下载，安装之后，我们可以通过点击 <code>Open Database/打开数据库</code> 选择浏览上边列出来的两个 <code>.sqlite</code> 扩展名的数据库文件。</p>
-<p>打开数据库之后，我们可以选择第一个标签 <code>Database Schema</code> 来看看表的结构。</p>
-<p></p>
-<p>我们还能像类似于 Excel 一样去看表的数据，还可以 Filter/过滤、Sort/排序任意列。</p>
-<p></p>
-<p>下一部分，我们来简单看看表里的数据。</p>
-<blockquote>
-<p>Tips:</p>
-<ul>
-<li>这里边，<code>~/.chia/mainnet/wallet</code> 和裸目录 <code>~/.chia/mainnet </code> 下边的 <code>db</code> 里分别都有表文件，他们的信息是有重复的，大家可以分别打开看看哦，即使是相同的表的名字，比如 <code>block_record</code> 内里的信息也略有差别，如果大家知道为什么有这样的差别，欢迎浏览告诉大家哈，可能要仔细研究一下客户端、钱包等代码才行，幸运的是，它们相对比较好阅读，是 Python 写的： <a href="https://github.com/Chia-Network/chia-blockchain" target="_blank" rel="noopener noreffer">https://github.com/Chia-Network/chia-blockchain</a> 。</li>
-</ul>
-</blockquote>
-<h2 id="2-inspect-the-chia-network-分析-chia-的数据" class="headerLink">
-    <a href="#2-inspect-the-chia-network-%e5%88%86%e6%9e%90-chia-%e7%9a%84%e6%95%b0%e6%8d%ae" class="header-mark"></a>2 2. Inspect the Chia Network, 分析 Chia 的数据</h2><p>如果大家仔细看了上边表结构定义的截图，就能注意到一些表的主要信息是嵌套二进制 KV Byte，所以只从 SQLite 并不能看到所有 Chia 的数据，所以我们需要（用一个编程语言来）读取表里的 Byte。</p>
-<p>幸运的是，这件事儿因为 Chia 是开源的，而且是 Python 的代码，使得我们可以直接交互式的做。</p>
-<p>我花了一点点时间在 Chia 客户端代码里找到了需要的封装类，借助它，可以比较方便的分析 Chia 客户端在本地的全链数据。</p>
-<p>如果您不感兴趣细节，可以直接看我分析的结论。</p>
-<p>结论之后，我也给大家演示一下是怎么读取它们的。</p>
-<h3 id="20-tldr-结论" class="headerLink">
-    <a href="#20-tldr-%e7%bb%93%e8%ae%ba" class="header-mark"></a>2.1 2.0 TL;DR, 结论</h3><p>我们可以从表中读取到区块链记录（Block Record ），Chia 币记录（Coin Record）。</p>
-<p>从区块记录中，我们可以看到关键的涉及交易的信息：</p>
-<ul>
-<li>关联的 Coin ，关联的 Puzzle（地址），Coin 的值(Amount)</li>
-</ul>
-<p>从币记录中，我们可以看到关键的涉及区块的信息：</p>
-<ul>
-<li>生成这个 Coin 所在区块链里的索引高度（Confirmed Index）</li>
-<li>如果这个记录是花费 Coin 的，花费它的索引高度（Spent Index）</li>
-</ul>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">                                                   ┌──────────────────────┐
-┌────────────────────────────────────────┐         │                      │
-│                                        │         │    Coin Record       │
-│   Block Record                         │         │                      │
-│                                        │         │     Coin Name        │
-│    Height ◄────────────────────────────┼─┐       │                      │
-│                                        │ │     ┌─┼───► Puzzle           │
-│    Header                              │ │     │ │                      │
-│                                        │ │     ├─┼───► Coin Parent      │
-│    Prev Header                         │ │     │ │                      │
-│                                        │ │     ├─┼───► Amount           │
-│    Block Body                          │ │     │ │                      │
-│      farmer_puzzle_hash                │ │     │ │     Time Stamp       │
-│      fees                              │ │     │ │                      │
-│      pool_puzzle_hash                  │ └─────┼─┼─┬─  Confirmed Index  │
-│      prev_transaction_block_hash       │       │ │ │                    │
-│      prev_transaction_block_height     │       │ │ └─  Spent Index      │
-│      transactions_info  ───────────────┼───────┘ │                      │
-│ ┌─── is_transaction_block              │         │     Coinbase         │
-│ │    sub_epoch_summary ────────────────┼───────┐ │                      │
-│ │                                      │       │ └─ ────────────────────┘
-│ │  is Peak                             │       │
-│ └──is Block                            │       │ ┌─────────────────────┐
-│                                        │       │ │                     │
-└────────────────────────────────────────┘       └─┼─► Sub Epoch Segment │
-                                                   │                     │
-                                                   └─────────────────────┘
-</code></pre></td></tr></table>
-</div>
-</div><h3 id="21-preperation-准备" class="headerLink">
-    <a href="#21-preperation-%e5%87%86%e5%a4%87" class="header-mark"></a>2.2 2.1 Preperation, 准备</h3><p>因为安装客户端之后，我们本地实际上已经有了相关的 Python 环境和依赖，只需要在里边跑起来就好。</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="c1"># 注意，我们要 cd 到之前安装客户端时候克隆的仓库。</span>
-<span class="nb">cd</span> chia-blockchain
-<span class="c1"># source activate 脚本来切换到仓库安装时候创建的 Python 虚拟环境，并进到 IPython 里。</span>
-<span class="nb">source</span> venv/bin/activate <span class="o">&amp;&amp;</span> pip install ipython <span class="o">&amp;&amp;</span> ipython
-</code></pre></td></tr></table>
-</div>
-</div><p>然后试着导入客户端里边带有的 Python 的 Chia 的封装类试试看。</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="kn">import</span> <span class="nn">sqlite3</span>
-   <span class="o">...</span><span class="p">:</span> <span class="kn">from</span> <span class="nn">chia.consensus.block_record</span> <span class="kn">import</span> <span class="n">BlockRecord</span>
-<span class="c1"># 导入成功，没有报错</span>
-<span class="n">In</span> <span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="err">!</span><span class="n">pwd</span>
-<span class="c1"># 我的安装克隆目录</span>
-<span class="o">/</span><span class="n">Users</span><span class="o">/</span><span class="n">weyl</span><span class="o">/</span><span class="n">chia</span><span class="o">-</span><span class="n">blockchain</span>
-</code></pre></td></tr></table>
-</div>
-</div><p>恭喜你做好了准备，我们看看 Block Record 里都有什么。</p>
-<h3 id="block-record-chain区块记录" class="headerLink">
-    <a href="#block-record-chain%e5%8c%ba%e5%9d%97%e8%ae%b0%e5%bd%95" class="header-mark"></a>2.3 Block Record Chain，区块记录</h3><p>在上一步的 <code>IPython</code> 窗口下。</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="c1"># 注意，这里的路径的前缀是我们自己的家目录，不同操作系统，不同的用户都会有所不同。</span>
-<span class="n">chia_db_path</span> <span class="o">=</span> <span class="s2">&#34;/Users/weyl/.chia/mainnet/db/blockchain_v1_mainnet.sqlite&#34;</span>
-
-<span class="n">cur</span> <span class="o">=</span> <span class="n">con</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
-<span class="c1"># 这里我们取第 201645 高的区块</span>
-<span class="n">rows</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;SELECT * FROM block_records WHERE height = 201645&#39;</span><span class="p">))</span>
-<span class="c1"># 这里 0 表示 SELECT 结果的第一行，3 表示在 BlockRecord 这个表里边，Block 的二进制 BLOB 是第四列，参考本章底部的表定义部分</span>
-<span class="n">block_records_201645</span> <span class="o">=</span> <span class="n">BlockRecord</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">rows</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">3</span><span class="p">])</span>
-<span class="nb">dir</span><span class="p">(</span><span class="n">block_records_201645</span><span class="p">)</span>
-<span class="c1"># 可以查看一些属性 is_transaction_block，timestamp，reward_claims_incorporated</span>
-<span class="n">In</span> <span class="p">[</span><span class="mi">174</span><span class="p">]:</span> <span class="n">block_records_201645</span><span class="o">.</span><span class="n">is_transaction_block</span>
-<span class="n">Out</span><span class="p">[</span><span class="mi">174</span><span class="p">]:</span> <span class="kc">True</span>
-
-<span class="n">In</span> <span class="p">[</span><span class="mi">182</span><span class="p">]:</span> <span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
-<span class="n">In</span> <span class="p">[</span><span class="mi">183</span><span class="p">]:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">fromtimestamp</span><span class="p">(</span><span class="n">block_records_201645</span><span class="o">.</span><span class="n">timestamp</span><span class="p">)</span>
-<span class="n">Out</span><span class="p">[</span><span class="mi">183</span><span class="p">]:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2021</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">29</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-
-<span class="n">In</span> <span class="p">[</span><span class="mi">190</span><span class="p">]:</span> <span class="n">block_records_201645</span><span class="o">.</span><span class="n">reward_claims_incorporated</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">to_json_dict</span><span class="p">()</span>
-<span class="n">Out</span><span class="p">[</span><span class="mi">190</span><span class="p">]:</span>
-<span class="p">{</span><span class="s1">&#39;parent_coin_info&#39;</span><span class="p">:</span> <span class="s1">&#39;0xccd5bb71183532bff220ba46c268991a000000000000000000000000000313ab&#39;</span><span class="p">,</span>
- <span class="s1">&#39;puzzle_hash&#39;</span><span class="p">:</span> <span class="s1">&#39;0xbbb014f41d88c74b78501b36e4863d3382bfda9ae3c4d30a1b6df72b962502b6&#39;</span><span class="p">,</span>
- <span class="s1">&#39;amount&#39;</span><span class="p">:</span> <span class="mi">1750000000000</span><span class="p">}</span>
-
-<span class="c1"># 可以快速 print 看大部分信息</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">block_records_201645</span><span class="p">)</span>
-</code></pre></td></tr></table>
-</div>
-</div><p><code>block_records_201645</code> 的打印结果如下。</p>
-<blockquote>
-<p>这里我截断了一些数据</p>
-</blockquote>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
-</span><span class="lnt">28
-</span><span class="lnt">29
-</span><span class="lnt">30
-</span><span class="lnt">31
-</span><span class="lnt">32
-</span><span class="lnt">33
-</span><span class="lnt">34
-</span><span class="lnt">35
-</span><span class="lnt">36
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span><span class="err">&#39;challenge_block_info_hash&#39;:</span> <span class="err">&#39;0x4a562f1ffa7a06fe76b1df74dbdd6bdcfbf63139a6f1fc3291c606d7c976abf6&#39;,</span>
- <span class="err">&#39;challenge_vdf_output&#39;:</span> <span class="err">{&#39;data&#39;:</span> <span class="err">&#39;0x0200a6b38d6b58d17129d71737088772561f22a44ef302fe45a70a763b878f998abfe35946df720bcb5d78e214b667bce801d597b46c867928c4b8926c342375a961f36cd63ec698bc25e5ce48c45d9a2074eded0e42d24dd1b50a59e699f671f0900100&#39;</span><span class="p">}</span><span class="err">,</span>
- <span class="err">&#39;deficit&#39;:</span> <span class="mi">16</span><span class="err">,</span>
- <span class="err">&#39;farmer_puzzle_hash&#39;:</span> <span class="err">&#39;</span><span class="mi">0</span><span class="err">x</span><span class="mi">4</span><span class="err">bc</span><span class="mi">6435</span><span class="err">b</span><span class="mi">409</span><span class="err">bcbabe</span><span class="mi">53870</span><span class="err">dae</span><span class="mi">0</span><span class="err">f</span><span class="mi">03755</span><span class="err">f</span><span class="mi">6</span><span class="err">aabb</span><span class="mi">4594</span><span class="err">c</span><span class="mi">5915</span><span class="err">ec</span><span class="mi">983</span><span class="err">acf</span><span class="mi">12</span><span class="err">a</span><span class="mi">5</span><span class="err">d</span><span class="mi">1</span><span class="err">fba&#39;,</span>
- <span class="err">&#39;fees&#39;:</span> <span class="mi">0</span><span class="err">,</span>
- <span class="err">&#39;finished_challenge_slot_hashes&#39;:</span> <span class="p">[</span><span class="err">&#39;</span><span class="mi">0</span><span class="err">x</span><span class="mi">2</span><span class="err">b</span><span class="mi">1</span><span class="err">a</span><span class="mi">7</span><span class="err">b</span><span class="mi">4859</span><span class="err">a</span><span class="mi">8</span><span class="err">d</span><span class="mi">3597</span><span class="err">b</span><span class="mf">8e6</span><span class="err">cbe</span><span class="mi">3</span><span class="err">b</span><span class="mi">27</span><span class="err">ab</span><span class="mi">97212</span><span class="err">be</span><span class="mi">8</span><span class="err">b</span><span class="mf">19e6867</span><span class="err">f</span><span class="mi">2</span><span class="err">a</span><span class="mi">4</span><span class="err">d</span><span class="mi">0</span><span class="err">eef</span><span class="mi">26</span><span class="err">c</span><span class="mi">36340</span><span class="err">f&#39;</span><span class="p">]</span><span class="err">,</span>
- <span class="err">&#39;finished_infused_challenge_slot_hashes&#39;:</span> <span class="p">[</span><span class="err">&#39;</span><span class="mi">0</span><span class="err">xd</span><span class="mi">0185</span><span class="err">a</span><span class="mi">6493</span><span class="err">b</span><span class="mi">10</span><span class="err">d</span><span class="mf">84e696</span><span class="err">c</span><span class="mi">6</span><span class="err">fc</span><span class="mi">55</span><span class="err">ec</span><span class="mf">1920e8</span><span class="err">a</span><span class="mi">96791</span><span class="err">a</span><span class="mi">604</span><span class="err">dedfe</span><span class="mi">77635</span><span class="err">da</span><span class="mi">460</span><span class="err">f</span><span class="mi">354</span><span class="err">d&#39;</span><span class="p">]</span><span class="err">,</span>
- <span class="err">&#39;finished_reward_slot_hashes&#39;:</span> <span class="p">[</span><span class="err">&#39;</span><span class="mi">0</span><span class="err">xe</span><span class="mi">2</span><span class="err">bcbf</span><span class="mi">560471131</span><span class="err">a</span><span class="mi">7</span><span class="err">fb</span><span class="mi">87</span><span class="err">ffe</span><span class="mi">3</span><span class="err">f</span><span class="mi">9</span><span class="err">ddde</span><span class="mi">03166</span><span class="err">a</span><span class="mi">9</span><span class="err">b</span><span class="mi">0092</span><span class="err">a</span><span class="mi">50</span><span class="err">f</span><span class="mi">1</span><span class="err">ed</span><span class="mi">1599715857</span><span class="err">c</span><span class="mi">365</span><span class="err">&#39;</span><span class="p">]</span><span class="err">,</span>
- <span class="err">&#39;header_hash&#39;:</span> <span class="err">&#39;</span><span class="mi">0</span><span class="err">x</span><span class="mf">2791729e1</span><span class="err">c</span><span class="mi">914</span><span class="err">f</span><span class="mi">9</span><span class="err">c</span><span class="mi">3908</span><span class="err">a</span><span class="mi">0</span><span class="err">ad</span><span class="mi">895</span><span class="err">b</span><span class="mi">5846</span><span class="err">c</span><span class="mi">86</span><span class="err">fc</span><span class="mf">4e207</span><span class="err">cc</span><span class="mf">463820123e9</span><span class="err">a</span><span class="mi">299</span><span class="err">c</span><span class="mi">39</span><span class="err">f</span><span class="mi">3</span><span class="err">&#39;,</span>
- <span class="err">&#39;height&#39;:</span> <span class="mi">201645</span><span class="err">,</span>
- <span class="err">&#39;infused_challenge_vdf_output&#39;:</span> <span class="err">None,</span>
- <span class="err">&#39;overflow&#39;:</span> <span class="err">True,</span>
- <span class="err">&#39;pool_puzzle_hash&#39;:</span> <span class="err">&#39;</span><span class="mi">0</span><span class="err">x</span><span class="mi">4</span><span class="err">bc</span><span class="mi">6435</span><span class="err">b</span><span class="mi">409</span><span class="err">bcbabe</span><span class="mi">53870</span><span class="err">dae</span><span class="mi">0</span><span class="err">f</span><span class="mi">03755</span><span class="err">f</span><span class="mi">6</span><span class="err">aabb</span><span class="mi">4594</span><span class="err">c</span><span class="mi">5915</span><span class="err">ec</span><span class="mi">983</span><span class="err">acf</span><span class="mi">12</span><span class="err">a</span><span class="mi">5</span><span class="err">d</span><span class="mi">1</span><span class="err">fba&#39;,</span>
- <span class="err">&#39;prev_hash&#39;:</span> <span class="err">&#39;</span><span class="mi">0</span><span class="err">xf</span><span class="mi">126</span><span class="err">ecf</span><span class="mi">64473</span><span class="err">beb</span><span class="mi">9</span><span class="err">ae</span><span class="mi">5</span><span class="err">b</span><span class="mi">84137788100</span><span class="err">feb</span><span class="mi">9</span><span class="err">d</span><span class="mi">731</span><span class="err">c</span><span class="mi">604877</span><span class="err">c</span><span class="mi">0744</span><span class="err">cdc</span><span class="mi">6025</span><span class="err">f</span><span class="mi">4</span><span class="err">cbeb&#39;,</span>
- <span class="err">&#39;prev_transaction_block_hash&#39;:</span> <span class="err">&#39;</span><span class="mi">0</span><span class="err">x</span><span class="mi">7103</span><span class="err">fe</span><span class="mi">2</span><span class="err">f</span><span class="mi">1</span><span class="err">aa</span><span class="mi">96998</span><span class="err">f</span><span class="mi">9</span><span class="err">ccf</span><span class="mi">6</span><span class="err">fc</span><span class="mi">98561</span><span class="err">b</span><span class="mi">64</span><span class="err">c</span><span class="mi">5</span><span class="err">f</span><span class="mi">7</span><span class="err">a</span><span class="mi">98</span><span class="err">cf</span><span class="mi">942335</span><span class="err">c</span><span class="mi">4</span><span class="err">c</span><span class="mi">927</span><span class="err">fb</span><span class="mi">2</span><span class="err">eaa</span><span class="mi">9325</span><span class="err">a&#39;,</span>
- <span class="err">&#39;prev_transaction_block_height&#39;:</span> <span class="mi">201643</span><span class="err">,</span>
- <span class="err">&#39;required_iters&#39;:</span> <span class="mi">95752</span><span class="err">,</span>
- <span class="err">&#39;reward_claims_incorporated&#39;:</span> <span class="p">[{</span><span class="err">&#39;amount&#39;:</span> <span class="err">1750000000000,</span>
-                                 <span class="err">&#39;parent_coin_info&#39;:</span> <span class="err">&#39;0xccd5bb71183532bff220ba46c268991a000000000000000000000000000313ab&#39;,</span>
-                                 <span class="err">&#39;puzzle_hash&#39;:</span> <span class="err">&#39;0xbbb014f41d88c74b78501b36e4863d3382bfda9ae3c4d30a1b6df72b962502b6&#39;</span><span class="p">},</span>
-                                <span class="p">{</span><span class="err">&#39;amount&#39;:</span> <span class="err">250000000000,</span>
-                                 <span class="err">&#39;parent_coin_info&#39;:</span> <span class="err">&#39;0x3ff07eb358e8255a65c30a2dce0e5fbb000000000000000000000000000313ab&#39;,</span>
-                                 <span class="err">&#39;puzzle_hash&#39;:</span> <span class="err">&#39;0xbbb014f41d88c74b78501b36e4863d3382bfda9ae3c4d30a1b6df72b962502b6&#39;</span><span class="p">},</span>
-                                <span class="p">{</span><span class="err">&#39;amount&#39;:</span> <span class="err">1750000000000,</span>
-                                 <span class="err">&#39;parent_coin_info&#39;:</span> <span class="err">&#39;0xccd5bb71183532bff220ba46c268991a000000000000000000000000000313aa&#39;,</span>
-                                 <span class="err">&#39;puzzle_hash&#39;:</span> <span class="err">&#39;0x4bc6435b409bcbabe53870dae0f03755f6aabb4594c5915ec983acf12a5d1fba&#39;</span><span class="p">},</span>
-                                <span class="p">{</span><span class="err">&#39;amount&#39;:</span> <span class="err">250000000000,</span>
-                                 <span class="err">&#39;parent_coin_info&#39;:</span> <span class="err">&#39;0x3ff07eb358e8255a65c30a2dce0e5fbb000000000000000000000000000313a8&#39;,</span>
-                                 <span class="err">&#39;puzzle_hash&#39;:</span> <span class="err">&#39;0xcf178071f6aa6cb1c92f00943424bcc8cb774449bd60058fc08e9894f49a1ca4&#39;</span><span class="p">}]</span><span class="err">,</span>
- <span class="err">&#39;reward_infusion_new_challenge&#39;:</span> <span class="err">&#39;</span><span class="mi">0</span><span class="err">x</span><span class="mi">660886</span><span class="err">f</span><span class="mi">4</span><span class="err">ab</span><span class="mi">030</span><span class="err">c</span><span class="mi">07755</span><span class="err">f</span><span class="mi">53362</span><span class="err">ae</span><span class="mi">4253</span><span class="err">dfa</span><span class="mi">93</span><span class="err">ea</span><span class="mi">853</span><span class="err">cbc</span><span class="mi">321218</span><span class="err">f</span><span class="mi">58</span><span class="err">f</span><span class="mi">159</span><span class="err">c</span><span class="mi">75</span><span class="err">adaa&#39;,</span>
- <span class="err">&#39;signage_point_index&#39;:</span> <span class="mi">63</span><span class="err">,</span>
- <span class="err">&#39;sub_epoch_summary_included&#39;:</span> <span class="err">None,</span>
- <span class="err">&#39;sub_slot_iters&#39;:</span> <span class="mi">99614720</span><span class="err">,</span>
- <span class="err">&#39;timestamp&#39;:</span> <span class="mi">1619662081</span><span class="err">,</span>
- <span class="err">&#39;total_iters&#39;:</span> <span class="mi">660123219464</span><span class="err">,</span>
- <span class="err">&#39;weight&#39;:</span> <span class="mi">4121254</span><span class="err">}</span>
-</code></pre></td></tr></table>
-</div>
-</div><p>另外，我们取的这个表的定义如下。</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span><span class="lnt">7
-</span><span class="lnt">8
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="nf">block_records</span><span class="p">(</span><span class="w">
-</span><span class="w">  </span><span class="n">header_hash</span><span class="w"> </span><span class="kt">text</span><span class="w"> </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="p">,</span><span class="w"> 
-</span><span class="w">  </span><span class="n">prev_hash</span><span class="w"> </span><span class="kt">text</span><span class="p">,</span><span class="w"> 
-</span><span class="w">  </span><span class="n">height</span><span class="w"> </span><span class="kt">bigint</span><span class="p">,</span><span class="w">
-</span><span class="w">  </span><span class="n">block</span><span class="w"> </span><span class="kt">blob</span><span class="p">,</span><span class="w"> </span><span class="c1">#&lt;----
-</span><span class="c1"></span><span class="w">  </span><span class="n">sub_epoch_summary</span><span class="w"> </span><span class="kt">blob</span><span class="p">,</span><span class="w"> 
-</span><span class="w">  </span><span class="n">is_peak</span><span class="w"> </span><span class="kt">tinyint</span><span class="p">,</span><span class="w"> 
-</span><span class="w">  </span><span class="n">is_block</span><span class="w"> </span><span class="kt">tinyint</span><span class="p">)</span><span class="w">
-</span></code></pre></td></tr></table>
-</div>
-</div><h3 id="coin-record-chainchia-币记录" class="headerLink">
-    <a href="#coin-record-chainchia-%e5%b8%81%e8%ae%b0%e5%bd%95" class="header-mark"></a>2.4 Coin Record Chain，Chia 币记录</h3><p>类似的，我们可以获取一个 Coin 的记录，这里边，从表的定义可以看到，唯一二进制（不能直接从数据库查询中被人读懂）的字段就是是币值，不存在嵌套的结构，所以也并不需要封装的类才能看清楚里边的信息。</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="nf">coin_record</span><span class="p">(</span><span class="w">
-</span><span class="w">  </span><span class="n">coin_name</span><span class="w"> </span><span class="kt">text</span><span class="w"> </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="p">,</span><span class="w">
-</span><span class="w">  </span><span class="n">confirmed_index</span><span class="w"> </span><span class="kt">bigint</span><span class="p">,</span><span class="w">
-</span><span class="w">  </span><span class="n">spent_index</span><span class="w"> </span><span class="kt">bigint</span><span class="p">,</span><span class="w">
-</span><span class="w">  </span><span class="n">spent</span><span class="w"> </span><span class="kt">int</span><span class="p">,</span><span class="w">
-</span><span class="w">  </span><span class="n">coinbase</span><span class="w"> </span><span class="kt">int</span><span class="p">,</span><span class="w">
-</span><span class="w">  </span><span class="n">puzzle_hash</span><span class="w"> </span><span class="kt">text</span><span class="p">,</span><span class="w">
-</span><span class="w">  </span><span class="n">coin_parent</span><span class="w"> </span><span class="kt">text</span><span class="p">,</span><span class="w">
-</span><span class="w">  </span><span class="n">amount</span><span class="w"> </span><span class="kt">blob</span><span class="p">,</span><span class="w">
-</span><span class="w">  </span><span class="kt">timestamp</span><span class="w"> </span><span class="kt">bigint</span><span class="p">)</span><span class="w">
-</span></code></pre></td></tr></table>
-</div>
-</div><p>这里值得注意的信息主要是 <code>spent_index</code> 和 <code>confirmed_index</code>。</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">chia.util.ints</span> <span class="kn">import</span> <span class="n">uint64</span>
-
-<span class="n">chia_db_path</span> <span class="o">=</span> <span class="s2">&#34;/Users/weyl/.chia/mainnet/db/blockchain_v1_mainnet.sqlite&#34;</span>
-<span class="n">con</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">chia_db_path</span><span class="p">)</span>
-<span class="n">cur</span> <span class="o">=</span> <span class="n">con</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
-<span class="n">rows</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;SELECT * FROM coin_record WHERE confirmed_index = 201645&#39;</span><span class="p">))</span>
-<span class="n">coin_amount</span> <span class="o">=</span> <span class="n">uint64</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">rows</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">7</span><span class="p">])</span>
-
-<span class="n">In</span> <span class="p">[</span><span class="mi">201</span><span class="p">]:</span> <span class="n">rows</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-<span class="n">Out</span><span class="p">[</span><span class="mi">201</span><span class="p">]:</span>
-<span class="p">(</span><span class="s1">&#39;cf35da0f595b49dde626d676b511ee62bce886f2216751aa51bb8ff851563d35&#39;</span><span class="p">,</span> <span class="c1"># coin_name</span>
- <span class="mi">201645</span><span class="p">,</span> <span class="c1"># confirmed_index</span>
- <span class="mi">0</span><span class="p">,</span> <span class="c1"># spent_index，这里没有spent，所以值无效</span>
- <span class="mi">0</span><span class="p">,</span> <span class="c1"># spent，其实是 bool</span>
- <span class="mi">1</span><span class="p">,</span> <span class="c1"># coinbase，bool</span>
- <span class="s1">&#39;bbb014f41d88c74b78501b36e4863d3382bfda9ae3c4d30a1b6df72b962502b6&#39;</span><span class="p">,</span> <span class="c1"># puzzle_hash 对应到地址</span>
- <span class="s1">&#39;ccd5bb71183532bff220ba46c268991a000000000000000000000000000313ab&#39;</span><span class="p">,</span>
- <span class="sa">b</span><span class="s1">&#39;</span><span class="se">\x00\x00\x01\x97</span><span class="s1">t </span><span class="se">\xdc\x00</span><span class="s1">&#39;</span><span class="p">,</span> <span class="c1"># uint64</span>
- <span class="mi">1619662081</span><span class="p">)</span>
-</code></pre></td></tr></table>
-</div>
-</div><h3 id="puzzles-address地址" class="headerLink">
-    <a href="#puzzles-address%e5%9c%b0%e5%9d%80" class="header-mark"></a>2.5 Puzzles/ Address，地址</h3><p>我们可以把 Chia 中的 Puzzle 理解成为交易中的地址，为了方便使用，通常会把 Puzzle 的 hash 用<a href="https://github.com/bitcoin/bips/blob/master/bip-0173.mediawiki" target="_blank" rel="noopener noreffer">bech32m</a> 转换成地址。</p>
-<blockquote>
-<p>Tips:</p>
-<p>这里有一个在线双向转换的在线工具推荐一下: <a href="https://www.chiaexplorer.com/tools/address-puzzlehash-converter" target="_blank" rel="noopener noreffer">https://www.chiaexplorer.com/tools/address-puzzlehash-converter</a></p>
-</blockquote>
-<h2 id="3-how-to-explore-chia-network-如何探索-chia-链" class="headerLink">
-    <a href="#3-how-to-explore-chia-network-%e5%a6%82%e4%bd%95%e6%8e%a2%e7%b4%a2-chia-%e9%93%be" class="header-mark"></a>3 3. How to explore Chia Network? 如何探索 Chia 链</h2><p>随着我们之前分析的信息，自然地，我们可以把 Chia 区块链中的信息取出来，用图（Graph）来表示，这里的图并不是（Graphic）图形、图画的意思，是数学、图论中的图。</p>
-<p>在图的语境下，最主要的两个元素就是顶点（Vertex）和边（Edge）。</p>
-<p>顶点表示一个实体，而边表示实体之间的某种关系，这种关系可以是对等的（无方向的）也可以是有方向的。</p>
-<p>这里我们可以把这里的信息抽象映射到如图的图模型里：</p>
-<ul>
-<li>Block 顶点</li>
-<li>Coin 顶点</li>
-<li>Puzzle 顶点</li>
-<li>spends 边（Block 到 Coin）</li>
-<li>confirms 边 （Block 到 Coin）</li>
-<li>belongs_to 边（Coin 到 Puzzle）</li>
-</ul>
-<p></p>
-<p>这里，我们应用的图是一种叫做属性图的形式，除了点和边的关系之外。这两种实体（点、边）还有其他信息只和它们的一个实例相关，所以再定义为顶点、边就不是很适合，这些信息就作为点、边的属性（preperty）存在。</p>
-<p>这种为了处理实体之间关联、涉及实体、关联的属性信息的，也就是&quot;属性图&quot;的存储信息的方式在计算机领域越来越流行，甚至有专门为此结构而原生开发的数据库——图数据库（Graph Database）。</p>
-<p>这里，我们用的就是一个叫做 Nebula Graph 的图数据库，它是一个现代的、为超大规模分部署架构设计的、原生存储、查询、计算图数据的项目，更棒的是，它是产生于社区的开源产品。</p>
-<blockquote>
-<p>Tips:</p>
-<p><strong>安装 Nebula Graph</strong></p>
-<p>一般来说，面向超大规模数据的分布式系统，天然的都是不容易轻量部署的，大家如果第一次使用的话可以试试我写的一个叫做 nebula-up 的小工具，可以一行指令部署一个用来试用、学习的 Nebula Graph 集群，地址在这里： <a href="https://github.com/wey-gu/nebula-up/" target="_blank" rel="noopener noreffer">https://github.com/wey-gu/nebula-up/</a> 。</p>
-</blockquote>
-<h3 id="31-import-the-chia-to-a-graph-database-nebula-graph-导入-chia-数据到图数据库" class="headerLink">
-    <a href="#31-import-the-chia-to-a-graph-database-nebula-graph-%e5%af%bc%e5%85%a5-chia-%e6%95%b0%e6%8d%ae%e5%88%b0%e5%9b%be%e6%95%b0%e6%8d%ae%e5%ba%93" class="header-mark"></a>3.1 3.1 Import the Chia to a Graph Database, Nebula Graph 导入 Chia 数据到图数据库</h3><p>我们分两步走，第一步这把 Chia Network 数据转换成 CSV 文件，第二步使用 Nebula 的 <a href="https://github.com/vesoft-inc/nebula-importer/" target="_blank" rel="noopener noreffer">Nebula-Importer</a> 把数据导入 Nebula Graph。</p>
-<h4 id="311-data-conversion-数据转换" class="headerLink">
-    <a href="#311-data-conversion-%e6%95%b0%e6%8d%ae%e8%bd%ac%e6%8d%a2" class="header-mark"></a>3.1.1 3.1.1 Data conversion 数据转换</h4><p>这部分的代码我开源在这里了:</p>
-<p><a href="https://github.com/wey-gu/nebula-chia" target="_blank" rel="noopener noreffer">https://github.com/wey-gu/nebula-chia</a></p>
-<p>使用它只需要在 Chia Network 的 python venv 下安装它:</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">python3 -m pip install nebula-chia
-</code></pre></td></tr></table>
-</div>
-</div><p>然后调用 <code>ChaiBatchConvertor</code> 就可以在当前目录下生成两个 CSV 文件。</p>
-<p>这里边有一些可以配置的参数，具体可以参考代码 <code>nebulachia/convertor.py</code></p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">nebulachia.convertor</span> <span class="kn">import</span> <span class="n">ChiaBatchConvertor</span>
-<span class="n">c</span> <span class="o">=</span> <span class="n">ChaiBatchConvertor</span><span class="p">(</span>
-    <span class="n">block_record_limit</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">coin_record_limit</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">write_batch_size</span><span class="o">=</span><span class="mi">10000</span><span class="p">)</span>
-<span class="n">c</span><span class="o">.</span><span class="n">convert_block_record</span><span class="p">()</span>
-<span class="n">c</span><span class="o">.</span><span class="n">convert_coin_record</span><span class="p">()</span>
-</code></pre></td></tr></table>
-</div>
-</div><p>生成的文件：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ ls -lth
-
--rw-r--r--   <span class="m">1</span> weyl  staff   173M May <span class="m">19</span> 13:01 coin_record.csv
--rw-r--r--   <span class="m">1</span> weyl  staff    77M May <span class="m">19</span> 12:59 block_record.csv
-</code></pre></td></tr></table>
-</div>
-</div><p>这里边字段的含义和类型，可以参考代码中 <code>block_record_row</code> 和 <code>coin_record_row</code> 的 <code>__doc__</code></p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
-</span><span class="lnt">28
-</span><span class="lnt">29
-</span><span class="lnt">30
-</span><span class="lnt">31
-</span><span class="lnt">32
-</span><span class="lnt">33
-</span><span class="lnt">34
-</span><span class="lnt">35
-</span><span class="lnt">36
-</span><span class="lnt">37
-</span><span class="lnt">38
-</span><span class="lnt">39
-</span><span class="lnt">40
-</span><span class="lnt">41
-</span><span class="lnt">42
-</span><span class="lnt">43
-</span><span class="lnt">44
-</span><span class="lnt">45
-</span><span class="lnt">46
-</span><span class="lnt">47
-</span><span class="lnt">48
-</span><span class="lnt">49
-</span><span class="lnt">50
-</span><span class="lnt">51
-</span><span class="lnt">52
-</span><span class="lnt">53
-</span><span class="lnt">54
-</span><span class="lnt">55
-</span><span class="lnt">56
-</span><span class="lnt">57
-</span><span class="lnt">58
-</span><span class="lnt">59
-</span><span class="lnt">60
-</span><span class="lnt">61
-</span><span class="lnt">62
-</span><span class="lnt">63
-</span><span class="lnt">64
-</span><span class="lnt">65
-</span><span class="lnt">66
-</span><span class="lnt">67
-</span><span class="lnt">68
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">In</span> <span class="p">[</span><span class="mi">466</span><span class="p">]:</span> <span class="nb">print</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">coin_record_row</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
-
-        <span class="n">Parse</span> <span class="n">row</span> <span class="ow">and</span> <span class="k">return</span> <span class="n">a</span> <span class="n">CSV</span> <span class="n">block</span> <span class="n">coin</span> <span class="n">row</span> <span class="nb">list</span><span class="o">.</span>
-
-        <span class="n">CREATE</span> <span class="n">TABLE</span> <span class="n">coin_record</span><span class="p">(</span>
-          <span class="n">coin_name</span> <span class="n">text</span> <span class="n">PRIMARY</span> <span class="n">KEY</span><span class="p">,</span>
-          <span class="n">confirmed_index</span> <span class="n">bigint</span><span class="p">,</span>
-          <span class="n">spent_index</span> <span class="n">bigint</span><span class="p">,</span>
-          <span class="n">spent</span> <span class="nb">int</span><span class="p">,</span>
-          <span class="n">coinbase</span> <span class="nb">int</span><span class="p">,</span>
-          <span class="n">puzzle_hash</span> <span class="n">text</span><span class="p">,</span>
-          <span class="n">coin_parent</span> <span class="n">text</span><span class="p">,</span>
-          <span class="n">amount</span> <span class="n">blob</span><span class="p">,</span>
-          <span class="n">timestamp</span> <span class="n">bigint</span><span class="p">)</span>
-
-        <span class="n">Coin</span> <span class="n">Record</span> <span class="n">CSV</span> <span class="n">Head</span><span class="p">:</span>
-            <span class="mi">0</span>         <span class="mi">1</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>          <span class="mi">2</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>      <span class="mi">3</span><span class="p">(</span><span class="nb">bool</span><span class="p">)</span>
-            <span class="n">coin_name</span><span class="o">|</span><span class="n">confirmed_index</span><span class="o">|</span><span class="n">spent_index</span><span class="o">|</span><span class="n">spent</span><span class="o">|</span>
-
-            <span class="mi">4</span><span class="p">(</span><span class="nb">bool</span><span class="p">)</span>  <span class="mi">5</span>           <span class="mi">6</span>           <span class="mi">7</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
-            <span class="n">coinbase</span><span class="o">|</span><span class="n">puzzle_hash</span><span class="o">|</span><span class="n">coin_parent</span><span class="o">|</span><span class="n">amount</span><span class="o">|</span>
-
-            <span class="mi">8</span><span class="p">(</span><span class="n">timestamp</span><span class="p">)</span>
-            <span class="n">timestamp</span><span class="o">|</span>
-
-            <span class="mi">9</span>              <span class="mi">10</span>
-            <span class="n">confirmed_hash</span><span class="o">|</span><span class="n">spent_hash</span>
-
-<span class="n">In</span> <span class="p">[</span><span class="mi">467</span><span class="p">]:</span> <span class="nb">print</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">block_record_row</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
-
-        <span class="n">Parse</span> <span class="n">row</span> <span class="ow">and</span> <span class="k">return</span> <span class="n">a</span> <span class="n">CSV</span> <span class="n">block</span> <span class="n">record</span> <span class="n">row</span> <span class="nb">list</span><span class="o">.</span>
-
-        <span class="n">CREATE</span> <span class="n">TABLE</span> <span class="n">block_records</span><span class="p">(</span>
-          <span class="n">header_hash</span> <span class="n">text</span> <span class="n">PRIMARY</span> <span class="n">KEY</span><span class="p">,</span>
-          <span class="n">prev_hash</span> <span class="n">text</span><span class="p">,</span>
-          <span class="n">height</span> <span class="n">bigint</span><span class="p">,</span>
-          <span class="n">block</span> <span class="n">blob</span><span class="p">,</span>
-          <span class="n">sub_epoch_summary</span> <span class="n">blob</span><span class="p">,</span>
-          <span class="n">is_peak</span> <span class="n">tinyint</span><span class="p">,</span>
-          <span class="n">is_block</span> <span class="n">tinyint</span><span class="p">)</span>
-
-        <span class="n">Block</span> <span class="n">Record</span> <span class="n">CSV</span> <span class="n">Head</span><span class="p">:</span>
-            <span class="mi">0</span>           <span class="mi">1</span>         <span class="mi">2</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span> <span class="mi">3</span><span class="p">(</span><span class="nb">bool</span><span class="p">)</span> <span class="mi">4</span><span class="p">(</span><span class="nb">bool</span><span class="p">)</span>
-            <span class="n">header_hash</span><span class="o">|</span><span class="n">prev_hash</span><span class="o">|</span><span class="n">height</span><span class="o">|</span><span class="n">is_peak</span><span class="o">|</span><span class="n">is_block</span><span class="o">|</span>
-
-            <span class="mi">5</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
-            <span class="n">deficit</span><span class="o">|</span>
-
-            <span class="mi">6</span>
-            <span class="n">challenge_block_info_hash</span><span class="o">|</span>
-
-            <span class="mi">7</span>
-            <span class="n">farmer_puzzle_hash</span><span class="o">|</span>
-
-            <span class="mi">8</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
-            <span class="n">fees</span><span class="o">|</span>
-
-            <span class="mi">9</span>
-            <span class="n">prev_transaction_block_hash</span><span class="o">|</span>
-
-            <span class="mi">10</span>
-            <span class="n">prev_transaction_block_height</span><span class="o">|</span>
-
-            <span class="mi">11</span>             <span class="mi">12</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
-            <span class="n">required_iters</span><span class="o">|</span><span class="n">signage_point_index</span><span class="o">|</span>
-
-            <span class="mi">13</span><span class="p">(</span><span class="n">timestamp</span><span class="p">)</span>
-            <span class="n">timestamp</span>
-</code></pre></td></tr></table>
-</div>
-</div><h4 id="311-data-import-数据导入" class="headerLink">
-    <a href="#311-data-import-%e6%95%b0%e6%8d%ae%e5%af%bc%e5%85%a5" class="header-mark"></a>3.1.2 3.1.1 Data import 数据导入</h4><p>有了 CSV 文件，我们可以借助 <a href="https://github.com/vesoft-inc/nebula-importer/" target="_blank" rel="noopener noreffer">Nebula-Importer</a> 导入数据到图数据库中。</p>
-<p>这里，我们写好了 nebula-importer 的配置文件，其中包涵了如下信息:</p>
-<ul>
-<li>在 Nebula Graph 中创建需要的数据模型 Schema，这和我们前边做的图映射的信息是等价的</li>
-<li>描述 CSV 文件之中的 Column 的数据到图模型（点，边，点或边的属性）映射关系</li>
-</ul>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span><span class="lnt">7
-</span><span class="lnt">8
-</span><span class="lnt">9
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="c1"># 这里，我的 csv 文件和 配置文件都放在 /home/wei.gu/chia 之下</span>
-<span class="c1"># 我使用 docker-compose 默认配置部署的 Nebula Graph,</span>
-<span class="c1"># 它创建了叫 nebula-docker-compose_nebula-net 的 docker 网络</span>
-docker run --rm -ti <span class="se">\
-</span><span class="se"></span>    --network<span class="o">=</span>nebula-docker-compose_nebula-net <span class="se">\
-</span><span class="se"></span>    -v /home/wei.gu/chia/nebula-chia.yaml:/root/nebula-chia.yaml <span class="se">\
-</span><span class="se"></span>    -v /home/wei.gu/chia:/root <span class="se">\
-</span><span class="se"></span>    vesoft/nebula-importer:v2 <span class="se">\
-</span><span class="se"></span>    --config /root/nebula-chia.yaml
-</code></pre></td></tr></table>
-</div>
-</div><p>这里我展示一个导入的结果示例，我在单机部署的 Nebula Graph 里导入了我一两周之前取的全量 Chia Network 数据的结果。</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">...
-2021/05/19 09:55:09 <span class="o">[</span>INFO<span class="o">]</span> reader.go:180: Total lines of file<span class="o">(</span>/root/coin_record.csv<span class="o">)</span> is: 547557, error lines: <span class="m">0</span>
-2021/05/19 09:55:09 <span class="o">[</span>INFO<span class="o">]</span> statsmgr.go:61: Done<span class="o">(</span>/root/coin_record.csv<span class="o">)</span>: Time<span class="o">(</span>4385.88s<span class="o">)</span>, Finished<span class="o">(</span>4512927<span class="o">)</span>, Failed<span class="o">(</span>0<span class="o">)</span>, Latency AVG<span class="o">(</span>1305us<span class="o">)</span>, Batches Req AVG<span class="o">(</span>2015us<span class="o">)</span>, Rows AVG<span class="o">(</span>1028.42/s<span class="o">)</span>
-2021/05/19 09:55:10 --- END OF NEBULA IMPORTER ---
-</code></pre></td></tr></table>
-</div>
-</div><h3 id="32-explore-the-chia-graph-探索-chia-的数据" class="headerLink">
-    <a href="#32-explore-the-chia-graph-%e6%8e%a2%e7%b4%a2-chia-%e7%9a%84%e6%95%b0%e6%8d%ae" class="header-mark"></a>3.2 3.2 Explore the Chia Graph 探索 Chia 的数据</h3><h4 id="graph-db-queries" class="headerLink">
-    <a href="#graph-db-queries" class="header-mark"></a>3.2.1 Graph DB Queries</h4><p>导入 Chia 链的网络到 Nebula Graph 之后，我们可以在里边快速查询数据之间的关联。</p>
-<p>比如这个查询表示从区块 <code>524aa2013781ff4cd9d2b5dc...</code> 查起，经过三种边 <code>farmer_puzzle, spends, confirms</code> 双向遍历的结果。</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span><span class="lnt">7
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="k">GO</span><span class="w"> </span><span class="mi">5</span><span class="w"> </span><span class="n">STEPS</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="err">\</span><span class="w">
-</span><span class="w">   </span><span class="s2">&#34;524aa2013781ff4cd9d2b5dce40647b670d722e2de25bd2e2b79970a8ec435ee&#34;</span><span class="w"> </span><span class="err">\</span><span class="w">
-</span><span class="w">   </span><span class="n">OVER</span><span class="w"> </span><span class="n">farmer_puzzle</span><span class="p">,</span><span class="n">spends</span><span class="p">,</span><span class="n">confirms</span><span class="w"> </span><span class="n">BIDIRECT</span><span class="w">
-</span><span class="w"></span><span class="p">...</span><span class="w">
-</span><span class="w"></span><span class="n">Got</span><span class="w"> </span><span class="mi">419437</span><span class="w"> </span><span class="k">rows</span><span class="w"> </span><span class="p">(</span><span class="n">time</span><span class="w"> </span><span class="n">spent</span><span class="w"> </span><span class="mi">735120</span><span class="o">/</span><span class="mi">1170946</span><span class="w"> </span><span class="n">us</span><span class="p">)</span><span class="w">
-</span><span class="w">
-</span><span class="w"></span><span class="n">Wed</span><span class="p">,</span><span class="w"> </span><span class="mi">19</span><span class="w"> </span><span class="n">May</span><span class="w"> </span><span class="mi">2021</span><span class="w"> </span><span class="mi">10</span><span class="p">:</span><span class="mi">11</span><span class="p">:</span><span class="mi">28</span><span class="w"> </span><span class="n">UTC</span><span class="w">
-</span></code></pre></td></tr></table>
-</div>
-</div><p>再比如，计算一个 Puzzle 地址上的余额（所有 coin 的总价值）比如这个puzzle <code>bbe39134ccc32c08fdeff...</code></p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="k">GO</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="n">STEP</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="s2">&#34;bbe39134ccc32c08fdeff4d2c19d1d1f4f7e48cdaf79d37397bc3136ce9b3cb7&#34;</span><span class="w"> </span><span class="err">\</span><span class="w">
-</span><span class="w">   </span><span class="n">OVER</span><span class="w"> </span><span class="n">belongs_to</span><span class="w"> </span><span class="n">REVERSELY</span><span class="w"> </span><span class="err">\</span><span class="w">
-</span><span class="w">   </span><span class="n">YIELD</span><span class="w"> </span><span class="k">CASE</span><span class="w"> </span><span class="err">$$</span><span class="p">.</span><span class="n">coin</span><span class="p">.</span><span class="n">is_spent</span><span class="w"> </span><span class="err">\</span><span class="w">
-</span><span class="w">         </span><span class="k">WHEN</span><span class="w"> </span><span class="k">true</span><span class="w"> </span><span class="k">THEN</span><span class="w"> </span><span class="err">$$</span><span class="p">.</span><span class="n">coin</span><span class="p">.</span><span class="n">amount</span><span class="w"> </span><span class="err">\</span><span class="w">
-</span><span class="w">         </span><span class="k">WHEN</span><span class="w"> </span><span class="k">false</span><span class="w"> </span><span class="k">THEN</span><span class="w"> </span><span class="o">-</span><span class="err">$$</span><span class="p">.</span><span class="n">coin</span><span class="p">.</span><span class="n">amount</span><span class="w"> </span><span class="err">\</span><span class="w">
-</span><span class="w">         </span><span class="k">END</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">Amount</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">YIELD</span><span class="w"> </span><span class="k">sum</span><span class="p">(</span><span class="err">$</span><span class="o">-</span><span class="p">.</span><span class="n">Amount</span><span class="p">)</span><span class="w">
-</span></code></pre></td></tr></table>
-</div>
-</div><h4 id="the-visulized-way-with-nebula-studio" class="headerLink">
-    <a href="#the-visulized-way-with-nebula-studio" class="header-mark"></a>3.2.2 The Visulized way with Nebula Studio</h4><p>Nebula Graph 为我们提供了图形化界面，有了它，我们可以用更符合人脑的方式地查看 Chia Network 中的数据。</p>
-<p>比如，我们还是回到上边的那个区块，从这里查询。</p>
-<p></p>
-<p>我们就获得了这个 block 类型的一个点/ vertex。我们可以从他开始进一步探索，先鼠标单击这个点，在拓展条件里把方向选择双向，默认的边类型是所有的边类型，这样我们就可以把所有 <code>步数</code>内相关联的数据一下子全都找出来。</p>
-<p>选择好拓展条件之后，点击拓展就可以。</p>
-<p></p>
-<p>这里，我们选择了步数为 <code>1</code>，点击拓展（或者双击要拓展的点），之后，我们可以快速双击其他的点继续拓展，这是我鼠标点了几次之后看到的样子：</p>
-<p></p>
-<p>我们接下来再试试拓展的步数为 <code>2</code>，点击拓展（或者双击要拓展的点），看起来找到了有意思的信息。</p>
-<p>我们看到了一个有很多边的黑色的点。</p>
-<p></p>
-<p>通过查看这个点和我们开始查看的 block 之间的边，我们知道这个点正是 farm 这个 block 的地址，这个地址下边有非常多的 coin。</p>
-<p></p>
-<p>这只是一个开始，有了这个导入到 Nebula Graph 图数据的基础，我们可以做很多有意思的分析和洞察，大家可以自己试试看，得到更有意思的结果分享给其他同学。</p>
-<h2 id="4-summary-总结" class="headerLink">
-    <a href="#4-summary-%e6%80%bb%e7%bb%93" class="header-mark"></a>4 4. Summary 总结</h2><p>这篇文章里，在我们简单介绍了 Chia Network 之后，我们首次的带大家一起从安装一个 Chia 终端，到分析终端同步到本地的 Chia 全网数据，借助于 Chia 终端开源的 Python 代码库，我们分析了全网数据里的重要信息。</p>
-<p>之后，我们开源了一个小工具 Nebula-Chia，有了它，就可以把 Chia 的全网数据转换成 CSV 格式，这样，就可以借助 nebula-importer 把所有的数据导入到一个先进的图数据库（Nebula Graph）中。</p>
-<p>Nebula Graph 的项目地址是 <a href="https://github.com/vesoft-inc/nebula-graph" target="_blank" rel="noopener noreffer">https://github.com/vesoft-inc/nebula-graph</a></p>
-<p>Nebula-Chia 我也开源在 <a href="https://github.com/wey-gu/nebula-chia" target="_blank" rel="noopener noreffer">https://github.com/wey-gu/nebula-chia</a></p>
-<p>在图数据库中，我们展示了做基本 Query 的例子和借助图数据库自带的可视化工具，我们可以轻易地获取 Chia 全网数据之间关联关系，有了这个作为基础，这些数据中洞察的潜力和可以尝试的有意思事情可以比较直观和高效地进一步探索了！</p>
-<p>是不是很酷？</p>
-<p></p>
-<h2 id="5-references" class="headerLink">
-    <a href="#5-references" class="header-mark"></a>5 5. References</h2><ul>
-<li><a href="https://www.chia.net/faq/" target="_blank" rel="noopener noreffer">https://www.chia.net/faq/</a></li>
-<li><a href="https://chialisp.com/docs/" target="_blank" rel="noopener noreffer">https://chialisp.com/docs/</a></li>
-<li><a href="https://www.chiaexplorer.com/chia-coins" target="_blank" rel="noopener noreffer">https://www.chiaexplorer.com/chia-coins</a></li>
-<li><a href="https://docs.google.com/document/d/1tmRIb7lgi4QfKkNaxuKOBHRmwbVlGL4f7EsBDr_5xZE" target="_blank" rel="noopener noreffer">https://docs.google.com/document/d/1tmRIb7lgi4QfKkNaxuKOBHRmwbVlGL4f7EsBDr_5xZE</a></li>
-<li><a href="https://github.com/sipa/bech32/tree/master/ref/python" target="_blank" rel="noopener noreffer">https://github.com/sipa/bech32/tree/master/ref/python</a></li>
-<li><a href="https://github.com/Chia-Network/chia-blockchain/blob/main/README.md" target="_blank" rel="noopener noreffer">https://github.com/Chia-Network/chia-blockchain/blob/main/README.md</a></li>
-<li><a href="https://www.chia.net/assets/ChiaGreenPaper.pdf" target="_blank" rel="noopener noreffer">https://www.chia.net/assets/ChiaGreenPaper.pdf</a></li>
-<li><a href="https://docs.nebula-graph.com.cn" target="_blank" rel="noopener noreffer">https://docs.nebula-graph.com.cn</a></li>
-</ul>
-<blockquote>
-<p>Banner Picture Credit: <a href="https://unsplash.com/photos/Ph5_4TnXXYE?utm_source=unsplash&amp;utm_medium=referral&amp;utm_content=creditShareLink" target="_blank" rel="noopener noreffer">Icons8 Team</a></p>
 </blockquote>]]></description>
 </item></channel>
 </rss>
