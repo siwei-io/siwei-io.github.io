@@ -290,22 +290,12 @@ $ docker run --rm -ti \
 
 > 连到图数据库的 console
 
-获得本机第一个网卡的地址，这里是 `10.1.1.168`
-
-```bash
-$ ip address
-
-2: enp4s0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
-    link/ether 2a:32:4c:06:04:c4 brd ff:ff:ff:ff:ff:ff
-    inet 10.1.1.168/24 brd 10.1.1.255 scope global dynamic enp4s0
-```
-
 进入 Console 的容器执行下边的命令：
 
 ```bash
 $ ~/.nebula-up/console.sh
 
-# nebula-console -addr 10.1.1.168 -port 9669 -user root -p nebula
+# nebula-console -addr graphd -port 9669 -user root -p nebula
 ```
 
 检查一下导入的数据：

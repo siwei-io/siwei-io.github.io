@@ -79,7 +79,7 @@ As a non-native English speaker, the way I was playing wordle is to ~~cheating~~
 
 After knowing on the third letter to be "O", I googled and got this: [5-letter-words-with-o-in-the-middle](https://uppolice.org/5-letter-words-with-o-in-the-middle/) and do the searching 😁.
 
-![wordle-en-play](/Users/weyl/dev/siwei.io/siwei.io/content/posts/resolve-wordle/wordle-en-play.webp)
+![wordle-en-play](./wordle-en-play.webp)
 
 The way to play with helpers works for me to have fun yet not ruin it by an automated cheat resolver(it's only simulating my brain as a native-speaker!), so that I could somehow experience the same as Millions of people out there without cheating.
 
