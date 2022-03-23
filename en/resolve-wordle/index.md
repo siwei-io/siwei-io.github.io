@@ -13,11 +13,11 @@ You may have seen tweets like this in past months, where the color dots in emoji
 
 ![wordle_SNS_share](./wordle_SNS_share.webp)
 
-## Wordle Solver
+### Wordle Solver
 
 For all magics being used to solve wordle, I am impressed by [Grant Sanderson](https://www.3blue1brown.com/about), who explained us the information theory when solving wordle, [in an elegent and delightful way](https://www.3blue1brown.com/lessons/wordle).
 
-## Chinese wordle: `handle`
+### Chinese wordle: "handle"
 
 I am not going create yet another wordle-solver today, instead, it's more about an intresting variant of wordle.
 
@@ -73,7 +73,7 @@ Let's see what it's like to play the "Handle":
 
 
 
-## The Chinese Wordle Helper
+### The Chinese Wordle Helper
 
 As a non-native English speaker, the way I was playing wordle is to ~~cheating~~ relying on helpers:
 
