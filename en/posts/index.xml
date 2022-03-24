@@ -5,6 +5,169 @@
         <description>All Posts | siwei.io</description>
         <generator>Hugo -- gohugo.io</generator><language>en</language><managingEditor>weyl.gu@gmail.com (Wey Gu)</managingEditor>
             <webMaster>weyl.gu@gmail.com (Wey Gu)</webMaster><lastBuildDate>Wed, 23 Mar 2022 22:11:03 &#43;0800</lastBuildDate><atom:link href="https://siwei.io/en/posts/" rel="self" type="application/rss+xml" /><item>
+    <title>Nebula Graph on Pi</title>
+    <link>https://siwei.io/en/nebula-graph-on-pi/</link>
+    <pubDate>Wed, 23 Mar 2022 22:11:03 &#43;0800</pubDate><author>
+        <name>Wey Gu</name>
+    </author><guid>https://siwei.io/en/nebula-graph-on-pi/</guid>
+    <description><![CDATA[<div class="featured-image">
+                <img src="/featured-image.webp" referrerpolicy="no-referrer">
+            </div><blockquote>
+<p>With the ARM64 Docker Image of Nebula Graph, it&rsquo;s actually quite easy to run it on SBC/Respberry Pi!</p>
+</blockquote>
+<h2 id="background" class="headerLink">
+    <a href="#background" class="header-mark"></a>1 Background</h2><p>Recently, after Yee from Nebula Graph Community fixed ARM build on <a href="https://github.com/vesoft-inc/nebula-third-party/pull/37" target="_blank" rel="noopener noreffer">nebula-third-party#37</a>, we could play with Nebula Graph on M1 Chip Macbook. While, I didn&rsquo;t get the chance to run it on a SBC/Pi.</p>
+<p>A couple of weeks before, in a twitter thread with <a href="https://twitter.com/laixintao" target="_blank" rel="noopener noreffer">@laixintao</a> and <a href="https://twitter.com/andelf/status/1504295476958404608" target="_blank" rel="noopener noreffer">@andelf</a> I decided to purchase a <a href="https://wiki.radxa.com/Rock3/" target="_blank" rel="noopener noreffer">Rock Pi 3A</a>:</p>
+<p></p>
+<p>And it looks nice!(Even come with a NPU inside)</p>
+<p></p>
+<h2 id="the-guide-of-running-nebula-graph-on-a-pi-sbc" class="headerLink">
+    <a href="#the-guide-of-running-nebula-graph-on-a-pi-sbc" class="header-mark"></a>2 The Guide of running Nebula Graph on a Pi SBC</h2><blockquote>
+<p>Actually, since v3.0.0, Nebula comes with a <a href="https://docs.nebula-graph.io/3.0.1/4.deployment-and-installation/standalone-deployment/" target="_blank" rel="noopener noreffer">standalone version</a>, which suits the deep edge deployment more, but today, I will only setup the cluster version as the Docker Image is out of box to be used. I will share more on standalone version in upcoming weeks.</p>
+</blockquote>
+<p>I put the Ubuntu Server installation steps in the appendix, and now I assumed we already have an ARM64 Linux up and running on a Pi SBC.</p>
+<h3 id="step-0-install-docker-compose-on-pi" class="headerLink">
+    <a href="#step-0-install-docker-compose-on-pi" class="header-mark"></a>2.1 Step 0, Install Docker-Compose on Pi</h3><p>I am using debian/ubuntu here, while it should be the same for other distros, referring to <a href="https://docs.docker.com/engine/install/" target="_blank" rel="noopener noreffer">https://docs.docker.com/engine/install/</a>.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">sudo apt-get update
+sudo apt-get install <span class="se">\
+</span><span class="se"></span>    ca-certificates <span class="se">\
+</span><span class="se"></span>    curl <span class="se">\
+</span><span class="se"></span>    gnupg <span class="se">\
+</span><span class="se"></span>    lsb-release
+
+<span class="nb">echo</span> <span class="se">\
+</span><span class="se"></span>  <span class="s2">&#34;deb [arch=</span><span class="k">$(</span>dpkg --print-architecture<span class="k">)</span><span class="s2"> signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
+</span><span class="s2">  </span><span class="k">$(</span>lsb_release -cs<span class="k">)</span><span class="s2"> stable&#34;</span> <span class="p">|</span> sudo tee /etc/apt/sources.list.d/docker.list &gt; /dev/null
+
+sudo apt-get update
+sudo apt-get install docker-ce docker-ce-cli containerd.io
+
+<span class="c1"># follow https://docs.docker.com/engine/install/linux-postinstall/</span>
+sudo groupadd docker
+sudo usermod -aG docker <span class="nv">$USER</span>
+<span class="nb">exit</span>
+<span class="c1"># login again</span>
+newgrp docker
+</code></pre></td></tr></table>
+</div>
+</div><p>After Docker being installed, we install compose here, there could be issues encounterred from the Docker website on Compose installation. While, due to compose is just a python package, let&rsquo;s do it via python3-pip install:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">sudo apt-get install -y python3 python3-pip
+sudo pip3 install docker-compose
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="step-1-bootstrap-nebula-graph-cluster-on-pi" class="headerLink">
+    <a href="#step-1-bootstrap-nebula-graph-cluster-on-pi" class="header-mark"></a>2.2 Step 1, bootstrap Nebula Graph Cluster on Pi</h3><p>We clone the compose file for nebula cluster first:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">git clone https://github.com/vesoft-inc/nebula-docker-compose.git <span class="o">&amp;&amp;</span> <span class="nb">cd</span> nebula-docker-compose
+docker-compose up -d
+</code></pre></td></tr></table>
+</div>
+</div><p>Then, let&rsquo;s download the client: nebula-console, and connect to the GraphD service:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">wget https://github.com/vesoft-inc/nebula-console/releases/download/v3.0.0/nebula-console-linux-arm64-v3.0.0
+chmod +x nebula-console-linux-arm64-v3.0.0
+
+./nebula-console-linux-arm64-v3.0.0 -addr localhost -port <span class="m">9669</span> -u root -p nebula
+</code></pre></td></tr></table>
+</div>
+</div><p>Activate the storageD services:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">ADD HOSTS <span class="s2">&#34;storaged0&#34;</span>:9779,<span class="s2">&#34;storaged1&#34;</span>:9779,<span class="s2">&#34;storaged2&#34;</span>:9779<span class="p">;</span>
+SHOW HOSTS<span class="p">;</span>
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="step-2-play-nebula-graph-on-pi" class="headerLink">
+    <a href="#step-2-play-nebula-graph-on-pi" class="header-mark"></a>2.3 Step 2, Play Nebula Graph on Pi</h3><p>WIth the <code>SHOW HOSTS</code> we should see StorageD services are all ONLINE, then we could run this from the console session to load the test dataset.</p>
+<blockquote>
+<p>Referennce: <a href="https://docs.nebula-graph.io/3.0.1/nebula-console/#import_a_testing_dataset" target="_blank" rel="noopener noreffer">https://docs.nebula-graph.io/3.0.1/nebula-console/#import_a_testing_dataset</a></p>
+</blockquote>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$:play basketballplayer<span class="p">;</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>The test data will be loaded in around 1 minute. Then, we could query something like:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">USE basketballplayer<span class="p">;</span>
+
+GO FROM <span class="s2">&#34;player100&#34;</span> OVER follow YIELD dst<span class="o">(</span>edge<span class="o">)</span><span class="p">;</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>Check this out and&hellip;</p>
+<p>Happy Graphing!</p>
+<p></p>
+<h2 id="appendix-installing-ubuntu-server-on-rock-pi-3a-sbc" class="headerLink">
+    <a href="#appendix-installing-ubuntu-server-on-rock-pi-3a-sbc" class="header-mark"></a>3 Appendix: Installing Ubuntu Server on Rock Pi 3A SBC</h2><ul>
+<li>
+<p>Get the image from <a href="https://wiki.radxa.com/Rock3/downloads" target="_blank" rel="noopener noreffer">https://wiki.radxa.com/Rock3/downloads</a> decompressing the file into <code>.img</code></p>
+</li>
+<li>
+<p>Write the image to a micro SD card with <a href="https://www.balena.io/etcher/" target="_blank" rel="noopener noreffer">etcher</a></p>
+</li>
+<li>
+<p>Boot it!</p>
+</li>
+</ul>
+<blockquote>
+<p>feature image credit: <a href="https://unsplash.com/@_louisreed" target="_blank" rel="noopener noreffer">@_louisreed</a></p>
+</blockquote>]]></description>
+</item><item>
     <title>What happens to Wordle and Chinese idiom Knowledge Graph?</title>
     <link>https://siwei.io/en/resolve-wordle/</link>
     <pubDate>Mon, 28 Feb 2022 19:18:59 &#43;0800</pubDate><author>

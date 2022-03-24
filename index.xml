@@ -649,7 +649,7 @@ GO FROM <span class="s2">&#34;player100&#34;</span> OVER follow YIELD dst<span c
     <description><![CDATA[<div class="featured-image">
                 <img src="/featured-image.webp" referrerpolicy="no-referrer">
             </div><blockquote>
-<p><code>index not found</code>?找不到索引？为什么我要创建 Nebula Graph 索引？什么时候要用到 Nebula Graph 原生索引，一文把这些搞清楚。</p>
+<p><code>index not found</code>？找不到索引？为什么我要创建 Nebula Graph 索引？什么时候要用到 Nebula Graph 原生索引，一文把这些搞清楚。</p>
 </blockquote>
 <p>Nebula Graph 的索引其实和传统的关系型数据库中的索引很像，但是又有一些容易让人疑惑的区别。刚开始了解 Nebula 的同学会疑惑于：</p>
 <ul>
@@ -665,7 +665,7 @@ GO FROM <span class="s2">&#34;player100&#34;</span> OVER follow YIELD dst<span c
 <li>纯属性条件出发查询（注：非采样情况）必须创建索引</li>
 </ul>
 <h3 id="纯属性条件出发查询" class="headerLink">
-    <a href="#%e7%ba%af%e5%b1%9e%e6%80%a7%e6%9d%a1%e4%bb%b6%e5%87%ba%e5%8f%91%e6%9f%a5%e8%af%a2" class="header-mark"></a>1.1 纯属性条件出发查询</h3><p>我们知道在传统关系型数据库中，索引是对表数据的一个针对特定<strong>列</strong>重排序的副本，它用来<strong>加速特定列过滤条件的读查询</strong>并带来了额外的数据写入（加速而非这样查询的必须前提）。</p>
+    <a href="#%e7%ba%af%e5%b1%9e%e6%80%a7%e6%9d%a1%e4%bb%b6%e5%87%ba%e5%8f%91%e6%9f%a5%e8%af%a2" class="header-mark"></a>1.1 纯属性条件出发查询</h3><p>我们知道在传统关系型数据库中，索引是对表数据的一个或多个针对特定<strong>列</strong>重排序的副本，它用来<strong>加速特定列过滤条件的读查询</strong>并带来了额外的数据写入（加速而非这样查询的必须前提）。</p>
 <p>在 Nebula Graph 图数据库里，索引则是对<strong>点、边特定属性数据</strong>重排序的副本，用来提供<strong>纯属性条件出发查询</strong>（如下边的查询：从只给定了点边属性条件，而非点的 ID 出发去获取图数据）</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
@@ -782,10 +782,15 @@ GO FROM <span class="s2">&#34;player100&#34;</span> OVER follow YIELD dst<span c
 <li>pure-prop-condition queries：如 <code>query 0</code> and <code>query 1</code>  是只通过一定属性条件（或者是无限制条件）找到满足的点、边</li>
 </ul>
 <p>而在 Nebula Graph 里，graph-queries 在扩展的时候，图的原始数据已经按照 VID（点和边都是）排序过了（或者说在数据里已经索引过了），这个排序带来连续存储（物理上临接）使得扩展游走本身就是优化、很快的。</p>
-<p>所以：</p>
-<blockquote>
-<p>Nebula Graph 索引是为了从给定属性条件查点、边的一份属性数据的排序。</p>
-</blockquote>
+<h3 id="总结索引是什么索引不是什么" class="headerLink">
+    <a href="#%e6%80%bb%e7%bb%93%e7%b4%a2%e5%bc%95%e6%98%af%e4%bb%80%e4%b9%88%e7%b4%a2%e5%bc%95%e4%b8%8d%e6%98%af%e4%bb%80%e4%b9%88" class="header-mark"></a>1.4 总结：索引是什么，索引不是什么？</h3><p>索引是什么？</p>
+<ul>
+<li>Nebula Graph 索引是为了从给定属性条件查点、边的一份属性数据的排序，它用写入的代价是的这种读查询模式成为可能。</li>
+</ul>
+<p>索引不是什么？</p>
+<ul>
+<li>Nebula Graph 索引不是用来加速一般图查询的：从一个点开始向外拓展的查询（即使是过滤属性条件的）不会依赖原生索引，因为 Nebula 数据自身的存储就是面向这种查询优化、排序的。</li>
+</ul>
 <h2 id="一些-nebula-graph-索引的设计细节" class="headerLink">
     <a href="#%e4%b8%80%e4%ba%9b-nebula-graph-%e7%b4%a2%e5%bc%95%e7%9a%84%e8%ae%be%e8%ae%a1%e7%bb%86%e8%8a%82" class="header-mark"></a>2 一些 Nebula Graph 索引的设计细节</h2><p>为了更好理解索引的限制、代价、能力，咱们来解释更多他的细节</p>
 <ul>
@@ -888,6 +893,23 @@ GO FROM <span class="s2">&#34;player100&#34;</span> OVER follow YIELD dst<span c
 </code></pre></td></tr></table>
 </div>
 </div></li>
+<li>
+<p>复合索引的能力与限制</p>
+<p>理解原生索引的匹配是左匹配能让我们知道对于超过一个属性的索引：复合索引，并且能帮助我们理解它的能力有限制，这里说几个结论：</p>
+<ul>
+<li>我们创建针对多个属性的复合索引是顺序有关的
+<ul>
+<li>比如，我们创建一个双属性复合索引 index_a: <code>(isRisky: bool, age: int)</code>，和 index_b: <code>(age: int, isRisky: bool)</code> 在根据 <code>WHERE n.user.isRisky == true AND n.user.age &gt; 18</code> 这个条件查询时候，index_a 因为左匹配一个相等的短字段，显然效率更高。</li>
+</ul>
+</li>
+<li>只有复合左匹配的被复合索引的属性真子集的过滤条件才能被只支持
+<ul>
+<li>比如，index_a: <code>(isRisky: bool, age: int)</code>，和 index_b: <code>(age: int, isRisky: bool)</code> 在查询 <code>WHERE n.user.age &gt; 18</code> 这个语句的时候, 只有 index_b 复合最左匹配，能满足这个查询。</li>
+</ul>
+</li>
+<li>针对一些从属性作为查询的起点，找点、边的情况，原生索引是不能满足全文搜索的匹配场景的，这时候，我们应该考虑使用 Nebula 全文索引，它是 Nebula 社区支持的开箱即用的外置 Elastic Search，通过配置，创建了全文索引的数据会通过 Raft listener 异步更新到 Elastic 集群中，他的查询入口也是 <code>LOOKUP</code>，详细的信息请<a href="https://docs.nebula-graph.com.cn/3.0.1/4.deployment-and-installation/6.deploy-text-based-index/2.deploy-es/" target="_blank" rel="noopener noreffer">参考文档</a>。</li>
+</ul>
+</li>
 </ul>
 <h2 id="回顾" class="headerLink">
     <a href="#%e5%9b%9e%e9%a1%be" class="header-mark"></a>4 回顾</h2><ul>

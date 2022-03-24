@@ -5,6 +5,288 @@
         <description>所有文章 | siwei.io</description>
         <generator>Hugo -- gohugo.io</generator><language>zh-CN</language><managingEditor>weyl.gu@gmail.com (Wey Gu)</managingEditor>
             <webMaster>weyl.gu@gmail.com (Wey Gu)</webMaster><lastBuildDate>Wed, 23 Mar 2022 22:11:03 &#43;0800</lastBuildDate><atom:link href="https://siwei.io/posts/" rel="self" type="application/rss+xml" /><item>
+    <title>Nebula Graph 索引详解</title>
+    <link>https://siwei.io/nebula-index-explained/</link>
+    <pubDate>Sun, 20 Feb 2022 16:35:53 &#43;0800</pubDate><author>
+        <name>Wey Gu</name>
+    </author><guid>https://siwei.io/nebula-index-explained/</guid>
+    <description><![CDATA[<div class="featured-image">
+                <img src="/featured-image.webp" referrerpolicy="no-referrer">
+            </div><blockquote>
+<p><code>index not found</code>？找不到索引？为什么我要创建 Nebula Graph 索引？什么时候要用到 Nebula Graph 原生索引，一文把这些搞清楚。</p>
+</blockquote>
+<p>Nebula Graph 的索引其实和传统的关系型数据库中的索引很像，但是又有一些容易让人疑惑的区别。刚开始了解 Nebula 的同学会疑惑于：</p>
+<ul>
+<li>不清楚 Nebula Graph 图数据库中的索引到的是什么概念</li>
+<li>我应该什么时候使用 Nebula Graph 索引</li>
+<li>Nebula Graph 索引怎么影响到写入性能</li>
+</ul>
+<p>这篇文章里，我们就把这些问题回答好。</p>
+<h2 id="到底-nebula-graph-索引是什么" class="headerLink">
+    <a href="#%e5%88%b0%e5%ba%95-nebula-graph-%e7%b4%a2%e5%bc%95%e6%98%af%e4%bb%80%e4%b9%88" class="header-mark"></a>1 到底 Nebula Graph 索引是什么</h2><p>简而言之，Nebula Graph 索引是用来，且只用来针对纯属性条件出发查询场景的</p>
+<ul>
+<li>图游走（walk）查询中的属性条件过滤不需要它</li>
+<li>纯属性条件出发查询（注：非采样情况）必须创建索引</li>
+</ul>
+<h3 id="纯属性条件出发查询" class="headerLink">
+    <a href="#%e7%ba%af%e5%b1%9e%e6%80%a7%e6%9d%a1%e4%bb%b6%e5%87%ba%e5%8f%91%e6%9f%a5%e8%af%a2" class="header-mark"></a>1.1 纯属性条件出发查询</h3><p>我们知道在传统关系型数据库中，索引是对表数据的一个或多个针对特定<strong>列</strong>重排序的副本，它用来<strong>加速特定列过滤条件的读查询</strong>并带来了额外的数据写入（加速而非这样查询的必须前提）。</p>
+<p>在 Nebula Graph 图数据库里，索引则是对<strong>点、边特定属性数据</strong>重排序的副本，用来提供<strong>纯属性条件出发查询</strong>（如下边的查询：从只给定了点边属性条件，而非点的 ID 出发去获取图数据）</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="o">####</span><span class="w"> </span><span class="err">必须</span><span class="w"> </span><span class="n">Nebula</span><span class="w"> </span><span class="n">Graph</span><span class="w"> </span><span class="err">索引存在的查询</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="o">#</span><span class="w"> </span><span class="n">query</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="err">纯属性条件出发查询</span><span class="w">
+</span><span class="w"></span><span class="n">LOOKUP</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">tag1</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">col1</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">col2</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&#34;foo&#34;</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span><span class="w">    </span><span class="n">YIELD</span><span class="w"> </span><span class="n">tag1</span><span class="p">.</span><span class="n">col1</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">col1</span><span class="p">,</span><span class="w"> </span><span class="n">tag1</span><span class="p">.</span><span class="n">col3</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">col3</span><span class="p">;</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="o">#</span><span class="w"> </span><span class="n">query</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="err">纯属性条件出发查询</span><span class="w">
+</span><span class="w"></span><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">v</span><span class="p">:</span><span class="n">player</span><span class="w"> </span><span class="err">{</span><span class="w"> </span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;Tim Duncan&#39;</span><span class="w"> </span><span class="err">}</span><span class="p">)</span><span class="c1">--&gt;(v2:player) \
+</span><span class="c1"></span><span class="w">        </span><span class="k">RETURN</span><span class="w"> </span><span class="n">v2</span><span class="p">.</span><span class="n">player</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">Name</span><span class="p">;</span><span class="w">
+</span></code></pre></td></tr></table>
+</div>
+</div><p>上边这两个纯属性条件出发查询就是字面意思的”根据给定的属性条件获取点或者边本身“ ，反面的例子则是给定了点的 ID：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="o">####</span><span class="w"> </span><span class="err">不基于索引的查询</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="o">#</span><span class="w"> </span><span class="n">query</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="err">从给定的点做的游走查询</span><span class="w"> </span><span class="n">vertex</span><span class="w"> </span><span class="n">VID</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;player100&#34;</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="k">GO</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="s2">&#34;player100&#34;</span><span class="w"> </span><span class="n">OVER</span><span class="w"> </span><span class="n">follow</span><span class="w"> </span><span class="n">REVERSELY</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span><span class="w">        </span><span class="n">YIELD</span><span class="w"> </span><span class="n">src</span><span class="p">(</span><span class="n">edge</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span><span class="w">    </span><span class="k">GO</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="err">$</span><span class="o">-</span><span class="p">.</span><span class="n">id</span><span class="w"> </span><span class="n">OVER</span><span class="w"> </span><span class="n">serve</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span><span class="w">        </span><span class="k">WHERE</span><span class="w"> </span><span class="n">properties</span><span class="p">(</span><span class="err">$</span><span class="o">^</span><span class="p">).</span><span class="n">age</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">20</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span><span class="w">        </span><span class="n">YIELD</span><span class="w"> </span><span class="n">properties</span><span class="p">(</span><span class="err">$</span><span class="o">^</span><span class="p">).</span><span class="n">name</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">FriendOf</span><span class="p">,</span><span class="w"> </span><span class="n">properties</span><span class="p">(</span><span class="err">$$</span><span class="p">).</span><span class="n">name</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">Team</span><span class="p">;</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="o">#</span><span class="w"> </span><span class="n">query</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="err">从给定的点做的游走查询</span><span class="w"> </span><span class="n">vertex</span><span class="w"> </span><span class="n">VID</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;player101&#34;</span><span class="w"> </span><span class="err">或者</span><span class="w"> </span><span class="s2">&#34;player102&#34;</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">v</span><span class="p">:</span><span class="n">player</span><span class="w"> </span><span class="err">{</span><span class="w"> </span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;Tim Duncan&#39;</span><span class="w"> </span><span class="err">}</span><span class="p">)</span><span class="c1">--(v2) \
+</span><span class="c1"></span><span class="w">        </span><span class="k">WHERE</span><span class="w"> </span><span class="n">id</span><span class="p">(</span><span class="n">v2</span><span class="p">)</span><span class="w"> </span><span class="k">IN</span><span class="w"> </span><span class="p">[</span><span class="s2">&#34;player101&#34;</span><span class="p">,</span><span class="w"> </span><span class="s2">&#34;player102&#34;</span><span class="p">]</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span><span class="w">        </span><span class="k">RETURN</span><span class="w"> </span><span class="n">v2</span><span class="p">.</span><span class="n">player</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">Name</span><span class="p">;</span><span class="w">
+</span></code></pre></td></tr></table>
+</div>
+</div><p>我们仔细看前边的 <code>query 1</code> 和 <code>query 3</code>，尽管语句中条件都有针对 tag 为 player 的过滤： <code>{ name: 'Tim Duncan' }</code> ：</p>
+<ul>
+<li>
+<p><code>query 3</code>之中不需要索引，因为它可以：</p>
+<ul>
+<li>更直接的从已知的 <code>v2</code> 顶点： <code>[&quot;player101&quot;, &quot;player102&quot;]</code></li>
+<li>向外扩展、游走（GetNeighbors() 获得边的另一端的点，然后GetVertices() 得到下一跳的 <code>v</code>），根据 v.player.name 过滤掉不要的数据</li>
+</ul>
+</li>
+<li>
+<p><code>query 1</code> 则不同，它因为没有任何给定的顶点 ID：</p>
+<ul>
+<li>只能从属性条件入手，<code>{ name: 'Tim Duncan' }</code>，在按照 name 排序了的索引数据中先找到符合的点：IndexScan() 得到 <code>v</code></li>
+<li>然后再从 <code>v</code> 做 GetNeighbors() 获得边的另一端 的 <code>v2</code> ，在通过 GetVertices() 去获得下一跳 <code>v2</code> 中的数据</li>
+</ul>
+</li>
+</ul>
+<p>其实，这里的关键就是在于是查询是否存在给定的顶点 ID（Vertex ID），下边两个查询的执行计划里更清晰地比较了他们的区别：</p>
+<table>
+<thead>
+<tr>
+<th><code>query 1</code>, 需要基于索引，纯属性条件出发查询</th>
+<th><code>query 3</code>, 从已知 VID，不需要索引</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="为什么纯属性条件出发查询里必须要索引呢" class="headerLink">
+    <a href="#%e4%b8%ba%e4%bb%80%e4%b9%88%e7%ba%af%e5%b1%9e%e6%80%a7%e6%9d%a1%e4%bb%b6%e5%87%ba%e5%8f%91%e6%9f%a5%e8%af%a2%e9%87%8c%e5%bf%85%e9%a1%bb%e8%a6%81%e7%b4%a2%e5%bc%95%e5%91%a2" class="header-mark"></a>1.2 为什么纯属性条件出发查询里必须要索引呢？</h3><p>因为 Nebula Graph 在存储数据的时候，它的结构是面向分布式与关联关系设计的，类似表结构数据库中无索引的全扫描条件搜索实际上更加昂贵，所以设计上被有意禁止了。</p>
+<blockquote>
+<p>注: 如果不追求全部数据，只要采样一部分，3.0 里之后是支持不强制索引 LIMIT <n> 的情况的，如下查询（有 LIMIT）不需要索引：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">MATCH (v:player { name: &#39;Tim Duncan&#39; })--&gt;(v2:player) \
+        RETURN v2.player.name AS Name LIMIT 3;
+</code></pre></td></tr></table>
+</div>
+</div></blockquote>
+<h3 id="为什么只有纯属性条件出发查询" class="headerLink">
+    <a href="#%e4%b8%ba%e4%bb%80%e4%b9%88%e5%8f%aa%e6%9c%89%e7%ba%af%e5%b1%9e%e6%80%a7%e6%9d%a1%e4%bb%b6%e5%87%ba%e5%8f%91%e6%9f%a5%e8%af%a2" class="header-mark"></a>1.3 为什么只有纯属性条件出发查询</h3><p>我们比较一下正常的图查询 <strong>graph-queries</strong> 和纯属性条件出发查询 <strong>pure-prop-condition queries</strong>：</p>
+<ul>
+<li>graph-queries： 如 <code>query 2</code> 、 <code>query 3</code>是沿着边一路找到特定路径条件的扩展游走</li>
+<li>pure-prop-condition queries：如 <code>query 0</code> and <code>query 1</code>  是只通过一定属性条件（或者是无限制条件）找到满足的点、边</li>
+</ul>
+<p>而在 Nebula Graph 里，graph-queries 在扩展的时候，图的原始数据已经按照 VID（点和边都是）排序过了（或者说在数据里已经索引过了），这个排序带来连续存储（物理上临接）使得扩展游走本身就是优化、很快的。</p>
+<h3 id="总结索引是什么索引不是什么" class="headerLink">
+    <a href="#%e6%80%bb%e7%bb%93%e7%b4%a2%e5%bc%95%e6%98%af%e4%bb%80%e4%b9%88%e7%b4%a2%e5%bc%95%e4%b8%8d%e6%98%af%e4%bb%80%e4%b9%88" class="header-mark"></a>1.4 总结：索引是什么，索引不是什么？</h3><p>索引是什么？</p>
+<ul>
+<li>Nebula Graph 索引是为了从给定属性条件查点、边的一份属性数据的排序，它用写入的代价是的这种读查询模式成为可能。</li>
+</ul>
+<p>索引不是什么？</p>
+<ul>
+<li>Nebula Graph 索引不是用来加速一般图查询的：从一个点开始向外拓展的查询（即使是过滤属性条件的）不会依赖原生索引，因为 Nebula 数据自身的存储就是面向这种查询优化、排序的。</li>
+</ul>
+<h2 id="一些-nebula-graph-索引的设计细节" class="headerLink">
+    <a href="#%e4%b8%80%e4%ba%9b-nebula-graph-%e7%b4%a2%e5%bc%95%e7%9a%84%e8%ae%be%e8%ae%a1%e7%bb%86%e8%8a%82" class="header-mark"></a>2 一些 Nebula Graph 索引的设计细节</h2><p>为了更好理解索引的限制、代价、能力，咱们来解释更多他的细节</p>
+<ul>
+<li>
+<p>Nebula Graph 索引是在本地（不是分开、中心化）和点数据被一起存储、分片的。</p>
+</li>
+<li>
+<p>它只支持左匹配</p>
+<ul>
+<li>因为底层是 RocksDB Prefix Scan</li>
+</ul>
+</li>
+<li>
+<p>性能代价:</p>
+<ul>
+<li>写入时候的路径：不只是多一分数据，为了保证一致性，还有昂贵的读操作</li>
+<li>读路径：基于规则的优化选择索引，Fan Out 到所有 StorageD</li>
+</ul>
+</li>
+</ul>
+<p>这些信息也在我的<a href="https://www.siwei.io/sketch-notes/" target="_blank" rel="noopener noreffer">手绘图和视频</a>里可以看到：</p>
+<p></p>
+<blockquote>
+<p>因为左匹配的设计，在有更复杂的针对纯属性条件出发查询里涉及到通配、REGEXP这样的全文搜索情况，Nebula Graph 提供了全文索引的功能，它是利用 Raft Listener 去异步将数据写到外部 Elasticsearch 集群之中，并在查询的时候去查 ES 去做到的，见<a href="https://docs.nebula-graph.com.cn/3.0.0/4.deployment-and-installation/6.deploy-text-based-index/2.deploy-es/" target="_blank" rel="noopener noreffer">文档</a>。</p>
+</blockquote>
+<p>在这个手绘图中，我们还可以看出</p>
+<ul>
+<li>Write path
+<ul>
+<li>写入索引数据是同步操作的</li>
+</ul>
+</li>
+<li>Read path
+<ul>
+<li>这部分画了一个 RBO 的例子，查询里的规则假设 col2 相等匹配排在左边的情况下，性能优于 col1 的大小比较匹配，所以选择了第二个索引</li>
+<li>选好了索引之后，扫描索引的请求被 fan out 到存储节点上，这其中有些过滤条件比如 top n 是可以下推的</li>
+</ul>
+</li>
+</ul>
+<p>结论：</p>
+<ul>
+<li>因为写入的代价，只有必须用索引的时候采用，如果采样查询能满足读的要求，可以不创建索引而用 LIMIT <n>。</li>
+<li>索引有左匹配的限制
+<ul>
+<li>符合查询的顺序要仔细设计</li>
+<li>有时候需要使用全文索引 <a href="https://docs.nebula-graph.com.cn/3.0.0/4.deployment-and-installation/6.deploy-text-based-index/2.deploy-es/" target="_blank" rel="noopener noreffer">full-text index</a>。</li>
+</ul>
+</li>
+</ul>
+<h2 id="索引的使用" class="headerLink">
+    <a href="#%e7%b4%a2%e5%bc%95%e7%9a%84%e4%bd%bf%e7%94%a8" class="header-mark"></a>3 索引的使用</h2><p>具体要参考<a href="https://docs.nebula-graph.io/3.0.0/3.ngql-guide/14.native-index-statements/" target="_blank" rel="noopener noreffer">索引文档</a>一些要点是：</p>
+<ul>
+<li>
+<p>在 tag 或者 edge type 上针对想要被条件反查点边的属性创建索引</p>
+<ul>
+<li><code>CREATE INDEX</code></li>
+</ul>
+</li>
+<li>
+<p>创建索引之后的索引部分数据会同步写入，但是如果创建索引之前已经有的点边数据对应的索引是需要明确指定去创建的，这是一个异步的 job：</p>
+<ul>
+<li><code>REBUILD INDEX</code></li>
+</ul>
+</li>
+<li>
+<p>触发了异步的 <code>REBUILD INDEX</code> 之后，可以查询状态：</p>
+<ul>
+<li><code>SHOW INDEX STATUS</code></li>
+</ul>
+</li>
+<li>
+<p>利用到索引的查询可以是 LOOKUP，并且常常可以借助管道符在此之上做拓展查询（Graph Query）：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="n">LOOKUP</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">player</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span><span class="w">  </span><span class="k">WHERE</span><span class="w"> </span><span class="n">player</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&#34;Kobe Bryant&#34;</span><span class="err">\</span><span class="w">
+</span><span class="w">  </span><span class="n">YIELD</span><span class="w"> </span><span class="n">id</span><span class="p">(</span><span class="n">vertex</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">VertexID</span><span class="p">,</span><span class="w"> </span><span class="n">properties</span><span class="p">(</span><span class="n">vertex</span><span class="p">).</span><span class="n">name</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">|</span><span class="err">\</span><span class="w">
+</span><span class="w">  </span><span class="k">GO</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="err">$</span><span class="o">-</span><span class="p">.</span><span class="n">VertexID</span><span class="w"> </span><span class="n">OVER</span><span class="w"> </span><span class="n">serve</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span><span class="w">  </span><span class="n">YIELD</span><span class="w"> </span><span class="err">$</span><span class="o">-</span><span class="p">.</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">properties</span><span class="p">(</span><span class="n">edge</span><span class="p">).</span><span class="n">start_year</span><span class="p">,</span><span class="w"> </span><span class="n">properties</span><span class="p">(</span><span class="n">edge</span><span class="p">).</span><span class="n">end_year</span><span class="p">,</span><span class="w"> </span><span class="n">properties</span><span class="p">(</span><span class="err">$$</span><span class="p">).</span><span class="n">name</span><span class="p">;</span><span class="w">
+</span></code></pre></td></tr></table>
+</div>
+</div></li>
+<li>
+<p>也可以是 MATCH ，这里边 <code>v</code> 是通过索引得到的，而 <code>v2</code> 则是在数据（非索引）部分拓展查询获得的。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">MATCH (v:player{name:&#34;Tim Duncan&#34;})--(v2:player) \
+  RETURN v2.player.name AS Name;
+</code></pre></td></tr></table>
+</div>
+</div></li>
+<li>
+<p>复合索引的能力与限制</p>
+<p>理解原生索引的匹配是左匹配能让我们知道对于超过一个属性的索引：复合索引，并且能帮助我们理解它的能力有限制，这里说几个结论：</p>
+<ul>
+<li>我们创建针对多个属性的复合索引是顺序有关的
+<ul>
+<li>比如，我们创建一个双属性复合索引 index_a: <code>(isRisky: bool, age: int)</code>，和 index_b: <code>(age: int, isRisky: bool)</code> 在根据 <code>WHERE n.user.isRisky == true AND n.user.age &gt; 18</code> 这个条件查询时候，index_a 因为左匹配一个相等的短字段，显然效率更高。</li>
+</ul>
+</li>
+<li>只有复合左匹配的被复合索引的属性真子集的过滤条件才能被只支持
+<ul>
+<li>比如，index_a: <code>(isRisky: bool, age: int)</code>，和 index_b: <code>(age: int, isRisky: bool)</code> 在查询 <code>WHERE n.user.age &gt; 18</code> 这个语句的时候, 只有 index_b 复合最左匹配，能满足这个查询。</li>
+</ul>
+</li>
+<li>针对一些从属性作为查询的起点，找点、边的情况，原生索引是不能满足全文搜索的匹配场景的，这时候，我们应该考虑使用 Nebula 全文索引，它是 Nebula 社区支持的开箱即用的外置 Elastic Search，通过配置，创建了全文索引的数据会通过 Raft listener 异步更新到 Elastic 集群中，他的查询入口也是 <code>LOOKUP</code>，详细的信息请<a href="https://docs.nebula-graph.com.cn/3.0.1/4.deployment-and-installation/6.deploy-text-based-index/2.deploy-es/" target="_blank" rel="noopener noreffer">参考文档</a>。</li>
+</ul>
+</li>
+</ul>
+<h2 id="回顾" class="headerLink">
+    <a href="#%e5%9b%9e%e9%a1%be" class="header-mark"></a>4 回顾</h2><ul>
+<li>Nebula Graph 索引在只提供属性条件情况下通过对属性的排序副本扫描查点、边</li>
+<li>Nebula Graph 索引<strong>不是</strong>用来图拓展查询的</li>
+<li>Nebula Graph 索引是左匹配，不是用来做模糊全文搜索的</li>
+<li>Nebula Graph 索引在写入时候有性能代价</li>
+<li>记得如果创建 Nebula Graph 索引之前已经有相应点边上的数据，要重建索引</li>
+</ul>
+<p>Happy Graphing!</p>
+<p>Feture image credit to <a href="https://unsplash.com/photos/ZiQkhI7417A" target="_blank" rel="noopener noreffer">Alina</a></p>
+]]></description>
+</item><item>
     <title>Nebula Graph on Pi</title>
     <link>https://siwei.io/nebula-graph-on-pi/</link>
     <pubDate>Wed, 23 Mar 2022 22:11:03 &#43;0800</pubDate><author>
