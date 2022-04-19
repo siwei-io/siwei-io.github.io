@@ -1,0 +1,1126 @@
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+        <title>PySpark - Tag - siwei.io</title>
+        <link>https://siwei.io/en/tags/pyspark/</link>
+        <description>PySpark - Tag - siwei.io</description>
+        <generator>Hugo -- gohugo.io</generator><language>en</language><managingEditor>weyl.gu@gmail.com (Wey Gu)</managingEditor>
+            <webMaster>weyl.gu@gmail.com (Wey Gu)</webMaster><lastBuildDate>Tue, 19 Apr 2022 17:19:11 &#43;0800</lastBuildDate><atom:link href="https://siwei.io/en/tags/pyspark/" rel="self" type="application/rss+xml" /><item>
+    <title>Spark on Nebula Graph</title>
+    <link>https://siwei.io/en/spark-on-nebula-graph/</link>
+    <pubDate>Tue, 19 Apr 2022 17:19:11 &#43;0800</pubDate><author>
+        <name>Wey Gu</name>
+    </author><guid>https://siwei.io/en/spark-on-nebula-graph/</guid>
+    <description><![CDATA[<div class="featured-image">
+                <img src="/featured-image.webp" referrerpolicy="no-referrer">
+            </div><blockquote>
+<p>What could be done with Spark and PySpark on top of Nebula Graph, this post covers everything we should know.</p>
+</blockquote>
+<p>In this article, I am trying walk you through all three Spark projects of Nebula Graph with some runnable hands-on examples. Also, I managed to make PySpark usable with Nebula Graph Spark Connector, which will be contributed to the Docs later.</p>
+<h2 id="the-three-spark-projects-for-nebula-graph" class="headerLink">
+    <a href="#the-three-spark-projects-for-nebula-graph" class="header-mark"></a>1 The three Spark projects for Nebula Graph</h2><p>I used to draw a sketch around all data importing methods of Nebula Graph <a href="https://www.siwei.io/sketches/nebula-data-import-options/" target="_blank" rel="noopener noreffer">here</a>, where all three of the Spark based Nebula Graph projects were already briefly introduced. In this article, instead, a slightly deeper dive on all of them will be made based on my recent work on them.</p>
+<p>TL;DR</p>
+<ul>
+<li>Nebula Spark Connector is a Spark Lib to enable spark application reading from and writing to Nebula Graph in form of dataframe.</li>
+<li>Nebula Exchange, built on top of Nebula Spark Connector, is a Spark Lib and Application to exchange(for Open Source version, it&rsquo;s one way: write, whereas for enterprise version it&rsquo;s bidirectional) different data sources like(MySQL, Neo4j, PostgreSQL, Clickhouse, Hive etc.). Besides write directly to Nebula Graph, it could optionally generate SST files to be ingested into Nebula Graph to off load the storage computation outside of the Nebula Graph cluster.</li>
+<li>Nebula Algorithm, built on top of Nebula Spark Connector and GraphX, is an Spark Lib and Application to run de facto graph algorithms(pagerank, LPA etc&hellip;) on a graph from Nebula Graph.</li>
+</ul>
+<p>Then let&rsquo;s have the long verson of those spark projects more on how-to perspectives.</p>
+<h2 id="spark-connector" class="headerLink">
+    <a href="#spark-connector" class="header-mark"></a>2 Spark-Connector</h2><ul>
+<li>Codebase: <a href="https://github.com/vesoft-inc/nebula-algorithm" target="_blank" rel="noopener noreffer">https://github.com/vesoft-inc/nebula-algorithm</a></li>
+<li>Documentation: <a href="https://docs.nebula-graph.io/3.0.2/nebula-algorithm/" target="_blank" rel="noopener noreffer">https://docs.nebula-graph.io/3.0.2/nebula-algorithm/</a> (it&rsquo;s versioned, as for now, I put the lastest released version 3.0.2 here)</li>
+<li>Jar Package: <a href="https://repo1.maven.org/maven2/com/vesoft/nebula-algorithm/" target="_blank" rel="noopener noreffer">https://repo1.maven.org/maven2/com/vesoft/nebula-algorithm/</a></li>
+<li>Code Examples: <a href="example/src/main/scala/com/vesoft/nebula/algorithm" rel="">example/src/main/scala/com/vesoft/nebula/algorithm</a></li>
+</ul>
+<h3 id="nebula-graph-spark-reader" class="headerLink">
+    <a href="#nebula-graph-spark-reader" class="header-mark"></a>2.1 Nebula Graph Spark Reader</h3><p>To read data from Nebula Graph, i.e. vertex, Nebula Spark Connector will scan all storage instances who hold given label(TAG): <code>withLabel(&quot;player&quot;)</code>, and we could optionally specify the properties of the vertex: <code>withReturnCols(List(&quot;name&quot;, &quot;age&quot;))</code>.</p>
+<p>With needed configuration being provided, a call of <code>spark.read.nebula.loadVerticesToDF</code> will return dataframe of the Vertex Scan call towards Nebula Graph:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-scala" data-lang="scala">  <span class="k">def</span> <span class="n">readVertex</span><span class="o">(</span><span class="n">spark</span><span class="k">:</span> <span class="kt">SparkSession</span><span class="o">)</span><span class="k">:</span> <span class="kt">Unit</span> <span class="o">=</span> <span class="o">{</span>
+    <span class="nc">LOG</span><span class="o">.</span><span class="n">info</span><span class="o">(</span><span class="s">&#34;start to read nebula vertices&#34;</span><span class="o">)</span>
+    <span class="k">val</span> <span class="n">config</span> <span class="k">=</span>
+      <span class="nc">NebulaConnectionConfig</span>
+        <span class="o">.</span><span class="n">builder</span><span class="o">()</span>
+        <span class="o">.</span><span class="n">withMetaAddress</span><span class="o">(</span><span class="s">&#34;metad0:9559,metad1:9559,metad2:9559&#34;</span><span class="o">)</span>
+        <span class="o">.</span><span class="n">withConenctionRetry</span><span class="o">(</span><span class="mi">2</span><span class="o">)</span>
+        <span class="o">.</span><span class="n">build</span><span class="o">()</span>
+    <span class="k">val</span> <span class="n">nebulaReadVertexConfig</span><span class="k">:</span> <span class="kt">ReadNebulaConfig</span> <span class="o">=</span> <span class="nc">ReadNebulaConfig</span>
+      <span class="o">.</span><span class="n">builder</span><span class="o">()</span>
+      <span class="o">.</span><span class="n">withSpace</span><span class="o">(</span><span class="s">&#34;basketballplayer&#34;</span><span class="o">)</span>
+      <span class="o">.</span><span class="n">withLabel</span><span class="o">(</span><span class="s">&#34;player&#34;</span><span class="o">)</span>
+      <span class="o">.</span><span class="n">withNoColumn</span><span class="o">(</span><span class="kc">false</span><span class="o">)</span>
+      <span class="o">.</span><span class="n">withReturnCols</span><span class="o">(</span><span class="nc">List</span><span class="o">(</span><span class="s">&#34;name&#34;</span><span class="o">,</span> <span class="s">&#34;age&#34;</span><span class="o">))</span>
+      <span class="o">.</span><span class="n">withLimit</span><span class="o">(</span><span class="mi">10</span><span class="o">)</span>
+      <span class="o">.</span><span class="n">withPartitionNum</span><span class="o">(</span><span class="mi">10</span><span class="o">)</span>
+      <span class="o">.</span><span class="n">build</span><span class="o">()</span>
+    <span class="k">val</span> <span class="n">vertex</span> <span class="k">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">nebula</span><span class="o">(</span><span class="n">config</span><span class="o">,</span> <span class="n">nebulaReadVertexConfig</span><span class="o">).</span><span class="n">loadVerticesToDF</span><span class="o">()</span>
+    <span class="n">vertex</span><span class="o">.</span><span class="n">printSchema</span><span class="o">()</span>
+    <span class="n">vertex</span><span class="o">.</span><span class="n">show</span><span class="o">(</span><span class="mi">20</span><span class="o">)</span>
+    <span class="n">println</span><span class="o">(</span><span class="s">&#34;vertex count: &#34;</span> <span class="o">+</span> <span class="n">vertex</span><span class="o">.</span><span class="n">count</span><span class="o">())</span>
+  <span class="o">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>It&rsquo;s similar for the writor part and one big difference here is the wrinting path is done via GraphD as underlying Spark Connector is shooting nGQL <code>INSERT</code> queries.</p>
+<p>Then let&rsquo;s do a hands-on end to end practise.</p>
+<h3 id="hands-on-spark-connector" class="headerLink">
+    <a href="#hands-on-spark-connector" class="header-mark"></a>2.2 Hands-on Spark Connector</h3><p>Prerequisites: it&rsquo;s assumed below procedure being run on a Linux Machine with internet connection, ideally with Docker and Docker-Compose preinstalled.</p>
+<h4 id="bootstrap-a-nebula-graph-cluster" class="headerLink">
+    <a href="#bootstrap-a-nebula-graph-cluster" class="header-mark"></a>2.2.1 Bootstrap a Nebula Graph Cluster</h4><p>Firstly, let&rsquo;s deploy Nebula Graph Core v3.0 and Nebula Studio with <a href="https://github.com/wey-gu/nebula-up/" target="_blank" rel="noopener noreffer">Nebula-Up</a>, it will try to install Docker and Docker-Compose for us, in case it failed, please try install Docker and Docker-Compose on your own first.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">curl -fsSL nebula-up.siwei.io/install.sh <span class="p">|</span> bash -s -- v3.0
+</code></pre></td></tr></table>
+</div>
+</div><p>After the above script being executed, let&rsquo;s connect to it with Nebula-Console, the command line client for Nebula Graph.</p>
+<ul>
+<li>Enter the container with console</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">~/.nebula-up/console.sh
+</code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>Connect to the Nebula Graph</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">nebula-console -addr graphd -port <span class="m">9669</span> -user root -p nebula
+</code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>
+<p>Activate Storage Instances, and check hosts status</p>
+<blockquote>
+<p>ref: <a href="https://docs.nebula-graph.io/3.0.2/4.deployment-and-installation/manage-storage-host/" target="_blank" rel="noopener noreffer">https://docs.nebula-graph.io/3.0.2/4.deployment-and-installation/manage-storage-host/</a></p>
+</blockquote>
+</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">ADD HOSTS <span class="s2">&#34;storaged0&#34;</span>:9779,<span class="s2">&#34;storaged1&#34;</span>:9779,<span class="s2">&#34;storaged2&#34;</span>:9779<span class="p">;</span>
+SHOW HOSTS<span class="p">;</span>
+</code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>Load the <a href="https://docs.nebula-graph.io/3.0.2/3.ngql-guide/1.nGQL-overview/1.overview/#example_data_basketballplayer" target="_blank" rel="noopener noreffer">test graph data</a>, which will take one or two minitues to finish.</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">:play basketballplayer<span class="p">;</span>
+</code></pre></td></tr></table>
+</div>
+</div><h4 id="create-a-spark-playground" class="headerLink">
+    <a href="#create-a-spark-playground" class="header-mark"></a>2.2.2 Create a Spark playground</h4><p>Thanks to <a href="https://github.com/big-data-europe/docker-spark" target="_blank" rel="noopener noreffer">Big data europe</a>, it&rsquo;s quite handly to do so:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">docker run --name spark-master-0 --network nebula-docker-compose_nebula-net <span class="se">\
+</span><span class="se"></span>    -h spark-master-0 -e <span class="nv">ENABLE_INIT_DAEMON</span><span class="o">=</span><span class="nb">false</span> -d <span class="se">\
+</span><span class="se"></span>    -v <span class="si">${</span><span class="nv">PWD</span><span class="si">}</span>/:/root <span class="se">\
+</span><span class="se"></span>    bde2020/spark-master:2.4.5-hadoop2.7
+</code></pre></td></tr></table>
+</div>
+</div><p>In above one line command, we created a container named <code>spark-master-0</code> with a built-in hadoop 2.7 and spark 2.4.5, connected to the Nebula Graph cluster in its docker network named <code>nebula-docker-compose_nebula-net</code>, and it mapped the current path to <code>/root</code> of the spark container.</p>
+<p>Then, we could access to the spark env container with:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">docker <span class="nb">exec</span> -it spark-master-0 bash
+</code></pre></td></tr></table>
+</div>
+</div><p>Optionally, we could install <code>mvn</code> inside the container:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">docker <span class="nb">exec</span> -it spark-master-0 bash
+<span class="c1"># in the container shell</span>
+
+<span class="nb">export</span> <span class="nv">MAVEN_VERSION</span><span class="o">=</span>3.5.4
+<span class="nb">export</span> <span class="nv">MAVEN_HOME</span><span class="o">=</span>/usr/lib/mvn
+<span class="nb">export</span> <span class="nv">PATH</span><span class="o">=</span><span class="nv">$MAVEN_HOME</span>/bin:<span class="nv">$PATH</span>
+
+wget http://archive.apache.org/dist/maven/maven-3/<span class="nv">$MAVEN_VERSION</span>/binaries/apache-maven-<span class="nv">$MAVEN_VERSION</span>-bin.tar.gz <span class="o">&amp;&amp;</span> <span class="se">\
+</span><span class="se"></span>  tar -zxvf apache-maven-<span class="nv">$MAVEN_VERSION</span>-bin.tar.gz <span class="o">&amp;&amp;</span> <span class="se">\
+</span><span class="se"></span>  rm apache-maven-<span class="nv">$MAVEN_VERSION</span>-bin.tar.gz <span class="o">&amp;&amp;</span> <span class="se">\
+</span><span class="se"></span>  mv apache-maven-<span class="nv">$MAVEN_VERSION</span> /usr/lib/mvn
+
+which /usr/lib/mvn/bin/mvn
+</code></pre></td></tr></table>
+</div>
+</div><h4 id="run-spark-connector-example" class="headerLink">
+    <a href="#run-spark-connector-example" class="header-mark"></a>2.2.3 Run spark connector example</h4><p>Let&rsquo;s clone the connector and the example code base, and build(or place the connector Jar package) the connector:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">git clone https://github.com/vesoft-inc/nebula-spark-connector.git
+
+docker <span class="nb">exec</span> -it spark-master-0 bash
+<span class="nb">cd</span> /root/nebula-spark-connector
+
+/usr/lib/mvn/bin/mvn install -Dgpg.skip -Dmaven.javadoc.skip<span class="o">=</span><span class="nb">true</span> -Dmaven.test.skip<span class="o">=</span><span class="nb">true</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>Then we replace the example code:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">vi example/src/main/scala/com/vesoft/nebula/examples/connector/NebulaSparkReaderExample.scala
+</code></pre></td></tr></table>
+</div>
+</div><p>We put the code as the following, where two functions <code>readVertex</code> and <code>readEdges</code> was created on the <code>basketballplayer</code> graph space:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span><span class="lnt">67
+</span><span class="lnt">68
+</span><span class="lnt">69
+</span><span class="lnt">70
+</span><span class="lnt">71
+</span><span class="lnt">72
+</span><span class="lnt">73
+</span><span class="lnt">74
+</span><span class="lnt">75
+</span><span class="lnt">76
+</span><span class="lnt">77
+</span><span class="lnt">78
+</span><span class="lnt">79
+</span><span class="lnt">80
+</span><span class="lnt">81
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-scala" data-lang="scala"><span class="k">package</span> <span class="nn">com.vesoft.nebula.examples.connector</span>
+
+<span class="k">import</span> <span class="nn">com.facebook.thrift.protocol.TCompactProtocol</span>
+<span class="k">import</span> <span class="nn">com.vesoft.nebula.connector.connector.NebulaDataFrameReader</span>
+<span class="k">import</span> <span class="nn">com.vesoft.nebula.connector.</span><span class="o">{</span><span class="nc">NebulaConnectionConfig</span><span class="o">,</span> <span class="nc">ReadNebulaConfig</span><span class="o">}</span>
+<span class="k">import</span> <span class="nn">org.apache.spark.SparkConf</span>
+<span class="k">import</span> <span class="nn">org.apache.spark.sql.SparkSession</span>
+<span class="k">import</span> <span class="nn">org.slf4j.LoggerFactory</span>
+
+<span class="k">object</span> <span class="nc">NebulaSparkReaderExample</span> <span class="o">{</span>
+
+  <span class="k">private</span> <span class="k">val</span> <span class="nc">LOG</span> <span class="k">=</span> <span class="nc">LoggerFactory</span><span class="o">.</span><span class="n">getLogger</span><span class="o">(</span><span class="k">this</span><span class="o">.</span><span class="n">getClass</span><span class="o">)</span>
+
+  <span class="k">def</span> <span class="n">main</span><span class="o">(</span><span class="n">args</span><span class="k">:</span> <span class="kt">Array</span><span class="o">[</span><span class="kt">String</span><span class="o">])</span><span class="k">:</span> <span class="kt">Unit</span> <span class="o">=</span> <span class="o">{</span>
+
+    <span class="k">val</span> <span class="n">sparkConf</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">SparkConf</span>
+    <span class="n">sparkConf</span>
+      <span class="o">.</span><span class="n">set</span><span class="o">(</span><span class="s">&#34;spark.serializer&#34;</span><span class="o">,</span> <span class="s">&#34;org.apache.spark.serializer.KryoSerializer&#34;</span><span class="o">)</span>
+      <span class="o">.</span><span class="n">registerKryoClasses</span><span class="o">(</span><span class="nc">Array</span><span class="o">[</span><span class="kt">Class</span><span class="o">[</span><span class="k">_</span><span class="o">]](</span><span class="n">classOf</span><span class="o">[</span><span class="kt">TCompactProtocol</span><span class="o">]))</span>
+    <span class="k">val</span> <span class="n">spark</span> <span class="k">=</span> <span class="nc">SparkSession</span>
+      <span class="o">.</span><span class="n">builder</span><span class="o">()</span>
+      <span class="o">.</span><span class="n">master</span><span class="o">(</span><span class="s">&#34;local&#34;</span><span class="o">)</span>
+      <span class="o">.</span><span class="n">config</span><span class="o">(</span><span class="n">sparkConf</span><span class="o">)</span>
+      <span class="o">.</span><span class="n">getOrCreate</span><span class="o">()</span>
+
+    <span class="n">readVertex</span><span class="o">(</span><span class="n">spark</span><span class="o">)</span>
+    <span class="n">readEdges</span><span class="o">(</span><span class="n">spark</span><span class="o">)</span>
+
+    <span class="n">spark</span><span class="o">.</span><span class="n">close</span><span class="o">()</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="o">()</span>
+  <span class="o">}</span>
+
+  <span class="k">def</span> <span class="n">readVertex</span><span class="o">(</span><span class="n">spark</span><span class="k">:</span> <span class="kt">SparkSession</span><span class="o">)</span><span class="k">:</span> <span class="kt">Unit</span> <span class="o">=</span> <span class="o">{</span>
+    <span class="nc">LOG</span><span class="o">.</span><span class="n">info</span><span class="o">(</span><span class="s">&#34;start to read nebula vertices&#34;</span><span class="o">)</span>
+    <span class="k">val</span> <span class="n">config</span> <span class="k">=</span>
+      <span class="nc">NebulaConnectionConfig</span>
+        <span class="o">.</span><span class="n">builder</span><span class="o">()</span>
+        <span class="o">.</span><span class="n">withMetaAddress</span><span class="o">(</span><span class="s">&#34;metad0:9559,metad1:9559,metad2:9559&#34;</span><span class="o">)</span>
+        <span class="o">.</span><span class="n">withConenctionRetry</span><span class="o">(</span><span class="mi">2</span><span class="o">)</span>
+        <span class="o">.</span><span class="n">build</span><span class="o">()</span>
+    <span class="k">val</span> <span class="n">nebulaReadVertexConfig</span><span class="k">:</span> <span class="kt">ReadNebulaConfig</span> <span class="o">=</span> <span class="nc">ReadNebulaConfig</span>
+      <span class="o">.</span><span class="n">builder</span><span class="o">()</span>
+      <span class="o">.</span><span class="n">withSpace</span><span class="o">(</span><span class="s">&#34;basketballplayer&#34;</span><span class="o">)</span>
+      <span class="o">.</span><span class="n">withLabel</span><span class="o">(</span><span class="s">&#34;player&#34;</span><span class="o">)</span>
+      <span class="o">.</span><span class="n">withNoColumn</span><span class="o">(</span><span class="kc">false</span><span class="o">)</span>
+      <span class="o">.</span><span class="n">withReturnCols</span><span class="o">(</span><span class="nc">List</span><span class="o">(</span><span class="s">&#34;name&#34;</span><span class="o">,</span> <span class="s">&#34;age&#34;</span><span class="o">))</span>
+      <span class="o">.</span><span class="n">withLimit</span><span class="o">(</span><span class="mi">10</span><span class="o">)</span>
+      <span class="o">.</span><span class="n">withPartitionNum</span><span class="o">(</span><span class="mi">10</span><span class="o">)</span>
+      <span class="o">.</span><span class="n">build</span><span class="o">()</span>
+    <span class="k">val</span> <span class="n">vertex</span> <span class="k">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">nebula</span><span class="o">(</span><span class="n">config</span><span class="o">,</span> <span class="n">nebulaReadVertexConfig</span><span class="o">).</span><span class="n">loadVerticesToDF</span><span class="o">()</span>
+    <span class="n">vertex</span><span class="o">.</span><span class="n">printSchema</span><span class="o">()</span>
+    <span class="n">vertex</span><span class="o">.</span><span class="n">show</span><span class="o">(</span><span class="mi">20</span><span class="o">)</span>
+    <span class="n">println</span><span class="o">(</span><span class="s">&#34;vertex count: &#34;</span> <span class="o">+</span> <span class="n">vertex</span><span class="o">.</span><span class="n">count</span><span class="o">())</span>
+  <span class="o">}</span>
+
+  <span class="k">def</span> <span class="n">readEdges</span><span class="o">(</span><span class="n">spark</span><span class="k">:</span> <span class="kt">SparkSession</span><span class="o">)</span><span class="k">:</span> <span class="kt">Unit</span> <span class="o">=</span> <span class="o">{</span>
+    <span class="nc">LOG</span><span class="o">.</span><span class="n">info</span><span class="o">(</span><span class="s">&#34;start to read nebula edges&#34;</span><span class="o">)</span>
+
+    <span class="k">val</span> <span class="n">config</span> <span class="k">=</span>
+      <span class="nc">NebulaConnectionConfig</span>
+        <span class="o">.</span><span class="n">builder</span><span class="o">()</span>
+        <span class="o">.</span><span class="n">withMetaAddress</span><span class="o">(</span><span class="s">&#34;metad0:9559,metad1:9559,metad2:9559&#34;</span><span class="o">)</span>
+        <span class="o">.</span><span class="n">withTimeout</span><span class="o">(</span><span class="mi">6000</span><span class="o">)</span>
+        <span class="o">.</span><span class="n">withConenctionRetry</span><span class="o">(</span><span class="mi">2</span><span class="o">)</span>
+        <span class="o">.</span><span class="n">build</span><span class="o">()</span>
+    <span class="k">val</span> <span class="n">nebulaReadEdgeConfig</span><span class="k">:</span> <span class="kt">ReadNebulaConfig</span> <span class="o">=</span> <span class="nc">ReadNebulaConfig</span>
+      <span class="o">.</span><span class="n">builder</span><span class="o">()</span>
+      <span class="o">.</span><span class="n">withSpace</span><span class="o">(</span><span class="s">&#34;basketballplayer&#34;</span><span class="o">)</span>
+      <span class="o">.</span><span class="n">withLabel</span><span class="o">(</span><span class="s">&#34;follow&#34;</span><span class="o">)</span>
+      <span class="o">.</span><span class="n">withNoColumn</span><span class="o">(</span><span class="kc">false</span><span class="o">)</span>
+      <span class="o">.</span><span class="n">withReturnCols</span><span class="o">(</span><span class="nc">List</span><span class="o">(</span><span class="s">&#34;degree&#34;</span><span class="o">))</span>
+      <span class="o">.</span><span class="n">withLimit</span><span class="o">(</span><span class="mi">10</span><span class="o">)</span>
+      <span class="o">.</span><span class="n">withPartitionNum</span><span class="o">(</span><span class="mi">10</span><span class="o">)</span>
+      <span class="o">.</span><span class="n">build</span><span class="o">()</span>
+    <span class="k">val</span> <span class="n">edge</span> <span class="k">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">nebula</span><span class="o">(</span><span class="n">config</span><span class="o">,</span> <span class="n">nebulaReadEdgeConfig</span><span class="o">).</span><span class="n">loadEdgesToDF</span><span class="o">()</span>
+    <span class="n">edge</span><span class="o">.</span><span class="n">printSchema</span><span class="o">()</span>
+    <span class="n">edge</span><span class="o">.</span><span class="n">show</span><span class="o">(</span><span class="mi">20</span><span class="o">)</span>
+    <span class="n">println</span><span class="o">(</span><span class="s">&#34;edge count: &#34;</span> <span class="o">+</span> <span class="n">edge</span><span class="o">.</span><span class="n">count</span><span class="o">())</span>
+  <span class="o">}</span>
+
+<span class="o">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>Then build it:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="nb">cd</span> example
+/usr/lib/mvn/bin/mvn install -Dgpg.skip -Dmaven.javadoc.skip<span class="o">=</span><span class="nb">true</span> -Dmaven.test.skip<span class="o">=</span><span class="nb">true</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>Execute it on spark:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">/spark/bin/spark-submit --master <span class="s2">&#34;local&#34;</span> <span class="se">\
+</span><span class="se"></span>    --class com.vesoft.nebula.examples.connector.NebulaSparkReaderExample <span class="se">\
+</span><span class="se"></span>    --driver-memory 16g target/example-3.0-SNAPSHOT.jar
+</code></pre></td></tr></table>
+</div>
+</div><p>And the result should include:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">22/04/19 07:29:34 INFO DAGScheduler: Job 1 finished: show at NebulaSparkReaderExample.scala:57, took 0.199310 s
++---------+------------------+---+
+|_vertexId|              name|age|
++---------+------------------+---+
+|player105|       Danny Green| 31|
+|player109|    Tiago Splitter| 34|
+|player111|        David West| 38|
+|player118| Russell Westbrook| 30|
+|player143|Kristaps Porzingis| 23|
+|player114|     Tracy McGrady| 39|
+|player150|       Luka Doncic| 20|
+|player103|          Rudy Gay| 32|
+|player113|   Dejounte Murray| 29|
+|player121|        Chris Paul| 33|
+|player128|   Carmelo Anthony| 34|
+|player130|       Joel Embiid| 25|
+|player136|        Steve Nash| 45|
+|player108|        Boris Diaw| 36|
+|player122|    DeAndre Jordan| 30|
+|player123|       Ricky Rubio| 28|
+|player139|        Marc Gasol| 34|
+|player142|     Klay Thompson| 29|
+|player145|      JaVale McGee| 31|
+|player102| LaMarcus Aldridge| 33|
++---------+------------------+---+
+only showing top 20 rows
+
+22/04/19 07:29:36 INFO DAGScheduler: Job 4 finished: show at NebulaSparkReaderExample.scala:82, took 0.135543 s
++---------+---------+-----+------+
+|   _srcId|   _dstId|_rank|degree|
++---------+---------+-----+------+
+|player105|player100|    0|    70|
+|player105|player104|    0|    83|
+|player105|player116|    0|    80|
+|player109|player100|    0|    80|
+|player109|player125|    0|    90|
+|player118|player120|    0|    90|
+|player118|player131|    0|    90|
+|player143|player150|    0|    90|
+|player114|player103|    0|    90|
+|player114|player115|    0|    90|
+|player114|player140|    0|    90|
+|player150|player120|    0|    80|
+|player150|player137|    0|    90|
+|player150|player143|    0|    90|
+|player103|player102|    0|    70|
+|player113|player100|    0|    99|
+|player113|player101|    0|    99|
+|player113|player104|    0|    99|
+|player113|player105|    0|    99|
+|player113|player106|    0|    99|
++---------+---------+-----+------+
+only showing top 20 rows
+</code></pre></td></tr></table>
+</div>
+</div><p>And actually there are more examples under the repo, especially one for GraphX, you could try exploring youself for that part. Please be noted in GraphX it assumed vertex ID to be in numeric type, thus for string typed vertex ID case a convertion on the fly is needed, please refer to <a href="https://github.com/vesoft-inc/nebula-algorithm/blob/a82d7092d928a2f3abc45a727c24afb888ff8e4f/example/src/main/scala/com/vesoft/nebula/algorithm/PageRankExample.scala#L31" target="_blank" rel="noopener noreffer">the example in Nebula Algorithom</a> on how to mitigate that.</p>
+<h2 id="exchange" class="headerLink">
+    <a href="#exchange" class="header-mark"></a>3 Exchange</h2><ul>
+<li>Codebase: <a href="https://github.com/vesoft-inc/nebula-exchange/" target="_blank" rel="noopener noreffer">https://github.com/vesoft-inc/nebula-exchange/</a></li>
+<li>Documentation: <a href="https://docs.nebula-graph.io/3.0.2/nebula-exchange/about-exchange/ex-ug-what-is-exchange/" target="_blank" rel="noopener noreffer">https://docs.nebula-graph.io/3.0.2/nebula-exchange/about-exchange/ex-ug-what-is-exchange/</a> (it&rsquo;s versioned, as for now, I put the lastest released version 3.0.2 here)</li>
+<li>Jar Package: <a href="https://github.com/vesoft-inc/nebula-exchange/releases" target="_blank" rel="noopener noreffer">https://github.com/vesoft-inc/nebula-exchange/releases</a></li>
+<li>Configuration Examples: <a href="https://github.com/vesoft-inc/nebula-exchange/blob/master/exchange-common/src/test/resources/application.conf" target="_blank" rel="noopener noreffer">exchange-common/src/test/resources/application.conf</a></li>
+</ul>
+<p>Nebula Exchange is a Spark Lib/App to read data from multiple sources, then, write to either Nebula Graph directly or into Nebula Graph <a href="https://docs.nebula-graph.io/3.0.2/nebula-exchange/use-exchange/ex-ug-import-from-sst/#step_5_import_the_sst_file" target="_blank" rel="noopener noreffer">SST Files</a>.</p>
+<p></p>
+<p>The way to leverage Nebula Exchange is only to firstly create the configuration files to let exchange know how data should be fetched and written, then call the exchange package with the conf file specified.</p>
+<p>Now let&rsquo;s do a hands on test with the same envrioment created in last chapter.</p>
+<h3 id="hands-on-exchange" class="headerLink">
+    <a href="#hands-on-exchange" class="header-mark"></a>3.1 Hands-on Exchange</h3><p>Here, we are using Exchange to consume data source from a CSV file, where first column is Vertex ID, and second, third to be properties of &ldquo;name&rdquo; and &ldquo;age&rdquo;.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">player800,<span class="s2">&#34;Foo Bar&#34;</span>,23
+player801,<span class="s2">&#34;Another Name&#34;</span>,21
+</code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>Let&rsquo;s get into the spark container created in last chapter, and download the Jar package of Nebula Exchange:</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">docker <span class="nb">exec</span> -it spark-master bash
+<span class="nb">cd</span> /root/
+
+wget https://github.com/vesoft-inc/nebula-exchange/releases/download/v3.0.0/nebula-exchange_spark_2.4-3.0.0.jar
+
+</code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>Create a conf file named <code>exchange.conf</code> in format <code>HOCON</code>, where:
+<ul>
+<li>under <code>.nebula</code>, information regarding Nebula Graph Cluster were configured</li>
+<li>under <code>.tags</code>, information regarding Vertecies like how required fields are reflected to our data source(here it&rsquo;s CSV file) were configured</li>
+</ul>
+</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span><span class="lnt">67
+</span><span class="lnt">68
+</span><span class="lnt">69
+</span><span class="lnt">70
+</span><span class="lnt">71
+</span><span class="lnt">72
+</span><span class="lnt">73
+</span><span class="lnt">74
+</span><span class="lnt">75
+</span><span class="lnt">76
+</span><span class="lnt">77
+</span><span class="lnt">78
+</span><span class="lnt">79
+</span><span class="lnt">80
+</span><span class="lnt">81
+</span><span class="lnt">82
+</span><span class="lnt">83
+</span><span class="lnt">84
+</span><span class="lnt">85
+</span><span class="lnt">86
+</span><span class="lnt">87
+</span><span class="lnt">88
+</span><span class="lnt">89
+</span><span class="lnt">90
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">{
+  # Spark relation config
+  spark: {
+    app: {
+      name: Nebula Exchange
+    }
+
+    master:local
+
+    driver: {
+      cores: 1
+      maxResultSize: 1G
+    }
+
+    executor: {
+        memory: 1G
+    }
+
+    cores:{
+      max: 16
+    }
+  }
+
+  # Nebula Graph relation config
+  nebula: {
+    address:{
+      graph:[&#34;graphd:9669&#34;]
+      meta:[&#34;metad0:9559&#34;, &#34;metad1:9559&#34;, &#34;metad2:9559&#34;]
+    }
+    user: root
+    pswd: nebula
+    space: basketballplayer
+
+    # parameters for SST import, not required
+    path:{
+        local:&#34;/tmp&#34;
+        remote:&#34;/sst&#34;
+        hdfs.namenode: &#34;hdfs://localhost:9000&#34;
+    }
+
+    # nebula client connection parameters
+    connection {
+      # socket connect &amp; execute timeout, unit: millisecond
+      timeout: 30000
+    }
+
+    error: {
+      # max number of failures, if the number of failures is bigger than max, then exit the application.
+      max: 32
+      # failed import job will be recorded in output path
+      output: /tmp/errors
+    }
+
+    # use google&#39;s RateLimiter to limit the requests send to NebulaGraph
+    rate: {
+      # the stable throughput of RateLimiter
+      limit: 1024
+      # Acquires a permit from RateLimiter, unit: MILLISECONDS
+      # if it can&#39;t be obtained within the specified timeout, then give up the request.
+      timeout: 1000
+    }
+  }
+
+  # Processing tags
+  # There are tag config examples for different dataSources.
+  tags: [
+
+    # HDFS csv
+    # Import mode is client, just change type.sink to sst if you want to use client import mode.
+    {
+      name: player
+      type: {
+        source: csv
+        sink: client
+      }
+      path: &#34;file:///root/player.csv&#34;
+      # if your csv file has no header, then use _c0,_c1,_c2,.. to indicate fields
+      fields: [_c1, _c2]
+      nebula.fields: [name, age]
+      vertex: {
+        field:_c0
+      }
+      separator: &#34;,&#34;
+      header: false
+      batch: 256
+      partition: 32
+    }
+
+  ]
+}
+</code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>Finally, let&rsquo;s create <code>player.csv</code> and <code>exchange.conf</code>, it should be listed as the following:</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="c1"># ls -l</span>
+
+-rw-r--r--    <span class="m">1</span> root     root          <span class="m">1912</span> Apr <span class="m">19</span> 08:21 exchange.conf
+-rw-r--r--    <span class="m">1</span> root     root     <span class="m">157814140</span> Apr <span class="m">19</span> 08:17 nebula-exchange_spark_2.4-3.0.0.jar
+-rw-r--r--    <span class="m">1</span> root     root            <span class="m">52</span> Apr <span class="m">19</span> 08:06 player.csv
+</code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>And we could call the exchange as:</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">/spark/bin/spark-submit --master <span class="nb">local</span> <span class="se">\
+</span><span class="se"></span>    --class com.vesoft.nebula.exchange.Exchange nebula-exchange_spark_2.4-3.0.0.jar <span class="se">\
+</span><span class="se"></span>    -c exchange.conf
+</code></pre></td></tr></table>
+</div>
+</div><p>And the result should be like</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">...
+22/04/19 08:22:08 INFO Exchange$: import for tag player cost time: 1.32 s
+22/04/19 08:22:08 INFO Exchange$: Client-Import: batchSuccess.player: 2
+22/04/19 08:22:08 INFO Exchange$: Client-Import: batchFailure.player: 0
+...
+</code></pre></td></tr></table>
+</div>
+</div><p>Please refer to documentation and conf examples for more datasources. For hands on Exchange writing to SST Files, you could refer to both Documentation and <a href="https://www.siwei.io/nebula-exchange-sst-2.x/" target="_blank" rel="noopener noreffer">Nebula Exchange SST 2.x Hands-on Guide</a>.</p>
+<h2 id="algorithm" class="headerLink">
+    <a href="#algorithm" class="header-mark"></a>4 Algorithm</h2><ul>
+<li>Codebase: <a href="https://github.com/vesoft-inc/nebula-exchange/" target="_blank" rel="noopener noreffer">https://github.com/vesoft-inc/nebula-exchange/</a></li>
+<li>Documentation: <a href="https://docs.nebula-graph.io/3.0.2/nebula-exchange/about-exchange/ex-ug-what-is-exchange/" target="_blank" rel="noopener noreffer">https://docs.nebula-graph.io/3.0.2/nebula-exchange/about-exchange/ex-ug-what-is-exchange/</a> (it&rsquo;s versioned, as for now, I put the lastest released version 3.0.2 here)</li>
+<li>Jar Package: <a href="https://github.com/vesoft-inc/nebula-exchange/releases" target="_blank" rel="noopener noreffer">https://github.com/vesoft-inc/nebula-exchange/releases</a></li>
+<li>Calling Algorithm in code examples: <a href="https://github.com/vesoft-inc/nebula-exchange/blob/master/exchange-common/src/test/resources/application.conf" target="_blank" rel="noopener noreffer">exchange-common/src/test/resources/application.conf</a></li>
+<li>Conf exampls for calling with submit: <a href="https://github.com/vesoft-inc/nebula-algorithm/blob/master/nebula-algorithm/src/main/resources/application.conf" target="_blank" rel="noopener noreffer">nebula-algorithm/src/main/resources/application.conf</a></li>
+</ul>
+<h3 id="calling-with-spark-submit" class="headerLink">
+    <a href="#calling-with-spark-submit" class="header-mark"></a>4.1 Calling with spark submit</h3><p>When we call Nebula Algorithm with spark submit, on how to use perspective, it is quite similar to Exchange. <a href="https://www.siwei.io/en/nebula-livejournal/" target="_blank" rel="noopener noreffer">This post</a> already showed us how to do that in actions.</p>
+<h3 id="calling-as-a-lib-in-code" class="headerLink">
+    <a href="#calling-as-a-lib-in-code" class="header-mark"></a>4.2 Calling as a lib in code</h3><p>On the other hands, we could call Nebula Algorithm in spark as a Spark Lib, the gain will be:</p>
+<ol>
+<li>More control/customization on the output format of the algorithm</li>
+<li>Possbile to perform algorithm for non-numerical vertex ID cases, see <a href="https://github.com/vesoft-inc/nebula-algorithm/blob/a82d7092d928a2f3abc45a727c24afb888ff8e4f/example/src/main/scala/com/vesoft/nebula/algorithm/PageRankExample.scala#L48" target="_blank" rel="noopener noreffer">here</a></li>
+</ol>
+<h2 id="pyspark-for-nebula-graph" class="headerLink">
+    <a href="#pyspark-for-nebula-graph" class="header-mark"></a>5 PySpark for Nebula Graph</h2><p>PySpark comes with capability to call java/scala packages inside python, thus it&rsquo;s also quite easy to use Spark Connector with Python.</p>
+<p>Here I am doing this from the pyspark entrypoint in <code>/spark/bin/pyspark</code>, with connector&rsquo;s Jar package specified with <code>--driver-class-path</code> and <code>--jars</code></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">docker</span> <span class="n">exec</span> <span class="o">-</span><span class="n">it</span> <span class="n">spark</span><span class="o">-</span><span class="n">master</span><span class="o">-</span><span class="mi">0</span> <span class="n">bash</span>
+<span class="n">cd</span> <span class="n">root</span>
+<span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">repo1</span><span class="o">.</span><span class="n">maven</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">maven2</span><span class="o">/</span><span class="n">com</span><span class="o">/</span><span class="n">vesoft</span><span class="o">/</span><span class="n">nebula</span><span class="o">-</span><span class="n">spark</span><span class="o">-</span><span class="n">connector</span><span class="o">/</span><span class="mf">3.0.0</span><span class="o">/</span><span class="n">nebula</span><span class="o">-</span><span class="n">spark</span><span class="o">-</span><span class="n">connector</span><span class="o">-</span><span class="mf">3.0.0</span><span class="o">.</span><span class="n">jar</span>
+
+<span class="o">/</span><span class="n">spark</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">pyspark</span> <span class="o">--</span><span class="n">driver</span><span class="o">-</span><span class="n">class</span><span class="o">-</span><span class="n">path</span> <span class="n">nebula</span><span class="o">-</span><span class="n">spark</span><span class="o">-</span><span class="n">connector</span><span class="o">-</span><span class="mf">3.0.0</span><span class="o">.</span><span class="n">jar</span> <span class="o">--</span><span class="n">jars</span> <span class="n">nebula</span><span class="o">-</span><span class="n">spark</span><span class="o">-</span><span class="n">connector</span><span class="o">-</span><span class="mf">3.0.0</span><span class="o">.</span><span class="n">jar</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>Then, rather than pass <code>NebulaConnectionConfig</code> and <code>ReadNebulaConfig</code> to <code>spark.read.nebula</code>, we should instead call <code>spark.read.format(&quot;com.vesoft.nebula.connector.NebulaDataSource&quot;)</code>.</p>
+<p>Voilà!</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&#34;com.vesoft.nebula.connector.NebulaDataSource&#34;</span><span class="p">)</span><span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s2">&#34;type&#34;</span><span class="p">,</span> <span class="s2">&#34;vertex&#34;</span><span class="p">)</span><span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s2">&#34;spaceName&#34;</span><span class="p">,</span> <span class="s2">&#34;basketballplayer&#34;</span><span class="p">)</span><span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s2">&#34;label&#34;</span><span class="p">,</span> <span class="s2">&#34;player&#34;</span><span class="p">)</span><span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s2">&#34;returnCols&#34;</span><span class="p">,</span> <span class="s2">&#34;name,age&#34;</span><span class="p">)</span><span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s2">&#34;metaAddress&#34;</span><span class="p">,</span> <span class="s2">&#34;metad0:9559&#34;</span><span class="p">)</span><span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s2">&#34;partitionNumber&#34;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">df</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="o">+---------+--------------+---+</span>
+<span class="o">|</span><span class="n">_vertexId</span><span class="o">|</span>          <span class="n">name</span><span class="o">|</span><span class="n">age</span><span class="o">|</span>
+<span class="o">+---------+--------------+---+</span>
+<span class="o">|</span><span class="n">player105</span><span class="o">|</span>   <span class="n">Danny</span> <span class="n">Green</span><span class="o">|</span> <span class="mi">31</span><span class="o">|</span>
+<span class="o">|</span><span class="n">player109</span><span class="o">|</span><span class="n">Tiago</span> <span class="n">Splitter</span><span class="o">|</span> <span class="mi">34</span><span class="o">|</span>
+<span class="o">+---------+--------------+---+</span>
+<span class="n">only</span> <span class="n">showing</span> <span class="n">top</span> <span class="mi">2</span> <span class="n">rows</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>Below are how I figured out how to make this work with almost zero scala knowledge :-P.</p>
+<ul>
+<li><a href="https://github.com/vesoft-inc/nebula-spark-connector/blob/master/nebula-spark-connector/src/main/scala/com/vesoft/nebula/connector/package.scala" target="_blank" rel="noopener noreffer">How reader should be called</a></li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-scala" data-lang="scala">      <span class="k">def</span> <span class="n">loadVerticesToDF</span><span class="o">()</span><span class="k">:</span> <span class="kt">DataFrame</span> <span class="o">=</span> <span class="o">{</span>
+        <span class="n">assert</span><span class="o">(</span><span class="n">connectionConfig</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">&amp;&amp;</span> <span class="n">readConfig</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">,</span>
+               <span class="s">&#34;nebula config is not set, please call nebula() before loadVerticesToDF&#34;</span><span class="o">)</span>
+        <span class="k">val</span> <span class="n">dfReader</span> <span class="k">=</span> <span class="n">reader</span>
+          <span class="o">.</span><span class="n">format</span><span class="o">(</span><span class="n">classOf</span><span class="o">[</span><span class="kt">NebulaDataSource</span><span class="o">].</span><span class="n">getName</span><span class="o">)</span>
+          <span class="o">.</span><span class="n">option</span><span class="o">(</span><span class="nc">NebulaOptions</span><span class="o">.</span><span class="nc">TYPE</span><span class="o">,</span> <span class="nc">DataTypeEnum</span><span class="o">.</span><span class="nc">VERTEX</span><span class="o">.</span><span class="n">toString</span><span class="o">)</span>
+          <span class="o">.</span><span class="n">option</span><span class="o">(</span><span class="nc">NebulaOptions</span><span class="o">.</span><span class="nc">SPACE_NAME</span><span class="o">,</span> <span class="n">readConfig</span><span class="o">.</span><span class="n">getSpace</span><span class="o">)</span>
+          <span class="o">.</span><span class="n">option</span><span class="o">(</span><span class="nc">NebulaOptions</span><span class="o">.</span><span class="nc">LABEL</span><span class="o">,</span> <span class="n">readConfig</span><span class="o">.</span><span class="n">getLabel</span><span class="o">)</span>
+          <span class="o">.</span><span class="n">option</span><span class="o">(</span><span class="nc">NebulaOptions</span><span class="o">.</span><span class="nc">PARTITION_NUMBER</span><span class="o">,</span> <span class="n">readConfig</span><span class="o">.</span><span class="n">getPartitionNum</span><span class="o">)</span>
+          <span class="o">.</span><span class="n">option</span><span class="o">(</span><span class="nc">NebulaOptions</span><span class="o">.</span><span class="nc">RETURN_COLS</span><span class="o">,</span> <span class="n">readConfig</span><span class="o">.</span><span class="n">getReturnCols</span><span class="o">.</span><span class="n">mkString</span><span class="o">(</span><span class="s">&#34;,&#34;</span><span class="o">))</span>
+          <span class="o">.</span><span class="n">option</span><span class="o">(</span><span class="nc">NebulaOptions</span><span class="o">.</span><span class="nc">NO_COLUMN</span><span class="o">,</span> <span class="n">readConfig</span><span class="o">.</span><span class="n">getNoColumn</span><span class="o">)</span>
+          <span class="o">.</span><span class="n">option</span><span class="o">(</span><span class="nc">NebulaOptions</span><span class="o">.</span><span class="nc">LIMIT</span><span class="o">,</span> <span class="n">readConfig</span><span class="o">.</span><span class="n">getLimit</span><span class="o">)</span>
+          <span class="o">.</span><span class="n">option</span><span class="o">(</span><span class="nc">NebulaOptions</span><span class="o">.</span><span class="nc">META_ADDRESS</span><span class="o">,</span> <span class="n">connectionConfig</span><span class="o">.</span><span class="n">getMetaAddress</span><span class="o">)</span>
+          <span class="o">.</span><span class="n">option</span><span class="o">(</span><span class="nc">NebulaOptions</span><span class="o">.</span><span class="nc">TIMEOUT</span><span class="o">,</span> <span class="n">connectionConfig</span><span class="o">.</span><span class="n">getTimeout</span><span class="o">)</span>
+          <span class="o">.</span><span class="n">option</span><span class="o">(</span><span class="nc">NebulaOptions</span><span class="o">.</span><span class="nc">CONNECTION_RETRY</span><span class="o">,</span> <span class="n">connectionConfig</span><span class="o">.</span><span class="n">getConnectionRetry</span><span class="o">)</span>
+          <span class="o">.</span><span class="n">option</span><span class="o">(</span><span class="nc">NebulaOptions</span><span class="o">.</span><span class="nc">EXECUTION_RETRY</span><span class="o">,</span> <span class="n">connectionConfig</span><span class="o">.</span><span class="n">getExecRetry</span><span class="o">)</span>
+          <span class="o">.</span><span class="n">option</span><span class="o">(</span><span class="nc">NebulaOptions</span><span class="o">.</span><span class="nc">ENABLE_META_SSL</span><span class="o">,</span> <span class="n">connectionConfig</span><span class="o">.</span><span class="n">getEnableMetaSSL</span><span class="o">)</span>
+          <span class="o">.</span><span class="n">option</span><span class="o">(</span><span class="nc">NebulaOptions</span><span class="o">.</span><span class="nc">ENABLE_STORAGE_SSL</span><span class="o">,</span> <span class="n">connectionConfig</span><span class="o">.</span><span class="n">getEnableStorageSSL</span><span class="o">)</span>
+  
+        <span class="k">if</span> <span class="o">(</span><span class="n">connectionConfig</span><span class="o">.</span><span class="n">getEnableStorageSSL</span> <span class="o">||</span> <span class="n">connectionConfig</span><span class="o">.</span><span class="n">getEnableMetaSSL</span><span class="o">)</span> <span class="o">{</span>
+          <span class="n">dfReader</span><span class="o">.</span><span class="n">option</span><span class="o">(</span><span class="nc">NebulaOptions</span><span class="o">.</span><span class="nc">SSL_SIGN_TYPE</span><span class="o">,</span> <span class="n">connectionConfig</span><span class="o">.</span><span class="n">getSignType</span><span class="o">)</span>
+          <span class="nc">SSLSignType</span><span class="o">.</span><span class="n">withName</span><span class="o">(</span><span class="n">connectionConfig</span><span class="o">.</span><span class="n">getSignType</span><span class="o">)</span> <span class="k">match</span> <span class="o">{</span>
+            <span class="k">case</span> <span class="nc">SSLSignType</span><span class="o">.</span><span class="nc">CA</span> <span class="k">=&gt;</span>
+              <span class="n">dfReader</span><span class="o">.</span><span class="n">option</span><span class="o">(</span><span class="nc">NebulaOptions</span><span class="o">.</span><span class="nc">CA_SIGN_PARAM</span><span class="o">,</span> <span class="n">connectionConfig</span><span class="o">.</span><span class="n">getCaSignParam</span><span class="o">)</span>
+            <span class="k">case</span> <span class="nc">SSLSignType</span><span class="o">.</span><span class="nc">SELF</span> <span class="k">=&gt;</span>
+              <span class="n">dfReader</span><span class="o">.</span><span class="n">option</span><span class="o">(</span><span class="nc">NebulaOptions</span><span class="o">.</span><span class="nc">SELF_SIGN_PARAM</span><span class="o">,</span> <span class="n">connectionConfig</span><span class="o">.</span><span class="n">getSelfSignParam</span><span class="o">)</span>
+          <span class="o">}</span>
+        <span class="o">}</span>
+  
+        <span class="n">dfReader</span><span class="o">.</span><span class="n">load</span><span class="o">()</span>
+      <span class="o">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><ul>
+<li><a href="https://github.com/vesoft-inc/nebula-spark-connector/blob/master/nebula-spark-connector/src/main/scala/com/vesoft/nebula/connector/NebulaOptions.scala" target="_blank" rel="noopener noreffer">How Option String should be like</a></li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span><span class="lnt">67
+</span><span class="lnt">68
+</span><span class="lnt">69
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-scala" data-lang="scala"><span class="k">#</span> 
+
+<span class="k">object</span> <span class="nc">NebulaOptions</span> <span class="o">{</span>
+
+  <span class="cm">/** nebula common config */</span>
+  <span class="k">val</span> <span class="nc">SPACE_NAME</span><span class="k">:</span> <span class="kt">String</span>    <span class="o">=</span> <span class="s">&#34;spaceName&#34;</span>
+  <span class="k">val</span> <span class="nc">META_ADDRESS</span><span class="k">:</span> <span class="kt">String</span>  <span class="o">=</span> <span class="s">&#34;metaAddress&#34;</span>
+  <span class="k">val</span> <span class="nc">GRAPH_ADDRESS</span><span class="k">:</span> <span class="kt">String</span> <span class="o">=</span> <span class="s">&#34;graphAddress&#34;</span>
+  <span class="k">val</span> <span class="nc">TYPE</span><span class="k">:</span> <span class="kt">String</span>          <span class="o">=</span> <span class="s">&#34;type&#34;</span>
+  <span class="k">val</span> <span class="nc">LABEL</span><span class="k">:</span> <span class="kt">String</span>         <span class="o">=</span> <span class="s">&#34;label&#34;</span>
+
+  <span class="cm">/** connection config */</span>
+  <span class="k">val</span> <span class="nc">TIMEOUT</span><span class="k">:</span> <span class="kt">String</span>            <span class="o">=</span> <span class="s">&#34;timeout&#34;</span>
+  <span class="k">val</span> <span class="nc">CONNECTION_RETRY</span><span class="k">:</span> <span class="kt">String</span>   <span class="o">=</span> <span class="s">&#34;connectionRetry&#34;</span>
+  <span class="k">val</span> <span class="nc">EXECUTION_RETRY</span><span class="k">:</span> <span class="kt">String</span>    <span class="o">=</span> <span class="s">&#34;executionRetry&#34;</span>
+  <span class="k">val</span> <span class="nc">RATE_TIME_OUT</span><span class="k">:</span> <span class="kt">String</span>      <span class="o">=</span> <span class="s">&#34;reteTimeOut&#34;</span>
+  <span class="k">val</span> <span class="nc">USER_NAME</span><span class="k">:</span> <span class="kt">String</span>          <span class="o">=</span> <span class="s">&#34;user&#34;</span>
+  <span class="k">val</span> <span class="nc">PASSWD</span><span class="k">:</span> <span class="kt">String</span>             <span class="o">=</span> <span class="s">&#34;passwd&#34;</span>
+  <span class="k">val</span> <span class="nc">ENABLE_GRAPH_SSL</span><span class="k">:</span> <span class="kt">String</span>   <span class="o">=</span> <span class="s">&#34;enableGraphSSL&#34;</span>
+  <span class="k">val</span> <span class="nc">ENABLE_META_SSL</span><span class="k">:</span> <span class="kt">String</span>    <span class="o">=</span> <span class="s">&#34;enableMetaSSL&#34;</span>
+  <span class="k">val</span> <span class="nc">ENABLE_STORAGE_SSL</span><span class="k">:</span> <span class="kt">String</span> <span class="o">=</span> <span class="s">&#34;enableStorageSSL&#34;</span>
+  <span class="k">val</span> <span class="nc">SSL_SIGN_TYPE</span><span class="k">:</span> <span class="kt">String</span>      <span class="o">=</span> <span class="s">&#34;sslSignType&#34;</span>
+  <span class="k">val</span> <span class="nc">CA_SIGN_PARAM</span><span class="k">:</span> <span class="kt">String</span>      <span class="o">=</span> <span class="s">&#34;caSignParam&#34;</span>
+  <span class="k">val</span> <span class="nc">SELF_SIGN_PARAM</span><span class="k">:</span> <span class="kt">String</span>    <span class="o">=</span> <span class="s">&#34;selfSignParam&#34;</span>
+
+  <span class="cm">/** read config */</span>
+  <span class="k">val</span> <span class="nc">RETURN_COLS</span><span class="k">:</span> <span class="kt">String</span>      <span class="o">=</span> <span class="s">&#34;returnCols&#34;</span>
+  <span class="k">val</span> <span class="nc">NO_COLUMN</span><span class="k">:</span> <span class="kt">String</span>        <span class="o">=</span> <span class="s">&#34;noColumn&#34;</span>
+  <span class="k">val</span> <span class="nc">PARTITION_NUMBER</span><span class="k">:</span> <span class="kt">String</span> <span class="o">=</span> <span class="s">&#34;partitionNumber&#34;</span>
+  <span class="k">val</span> <span class="nc">LIMIT</span><span class="k">:</span> <span class="kt">String</span>            <span class="o">=</span> <span class="s">&#34;limit&#34;</span>
+
+  <span class="cm">/** write config */</span>
+  <span class="k">val</span> <span class="nc">RATE_LIMIT</span><span class="k">:</span> <span class="kt">String</span>   <span class="o">=</span> <span class="s">&#34;rateLimit&#34;</span>
+  <span class="k">val</span> <span class="nc">VID_POLICY</span><span class="k">:</span> <span class="kt">String</span>   <span class="o">=</span> <span class="s">&#34;vidPolicy&#34;</span>
+  <span class="k">val</span> <span class="nc">SRC_POLICY</span><span class="k">:</span> <span class="kt">String</span>   <span class="o">=</span> <span class="s">&#34;srcPolicy&#34;</span>
+  <span class="k">val</span> <span class="nc">DST_POLICY</span><span class="k">:</span> <span class="kt">String</span>   <span class="o">=</span> <span class="s">&#34;dstPolicy&#34;</span>
+  <span class="k">val</span> <span class="nc">VERTEX_FIELD</span>         <span class="k">=</span> <span class="s">&#34;vertexField&#34;</span>
+  <span class="k">val</span> <span class="nc">SRC_VERTEX_FIELD</span>     <span class="k">=</span> <span class="s">&#34;srcVertexField&#34;</span>
+  <span class="k">val</span> <span class="nc">DST_VERTEX_FIELD</span>     <span class="k">=</span> <span class="s">&#34;dstVertexField&#34;</span>
+  <span class="k">val</span> <span class="nc">RANK_FIELD</span>           <span class="k">=</span> <span class="s">&#34;rankFiled&#34;</span>
+  <span class="k">val</span> <span class="nc">BATCH</span><span class="k">:</span> <span class="kt">String</span>        <span class="o">=</span> <span class="s">&#34;batch&#34;</span>
+  <span class="k">val</span> <span class="nc">VID_AS_PROP</span><span class="k">:</span> <span class="kt">String</span>  <span class="o">=</span> <span class="s">&#34;vidAsProp&#34;</span>
+  <span class="k">val</span> <span class="nc">SRC_AS_PROP</span><span class="k">:</span> <span class="kt">String</span>  <span class="o">=</span> <span class="s">&#34;srcAsProp&#34;</span>
+  <span class="k">val</span> <span class="nc">DST_AS_PROP</span><span class="k">:</span> <span class="kt">String</span>  <span class="o">=</span> <span class="s">&#34;dstAsProp&#34;</span>
+  <span class="k">val</span> <span class="nc">RANK_AS_PROP</span><span class="k">:</span> <span class="kt">String</span> <span class="o">=</span> <span class="s">&#34;rankAsProp&#34;</span>
+  <span class="k">val</span> <span class="nc">WRITE_MODE</span><span class="k">:</span> <span class="kt">String</span>   <span class="o">=</span> <span class="s">&#34;writeMode&#34;</span>
+
+  <span class="k">val</span> <span class="nc">DEFAULT_TIMEOUT</span><span class="k">:</span> <span class="kt">Int</span>            <span class="o">=</span> <span class="mi">3000</span>
+  <span class="k">val</span> <span class="nc">DEFAULT_CONNECTION_TIMEOUT</span><span class="k">:</span> <span class="kt">Int</span> <span class="o">=</span> <span class="mi">3000</span>
+  <span class="k">val</span> <span class="nc">DEFAULT_CONNECTION_RETRY</span><span class="k">:</span> <span class="kt">Int</span>   <span class="o">=</span> <span class="mi">3</span>
+  <span class="k">val</span> <span class="nc">DEFAULT_EXECUTION_RETRY</span><span class="k">:</span> <span class="kt">Int</span>    <span class="o">=</span> <span class="mi">3</span>
+  <span class="k">val</span> <span class="nc">DEFAULT_USER_NAME</span><span class="k">:</span> <span class="kt">String</span>       <span class="o">=</span> <span class="s">&#34;root&#34;</span>
+  <span class="k">val</span> <span class="nc">DEFAULT_PASSWD</span><span class="k">:</span> <span class="kt">String</span>          <span class="o">=</span> <span class="s">&#34;nebula&#34;</span>
+
+  <span class="k">val</span> <span class="nc">DEFAULT_ENABLE_GRAPH_SSL</span><span class="k">:</span> <span class="kt">Boolean</span>   <span class="o">=</span> <span class="kc">false</span>
+  <span class="k">val</span> <span class="nc">DEFAULT_ENABLE_META_SSL</span><span class="k">:</span> <span class="kt">Boolean</span>    <span class="o">=</span> <span class="kc">false</span>
+  <span class="k">val</span> <span class="nc">DEFAULT_ENABLE_STORAGE_SSL</span><span class="k">:</span> <span class="kt">Boolean</span> <span class="o">=</span> <span class="kc">false</span>
+
+  <span class="k">val</span> <span class="nc">DEFAULT_LIMIT</span><span class="k">:</span> <span class="kt">Int</span> <span class="o">=</span> <span class="mi">1000</span>
+
+  <span class="k">val</span> <span class="nc">DEFAULT_RATE_LIMIT</span><span class="k">:</span> <span class="kt">Long</span>    <span class="o">=</span> <span class="mi">1024L</span>
+  <span class="k">val</span> <span class="nc">DEFAULT_RATE_TIME_OUT</span><span class="k">:</span> <span class="kt">Long</span> <span class="o">=</span> <span class="mi">100</span>
+  <span class="k">val</span> <span class="nc">DEFAULT_POLICY</span><span class="k">:</span> <span class="kt">String</span>      <span class="o">=</span> <span class="kc">null</span>
+  <span class="k">val</span> <span class="nc">DEFAULT_BATCH</span><span class="k">:</span> <span class="kt">Int</span>          <span class="o">=</span> <span class="mi">1000</span>
+
+  <span class="k">val</span> <span class="nc">DEFAULT_WRITE_MODE</span> <span class="k">=</span> <span class="nc">WriteMode</span><span class="o">.</span><span class="nc">INSERT</span>
+
+  <span class="k">val</span> <span class="nc">EMPTY_STRING</span><span class="k">:</span> <span class="kt">String</span> <span class="o">=</span> <span class="s">&#34;&#34;</span>
+<span class="o">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><ul>
+<li><a href="https://databricks.com/session/how-to-connect-spark-to-your-own-datasource" target="_blank" rel="noopener noreffer">https://databricks.com/session/how-to-connect-spark-to-your-own-datasource</a></li>
+</ul>
+<blockquote>
+<p>feature image credit: <a href="https://unsplash.com/photos/KABfjuSOx74" target="_blank" rel="noopener noreffer">Sander</a></p>
+</blockquote>]]></description>
+</item></channel>
+</rss>

@@ -108,7 +108,7 @@ Execution succeeded (time spent 1312/1735 us)
 Wed, 18 Aug 2021 08:18:23 UTC
 ```
 
-### 2. 搭建容器化的 Spark 环境
+### 搭建容器化的 Spark 环境
 
 利用 big data europe 做的工作，这个过程非常容易。
 
@@ -149,7 +149,7 @@ cd ~
 wget https://repo1.maven.org/maven2/com/vesoft/nebula-exchange/2.1.0/nebula-exchange-2.1.0.jar
 ```
 
-### 3. 搭建容器化的 HDFS
+### 搭建容器化的 HDFS
 
 同样借助 big-data-euroupe 的工作，这非常简单，不过我们要做一点修改，让它的 `docker-compose.yml` 文件里使用 `nebula-net` 这个之前创建的 Docker 网络。
 
@@ -192,7 +192,7 @@ $ docker ps | grep meta
 
 ## 生成SST文件
 
-### 1. 准备源文件、配置文件
+### 准备源文件、配置文件
 
 ```bash
 docker cp exchange-sst.conf spark-master:/root/
@@ -218,7 +218,7 @@ docker cp player.csv spark-master:/root/
 
 
 
-### 2. 执行 exchange 程序
+### 执行 exchange 程序
 
 进入 `spark-master` 容器，提交执行 `exchange` 应用。
 
@@ -273,7 +273,7 @@ drwxr-xr-x   - root supergroup          0 2021-08-17 03:37 /sst/9
 
 其中 Download 实际上是触发 Nebula Graph 从服务端发起 HDFS Client 的 download，获取 HDFS 上的 SST 文件，然后放到 storageD 能访问的本地路径下，这里，需要我们在服务端部署 HDFS 的依赖。因为我们是最小实践，我就偷懒手动做了这个 Download 的操作。
 
-### 1. 手动下载
+### 手动下载
 
 这里边手动下载我们就要知道 Nebula Graph 服务端下载的路径，实际上是 `/data/storage/nebula/<space_id>/download/`，这里的 Space ID 需要手动获取一下：
 
@@ -304,7 +304,7 @@ docker cp sst nebula-docker-compose_storaged1_1:/data/storage/nebula/49/download
 docker cp sst nebula-docker-compose_storaged2_1:/data/storage/nebula/49/download/
 ```
 
-### 2. SST 文件导入
+### SST 文件导入
 
 - 进入 Nebula-Console 所在的容器
 

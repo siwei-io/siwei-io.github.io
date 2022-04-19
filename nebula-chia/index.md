@@ -6,23 +6,23 @@
 
 <!--more-->
 
-## 1. Chia 是什么?
+## Chia 是什么?
 
 Chia Network 是由 BitTorrent 的作者 Bram Cohen 的团队在 2017 年创建的区块链项目。
 
-### 1.1 为什么再搞一个区块链?
+### 为什么再搞一个区块链?
 
 Chia 用了全新的中本聪共识算法，这个算法通过不允许并行计算，让挖矿（Proof of Work）所需算力和能耗降到非常低，这使得超大组织、玩家没法像在其他的区块链项目那样有算力的绝对优势，也一定程度上规避了能源的浪费。
 
-### 1.2 如何连接Chia?
+### 如何连接Chia?
 
 我们可以通过 Chia Network 的客户端来访问它，这个客户端是 Electron + Python 的程序，天然跨平台，既有 GUI 又有 CLI 的方式。
 
-#### 1.2.1 安装
+#### 安装
 
 只需要按照官方的 Guide 来下载安装就好， https://github.com/Chia-Network/chia-blockchain/wiki/INSTALL，我在 M1 Mac 下安装的时候脚本出了点小问题，大概是因为拉取二进制 wheel 文件网络出问题走到了编译 wheel的逻辑，而那里是依赖 `cargo`的，如果大家遇到了这个问题，可以提前手动安装一下 rust，或者 cherry-pick 我的这个 [PR](https://github.com/Chia-Network/chia-blockchain/pull/3789) 。
 
-#### 1.2.2 运行
+#### 运行
 
 - 按照官方 guide，比如 macOS 来说，最后一步执行`npm run electron &` 就是运行它的GUI客户端。
 - 如果大家像我一样喜欢 CLI，直接在执行完 `. ./activate` 之后就可以 `chia --help`了哈☺，里边有只启动部分服务的方式（相比 GUI 启动所有来说)。
@@ -34,7 +34,7 @@ Chia 用了全新的中本聪共识算法，这个算法通过不允许并行计
 > - 第一次连到 Chia Network 的同学们，客户端会自动生成一个钱包，及的保存那一串词，它们就是你的私钥哦。
 > - 万一，如果真的连不上的话，可能需要在路由上配置，[UPnP](https://www.homenethowto.com/ports-and-nat/upnp-automatic-port-forward/)，防火墙要允许 8444。
 
-#### 1.2.3 访问 Chia 的数据
+#### 访问 Chia 的数据
 
 Chia 的客户端把数据存在了几个 SQLite 数据库里，它们的路径是我们安装客户端的用户的家目录：`~/.chia/mainnet`
 
@@ -78,7 +78,7 @@ SQlite 浏览器的官网是 https://sqlitebrowser.org/ 。在下载，安装之
 >
 > 这里边，`~/.chia/mainnet/wallet` 和裸目录 `~/.chia/mainnet ` 下边的 `db` 里分别都有表文件，他们的信息是有重复的，大家可以分别打开看看哦，即使是相同的表的名字，比如 `block_record` 内里的信息也略有差别，如果大家知道为什么有这样的差别，欢迎浏览告诉大家哈，可能要仔细研究一下客户端、钱包等代码才行，幸运的是，它们相对比较好阅读，是 Python 写的： https://github.com/Chia-Network/chia-blockchain 。
 
-## 2. 分析 Chia 的数据
+## 分析 Chia 的数据
 
 如果大家仔细看了上边表结构定义的截图，就能注意到一些表的主要信息是嵌套二进制 KV Byte，所以只从 SQLite 并不能看到所有 Chia 的数据，所以我们需要（用一个编程语言来）读取表里的 Byte。
 
@@ -90,7 +90,7 @@ SQlite 浏览器的官网是 https://sqlitebrowser.org/ 。在下载，安装之
 
 结论之后，我也给大家演示一下是怎么读取它们的。
 
-### 2.0 TL;DR, 结论
+###  TL;DR, 结论
 
 我们可以从表中读取到区块链记录（Block Record ），Chia 币记录（Coin Record）。
 
@@ -133,7 +133,7 @@ SQlite 浏览器的官网是 https://sqlitebrowser.org/ 。在下载，安装之
                                                    └─────────────────────┘
 ```
 
-### 2.1 准备
+###  准备
 
 因为安装客户端之后，我们本地实际上已经有了相关的 Python 环境和依赖，只需要在里边跑起来就好。
 
@@ -157,8 +157,8 @@ In [2]: !pwd
 
 恭喜你做好了准备，我们看看 Block Record 里都有什么。
 
-### 2.2 Chia 链的数据
-#### 2.2.1 区块记录
+###  Chia 链的数据
+#### 区块记录
 
 在上一步的 `IPython` 窗口下。
 
@@ -248,7 +248,7 @@ CREATE TABLE block_records(
 
 
 
-#### 2.2.2 Chia 币记录
+#### Chia 币记录
 
 类似的，我们可以获取一个 Coin 的记录，这里边，从表的定义可以看到，唯一二进制（不能直接从数据库查询中被人读懂）的字段就是是币值，不存在嵌套的结构，所以也并不需要封装的类才能看清楚里边的信息。
 
@@ -291,7 +291,7 @@ Out[201]:
 
 
 
-#### 2.2.3 Puzzles/ Address，地址
+#### Puzzles/ Address，地址
 
 我们可以把 Chia 中的 Puzzle 理解成为交易中的地址，为了方便使用，通常会把 Puzzle 的 hash 用[bech32m](https://github.com/bitcoin/bips/blob/master/bip-0173.mediawiki) 转换成地址。
 
@@ -299,7 +299,7 @@ Out[201]:
 >
 > 这里有一个在线双向转换的在线工具推荐一下: https://www.chiaexplorer.com/tools/address-puzzlehash-converter
 
-## 3. 如何探索 Chia 链
+## 如何探索 Chia 链
 
 随着我们之前分析的信息，自然地，我们可以把 Chia 区块链中的信息取出来，用图（Graph）来表示，这里的图并不是（Graphic）图形、图画的意思，是数学、图论中的图。
 
@@ -330,11 +330,11 @@ Out[201]:
 >
 > 一般来说，面向超大规模数据的分布式系统，天然的都是不容易轻量部署的，大家如果第一次使用的话可以试试我写的一个叫做 nebula-up 的小工具，可以一行指令部署一个用来试用、学习的 Nebula Graph 集群，地址在这里： https://github.com/wey-gu/nebula-up/ 。
 
-### 3.1 Nebula Graph 导入 Chia 数据到图数据库
+### Nebula Graph 导入 Chia 数据到图数据库
 
 我们分两步走，第一步这把 Chia Network 数据转换成 CSV 文件，第二步使用 Nebula 的 [Nebula-Importer](https://github.com/vesoft-inc/nebula-importer/) 把数据导入 Nebula Graph。
 
-#### 3.1.1 数据转换
+#### 数据转换
 
 这部分的代码我开源在这里了:
 
@@ -442,7 +442,7 @@ In [467]: print(c.block_record_row.__doc__)
 
 
 
-#### 3.1.1 数据导入
+#### 数据导入
 
 有了 CSV 文件，我们可以借助 [Nebula-Importer](https://github.com/vesoft-inc/nebula-importer/) 导入数据到图数据库中。
 
@@ -478,9 +478,9 @@ docker run --rm -ti \
 
 
 
-### 3.2 探索 Chia 的图数据
+### 探索 Chia 的图数据
 
-#### 3.2.1 用图数据库的 Queries
+#### 用图数据库的 Queries
 
 导入 Chia 链的网络到 Nebula Graph 之后，我们可以在里边快速查询数据之间的关联。
 
@@ -507,7 +507,7 @@ GO 1 STEP FROM "bbe39134ccc32c08fdeff4d2c19d1d1f4f7e48cdaf79d37397bc3136ce9b3cb7
          END AS Amount | YIELD sum($-.Amount)
 ```
 
-#### 3.2.2 用 Nebula Studio 可视化探索
+#### 用 Nebula Studio 可视化探索
 
 Nebula Graph 为我们提供了图形化界面，有了它，我们可以用更符合人脑的方式地查看 Chia Network 中的数据。
 
@@ -539,7 +539,7 @@ Nebula Graph 为我们提供了图形化界面，有了它，我们可以用更�
 
 
 
-## 4. 总结
+## 总结
 
 这篇文章里，在我们简单介绍了 Chia Network 之后，我们首次的带大家一起从安装一个 Chia 终端，到分析终端同步到本地的 Chia 全网数据，借助于 Chia 终端开源的 Python 代码库，我们分析了全网数据里的重要信息。
 
@@ -557,7 +557,7 @@ Nebula-Chia 我也开源在 https://github.com/wey-gu/nebula-chia
 
 
 
-## 5. 引用
+## 引用
 
 - https://www.chia.net/faq/
 - https://chialisp.com/docs/
