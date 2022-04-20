@@ -527,7 +527,14 @@ Then, rather than pass `NebulaConnectionConfig` and `ReadNebulaConfig` to `spark
 Voilà!
 
 ```python
-df = spark.read.format("com.vesoft.nebula.connector.NebulaDataSource").option("type", "vertex").option("spaceName", "basketballplayer").option("label", "player").option("returnCols", "name,age").option("metaAddress", "metad0:9559").option("partitionNumber", 1).load()
+df = spark.read.format(
+  "com.vesoft.nebula.connector.NebulaDataSource").option(
+    "type", "vertex").option(
+    "spaceName", "basketballplayer").option(
+    "label", "player").option(
+    "returnCols", "name,age").option(
+    "metaAddress", "metad0:9559").option(
+    "partitionNumber", 1).load()
 
 >>> df.show(n=2)
 +---------+--------------+---+
