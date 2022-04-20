@@ -1,7 +1,11 @@
 # 我的演讲
 
 
-{{< showcase "Data on K8s Community 2021" "GraphDB on Kubesphere" "https://siwei.io/talk/nebula_on_k3s.webp" "https://youtu.be/ri8VmYYTdkY" 3 >}}
+{{< showcase "掘金春招活动" "那些我希望过去的自己可以知道的事实" "https://www.siwei.io/talk/talk_to_the_young_me.webp" "https://siwei.io/talks/2022-juejin/" 3 >}}
+
+{{< showcase "DoK Talks #116" "Nebula Graph: Open Source Distributed GraphDB" "https://www.siwei.io/talk/DoK_2022_Feb.webp" "https://youtu.be/mGAKS3t-TrU" 3 >}}
+
+{{< showcase "Data on K8s Community 2021" "GraphDB on Kubesphere" "https://www.siwei.io/talk/nebula_on_k3s.webp" "https://youtu.be/ri8VmYYTdkY" 3 >}}
 
 {{< showcase "K8s Community Day 2021" "Openfunction + GraphDB" "https://siwei.io/talks/2021-KCD/images/cover.webp" "https://siwei.io/talks/2021-KCD/" 3 >}}
 
