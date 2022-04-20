@@ -48,6 +48,8 @@ I am working in open source and consider it is a privilege [^1]. It took me a co
 
 ## Talks
 
+{{< showcase "DoK Talks #116" "Nebula Graph: Open Source Distributed GraphDB" "https://www.siwei.io/talk/DoK_2022_Feb.webp" "https://youtu.be/mGAKS3t-TrU" 3 >}}
+
 {{< showcase "Data on K8s Community 2021" "GraphDB on Kubesphere" "https://siwei.io/talk/nebula_on_k3s.webp" "https://youtu.be/ri8VmYYTdkY" 3 >}}
 
 ## Previous work
