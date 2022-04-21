@@ -22,12 +22,10 @@ Then let's have the long verson of those spark projects more on how-to perspecti
 
 ## Spark-Connector
 
-- Codebase: https://github.com/vesoft-inc/nebula-algorithm
-- Documentation: https://docs.nebula-graph.io/3.0.2/nebula-algorithm/ (it's versioned, as for now, I put the lastest released version 3.0.2 here)
-- Jar Package: https://repo1.maven.org/maven2/com/vesoft/nebula-algorithm/
-- Code Examples: [example/src/main/scala/com/vesoft/nebula/algorithm](example/src/main/scala/com/vesoft/nebula/algorithm)
-
-
+- Codebase: https://github.com/vesoft-inc/nebula-spark-connector
+- Documentation: https://docs.nebula-graph.io/3.0.2/nebula-spark-connector/ (it's versioned, as for now, I put the lastest released version 3.0.2 here)
+- Jar Package: https://repo1.maven.org/maven2/com/vesoft/nebula-spark-connector/
+- Code Examples: [example](https://github.com/vesoft-inc/nebula-spark-connector/tree/master/example)
 
 ### Nebula Graph Spark Reader
 
@@ -489,11 +487,10 @@ Please refer to documentation and conf examples for more datasources. For hands 
 
 ## Algorithm
 
-- Codebase: https://github.com/vesoft-inc/nebula-exchange/
-- Documentation: https://docs.nebula-graph.io/3.0.2/nebula-exchange/about-exchange/ex-ug-what-is-exchange/ (it's versioned, as for now, I put the lastest released version 3.0.2 here)
-- Jar Package: https://github.com/vesoft-inc/nebula-exchange/releases
-- Calling Algorithm in code examples: [exchange-common/src/test/resources/application.conf](https://github.com/vesoft-inc/nebula-exchange/blob/master/exchange-common/src/test/resources/application.conf)
-- Conf exampls for calling with submit: [nebula-algorithm/src/main/resources/application.conf](https://github.com/vesoft-inc/nebula-algorithm/blob/master/nebula-algorithm/src/main/resources/application.conf)
+- Codebase: https://github.com/vesoft-inc/nebula-algorithm
+- Documentation: https://docs.nebula-graph.io/3.0.2/nebula-algorithm/ (it's versioned, as for now, I put the lastest released version 3.0.2 here)
+- Jar Package: https://repo1.maven.org/maven2/com/vesoft/nebula-algorithm/
+- Code Examples: [example/src/main/scala/com/vesoft/nebula/algorithm](example/src/main/scala/com/vesoft/nebula/algorithm)
 
 ### Calling with spark submit
 
@@ -664,3 +661,5 @@ object NebulaOptions {
 
 
 > feature image credit: [Sander](https://unsplash.com/photos/KABfjuSOx74)
+
+
