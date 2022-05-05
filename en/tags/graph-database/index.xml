@@ -15,7 +15,7 @@
             </div><blockquote>
 <p>Nebula Graph Native Index explained, why <code>index not found</code>? When should I use Nebula Index and full-text index?</p>
 </blockquote>
-<p>The term of Nebula Graph Index is quite similar to index in RDBMS, while, they are not the same. It&rsquo;s noticed when getting started with Nebula Graph, the index confused some of the users in first glance on</p>
+<p>The term of Nebula Graph Index is quite similar to the index in RDBMS, while, they are not the same. It&rsquo;s noticed that when getting started with Nebula Graph, the index confused some of the users in first glance on the following</p>
 <ul>
 <li>What exactly Nebula Graph Index is.</li>
 <li>When I should use it.</li>
@@ -24,17 +24,15 @@
 <p>Today I&rsquo;m gonna walk you through the index in Nebula Graph.</p>
 <p>Let&rsquo;s get started!</p>
 <h2 id="what-exactly-nebula-graph-index-is" class="headerLink">
-    <a href="#what-exactly-nebula-graph-index-is" class="header-mark"></a>1 What exactly Nebula Graph Index is</h2><p>TL;DR, Nebula Graph Index is only to be used to enable pure-prop-condition queries</p>
-<ul>
-<li>Not for graph walking through edges.</li>
-<li>It&rsquo;s an prerequisite for such query.</li>
-</ul>
-<h3 id="pure-prop-condition-queries" class="headerLink">
-    <a href="#pure-prop-condition-queries" class="header-mark"></a>1.1 pure-prop-condition queries</h3><p>We know that in RDBMS, an INDEX is to create a duplicated sorted DATA to enable QUERY with condition filtering on the sorted data, to <strong>accelerate the query in read</strong> and involves extra writes during the write.</p>
+    <a href="#what-exactly-nebula-graph-index-is" class="header-mark"></a>1 What exactly Nebula Graph Index is</h2><p>TL;DR, Nebula Graph Index is only to be used to enable the graph query to be <strong>started from</strong> conditions on <strong>properties</strong> of vertices or edges, instead of vertexID.</p>
+<p>It&rsquo;s only used in a starting entry of a graph query. If a query is in pattern: (a-&gt;b-&gt;c, where c in condition-foobar) graph walk, due to the only filtering <code>condition-foobar</code> is on <code>c</code>, this query under the hood will be started to seek <code>c</code>, and then it walks through the reversed <code>-&gt;</code> to <code>b</code>, finally to <code>a</code>. Thus, the Nebula Graph Index will be used and only be possbily used in seeking c, when <code>condition-foobar</code> is not like <code>id(c) == &quot;foobar&quot;</code> but <code>c.property_x == &quot;foobar&quot;</code>.</p>
+<h3 id="index-is-used-only-for-starting-point-seek" class="headerLink">
+    <a href="#index-is-used-only-for-starting-point-seek" class="header-mark"></a>1.1 Index is used only for starting point seek</h3><p>We know that in RDBMS, an INDEX is to create a duplicated sorted DATA to enable QUERY with condition filtering on the sorted data, to <strong>accelerate the query in read</strong> and involves extra writes during the write.</p>
 <blockquote>
-<p>Note: in RDBMS/Tabular DB, an INDEX on some columns means to create extra data that are sorted on those columns to make query with those columns' condition to be scanned faster, rather than scanning from the original table data sorted based on the key only.</p>
+<p>Note: in RDBMS/Tabular DB, an INDEX on some columns means to create extra data that are sorted on those columns to make query with those columns&rsquo; condition to be scanned faster, rather than scanning from the original table data sorted based on the key only.</p>
 </blockquote>
-<p>In Nebula Graph, the INDEX is to create a duplicated sorted <strong>Vertex/Edge PROP DATA</strong> to <strong>enable the part of QUERY</strong>(it&rsquo;s a must rather than accelerate it) like The following to GET data from PROP Conditions: or I call it the pure-prop-condition queries:</p>
+<p>In Nebula Graph, the INDEX is to create a duplicated sorted <strong>Vertex/Edge PROP DATA</strong> to <strong>enable starting point seek of a QUERY</strong>(it&rsquo;s a prerequisite rather than help accelerate it).</p>
+<p>Not all of the queries relied on index, here are some examples, let&rsquo;s call them pure-property-condition-start queries:</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
@@ -48,18 +46,18 @@
 </span><span class="lnt">9
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="o">####</span><span class="w"> </span><span class="n">Queries</span><span class="w"> </span><span class="n">relying</span><span class="w"> </span><span class="k">on</span><span class="w"> </span><span class="n">Nebula</span><span class="w"> </span><span class="n">Graph</span><span class="w"> </span><span class="k">Index</span><span class="w">
-</span><span class="w">
-</span><span class="w"></span><span class="o">#</span><span class="w"> </span><span class="n">query</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="n">pure</span><span class="o">-</span><span class="n">prop</span><span class="o">-</span><span class="n">condition</span><span class="w"> </span><span class="n">query</span><span class="w">
-</span><span class="w"></span><span class="n">LOOKUP</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">tag1</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">col1</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">col2</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&#34;foo&#34;</span><span class="w"> </span><span class="err">\</span><span class="w">
-</span><span class="w">    </span><span class="n">YIELD</span><span class="w"> </span><span class="n">tag1</span><span class="p">.</span><span class="n">col1</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">col1</span><span class="p">,</span><span class="w"> </span><span class="n">tag1</span><span class="p">.</span><span class="n">col3</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">col3</span><span class="p">;</span><span class="w">
-</span><span class="w">
-</span><span class="w"></span><span class="o">#</span><span class="w"> </span><span class="n">query</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="n">pure</span><span class="o">-</span><span class="n">prop</span><span class="o">-</span><span class="n">condition</span><span class="w"> </span><span class="n">query</span><span class="w">
-</span><span class="w"></span><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">v</span><span class="p">:</span><span class="n">player</span><span class="w"> </span><span class="err">{</span><span class="w"> </span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;Tim Duncan&#39;</span><span class="w"> </span><span class="err">}</span><span class="p">)</span><span class="c1">--&gt;(v2:player) \
-</span><span class="c1"></span><span class="w">        </span><span class="k">RETURN</span><span class="w"> </span><span class="n">v2</span><span class="p">.</span><span class="n">player</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">Name</span><span class="p">;</span><span class="w">
-</span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">#### Queries relying on Nebula Graph Index
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"># query 0 pure-property-condition-start query
+</span></span><span class="line"><span class="cl">LOOKUP ON tag1 WHERE col1 &gt; 1 AND col2 == &#34;foo&#34; \
+</span></span><span class="line"><span class="cl">    YIELD tag1.col1 as col1, tag1.col3 as col3;
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"># query 1 pure-property-condition-start query
+</span></span><span class="line"><span class="cl">MATCH (v:player { name: &#39;Tim Duncan&#39; })--&gt;(v2:player) \
+</span></span><span class="line"><span class="cl">        RETURN v2.player.name AS Name;
+</span></span></code></pre></td></tr></table>
 </div>
-</div><p>The pure-prop-condition queries, like above nGQL lines are literally to &ldquo;Find VID/EDGE only based on given the propertiy condtions&rdquo;. On the contrary, the following, are not pure-prop-condition queries:</p>
+</div><p>In both <code>query 0</code> and <code>query 1</code>, the pattern is to &ldquo;Find VID/EDGE only based on given the propertiy condtions&rdquo;. On the contrary, the starting point are VertexID based instead in <code>query 2</code> and <code>query 3</code>:</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -79,43 +77,39 @@
 </span><span class="lnt">15
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="o">####</span><span class="w"> </span><span class="n">Queries</span><span class="w"> </span><span class="k">not</span><span class="w"> </span><span class="n">based</span><span class="w"> </span><span class="k">on</span><span class="w"> </span><span class="n">Nebula</span><span class="w"> </span><span class="n">Graph</span><span class="w"> </span><span class="k">Index</span><span class="w">
-</span><span class="w">
-</span><span class="w"></span><span class="o">#</span><span class="w"> </span><span class="n">query</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">walk</span><span class="w"> </span><span class="n">query</span><span class="w"> </span><span class="n">starting</span><span class="w"> </span><span class="k">from</span><span class="w"> </span><span class="n">given</span><span class="w"> </span><span class="n">vertex</span><span class="w"> </span><span class="n">VID</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;player100&#34;</span><span class="w">
-</span><span class="w">
-</span><span class="w"></span><span class="k">GO</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="s2">&#34;player100&#34;</span><span class="w"> </span><span class="n">OVER</span><span class="w"> </span><span class="n">follow</span><span class="w"> </span><span class="n">REVERSELY</span><span class="w"> </span><span class="err">\</span><span class="w">
-</span><span class="w">        </span><span class="n">YIELD</span><span class="w"> </span><span class="n">src</span><span class="p">(</span><span class="n">edge</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="err">\</span><span class="w">
-</span><span class="w">    </span><span class="k">GO</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="err">$</span><span class="o">-</span><span class="p">.</span><span class="n">id</span><span class="w"> </span><span class="n">OVER</span><span class="w"> </span><span class="n">serve</span><span class="w"> </span><span class="err">\</span><span class="w">
-</span><span class="w">        </span><span class="k">WHERE</span><span class="w"> </span><span class="n">properties</span><span class="p">(</span><span class="err">$</span><span class="o">^</span><span class="p">).</span><span class="n">age</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">20</span><span class="w"> </span><span class="err">\</span><span class="w">
-</span><span class="w">        </span><span class="n">YIELD</span><span class="w"> </span><span class="n">properties</span><span class="p">(</span><span class="err">$</span><span class="o">^</span><span class="p">).</span><span class="n">name</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">FriendOf</span><span class="p">,</span><span class="w"> </span><span class="n">properties</span><span class="p">(</span><span class="err">$$</span><span class="p">).</span><span class="n">name</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">Team</span><span class="p">;</span><span class="w">
-</span><span class="w">
-</span><span class="w"></span><span class="o">#</span><span class="w"> </span><span class="n">query</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="n">walk</span><span class="w"> </span><span class="n">query</span><span class="w"> </span><span class="n">starting</span><span class="w"> </span><span class="k">from</span><span class="w"> </span><span class="n">given</span><span class="w"> </span><span class="n">vertex</span><span class="w"> </span><span class="n">VID</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;player101&#34;</span><span class="w"> </span><span class="k">or</span><span class="w"> </span><span class="s2">&#34;player102&#34;</span><span class="w">
-</span><span class="w">
-</span><span class="w"></span><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">v</span><span class="p">:</span><span class="n">player</span><span class="w"> </span><span class="err">{</span><span class="w"> </span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;Tim Duncan&#39;</span><span class="w"> </span><span class="err">}</span><span class="p">)</span><span class="c1">--(v2) \
-</span><span class="c1"></span><span class="w">        </span><span class="k">WHERE</span><span class="w"> </span><span class="n">id</span><span class="p">(</span><span class="n">v2</span><span class="p">)</span><span class="w"> </span><span class="k">IN</span><span class="w"> </span><span class="p">[</span><span class="s2">&#34;player101&#34;</span><span class="p">,</span><span class="w"> </span><span class="s2">&#34;player102&#34;</span><span class="p">]</span><span class="w"> </span><span class="err">\</span><span class="w">
-</span><span class="w">        </span><span class="k">RETURN</span><span class="w"> </span><span class="n">v2</span><span class="p">.</span><span class="n">player</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">Name</span><span class="p">;</span><span class="w">
-</span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">#### Queries not based on Nebula Graph Index
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"># query 2, walk query starting from given vertex VID: &#34;player100&#34;
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">GO FROM &#34;player100&#34; OVER follow REVERSELY \
+</span></span><span class="line"><span class="cl">        YIELD src(edge) AS id | \
+</span></span><span class="line"><span class="cl">    GO FROM $-.id OVER serve \
+</span></span><span class="line"><span class="cl">        WHERE properties($^).age &gt; 20 \
+</span></span><span class="line"><span class="cl">        YIELD properties($^).name AS FriendOf, properties($$).name AS Team;
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"># query 3, walk query starting from given vertex VID: &#34;player101&#34; or &#34;player102&#34;
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">MATCH (v:player { name: &#39;Tim Duncan&#39; })--(v2) \
+</span></span><span class="line"><span class="cl">        WHERE id(v2) IN [&#34;player101&#34;, &#34;player102&#34;] \
+</span></span><span class="line"><span class="cl">        RETURN v2.player.name AS Name;
+</span></span></code></pre></td></tr></table>
 </div>
-</div><p>If we look into <code>query 1</code> and <code>query 3</code>, where condition on vertex on tag:player are both <code>{ name: 'Tim Duncan' }</code> though:</p>
-<ul>
-<li>For <code>query 3</code> , the index is not required as the query will be started from known vertex ID in <code>[&quot;player101&quot;, &quot;player102&quot;]</code> and thus:
+</div><p>If we look into <code>query 1</code> and <code>query 3</code>, which shared condition on vertex on <code>tag:player</code> are both <code>{ name: 'Tim Duncan' }</code> though, they are differenciated in starting points:</p>
+<p>For <code>query 3</code> , the index is not required as the query will be started from known vertex ID in <code>[&quot;player101&quot;, &quot;player102&quot;]</code> and thus:</p>
 <ul>
 <li>It&rsquo;ll directly fetch vertex Data from <code>v2</code>&rsquo;s vertex IDs</li>
 <li>then to GetNeighbors(): walk through edges of <code>v2</code>, GetVertices() for next hop: <code>v</code> and filter based on property: <code>name</code></li>
 </ul>
-</li>
-<li>For <code>query 1</code> , the query has to start from <code>v</code> due to no known vertex IDs were provided:
+<p>For <code>query 1</code> , the query has to start from <code>v</code> due to no known vertex IDs were provided:</p>
 <ul>
 <li>It&rsquo;ll do IndexScan() first to find all vertices only with property condtion of <code>{ name: 'Tim Duncan' }</code></li>
 <li>Then, GetNeighbors(): walk through edges of <code>v</code>, GetVertices() for next hop: <code>v2</code></li>
 </ul>
-</li>
-</ul>
-<p>Now, we could know the whole point is on <strong>whether to know the vertexID(s)</strong>. You could check their execution plan with PROFILE or EXPLAIN like the follow:</p>
+<p>Now, we could know the whole point that matters here is on <strong>whether to know the vertexID</strong>. And the above differences could be shown in their execution plans with PROFILE or EXPLAIN like the follow:</p>
 <table>
 <thead>
 <tr>
-<th><code>query 1</code>, requires/based on index(on tag: player), pure prop condition query</th>
+<th><code>query 1</code>, requires index(on tag: player), pure prop condition query as starting point</th>
 <th><code>query 3</code>, no index required, query starting from known vertex IDs</th>
 </tr>
 </thead>
@@ -126,8 +120,10 @@
 </tr>
 </tbody>
 </table>
-<h3 id="why-nebula-graph-index-is-a-must-in-pure-prop-condition-queries" class="headerLink">
-    <a href="#why-nebula-graph-index-is-a-must-in-pure-prop-condition-queries" class="header-mark"></a>1.2 Why Nebula Graph index is a must in pure-prop-condition queries</h3><p>It&rsquo;s because Nebula Graph stores data in a distributed and graph-oriented way, the full scan of data was condiser too expensive to be allowed(<code>index not found</code> will occur when it&rsquo;s not created in pure-prop-condition queries).</p>
+<h3 id="why-nebula-graph-index-is-enabler-rather-than-an-accelerater" class="headerLink">
+    <a href="#why-nebula-graph-index-is-enabler-rather-than-an-accelerater" class="header-mark"></a>1.2 Why Nebula Graph index is enabler rather than an accelerater</h3><p>Can&rsquo;t those queries be done without indexes?</p>
+<p>It&rsquo;s possible in theory with full scan, but disabled without index.</p>
+<p>The reason is Nebula Graph stores data in a distributed and graph-oriented way, the full scan of data was condiserred too expensive to be allowed.</p>
 <blockquote>
 <p>Note: from v3.0, it&rsquo;s possible to do TopN Scan without INDEX, where the <code>LIMIT &lt;n&gt;</code> is used, this is different from the fullscan case(INDEX is a must), which will be explained later.</p>
 <div class="highlight"><div class="chroma">
@@ -136,40 +132,36 @@
 </span><span class="lnt">2
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">MATCH (v:player { name: &#39;Tim Duncan&#39; })--&gt;(v2:player) \
-        RETURN v2.player.name AS Name LIMIT 3;
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">MATCH (v:player { name: &#39;Tim Duncan&#39; })--&gt;(v2:player) \
+</span></span><span class="line"><span class="cl">        RETURN v2.player.name AS Name LIMIT 3;
+</span></span></code></pre></td></tr></table>
 </div>
 </div></blockquote>
-<h3 id="why-pure-prop-condition-queries-onlyrequiring-index" class="headerLink">
-    <a href="#why-pure-prop-condition-queries-onlyrequiring-index" class="header-mark"></a>1.3 Why pure-prop-condition queries only(requiring index)</h3><p><strong>graph-queries</strong> vs <strong>pure-prop-condition queries</strong></p>
-<ul>
-<li>graph-queries, see <code>query 2</code> and <code>query 3</code>, are to walk through edges all the way for the given vertices</li>
-<li>pure-prop-condition queries, see <code>query 0</code> and <code>query 1</code>, are to find vertex only on given prop condtions</li>
-</ul>
-<p>In Nebula Graph, the data is structured in a way to enable fast graph-queries, and is already indexed/sorted on vertex ID(for both vertex and edge) in raw data, where GetNeighbors() of given vertex is cheap and fast due to the locality/stored continuously(pysically linked).</p>
+<h3 id="why-starting-point-only" class="headerLink">
+    <a href="#why-starting-point-only" class="header-mark"></a>1.3 Why starting point only</h3><p>Index data is not used in terversal. It could confuse use to think of index is to sorting data based on properties, does it accelerate the terversal with property condition filtering? The answer is, no.</p>
+<p>In Nebula Graph, the data is structured in a way to enable fast graph-terversal, which is already indexed/sorted on vertex ID(for both vertex and edge) in raw data, where terversal(underlying in storage, it&rsquo;s calling GetNeighbors interface) of given vertex is cheap and fast due to the locality/stored continuously(pysically linked).</p>
 <p>So in summary:</p>
 <blockquote>
-<p>Nebula Graph Index is sorted prop data to find vertex or edge on given pure prop conditions.</p>
+<p>Nebula Graph Index is sorted prop data to find the starting vertex or edge on given pure prop conditions.</p>
 </blockquote>
 <h2 id="facts-on-nebula-graph-index" class="headerLink">
-    <a href="#facts-on-nebula-graph-index" class="header-mark"></a>2 Facts on Nebula Graph Index</h2><p>To understand more details/limitations/cost of Nebula, let&rsquo;s reveal more on its design and here are some facts:</p>
+    <a href="#facts-on-nebula-graph-index" class="header-mark"></a>2 Facts on Nebula Graph Index</h2><p>To understand more details/limitations/cost of Nebula, let&rsquo;s reveal more on its design and here are some facts in short:</p>
 <ul>
 <li>
 <p>Index Data is stored and sharded together with Vertex Data</p>
 </li>
 <li>
-<p>Only Left Match: It&rsquo;s RocksDB Prefix Scan under the hood</p>
+<p>It&rsquo;s <strong>Left Match</strong> based only: It&rsquo;s RocksDB Prefix Scan under the hood</p>
 </li>
 <li>
-<p>Cost:</p>
+<p>Effect on write and read path(to see its cost):</p>
 <ul>
-<li>Write Path: Extra Data + Extra Read</li>
-<li>Read Path: RBO, Fan Out, TopN Push Down</li>
+<li>Write Path: Extra Data written + Extra Read request introduced</li>
+<li>Read Path: RBO(Rule based optimization), Fan Out(to all shards)</li>
 </ul>
 </li>
 <li>
-<p>Data Full Scan TopN Sample(not fullscan) is supported w/o Index</p>
+<p>Data Full Scan LIMIT Sample(not full scan) is supported without Index</p>
 <ul>
 <li>
 <p><code>LOOKUP ON t YIELD t.name | LIMIT 1</code></p>
@@ -181,9 +173,9 @@
 </span><span class="lnt">2
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">MATCH (v:player { name: &#39;Tim Duncan&#39; })--&gt;(v2:player) \
-        RETURN v2.player.name AS Name LIMIT 3;
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">MATCH (v:player { name: &#39;Tim Duncan&#39; })--&gt;(v2:player) \
+</span></span><span class="line"><span class="cl">        RETURN v2.player.name AS Name LIMIT 3;
+</span></span></code></pre></td></tr></table>
 </div>
 </div></li>
 </ul>
@@ -192,31 +184,31 @@
 <p>The key info can be seen from one of my <a href="https://www.siwei.io/en/sketch-notes/" target="_blank" rel="noopener noreffer">sketch notes</a>:</p>
 <p></p>
 <blockquote>
-<p>We should notice that only the left match is supported in pure-prop-condition queries. For queries like wildcard or reguler-expression, Full-text Index/Search is to be used, which leveraged an external elastic search integrated with nebula: please check <a href="https://docs.nebula-graph.io/3.0.0/4.deployment-and-installation/6.deploy-text-based-index/2.deploy-es/" target="_blank" rel="noopener noreffer">Nebula Graph Full text index</a> for more.</p>
+<p>We should notice that only the left match is supported in pure-property-condition-start queries. For queries like wildcard or reguler-expression, Full-text Index/Search is to be used, where an external elastic search is integrated with nebula: please check <a href="https://docs.nebula-graph.io/3.1.0/4.deployment-and-installation/6.deploy-text-based-index/2.deploy-es/" target="_blank" rel="noopener noreffer">Nebula Graph Full text index</a> for more.</p>
 </blockquote>
-<p>With this sketch note, we could see</p>
+<p>Within this sketch note, more highlights are:</p>
 <ul>
 <li>
-<p>Local Index Design</p>
+<p>It&rsquo;s a Local Index Design</p>
 <ul>
 <li>The index is stored and shared locally together with the graph data.</li>
-<li>It&rsquo;s sorting based on prop value, and the matching is underlying a rocksDB prefix scan, that&rsquo;s why only left match is supported()</li>
+<li>It&rsquo;s sorting based on prop value, and the index search is underlying a rocksDB prefix scan, that&rsquo;s why only left match is supported.</li>
 </ul>
 </li>
 <li>
-<p>Write path</p>
+<p>There is cost in the write path</p>
 <ul>
-<li>The index enables the RDBMS-like Prop Condition Query with cost in the write path including not only the extra write, but also, random read, to ensure the data consistency.</li>
+<li>The index enables the RDBMS-like Prop Condition Based Query with cost in the write path including not only the extra write, but also, random read, to ensure the data consistency.</li>
 <li>Index Data write is done in a sync way</li>
 </ul>
 </li>
 <li>
-<p>Read path</p>
+<p>For Read path:</p>
 <ul>
-<li>In pure-prop-condition queries, in GraphD, the index will be selected with Rule-based-optimization like this example, where, in a rule, the col2 to be sorted first is considered optimal with the condition: col2 equals &lsquo;foo&rsquo;.</li>
+<li>In pure-property-condition-start queries, in GraphD, the index will be selected with Rule-based-optimization like this example, where, in a rule, the col2 to be sorted first is considered optimal with the condition: col2 equals &lsquo;foo&rsquo;.</li>
 <li>After the index was chosen, index-scan request will be fanout to storageD instances, and in the case of filters like LIMIT N, it will be pushed down to the storage side to reduce data payload.
 <ul>
-<li>Note: not shown in the sketch but actually from v3.0, the nebula graph allows LIMIT N Sample Prop condition query like this w/o index, which is underlying pushing down the LIMIT filter to storage side.</li>
+<li>Note: it was not shown in the sketch but actually from v3.0, the nebula graph allows LIMIT N Sample Prop condition query like this w/o index, which is underlying pushing down the LIMIT filter to storage side.</li>
 </ul>
 </li>
 </ul>
@@ -224,16 +216,16 @@
 </ul>
 <p>Take aways:</p>
 <ul>
-<li>Use index only when we have to, as it&rsquo;s costly in write cases and if limit N sample is allowed and fast enough, we can use that instead, if not: use index.</li>
+<li>Use index only when we have to, as it&rsquo;s costly in write cases and if limit N sample is the only needed case and it&rsquo;s fast enough, we can use that instead.</li>
 <li>Index is left match
 <ul>
 <li>composite index order matters, should be created carefully.</li>
-<li>for full-text search use case, use <a href="https://docs.nebula-graph.io/3.0.0/4.deployment-and-installation/6.deploy-text-based-index/2.deploy-es/" target="_blank" rel="noopener noreffer">full-text index</a> instead.</li>
+<li>for full-text search use case, use <a href="https://docs.nebula-graph.io/3.1.0/4.deployment-and-installation/6.deploy-text-based-index/2.deploy-es/" target="_blank" rel="noopener noreffer">full-text index</a> instead.</li>
 </ul>
 </li>
 </ul>
 <h2 id="how-to-use-the-index" class="headerLink">
-    <a href="#how-to-use-the-index" class="header-mark"></a>3 How to use the index</h2><p>We should always refer to the <a href="https://docs.nebula-graph.io/3.0.0/3.ngql-guide/14.native-index-statements/" target="_blank" rel="noopener noreffer">documentation</a>, and I just put some highlights on this here:</p>
+    <a href="#how-to-use-the-index" class="header-mark"></a>3 How to use the index</h2><p>We should always refer to the <a href="https://docs.nebula-graph.io/3.1.0/3.ngql-guide/14.native-index-statements/" target="_blank" rel="noopener noreffer">documentation</a>, and I just put some highlights on this here:</p>
 <ul>
 <li>
 <p>To create an index on a tag or edge type to specify a list of props in the order that we need.</p>
@@ -264,12 +256,12 @@
 </span><span class="lnt">5
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="n">LOOKUP</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">player</span><span class="w"> </span><span class="err">\</span><span class="w">
-</span><span class="w">  </span><span class="k">WHERE</span><span class="w"> </span><span class="n">player</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&#34;Kobe Bryant&#34;</span><span class="err">\</span><span class="w">
-</span><span class="w">  </span><span class="n">YIELD</span><span class="w"> </span><span class="n">id</span><span class="p">(</span><span class="n">vertex</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">VertexID</span><span class="p">,</span><span class="w"> </span><span class="n">properties</span><span class="p">(</span><span class="n">vertex</span><span class="p">).</span><span class="n">name</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">|</span><span class="err">\</span><span class="w">
-</span><span class="w">  </span><span class="k">GO</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="err">$</span><span class="o">-</span><span class="p">.</span><span class="n">VertexID</span><span class="w"> </span><span class="n">OVER</span><span class="w"> </span><span class="n">serve</span><span class="w"> </span><span class="err">\</span><span class="w">
-</span><span class="w">  </span><span class="n">YIELD</span><span class="w"> </span><span class="err">$</span><span class="o">-</span><span class="p">.</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">properties</span><span class="p">(</span><span class="n">edge</span><span class="p">).</span><span class="n">start_year</span><span class="p">,</span><span class="w"> </span><span class="n">properties</span><span class="p">(</span><span class="n">edge</span><span class="p">).</span><span class="n">end_year</span><span class="p">,</span><span class="w"> </span><span class="n">properties</span><span class="p">(</span><span class="err">$$</span><span class="p">).</span><span class="n">name</span><span class="p">;</span><span class="w">
-</span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="n">LOOKUP</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">player</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">WHERE</span><span class="w"> </span><span class="n">player</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&#34;Kobe Bryant&#34;</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">YIELD</span><span class="w"> </span><span class="n">id</span><span class="p">(</span><span class="n">vertex</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">VertexID</span><span class="p">,</span><span class="w"> </span><span class="n">properties</span><span class="p">(</span><span class="n">vertex</span><span class="p">).</span><span class="n">name</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">|</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">GO</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="err">$</span><span class="o">-</span><span class="p">.</span><span class="n">VertexID</span><span class="w"> </span><span class="n">OVER</span><span class="w"> </span><span class="n">serve</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">YIELD</span><span class="w"> </span><span class="err">$</span><span class="o">-</span><span class="p">.</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">properties</span><span class="p">(</span><span class="n">edge</span><span class="p">).</span><span class="n">start_year</span><span class="p">,</span><span class="w"> </span><span class="n">properties</span><span class="p">(</span><span class="n">edge</span><span class="p">).</span><span class="n">end_year</span><span class="p">,</span><span class="w"> </span><span class="n">properties</span><span class="p">(</span><span class="err">$$</span><span class="p">).</span><span class="n">name</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
 </div>
 </div></li>
 <li>
@@ -280,17 +272,17 @@
 </span><span class="lnt">2
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">MATCH (v:player{name:&#34;Tim Duncan&#34;})--&gt;(v2:player) \
-  RETURN v2.player.name AS Name;
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">MATCH (v:player{name:&#34;Tim Duncan&#34;})--&gt;(v2:player) \
+</span></span><span class="line"><span class="cl">  RETURN v2.player.name AS Name;
+</span></span></code></pre></td></tr></table>
 </div>
 </div></li>
 </ul>
 <h2 id="recap" class="headerLink">
     <a href="#recap" class="header-mark"></a>4 Recap</h2><p>Finally, Let&rsquo;s Recap</p>
 <ul>
-<li>INDEX is sorting PROP DATA to find data on given PURE PROP CONDITION</li>
-<li>INDEX is <strong>not</strong> for Graph Walk</li>
+<li>INDEX is sorting PROP DATA to enable finding starting point on given PURE PROP CONDITION</li>
+<li>INDEX is <strong>not</strong> for Trevsal</li>
 <li>INDEX is left match, <strong>not</strong> for full-text search</li>
 <li>INDEX has cost on WRITE</li>
 <li>Remember to REBUILD after CREATE INDEX on existing data</li>
@@ -334,25 +326,25 @@
 </span><span class="lnt">18
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">docker pull albertlatacz/java-repl
-docker run --rm -it <span class="se">\
-</span><span class="se"></span>    --network<span class="o">=</span>nebula-docker-compose_nebula-net <span class="se">\
-</span><span class="se"></span>    -v ~:/root <span class="se">\
-</span><span class="se"></span>    albertlatacz/java-repl <span class="se">\
-</span><span class="se"></span>    bash
-apt update -y <span class="o">&amp;&amp;</span> apt install ca-certificates -y
-wget https://dlcdn.apache.org/maven/maven-3/3.8.4/binaries/apache-maven-3.8.4-bin.tar.gz --no-check-certificate
-
-tar xzvf apache-maven-3.8.4-bin.tar.gz
-
-wget https://github.com/vesoft-inc/nebula-java/archive/refs/tags/v2.6.1.tar.gz
-tar xzvf v2.6.1.tar.gz
-<span class="nb">cd</span> nebula-java-2.6.1/
-../apache-maven-3.8.4/bin/mvn dependency:copy-dependencies
-../apache-maven-3.8.4/bin/mvn -B package -Dmaven.test.skip<span class="o">=</span><span class="nb">true</span>
-
-java -jar ../javarepl/javarepl.jar
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker pull albertlatacz/java-repl
+</span></span><span class="line"><span class="cl">docker run --rm -it <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    --network<span class="o">=</span>nebula-docker-compose_nebula-net <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    -v ~:/root <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    albertlatacz/java-repl <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    bash
+</span></span><span class="line"><span class="cl">apt update -y <span class="o">&amp;&amp;</span> apt install ca-certificates -y
+</span></span><span class="line"><span class="cl">wget https://dlcdn.apache.org/maven/maven-3/3.8.4/binaries/apache-maven-3.8.4-bin.tar.gz --no-check-certificate
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">tar xzvf apache-maven-3.8.4-bin.tar.gz
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">wget https://github.com/vesoft-inc/nebula-java/archive/refs/tags/v2.6.1.tar.gz
+</span></span><span class="line"><span class="cl">tar xzvf v2.6.1.tar.gz
+</span></span><span class="line"><span class="cl"><span class="nb">cd</span> nebula-java-2.6.1/
+</span></span><span class="line"><span class="cl">../apache-maven-3.8.4/bin/mvn dependency:copy-dependencies
+</span></span><span class="line"><span class="cl">../apache-maven-3.8.4/bin/mvn -B package -Dmaven.test.skip<span class="o">=</span><span class="nb">true</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">java -jar ../javarepl/javarepl.jar
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>Now, after executing <code>java -jar ../javarepl/javarepl.jar</code> we are in a Java Shell(REPL), this enable us to execute Java code in an interactive way without wasting time and patience in the slow path(code &ndash;&gt; build &ndash;&gt; execute &ndash;&gt; add print &ndash;&gt; build), isn&rsquo;t that cool?</p>
 <p>Like this:</p>
@@ -369,16 +361,16 @@ java -jar ../javarepl/javarepl.jar
 </span><span class="lnt">9
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="n">root</span><span class="nd">@a2e26ba62bb6</span><span class="o">:/</span><span class="n">javarepl</span><span class="o">/</span><span class="n">nebula</span><span class="o">-</span><span class="n">java</span><span class="o">-</span><span class="n">2</span><span class="o">.</span><span class="na">6</span><span class="o">.</span><span class="na">1</span><span class="err">#</span> <span class="n">java</span> <span class="o">-</span><span class="n">jar</span> <span class="o">../</span><span class="n">javarepl</span><span class="o">/</span><span class="n">javarepl</span><span class="o">.</span><span class="na">jar</span>
-
-<span class="n">Welcome</span> <span class="n">to</span> <span class="n">JavaREPL</span> <span class="n">version</span> <span class="nf">428</span> <span class="o">(</span><span class="n">Java</span> <span class="nf">HotSpot</span><span class="o">(</span><span class="n">TM</span><span class="o">)</span> <span class="n">64</span><span class="o">-</span><span class="n">Bit</span> <span class="n">Server</span> <span class="n">VM</span><span class="o">,</span> <span class="n">Java</span> <span class="n">1</span><span class="o">.</span><span class="na">8</span><span class="o">.</span><span class="na">0_111</span><span class="o">)</span>
-<span class="n">Type</span> <span class="n">expression</span> <span class="n">to</span> <span class="n">evaluate</span><span class="o">,</span> <span class="o">:</span><span class="n">help</span> <span class="k">for</span> <span class="n">more</span> <span class="n">options</span> <span class="n">or</span> <span class="n">press</span> <span class="n">tab</span> <span class="n">to</span> <span class="n">auto</span><span class="o">-</span><span class="n">complete</span><span class="o">.</span>
-<span class="n">Connected</span> <span class="n">to</span> <span class="n">local</span> <span class="n">instance</span> <span class="n">at</span> <span class="n">http</span><span class="o">:</span><span class="c1">//localhost:43707
-</span><span class="c1"></span>
-<span class="n">java</span><span class="o">&gt;</span> <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&#34;Hello, World!&#34;</span><span class="o">);</span>
-<span class="n">Hello</span><span class="o">,</span> <span class="n">World</span><span class="o">!</span>
-<span class="n">java</span><span class="o">&gt;</span>
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">root</span><span class="nd">@a2e26ba62bb6</span><span class="o">:/</span><span class="n">javarepl</span><span class="o">/</span><span class="n">nebula</span><span class="o">-</span><span class="n">java</span><span class="o">-</span><span class="n">2</span><span class="o">.</span><span class="na">6</span><span class="o">.</span><span class="na">1</span><span class="err">#</span> <span class="n">java</span> <span class="o">-</span><span class="n">jar</span> <span class="o">../</span><span class="n">javarepl</span><span class="o">/</span><span class="n">javarepl</span><span class="o">.</span><span class="na">jar</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">Welcome</span> <span class="n">to</span> <span class="n">JavaREPL</span> <span class="n">version</span> <span class="nf">428</span> <span class="o">(</span><span class="n">Java</span> <span class="nf">HotSpot</span><span class="o">(</span><span class="n">TM</span><span class="o">)</span> <span class="n">64</span><span class="o">-</span><span class="n">Bit</span> <span class="n">Server</span> <span class="n">VM</span><span class="o">,</span> <span class="n">Java</span> <span class="n">1</span><span class="o">.</span><span class="na">8</span><span class="o">.</span><span class="na">0_111</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl"><span class="n">Type</span> <span class="n">expression</span> <span class="n">to</span> <span class="n">evaluate</span><span class="o">,</span> <span class="o">:</span><span class="n">help</span> <span class="k">for</span> <span class="n">more</span> <span class="n">options</span> <span class="n">or</span> <span class="n">press</span> <span class="n">tab</span> <span class="n">to</span> <span class="n">auto</span><span class="o">-</span><span class="n">complete</span><span class="o">.</span>
+</span></span><span class="line"><span class="cl"><span class="n">Connected</span> <span class="n">to</span> <span class="n">local</span> <span class="n">instance</span> <span class="n">at</span> <span class="n">http</span><span class="o">:</span><span class="c1">//localhost:43707
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl"><span class="n">java</span><span class="o">&gt;</span> <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&#34;Hello, World!&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">Hello</span><span class="o">,</span> <span class="n">World</span><span class="o">!</span>
+</span></span><span class="line"><span class="cl"><span class="n">java</span><span class="o">&gt;</span>
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>Now we are in the java REPL, let&rsquo;s introduce all the class path needed and do the imports in one go:</p>
 <div class="highlight"><div class="chroma">
@@ -410,32 +402,32 @@ java -jar ../javarepl/javarepl.jar
 </span><span class="lnt">25
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="o">:</span><span class="n">cp</span> <span class="o">/</span><span class="n">javarepl</span><span class="o">/</span><span class="n">nebula</span><span class="o">-</span><span class="n">java</span><span class="o">-</span><span class="n">2</span><span class="o">.</span><span class="na">6</span><span class="o">.</span><span class="na">1</span><span class="o">/</span><span class="n">client</span><span class="o">/</span><span class="n">target</span><span class="o">/</span><span class="n">client</span><span class="o">-</span><span class="n">2</span><span class="o">.</span><span class="na">6</span><span class="o">.</span><span class="na">1</span><span class="o">.</span><span class="na">jar</span>
-<span class="o">:</span><span class="n">cp</span> <span class="o">/</span><span class="n">javarepl</span><span class="o">/</span><span class="n">nebula</span><span class="o">-</span><span class="n">java</span><span class="o">-</span><span class="n">2</span><span class="o">.</span><span class="na">6</span><span class="o">.</span><span class="na">1</span><span class="o">/</span><span class="n">client</span><span class="o">/</span><span class="n">target</span><span class="o">/</span><span class="n">dependency</span><span class="o">/</span><span class="n">fastjson</span><span class="o">-</span><span class="n">1</span><span class="o">.</span><span class="na">2</span><span class="o">.</span><span class="na">78</span><span class="o">.</span><span class="na">jar</span>
-<span class="o">:</span><span class="n">cp</span> <span class="o">/</span><span class="n">javarepl</span><span class="o">/</span><span class="n">nebula</span><span class="o">-</span><span class="n">java</span><span class="o">-</span><span class="n">2</span><span class="o">.</span><span class="na">6</span><span class="o">.</span><span class="na">1</span><span class="o">/</span><span class="n">client</span><span class="o">/</span><span class="n">target</span><span class="o">/</span><span class="n">dependency</span><span class="o">/</span><span class="n">slf4j</span><span class="o">-</span><span class="n">api</span><span class="o">-</span><span class="n">1</span><span class="o">.</span><span class="na">7</span><span class="o">.</span><span class="na">25</span><span class="o">.</span><span class="na">jar</span>
-<span class="o">:</span><span class="n">cp</span> <span class="o">/</span><span class="n">javarepl</span><span class="o">/</span><span class="n">nebula</span><span class="o">-</span><span class="n">java</span><span class="o">-</span><span class="n">2</span><span class="o">.</span><span class="na">6</span><span class="o">.</span><span class="na">1</span><span class="o">/</span><span class="n">client</span><span class="o">/</span><span class="n">target</span><span class="o">/</span><span class="n">dependency</span><span class="o">/</span><span class="n">slf4j</span><span class="o">-</span><span class="n">log4j12</span><span class="o">-</span><span class="n">1</span><span class="o">.</span><span class="na">7</span><span class="o">.</span><span class="na">25</span><span class="o">.</span><span class="na">jar</span>
-<span class="o">:</span><span class="n">cp</span> <span class="o">/</span><span class="n">javarepl</span><span class="o">/</span><span class="n">nebula</span><span class="o">-</span><span class="n">java</span><span class="o">-</span><span class="n">2</span><span class="o">.</span><span class="na">6</span><span class="o">.</span><span class="na">1</span><span class="o">/</span><span class="n">client</span><span class="o">/</span><span class="n">target</span><span class="o">/</span><span class="n">dependency</span><span class="o">/</span><span class="n">commons</span><span class="o">-</span><span class="n">pool2</span><span class="o">-</span><span class="n">2</span><span class="o">.</span><span class="na">2</span><span class="o">.</span><span class="na">jar</span>
-<span class="o">:</span><span class="n">cp</span> <span class="o">/</span><span class="n">javarepl</span><span class="o">/</span><span class="n">nebula</span><span class="o">-</span><span class="n">java</span><span class="o">-</span><span class="n">2</span><span class="o">.</span><span class="na">6</span><span class="o">.</span><span class="na">1</span><span class="o">/</span><span class="n">client</span><span class="o">/</span><span class="n">target</span><span class="o">/</span><span class="n">dependency</span><span class="o">/</span><span class="n">log4j</span><span class="o">-</span><span class="n">1</span><span class="o">.</span><span class="na">2</span><span class="o">.</span><span class="na">17</span><span class="o">.</span><span class="na">jar</span>
-
-<span class="kn">import</span> <span class="nn">com.alibaba.fastjson.JSON</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">com.alibaba.fastjson.JSONObject</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">com.vesoft.nebula.ErrorCode</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">com.vesoft.nebula.client.graph.NebulaPoolConfig</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">com.vesoft.nebula.client.graph.data.CASignedSSLParam</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">com.vesoft.nebula.client.graph.data.HostAddress</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">com.vesoft.nebula.client.graph.data.ResultSet</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">com.vesoft.nebula.client.graph.data.SelfSignedSSLParam</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">com.vesoft.nebula.client.graph.data.ValueWrapper</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">com.vesoft.nebula.client.graph.net.NebulaPool</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">com.vesoft.nebula.client.graph.net.Session</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">java.io.UnsupportedEncodingException</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">java.util.Arrays</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">java.util.List</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">java.util.concurrent.TimeUnit</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">org.slf4j.Logger</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">org.slf4j.LoggerFactory</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">java.lang.reflect.*</span><span class="o">;</span>
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="o">:</span><span class="n">cp</span> <span class="o">/</span><span class="n">javarepl</span><span class="o">/</span><span class="n">nebula</span><span class="o">-</span><span class="n">java</span><span class="o">-</span><span class="n">2</span><span class="o">.</span><span class="na">6</span><span class="o">.</span><span class="na">1</span><span class="o">/</span><span class="n">client</span><span class="o">/</span><span class="n">target</span><span class="o">/</span><span class="n">client</span><span class="o">-</span><span class="n">2</span><span class="o">.</span><span class="na">6</span><span class="o">.</span><span class="na">1</span><span class="o">.</span><span class="na">jar</span>
+</span></span><span class="line"><span class="cl"><span class="o">:</span><span class="n">cp</span> <span class="o">/</span><span class="n">javarepl</span><span class="o">/</span><span class="n">nebula</span><span class="o">-</span><span class="n">java</span><span class="o">-</span><span class="n">2</span><span class="o">.</span><span class="na">6</span><span class="o">.</span><span class="na">1</span><span class="o">/</span><span class="n">client</span><span class="o">/</span><span class="n">target</span><span class="o">/</span><span class="n">dependency</span><span class="o">/</span><span class="n">fastjson</span><span class="o">-</span><span class="n">1</span><span class="o">.</span><span class="na">2</span><span class="o">.</span><span class="na">78</span><span class="o">.</span><span class="na">jar</span>
+</span></span><span class="line"><span class="cl"><span class="o">:</span><span class="n">cp</span> <span class="o">/</span><span class="n">javarepl</span><span class="o">/</span><span class="n">nebula</span><span class="o">-</span><span class="n">java</span><span class="o">-</span><span class="n">2</span><span class="o">.</span><span class="na">6</span><span class="o">.</span><span class="na">1</span><span class="o">/</span><span class="n">client</span><span class="o">/</span><span class="n">target</span><span class="o">/</span><span class="n">dependency</span><span class="o">/</span><span class="n">slf4j</span><span class="o">-</span><span class="n">api</span><span class="o">-</span><span class="n">1</span><span class="o">.</span><span class="na">7</span><span class="o">.</span><span class="na">25</span><span class="o">.</span><span class="na">jar</span>
+</span></span><span class="line"><span class="cl"><span class="o">:</span><span class="n">cp</span> <span class="o">/</span><span class="n">javarepl</span><span class="o">/</span><span class="n">nebula</span><span class="o">-</span><span class="n">java</span><span class="o">-</span><span class="n">2</span><span class="o">.</span><span class="na">6</span><span class="o">.</span><span class="na">1</span><span class="o">/</span><span class="n">client</span><span class="o">/</span><span class="n">target</span><span class="o">/</span><span class="n">dependency</span><span class="o">/</span><span class="n">slf4j</span><span class="o">-</span><span class="n">log4j12</span><span class="o">-</span><span class="n">1</span><span class="o">.</span><span class="na">7</span><span class="o">.</span><span class="na">25</span><span class="o">.</span><span class="na">jar</span>
+</span></span><span class="line"><span class="cl"><span class="o">:</span><span class="n">cp</span> <span class="o">/</span><span class="n">javarepl</span><span class="o">/</span><span class="n">nebula</span><span class="o">-</span><span class="n">java</span><span class="o">-</span><span class="n">2</span><span class="o">.</span><span class="na">6</span><span class="o">.</span><span class="na">1</span><span class="o">/</span><span class="n">client</span><span class="o">/</span><span class="n">target</span><span class="o">/</span><span class="n">dependency</span><span class="o">/</span><span class="n">commons</span><span class="o">-</span><span class="n">pool2</span><span class="o">-</span><span class="n">2</span><span class="o">.</span><span class="na">2</span><span class="o">.</span><span class="na">jar</span>
+</span></span><span class="line"><span class="cl"><span class="o">:</span><span class="n">cp</span> <span class="o">/</span><span class="n">javarepl</span><span class="o">/</span><span class="n">nebula</span><span class="o">-</span><span class="n">java</span><span class="o">-</span><span class="n">2</span><span class="o">.</span><span class="na">6</span><span class="o">.</span><span class="na">1</span><span class="o">/</span><span class="n">client</span><span class="o">/</span><span class="n">target</span><span class="o">/</span><span class="n">dependency</span><span class="o">/</span><span class="n">log4j</span><span class="o">-</span><span class="n">1</span><span class="o">.</span><span class="na">2</span><span class="o">.</span><span class="na">17</span><span class="o">.</span><span class="na">jar</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">com.alibaba.fastjson.JSON</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">com.alibaba.fastjson.JSONObject</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">com.vesoft.nebula.ErrorCode</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">com.vesoft.nebula.client.graph.NebulaPoolConfig</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">com.vesoft.nebula.client.graph.data.CASignedSSLParam</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">com.vesoft.nebula.client.graph.data.HostAddress</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">com.vesoft.nebula.client.graph.data.ResultSet</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">com.vesoft.nebula.client.graph.data.SelfSignedSSLParam</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">com.vesoft.nebula.client.graph.data.ValueWrapper</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">com.vesoft.nebula.client.graph.net.NebulaPool</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">com.vesoft.nebula.client.graph.net.Session</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">java.io.UnsupportedEncodingException</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">java.util.Arrays</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">java.util.List</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">java.util.concurrent.TimeUnit</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">org.slf4j.Logger</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">org.slf4j.LoggerFactory</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">java.lang.reflect.*</span><span class="o">;</span>
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>And let&rsquo;s connect it to the nebula graph, please replace your graphD IP and Port here, and execute them under the propmt string of <code>java&gt;</code>:</p>
 <div class="highlight"><div class="chroma">
@@ -448,13 +440,13 @@ java -jar ../javarepl/javarepl.jar
 </span><span class="lnt">6
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="n">NebulaPoolConfig</span> <span class="n">nebulaPoolConfig</span> <span class="o">=</span> <span class="k">new</span> <span class="n">NebulaPoolConfig</span><span class="o">();</span>
-<span class="n">nebulaPoolConfig</span><span class="o">.</span><span class="na">setMaxConnSize</span><span class="o">(</span><span class="n">10</span><span class="o">);</span>
-<span class="n">List</span><span class="o">&lt;</span><span class="n">HostAddress</span><span class="o">&gt;</span> <span class="n">addresses</span> <span class="o">=</span> <span class="n">Arrays</span><span class="o">.</span><span class="na">asList</span><span class="o">(</span><span class="k">new</span> <span class="n">HostAddress</span><span class="o">(</span><span class="s">&#34;192.168.8.127&#34;</span><span class="o">,</span> <span class="n">9669</span><span class="o">));</span>
-<span class="n">NebulaPool</span> <span class="n">pool</span> <span class="o">=</span> <span class="k">new</span> <span class="n">NebulaPool</span><span class="o">();</span>
-<span class="n">pool</span><span class="o">.</span><span class="na">init</span><span class="o">(</span><span class="n">addresses</span><span class="o">,</span> <span class="n">nebulaPoolConfig</span><span class="o">);</span>
-<span class="n">Session</span> <span class="n">session</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="na">getSession</span><span class="o">(</span><span class="s">&#34;root&#34;</span><span class="o">,</span> <span class="s">&#34;nebula&#34;</span><span class="o">,</span> <span class="kc">false</span><span class="o">);</span>
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">NebulaPoolConfig</span> <span class="n">nebulaPoolConfig</span> <span class="o">=</span> <span class="k">new</span> <span class="n">NebulaPoolConfig</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl"><span class="n">nebulaPoolConfig</span><span class="o">.</span><span class="na">setMaxConnSize</span><span class="o">(</span><span class="n">10</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">List</span><span class="o">&lt;</span><span class="n">HostAddress</span><span class="o">&gt;</span> <span class="n">addresses</span> <span class="o">=</span> <span class="n">Arrays</span><span class="o">.</span><span class="na">asList</span><span class="o">(</span><span class="k">new</span> <span class="n">HostAddress</span><span class="o">(</span><span class="s">&#34;192.168.8.127&#34;</span><span class="o">,</span> <span class="n">9669</span><span class="o">));</span>
+</span></span><span class="line"><span class="cl"><span class="n">NebulaPool</span> <span class="n">pool</span> <span class="o">=</span> <span class="k">new</span> <span class="n">NebulaPool</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl"><span class="n">pool</span><span class="o">.</span><span class="na">init</span><span class="o">(</span><span class="n">addresses</span><span class="o">,</span> <span class="n">nebulaPoolConfig</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">Session</span> <span class="n">session</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="na">getSession</span><span class="o">(</span><span class="s">&#34;root&#34;</span><span class="o">,</span> <span class="s">&#34;nebula&#34;</span><span class="o">,</span> <span class="kc">false</span><span class="o">);</span>
+</span></span></code></pre></td></tr></table>
 </div>
 </div><h2 id="the-execute-for-resultset" class="headerLink">
     <a href="#the-execute-for-resultset" class="header-mark"></a>2 The &lt;code&gt;execute&lt;/code&gt; for ResultSet</h2><p>First let&rsquo;s check what we can do with a simple query:</p>
@@ -463,8 +455,8 @@ java -jar ../javarepl/javarepl.jar
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="n">ResultSet</span> <span class="n">resp</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="na">execute</span><span class="o">(</span><span class="s">&#34;USE basketballplayer;MATCH (n:player) WHERE n.name==\&#34;Tim Duncan\&#34; RETURN n&#34;</span><span class="o">);</span>
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">ResultSet</span> <span class="n">resp</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="na">execute</span><span class="o">(</span><span class="s">&#34;USE basketballplayer;MATCH (n:player) WHERE n.name==\&#34;Tim Duncan\&#34; RETURN n&#34;</span><span class="o">);</span>
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>Now you could play with it:</p>
 <blockquote>
@@ -498,37 +490,35 @@ java -jar ../javarepl/javarepl.jar
 </span><span class="lnt">24
 </span><span class="lnt">25
 </span><span class="lnt">26
-</span><span class="lnt">27
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="n">java</span><span class="o">&gt;</span> <span class="n">resp</span><span class="o">.</span><span class="na">isSucceeded</span><span class="o">()</span>
-<span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">Boolean</span> <span class="n">res9</span> <span class="o">=</span> <span class="kc">true</span>
-
-<span class="n">java</span><span class="o">&gt;</span> <span class="n">resp</span><span class="o">.</span><span class="na">rowsSize</span><span class="o">()</span>
-<span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">Integer</span> <span class="n">res16</span> <span class="o">=</span> <span class="n">1</span>
-
-<span class="n">java</span><span class="o">&gt;</span> <span class="n">rows</span> <span class="o">=</span> <span class="n">resp</span><span class="o">.</span><span class="na">getRows</span><span class="o">()</span>
-<span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">ArrayList</span> <span class="n">rows</span> <span class="o">=</span> <span class="o">[</span><span class="n">Row</span> <span class="o">(</span>
-  <span class="n">values</span> <span class="o">:</span> <span class="o">[</span>
-    <span class="o">&lt;</span><span class="n">Value</span> <span class="n">vVal</span><span class="o">:</span><span class="n">Vertex</span> <span class="o">(</span>
-        <span class="n">vid</span> <span class="o">:</span> <span class="o">&lt;</span><span class="n">Value</span> <span class="n">sVal</span><span class="o">:</span><span class="n">70</span> <span class="n">6c</span> <span class="n">61</span> <span class="n">79</span> <span class="n">65</span> <span class="n">72</span> <span class="n">31</span> <span class="n">30</span> <span class="n">30</span><span class="o">&gt;,</span>
-        <span class="n">tags</span> <span class="o">:</span> <span class="o">[</span>
-          <span class="n">Tag</span> <span class="o">(</span>
-              <span class="n">name</span> <span class="o">:</span> <span class="n">70</span> <span class="n">6C</span> <span class="n">61</span> <span class="n">79</span> <span class="n">65</span> <span class="n">72</span><span class="o">,</span>
-              <span class="n">props</span> <span class="o">:</span> <span class="o">{</span>
-                <span class="o">[</span><span class="n">B</span><span class="nd">@5264a468</span> <span class="o">:</span> <span class="o">&lt;</span><span class="n">Value</span> <span class="n">iVal</span><span class="o">:</span><span class="n">42</span><span class="o">&gt;</span>
-                <span class="o">[</span><span class="n">B</span><span class="nd">@496b8e10</span> <span class="o">:</span> <span class="o">&lt;</span><span class="n">Value</span> <span class="n">sVal</span><span class="o">:</span><span class="n">54</span> <span class="n">69</span> <span class="n">6d</span> <span class="n">20</span> <span class="n">44</span> <span class="n">75</span> <span class="n">6e</span> <span class="n">63</span> <span class="n">61</span> <span class="n">6e</span><span class="o">&gt;</span>
-              <span class="o">}</span>
-            <span class="o">)</span>
-        <span class="o">]</span>
-      <span class="o">)&gt;</span>
-  <span class="o">]</span>
-<span class="o">)]</span>
-    
-<span class="n">java</span><span class="o">&gt;</span> <span class="n">row0</span> <span class="o">=</span> <span class="n">resp</span><span class="o">.</span><span class="na">rowValues</span><span class="o">(</span><span class="n">0</span><span class="o">)</span>
-<span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">Iterable</span><span class="o">&lt;</span><span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ValueWrapper</span><span class="o">&gt;</span> <span class="n">res10</span> <span class="o">=</span> <span class="n">ColumnName</span><span class="o">:</span> <span class="o">[</span><span class="n">n</span><span class="o">],</span> <span class="n">Values</span><span class="o">:</span> <span class="o">[(</span><span class="s">&#34;player100&#34;</span> <span class="o">:</span><span class="n">player</span> <span class="o">{</span><span class="n">name</span><span class="o">:</span> <span class="s">&#34;Tim Duncan&#34;</span><span class="o">,</span> <span class="n">age</span><span class="o">:</span> <span class="n">42</span><span class="o">})]</span>
-
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">java</span><span class="o">&gt;</span> <span class="n">resp</span><span class="o">.</span><span class="na">isSucceeded</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl"><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">Boolean</span> <span class="n">res9</span> <span class="o">=</span> <span class="kc">true</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">java</span><span class="o">&gt;</span> <span class="n">resp</span><span class="o">.</span><span class="na">rowsSize</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl"><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">Integer</span> <span class="n">res16</span> <span class="o">=</span> <span class="n">1</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">java</span><span class="o">&gt;</span> <span class="n">rows</span> <span class="o">=</span> <span class="n">resp</span><span class="o">.</span><span class="na">getRows</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl"><span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">ArrayList</span> <span class="n">rows</span> <span class="o">=</span> <span class="o">[</span><span class="n">Row</span> <span class="o">(</span>
+</span></span><span class="line"><span class="cl">  <span class="n">values</span> <span class="o">:</span> <span class="o">[</span>
+</span></span><span class="line"><span class="cl">    <span class="o">&lt;</span><span class="n">Value</span> <span class="n">vVal</span><span class="o">:</span><span class="n">Vertex</span> <span class="o">(</span>
+</span></span><span class="line"><span class="cl">        <span class="n">vid</span> <span class="o">:</span> <span class="o">&lt;</span><span class="n">Value</span> <span class="n">sVal</span><span class="o">:</span><span class="n">70</span> <span class="n">6c</span> <span class="n">61</span> <span class="n">79</span> <span class="n">65</span> <span class="n">72</span> <span class="n">31</span> <span class="n">30</span> <span class="n">30</span><span class="o">&gt;,</span>
+</span></span><span class="line"><span class="cl">        <span class="n">tags</span> <span class="o">:</span> <span class="o">[</span>
+</span></span><span class="line"><span class="cl">          <span class="n">Tag</span> <span class="o">(</span>
+</span></span><span class="line"><span class="cl">              <span class="n">name</span> <span class="o">:</span> <span class="n">70</span> <span class="n">6C</span> <span class="n">61</span> <span class="n">79</span> <span class="n">65</span> <span class="n">72</span><span class="o">,</span>
+</span></span><span class="line"><span class="cl">              <span class="n">props</span> <span class="o">:</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                <span class="o">[</span><span class="n">B</span><span class="nd">@5264a468</span> <span class="o">:</span> <span class="o">&lt;</span><span class="n">Value</span> <span class="n">iVal</span><span class="o">:</span><span class="n">42</span><span class="o">&gt;</span>
+</span></span><span class="line"><span class="cl">                <span class="o">[</span><span class="n">B</span><span class="nd">@496b8e10</span> <span class="o">:</span> <span class="o">&lt;</span><span class="n">Value</span> <span class="n">sVal</span><span class="o">:</span><span class="n">54</span> <span class="n">69</span> <span class="n">6d</span> <span class="n">20</span> <span class="n">44</span> <span class="n">75</span> <span class="n">6e</span> <span class="n">63</span> <span class="n">61</span> <span class="n">6e</span><span class="o">&gt;</span>
+</span></span><span class="line"><span class="cl">              <span class="o">}</span>
+</span></span><span class="line"><span class="cl">            <span class="o">)</span>
+</span></span><span class="line"><span class="cl">        <span class="o">]</span>
+</span></span><span class="line"><span class="cl">      <span class="o">)&gt;</span>
+</span></span><span class="line"><span class="cl">  <span class="o">]</span>
+</span></span><span class="line"><span class="cl"><span class="o">)]</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl"><span class="n">java</span><span class="o">&gt;</span> <span class="n">row0</span> <span class="o">=</span> <span class="n">resp</span><span class="o">.</span><span class="na">rowValues</span><span class="o">(</span><span class="n">0</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl"><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">Iterable</span><span class="o">&lt;</span><span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ValueWrapper</span><span class="o">&gt;</span> <span class="n">res10</span> <span class="o">=</span> <span class="n">ColumnName</span><span class="o">:</span> <span class="o">[</span><span class="n">n</span><span class="o">],</span> <span class="n">Values</span><span class="o">:</span> <span class="o">[(</span><span class="s">&#34;player100&#34;</span> <span class="o">:</span><span class="n">player</span> <span class="o">{</span><span class="n">name</span><span class="o">:</span> <span class="s">&#34;Tim Duncan&#34;</span><span class="o">,</span> <span class="n">age</span><span class="o">:</span> <span class="n">42</span><span class="o">})]</span>
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>Remember our item is actually a vertex?</p>
 <div class="highlight"><div class="chroma">
@@ -542,14 +532,14 @@ java -jar ../javarepl/javarepl.jar
 </span><span class="lnt">7
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">(root@nebula) [basketballplayer]&gt; match (n:player) WHERE n.name == &#34;Tim Duncan&#34; return n
-+----------------------------------------------------+
-| n                                                  |
-+----------------------------------------------------+
-| (&#34;player100&#34; :player{age: 42, name: &#34;Tim Duncan&#34;}) |
-+----------------------------------------------------+
-Got 1 rows (time spent 2116/44373 us)
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">(root@nebula) [basketballplayer]&gt; match (n:player) WHERE n.name == &#34;Tim Duncan&#34; return n
+</span></span><span class="line"><span class="cl">+----------------------------------------------------+
+</span></span><span class="line"><span class="cl">| n                                                  |
+</span></span><span class="line"><span class="cl">+----------------------------------------------------+
+</span></span><span class="line"><span class="cl">| (&#34;player100&#34; :player{age: 42, name: &#34;Tim Duncan&#34;}) |
+</span></span><span class="line"><span class="cl">+----------------------------------------------------+
+</span></span><span class="line"><span class="cl">Got 1 rows (time spent 2116/44373 us)
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>Let&rsquo;s see what(methods) can be done towards a value?</p>
 <div class="highlight"><div class="chroma">
@@ -558,9 +548,9 @@ Got 1 rows (time spent 2116/44373 us)
 </span><span class="lnt">2
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="n">v</span> <span class="o">=</span> <span class="n">Class</span><span class="o">.</span><span class="na">forName</span><span class="o">(</span><span class="s">&#34;com.vesoft.nebula.Value&#34;</span><span class="o">)</span>
-<span class="n">v</span><span class="o">.</span><span class="na">getDeclaredMethods</span><span class="o">()</span>
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">v</span> <span class="o">=</span> <span class="n">Class</span><span class="o">.</span><span class="na">forName</span><span class="o">(</span><span class="s">&#34;com.vesoft.nebula.Value&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl"><span class="n">v</span><span class="o">.</span><span class="na">getDeclaredMethods</span><span class="o">()</span>
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>We could tell it&rsquo;s quite Primitive on what <code>com.vesoft.nebula.Value</code> provided, thus we should use the ValueWrapper(or use executeJson actually) instead.</p>
 <p>To get a row of the result via iteration(as its a java iterable), we just follow how the example looped the result:</p>
@@ -618,57 +608,57 @@ Got 1 rows (time spent 2116/44373 us)
 </span><span class="lnt">50
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="kn">import</span> <span class="nn">java.util.ArrayList</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">java.util.List</span><span class="o">;</span>
-<span class="n">List</span><span class="o">&lt;</span><span class="n">ValueWrapper</span><span class="o">&gt;</span> <span class="n">wrappedValueList</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">&lt;&gt;();</span>
-
-<span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="n">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">resp</span><span class="o">.</span><span class="na">rowsSize</span><span class="o">();</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
-    <span class="n">ResultSet</span><span class="o">.</span><span class="na">Record</span> <span class="n">record</span> <span class="o">=</span> <span class="n">resp</span><span class="o">.</span><span class="na">rowValues</span><span class="o">(</span><span class="n">i</span><span class="o">);</span>
-    <span class="k">for</span> <span class="o">(</span><span class="n">ValueWrapper</span> <span class="n">value</span> <span class="o">:</span> <span class="n">record</span><span class="o">.</span><span class="na">values</span><span class="o">())</span> <span class="o">{</span>
-        <span class="n">wrappedValueList</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">value</span><span class="o">);</span>
-        <span class="k">if</span> <span class="o">(</span><span class="n">value</span><span class="o">.</span><span class="na">isLong</span><span class="o">())</span> <span class="o">{</span>
-            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">printf</span><span class="o">(</span><span class="s">&#34;%15s |&#34;</span><span class="o">,</span> <span class="n">value</span><span class="o">.</span><span class="na">asLong</span><span class="o">());</span>
-        <span class="o">}</span>
-        <span class="k">if</span> <span class="o">(</span><span class="n">value</span><span class="o">.</span><span class="na">isBoolean</span><span class="o">())</span> <span class="o">{</span>
-            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">printf</span><span class="o">(</span><span class="s">&#34;%15s |&#34;</span><span class="o">,</span> <span class="n">value</span><span class="o">.</span><span class="na">asBoolean</span><span class="o">());</span>
-        <span class="o">}</span>
-        <span class="k">if</span> <span class="o">(</span><span class="n">value</span><span class="o">.</span><span class="na">isDouble</span><span class="o">())</span> <span class="o">{</span>
-            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">printf</span><span class="o">(</span><span class="s">&#34;%15s |&#34;</span><span class="o">,</span> <span class="n">value</span><span class="o">.</span><span class="na">asDouble</span><span class="o">());</span>
-        <span class="o">}</span>
-        <span class="k">if</span> <span class="o">(</span><span class="n">value</span><span class="o">.</span><span class="na">isString</span><span class="o">())</span> <span class="o">{</span>
-            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">printf</span><span class="o">(</span><span class="s">&#34;%15s |&#34;</span><span class="o">,</span> <span class="n">value</span><span class="o">.</span><span class="na">asString</span><span class="o">());</span>
-        <span class="o">}</span>
-        <span class="k">if</span> <span class="o">(</span><span class="n">value</span><span class="o">.</span><span class="na">isTime</span><span class="o">())</span> <span class="o">{</span>
-            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">printf</span><span class="o">(</span><span class="s">&#34;%15s |&#34;</span><span class="o">,</span> <span class="n">value</span><span class="o">.</span><span class="na">asTime</span><span class="o">());</span>
-        <span class="o">}</span>
-        <span class="k">if</span> <span class="o">(</span><span class="n">value</span><span class="o">.</span><span class="na">isDate</span><span class="o">())</span> <span class="o">{</span>
-            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">printf</span><span class="o">(</span><span class="s">&#34;%15s |&#34;</span><span class="o">,</span> <span class="n">value</span><span class="o">.</span><span class="na">asDate</span><span class="o">());</span>
-        <span class="o">}</span>
-        <span class="k">if</span> <span class="o">(</span><span class="n">value</span><span class="o">.</span><span class="na">isDateTime</span><span class="o">())</span> <span class="o">{</span>
-            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">printf</span><span class="o">(</span><span class="s">&#34;%15s |&#34;</span><span class="o">,</span> <span class="n">value</span><span class="o">.</span><span class="na">asDateTime</span><span class="o">());</span>
-        <span class="o">}</span>
-        <span class="k">if</span> <span class="o">(</span><span class="n">value</span><span class="o">.</span><span class="na">isVertex</span><span class="o">())</span> <span class="o">{</span>
-            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">printf</span><span class="o">(</span><span class="s">&#34;%15s |&#34;</span><span class="o">,</span> <span class="n">value</span><span class="o">.</span><span class="na">asNode</span><span class="o">());</span>
-        <span class="o">}</span>
-        <span class="k">if</span> <span class="o">(</span><span class="n">value</span><span class="o">.</span><span class="na">isEdge</span><span class="o">())</span> <span class="o">{</span>
-            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">printf</span><span class="o">(</span><span class="s">&#34;%15s |&#34;</span><span class="o">,</span> <span class="n">value</span><span class="o">.</span><span class="na">asRelationship</span><span class="o">());</span>
-        <span class="o">}</span>
-        <span class="k">if</span> <span class="o">(</span><span class="n">value</span><span class="o">.</span><span class="na">isPath</span><span class="o">())</span> <span class="o">{</span>
-            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">printf</span><span class="o">(</span><span class="s">&#34;%15s |&#34;</span><span class="o">,</span> <span class="n">value</span><span class="o">.</span><span class="na">asPath</span><span class="o">());</span>
-        <span class="o">}</span>
-        <span class="k">if</span> <span class="o">(</span><span class="n">value</span><span class="o">.</span><span class="na">isList</span><span class="o">())</span> <span class="o">{</span>
-            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">printf</span><span class="o">(</span><span class="s">&#34;%15s |&#34;</span><span class="o">,</span> <span class="n">value</span><span class="o">.</span><span class="na">asList</span><span class="o">());</span>
-        <span class="o">}</span>
-        <span class="k">if</span> <span class="o">(</span><span class="n">value</span><span class="o">.</span><span class="na">isSet</span><span class="o">())</span> <span class="o">{</span>
-            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">printf</span><span class="o">(</span><span class="s">&#34;%15s |&#34;</span><span class="o">,</span> <span class="n">value</span><span class="o">.</span><span class="na">asSet</span><span class="o">());</span>
-        <span class="o">}</span>
-        <span class="k">if</span> <span class="o">(</span><span class="n">value</span><span class="o">.</span><span class="na">isMap</span><span class="o">())</span> <span class="o">{</span>
-            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">printf</span><span class="o">(</span><span class="s">&#34;%15s |&#34;</span><span class="o">,</span> <span class="n">value</span><span class="o">.</span><span class="na">asMap</span><span class="o">());</span>
-        <span class="o">}</span>
-    <span class="o">}</span>
-    <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">();</span>
-<span class="o">}</span>
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">java.util.ArrayList</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">java.util.List</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">List</span><span class="o">&lt;</span><span class="n">ValueWrapper</span><span class="o">&gt;</span> <span class="n">wrappedValueList</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">&lt;&gt;();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="n">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">resp</span><span class="o">.</span><span class="na">rowsSize</span><span class="o">();</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">ResultSet</span><span class="o">.</span><span class="na">Record</span> <span class="n">record</span> <span class="o">=</span> <span class="n">resp</span><span class="o">.</span><span class="na">rowValues</span><span class="o">(</span><span class="n">i</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="o">(</span><span class="n">ValueWrapper</span> <span class="n">value</span> <span class="o">:</span> <span class="n">record</span><span class="o">.</span><span class="na">values</span><span class="o">())</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">wrappedValueList</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">value</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="o">(</span><span class="n">value</span><span class="o">.</span><span class="na">isLong</span><span class="o">())</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">printf</span><span class="o">(</span><span class="s">&#34;%15s |&#34;</span><span class="o">,</span> <span class="n">value</span><span class="o">.</span><span class="na">asLong</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="o">(</span><span class="n">value</span><span class="o">.</span><span class="na">isBoolean</span><span class="o">())</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">printf</span><span class="o">(</span><span class="s">&#34;%15s |&#34;</span><span class="o">,</span> <span class="n">value</span><span class="o">.</span><span class="na">asBoolean</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="o">(</span><span class="n">value</span><span class="o">.</span><span class="na">isDouble</span><span class="o">())</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">printf</span><span class="o">(</span><span class="s">&#34;%15s |&#34;</span><span class="o">,</span> <span class="n">value</span><span class="o">.</span><span class="na">asDouble</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="o">(</span><span class="n">value</span><span class="o">.</span><span class="na">isString</span><span class="o">())</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">printf</span><span class="o">(</span><span class="s">&#34;%15s |&#34;</span><span class="o">,</span> <span class="n">value</span><span class="o">.</span><span class="na">asString</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="o">(</span><span class="n">value</span><span class="o">.</span><span class="na">isTime</span><span class="o">())</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">printf</span><span class="o">(</span><span class="s">&#34;%15s |&#34;</span><span class="o">,</span> <span class="n">value</span><span class="o">.</span><span class="na">asTime</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="o">(</span><span class="n">value</span><span class="o">.</span><span class="na">isDate</span><span class="o">())</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">printf</span><span class="o">(</span><span class="s">&#34;%15s |&#34;</span><span class="o">,</span> <span class="n">value</span><span class="o">.</span><span class="na">asDate</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="o">(</span><span class="n">value</span><span class="o">.</span><span class="na">isDateTime</span><span class="o">())</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">printf</span><span class="o">(</span><span class="s">&#34;%15s |&#34;</span><span class="o">,</span> <span class="n">value</span><span class="o">.</span><span class="na">asDateTime</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="o">(</span><span class="n">value</span><span class="o">.</span><span class="na">isVertex</span><span class="o">())</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">printf</span><span class="o">(</span><span class="s">&#34;%15s |&#34;</span><span class="o">,</span> <span class="n">value</span><span class="o">.</span><span class="na">asNode</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="o">(</span><span class="n">value</span><span class="o">.</span><span class="na">isEdge</span><span class="o">())</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">printf</span><span class="o">(</span><span class="s">&#34;%15s |&#34;</span><span class="o">,</span> <span class="n">value</span><span class="o">.</span><span class="na">asRelationship</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="o">(</span><span class="n">value</span><span class="o">.</span><span class="na">isPath</span><span class="o">())</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">printf</span><span class="o">(</span><span class="s">&#34;%15s |&#34;</span><span class="o">,</span> <span class="n">value</span><span class="o">.</span><span class="na">asPath</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="o">(</span><span class="n">value</span><span class="o">.</span><span class="na">isList</span><span class="o">())</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">printf</span><span class="o">(</span><span class="s">&#34;%15s |&#34;</span><span class="o">,</span> <span class="n">value</span><span class="o">.</span><span class="na">asList</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="o">(</span><span class="n">value</span><span class="o">.</span><span class="na">isSet</span><span class="o">())</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">printf</span><span class="o">(</span><span class="s">&#34;%15s |&#34;</span><span class="o">,</span> <span class="n">value</span><span class="o">.</span><span class="na">asSet</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="o">(</span><span class="n">value</span><span class="o">.</span><span class="na">isMap</span><span class="o">())</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">printf</span><span class="o">(</span><span class="s">&#34;%15s |&#34;</span><span class="o">,</span> <span class="n">value</span><span class="o">.</span><span class="na">asMap</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">    <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>As shown in above, the result value/item could be in properties string/int etc&hellip; or in graph semantic vertex, edge, path, we should use correspond <code>asXxxx</code> methods:</p>
 <div class="highlight"><div class="chroma">
@@ -681,13 +671,13 @@ Got 1 rows (time spent 2116/44373 us)
 </span><span class="lnt">6
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="n">java</span><span class="o">&gt;</span> <span class="n">v</span> <span class="o">=</span> <span class="n">wrappedValueList</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">0</span><span class="o">)</span>
-<span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ValueWrapper</span> <span class="n">v</span> <span class="o">=</span> <span class="o">(</span><span class="s">&#34;player100&#34;</span> <span class="o">:</span><span class="n">player</span> <span class="o">{</span><span class="n">name</span><span class="o">:</span> <span class="s">&#34;Tim Duncan&#34;</span><span class="o">,</span> <span class="n">age</span><span class="o">:</span> <span class="n">42</span><span class="o">})</span>
-<span class="n">java</span><span class="o">&gt;</span> <span class="n">v</span><span class="o">.</span><span class="na">asNode</span><span class="o">()</span>
-<span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">Node</span> <span class="n">res16</span> <span class="o">=</span> <span class="o">(</span><span class="s">&#34;player100&#34;</span> <span class="o">:</span><span class="n">player</span> <span class="o">{</span><span class="n">name</span><span class="o">:</span> <span class="s">&#34;Tim Duncan&#34;</span><span class="o">,</span> <span class="n">age</span><span class="o">:</span> <span class="n">42</span><span class="o">})</span>
-<span class="n">java</span><span class="o">&gt;</span> <span class="n">node</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="na">asNode</span><span class="o">()</span>
-<span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">Node</span> <span class="n">node</span> <span class="o">=</span> <span class="o">(</span><span class="s">&#34;player100&#34;</span> <span class="o">:</span><span class="n">player</span> <span class="o">{</span><span class="n">name</span><span class="o">:</span> <span class="s">&#34;Tim Duncan&#34;</span><span class="o">,</span> <span class="n">age</span><span class="o">:</span> <span class="n">42</span><span class="o">})</span>
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">java</span><span class="o">&gt;</span> <span class="n">v</span> <span class="o">=</span> <span class="n">wrappedValueList</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">0</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl"><span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ValueWrapper</span> <span class="n">v</span> <span class="o">=</span> <span class="o">(</span><span class="s">&#34;player100&#34;</span> <span class="o">:</span><span class="n">player</span> <span class="o">{</span><span class="n">name</span><span class="o">:</span> <span class="s">&#34;Tim Duncan&#34;</span><span class="o">,</span> <span class="n">age</span><span class="o">:</span> <span class="n">42</span><span class="o">})</span>
+</span></span><span class="line"><span class="cl"><span class="n">java</span><span class="o">&gt;</span> <span class="n">v</span><span class="o">.</span><span class="na">asNode</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl"><span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">Node</span> <span class="n">res16</span> <span class="o">=</span> <span class="o">(</span><span class="s">&#34;player100&#34;</span> <span class="o">:</span><span class="n">player</span> <span class="o">{</span><span class="n">name</span><span class="o">:</span> <span class="s">&#34;Tim Duncan&#34;</span><span class="o">,</span> <span class="n">age</span><span class="o">:</span> <span class="n">42</span><span class="o">})</span>
+</span></span><span class="line"><span class="cl"><span class="n">java</span><span class="o">&gt;</span> <span class="n">node</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="na">asNode</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl"><span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">Node</span> <span class="n">node</span> <span class="o">=</span> <span class="o">(</span><span class="s">&#34;player100&#34;</span> <span class="o">:</span><span class="n">player</span> <span class="o">{</span><span class="n">name</span><span class="o">:</span> <span class="s">&#34;Tim Duncan&#34;</span><span class="o">,</span> <span class="n">age</span><span class="o">:</span> <span class="n">42</span><span class="o">})</span>
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>Btw, it&rsquo;s also possible to play with it with reflections(we imported already):</p>
 <blockquote>
@@ -701,11 +691,11 @@ Got 1 rows (time spent 2116/44373 us)
 </span><span class="lnt">4
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="n">java</span><span class="o">&gt;</span> <span class="n">rClass</span><span class="o">=</span><span class="n">Class</span><span class="o">.</span><span class="na">forName</span><span class="o">(</span><span class="s">&#34;com.vesoft.nebula.client.graph.data.ResultSet&#34;</span><span class="o">)</span>
-<span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">Class</span> <span class="n">r</span> <span class="o">=</span> <span class="kd">class</span> <span class="nc">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet</span>
-<span class="n">java</span><span class="o">&gt;</span> <span class="n">rClass</span><span class="o">.</span><span class="na">getDeclaredMethods</span><span class="o">()</span>
-<span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">reflect</span><span class="o">.</span><span class="na">Method</span><span class="o">[]</span> <span class="n">res20</span> <span class="o">=</span> <span class="o">[</span><span class="kd">public</span> <span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">List</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet</span><span class="o">.</span><span class="na">getColumnNames</span><span class="o">(),</span> <span class="kd">public</span> <span class="kt">int</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet</span><span class="o">.</span><span class="na">rowsSize</span><span class="o">(),</span> <span class="kd">public</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet$Record</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet</span><span class="o">.</span><span class="na">rowValues</span><span class="o">(</span><span class="kt">int</span><span class="o">),</span> <span class="kd">public</span> <span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">List</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet</span><span class="o">.</span><span class="na">colValues</span><span class="o">(</span><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span><span class="o">),</span> <span class="kd">public</span> <span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet</span><span class="o">.</span><span class="na">getErrorMessage</span><span class="o">(),</span> <span class="kd">public</span> <span class="kt">boolean</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet</span><span class="o">.</span><span class="na">isSucceeded</span><span class="o">(),</span> <span class="kd">public</span> <span class="kt">int</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet</span><span class="o">.</span><span class="na">getErrorCode</span><span class="o">(),</span> <span class="kd">public</span> <span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet</span><span class="o">.</span><span class="na">getSpaceName</span><span class="o">(),</span> <span class="kd">public</span> <span class="kt">int</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet</span><span class="o">.</span><span class="na">getLatency</span><span class="o">(),</span> <span class="kd">public</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">PlanDescription</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet</span><span class="o">.</span><span class="na">getPlanDesc</span><span class="o">(),</span> <span class="kd">public</span> <span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">List</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet</span><span class="o">.</span><span class="na">getRows</span><span class="o">(),</span> <span class="kd">public</span> <span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet</span><span class="o">.</span><span class="na">getComment</span><span class="o">(),</span> <span class="kd">public</span> <span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet</span><span class="o">.</span><span class="na">toString</span><span class="o">(),</span> <span class="kd">public</span> <span class="kt">boolean</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet</span><span class="o">.</span><span class="na">isEmpty</span><span class="o">(),</span> <span class="kd">public</span> <span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">List</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet</span><span class="o">.</span><span class="na">keys</span><span class="o">()]</span>
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">java</span><span class="o">&gt;</span> <span class="n">rClass</span><span class="o">=</span><span class="n">Class</span><span class="o">.</span><span class="na">forName</span><span class="o">(</span><span class="s">&#34;com.vesoft.nebula.client.graph.data.ResultSet&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl"><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">Class</span> <span class="n">r</span> <span class="o">=</span> <span class="kd">class</span> <span class="nc">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet</span>
+</span></span><span class="line"><span class="cl"><span class="n">java</span><span class="o">&gt;</span> <span class="n">rClass</span><span class="o">.</span><span class="na">getDeclaredMethods</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl"><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">reflect</span><span class="o">.</span><span class="na">Method</span><span class="o">[]</span> <span class="n">res20</span> <span class="o">=</span> <span class="o">[</span><span class="kd">public</span> <span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">List</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet</span><span class="o">.</span><span class="na">getColumnNames</span><span class="o">(),</span> <span class="kd">public</span> <span class="kt">int</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet</span><span class="o">.</span><span class="na">rowsSize</span><span class="o">(),</span> <span class="kd">public</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet$Record</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet</span><span class="o">.</span><span class="na">rowValues</span><span class="o">(</span><span class="kt">int</span><span class="o">),</span> <span class="kd">public</span> <span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">List</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet</span><span class="o">.</span><span class="na">colValues</span><span class="o">(</span><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span><span class="o">),</span> <span class="kd">public</span> <span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet</span><span class="o">.</span><span class="na">getErrorMessage</span><span class="o">(),</span> <span class="kd">public</span> <span class="kt">boolean</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet</span><span class="o">.</span><span class="na">isSucceeded</span><span class="o">(),</span> <span class="kd">public</span> <span class="kt">int</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet</span><span class="o">.</span><span class="na">getErrorCode</span><span class="o">(),</span> <span class="kd">public</span> <span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet</span><span class="o">.</span><span class="na">getSpaceName</span><span class="o">(),</span> <span class="kd">public</span> <span class="kt">int</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet</span><span class="o">.</span><span class="na">getLatency</span><span class="o">(),</span> <span class="kd">public</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">PlanDescription</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet</span><span class="o">.</span><span class="na">getPlanDesc</span><span class="o">(),</span> <span class="kd">public</span> <span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">List</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet</span><span class="o">.</span><span class="na">getRows</span><span class="o">(),</span> <span class="kd">public</span> <span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet</span><span class="o">.</span><span class="na">getComment</span><span class="o">(),</span> <span class="kd">public</span> <span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet</span><span class="o">.</span><span class="na">toString</span><span class="o">(),</span> <span class="kd">public</span> <span class="kt">boolean</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet</span><span class="o">.</span><span class="na">isEmpty</span><span class="o">(),</span> <span class="kd">public</span> <span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">List</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet</span><span class="o">.</span><span class="na">keys</span><span class="o">()]</span>
+</span></span></code></pre></td></tr></table>
 </div>
 </div><div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
@@ -715,11 +705,11 @@ Got 1 rows (time spent 2116/44373 us)
 </span><span class="lnt">4
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="n">java</span><span class="o">&gt;</span> <span class="n">nodeClass</span><span class="o">=</span><span class="n">Class</span><span class="o">.</span><span class="na">forName</span><span class="o">(</span><span class="s">&#34;com.vesoft.nebula.client.graph.data.Node&#34;</span><span class="o">)</span>
-<span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">Class</span> <span class="n">nodeClass</span> <span class="o">=</span> <span class="kd">class</span> <span class="nc">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">Node</span>
-<span class="n">java</span><span class="o">&gt;</span> <span class="n">nodeClass</span><span class="o">.</span><span class="na">getDeclaredMethods</span><span class="o">()</span>
-<span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">reflect</span><span class="o">.</span><span class="na">Method</span><span class="o">[]</span> <span class="n">res20</span> <span class="o">=</span> <span class="o">[</span><span class="kd">public</span> <span class="kt">boolean</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">Node</span><span class="o">.</span><span class="na">hasTagName</span><span class="o">(</span><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span><span class="o">),</span> <span class="kd">public</span> <span class="kt">boolean</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">Node</span><span class="o">.</span><span class="na">hasLabel</span><span class="o">(</span><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span><span class="o">),</span> <span class="kd">public</span> <span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">List</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">Node</span><span class="o">.</span><span class="na">tagNames</span><span class="o">(),</span> <span class="kd">public</span> <span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">HashMap</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">Node</span><span class="o">.</span><span class="na">properties</span><span class="o">(</span><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">java</span><span class="o">.</span><span class="na">io</span><span class="o">.</span><span class="na">UnsupportedEncodingException</span><span class="o">,</span> <span class="kd">public</span> <span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">List</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">Node</span><span class="o">.</span><span class="na">labels</span><span class="o">(),</span> <span class="kd">public</span> <span class="kt">boolean</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">Node</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">Object</span><span class="o">),</span> <span class="kd">public</span> <span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">Node</span><span class="o">.</span><span class="na">toString</span><span class="o">(),</span> <span class="kd">public</span> <span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">List</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">Node</span><span class="o">.</span><span class="na">values</span><span class="o">(</span><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span><span class="o">),</span> <span class="kd">public</span> <span class="kt">int</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">Node</span><span class="o">.</span><span class="na">hashCode</span><span class="o">(),</span> <span class="kd">public</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ValueWrapper</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">Node</span><span class="o">.</span><span class="na">getId</span><span class="o">(),</span> <span class="kd">public</span> <span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">List</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">Node</span><span class="o">.</span><span class="na">keys</span><span class="o">(</span><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">java</span><span class="o">.</span><span class="na">io</span><span class="o">.</span><span class="na">UnsupportedEncodingException</span><span class="o">]</span>
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">java</span><span class="o">&gt;</span> <span class="n">nodeClass</span><span class="o">=</span><span class="n">Class</span><span class="o">.</span><span class="na">forName</span><span class="o">(</span><span class="s">&#34;com.vesoft.nebula.client.graph.data.Node&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl"><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">Class</span> <span class="n">nodeClass</span> <span class="o">=</span> <span class="kd">class</span> <span class="nc">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">Node</span>
+</span></span><span class="line"><span class="cl"><span class="n">java</span><span class="o">&gt;</span> <span class="n">nodeClass</span><span class="o">.</span><span class="na">getDeclaredMethods</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl"><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">reflect</span><span class="o">.</span><span class="na">Method</span><span class="o">[]</span> <span class="n">res20</span> <span class="o">=</span> <span class="o">[</span><span class="kd">public</span> <span class="kt">boolean</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">Node</span><span class="o">.</span><span class="na">hasTagName</span><span class="o">(</span><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span><span class="o">),</span> <span class="kd">public</span> <span class="kt">boolean</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">Node</span><span class="o">.</span><span class="na">hasLabel</span><span class="o">(</span><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span><span class="o">),</span> <span class="kd">public</span> <span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">List</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">Node</span><span class="o">.</span><span class="na">tagNames</span><span class="o">(),</span> <span class="kd">public</span> <span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">HashMap</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">Node</span><span class="o">.</span><span class="na">properties</span><span class="o">(</span><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">java</span><span class="o">.</span><span class="na">io</span><span class="o">.</span><span class="na">UnsupportedEncodingException</span><span class="o">,</span> <span class="kd">public</span> <span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">List</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">Node</span><span class="o">.</span><span class="na">labels</span><span class="o">(),</span> <span class="kd">public</span> <span class="kt">boolean</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">Node</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">Object</span><span class="o">),</span> <span class="kd">public</span> <span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">Node</span><span class="o">.</span><span class="na">toString</span><span class="o">(),</span> <span class="kd">public</span> <span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">List</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">Node</span><span class="o">.</span><span class="na">values</span><span class="o">(</span><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span><span class="o">),</span> <span class="kd">public</span> <span class="kt">int</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">Node</span><span class="o">.</span><span class="na">hashCode</span><span class="o">(),</span> <span class="kd">public</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ValueWrapper</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">Node</span><span class="o">.</span><span class="na">getId</span><span class="o">(),</span> <span class="kd">public</span> <span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">List</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">Node</span><span class="o">.</span><span class="na">keys</span><span class="o">(</span><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">java</span><span class="o">.</span><span class="na">io</span><span class="o">.</span><span class="na">UnsupportedEncodingException</span><span class="o">]</span>
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>It comes with methods like <code>tagNames()</code>, <code>properties()</code>, <code>labels()</code> etc&hellip;</p>
 <div class="highlight"><div class="chroma">
@@ -734,15 +724,15 @@ Got 1 rows (time spent 2116/44373 us)
 </span><span class="lnt">8
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="n">java</span><span class="o">&gt;</span> <span class="n">node</span><span class="o">.</span><span class="na">properties</span><span class="o">(</span><span class="s">&#34;player&#34;</span><span class="o">)</span>
-<span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">HashMap</span> <span class="n">res11</span> <span class="o">=</span> <span class="o">{</span><span class="n">name</span><span class="o">=</span><span class="s">&#34;Tim Duncan&#34;</span><span class="o">,</span> <span class="n">age</span><span class="o">=</span><span class="n">42</span><span class="o">}</span>
-<span class="n">java</span><span class="o">&gt;</span> <span class="n">node</span><span class="o">.</span><span class="na">tagNames</span><span class="o">()</span>
-<span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">ArrayList</span> <span class="n">res12</span> <span class="o">=</span> <span class="o">[</span><span class="n">player</span><span class="o">]</span>
-<span class="n">java</span><span class="o">&gt;</span> <span class="n">node</span><span class="o">.</span><span class="na">labels</span><span class="o">()</span>
-<span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">ArrayList</span> <span class="n">res13</span> <span class="o">=</span> <span class="o">[</span><span class="n">player</span><span class="o">]</span>
-<span class="n">java</span><span class="o">&gt;</span> <span class="n">node</span><span class="o">.</span><span class="na">values</span><span class="o">(</span><span class="s">&#34;player&#34;</span><span class="o">)</span>
-<span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">ArrayList</span> <span class="n">res14</span> <span class="o">=</span> <span class="o">[</span><span class="n">42</span><span class="o">,</span> <span class="s">&#34;Tim Duncan&#34;</span><span class="o">]</span>
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">java</span><span class="o">&gt;</span> <span class="n">node</span><span class="o">.</span><span class="na">properties</span><span class="o">(</span><span class="s">&#34;player&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl"><span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">HashMap</span> <span class="n">res11</span> <span class="o">=</span> <span class="o">{</span><span class="n">name</span><span class="o">=</span><span class="s">&#34;Tim Duncan&#34;</span><span class="o">,</span> <span class="n">age</span><span class="o">=</span><span class="n">42</span><span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="n">java</span><span class="o">&gt;</span> <span class="n">node</span><span class="o">.</span><span class="na">tagNames</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl"><span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">ArrayList</span> <span class="n">res12</span> <span class="o">=</span> <span class="o">[</span><span class="n">player</span><span class="o">]</span>
+</span></span><span class="line"><span class="cl"><span class="n">java</span><span class="o">&gt;</span> <span class="n">node</span><span class="o">.</span><span class="na">labels</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl"><span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">ArrayList</span> <span class="n">res13</span> <span class="o">=</span> <span class="o">[</span><span class="n">player</span><span class="o">]</span>
+</span></span><span class="line"><span class="cl"><span class="n">java</span><span class="o">&gt;</span> <span class="n">node</span><span class="o">.</span><span class="na">values</span><span class="o">(</span><span class="s">&#34;player&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl"><span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">ArrayList</span> <span class="n">res14</span> <span class="o">=</span> <span class="o">[</span><span class="n">42</span><span class="o">,</span> <span class="s">&#34;Tim Duncan&#34;</span><span class="o">]</span>
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>We only demestrated the <code>RETURN n</code> case which is a vertex, but for sure you could explore other types like: edge, path or datetime, string etc., right?</p>
 <h2 id="the-executejson-method" class="headerLink">
@@ -791,47 +781,47 @@ Got 1 rows (time spent 2116/44373 us)
 </span><span class="lnt">40
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="n">java</span><span class="o">&gt;</span> <span class="n">String</span> <span class="n">resp_json</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="na">executeJson</span><span class="o">(</span><span class="s">&#34;USE basketballplayer;MATCH (n:player) WHERE n.name==\&#34;Tim Duncan\&#34; RETURN n&#34;</span><span class="o">);</span>
-
-<span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span> <span class="n">resp_json</span> <span class="o">=</span> <span class="s">&#34;
-</span><span class="s">{
-</span><span class="s">   &#34;</span><span class="n">errors</span><span class="s">&#34;:[
-</span><span class="s">      {
-</span><span class="s">         &#34;</span><span class="n">code</span><span class="s">&#34;:0
-</span><span class="s">      }
-</span><span class="s">   ],
-</span><span class="s">   &#34;</span><span class="n">results</span><span class="s">&#34;:[
-</span><span class="s">      {
-</span><span class="s">         &#34;</span><span class="n">spaceName</span><span class="s">&#34;:&#34;</span><span class="n">basketballplayer</span><span class="s">&#34;,
-</span><span class="s">         &#34;</span><span class="n">data</span><span class="s">&#34;:[
-</span><span class="s">            {
-</span><span class="s">               &#34;</span><span class="n">meta</span><span class="s">&#34;:[
-</span><span class="s">                  {
-</span><span class="s">                     &#34;</span><span class="n">type</span><span class="s">&#34;:&#34;</span><span class="n">vertex</span><span class="s">&#34;,
-</span><span class="s">                     &#34;</span><span class="n">id</span><span class="s">&#34;:&#34;</span><span class="n">player100</span><span class="s">&#34;
-</span><span class="s">                  }
-</span><span class="s">               ],
-</span><span class="s">               &#34;</span><span class="n">row</span><span class="s">&#34;:[
-</span><span class="s">                  {
-</span><span class="s">                     &#34;</span><span class="n">player</span><span class="o">.</span><span class="na">age</span><span class="s">&#34;:42,
-</span><span class="s">                     &#34;</span><span class="n">player</span><span class="o">.</span><span class="na">name</span><span class="s">&#34;:&#34;</span><span class="n">Tim</span> <span class="n">Duncan</span><span class="s">&#34;
-</span><span class="s">                  }
-</span><span class="s">               ]
-</span><span class="s">            }
-</span><span class="s">         ],
-</span><span class="s">         &#34;</span><span class="n">columns</span><span class="s">&#34;:[
-</span><span class="s">            &#34;</span><span class="n">n</span><span class="s">&#34;
-</span><span class="s">         ],
-</span><span class="s">         &#34;</span><span class="n">errors</span><span class="s">&#34;:{
-</span><span class="s">            &#34;</span><span class="n">code</span><span class="s">&#34;:0
-</span><span class="s">         },
-</span><span class="s">         &#34;</span><span class="n">latencyInUs</span><span class="s">&#34;:4761
-</span><span class="s">      }
-</span><span class="s">   ]
-</span><span class="s">}
-</span><span class="s">&#34;</span>
-<span class="n">java</span><span class="o">&gt;</span>
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">java</span><span class="o">&gt;</span> <span class="n">String</span> <span class="n">resp_json</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="na">executeJson</span><span class="o">(</span><span class="s">&#34;USE basketballplayer;MATCH (n:player) WHERE n.name==\&#34;Tim Duncan\&#34; RETURN n&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span> <span class="n">resp_json</span> <span class="o">=</span> <span class="s">&#34;
+</span></span></span><span class="line"><span class="cl"><span class="s">{
+</span></span></span><span class="line"><span class="cl"><span class="s">   &#34;</span><span class="n">errors</span><span class="s">&#34;:[
+</span></span></span><span class="line"><span class="cl"><span class="s">      {
+</span></span></span><span class="line"><span class="cl"><span class="s">         &#34;</span><span class="n">code</span><span class="s">&#34;:0
+</span></span></span><span class="line"><span class="cl"><span class="s">      }
+</span></span></span><span class="line"><span class="cl"><span class="s">   ],
+</span></span></span><span class="line"><span class="cl"><span class="s">   &#34;</span><span class="n">results</span><span class="s">&#34;:[
+</span></span></span><span class="line"><span class="cl"><span class="s">      {
+</span></span></span><span class="line"><span class="cl"><span class="s">         &#34;</span><span class="n">spaceName</span><span class="s">&#34;:&#34;</span><span class="n">basketballplayer</span><span class="s">&#34;,
+</span></span></span><span class="line"><span class="cl"><span class="s">         &#34;</span><span class="n">data</span><span class="s">&#34;:[
+</span></span></span><span class="line"><span class="cl"><span class="s">            {
+</span></span></span><span class="line"><span class="cl"><span class="s">               &#34;</span><span class="n">meta</span><span class="s">&#34;:[
+</span></span></span><span class="line"><span class="cl"><span class="s">                  {
+</span></span></span><span class="line"><span class="cl"><span class="s">                     &#34;</span><span class="n">type</span><span class="s">&#34;:&#34;</span><span class="n">vertex</span><span class="s">&#34;,
+</span></span></span><span class="line"><span class="cl"><span class="s">                     &#34;</span><span class="n">id</span><span class="s">&#34;:&#34;</span><span class="n">player100</span><span class="s">&#34;
+</span></span></span><span class="line"><span class="cl"><span class="s">                  }
+</span></span></span><span class="line"><span class="cl"><span class="s">               ],
+</span></span></span><span class="line"><span class="cl"><span class="s">               &#34;</span><span class="n">row</span><span class="s">&#34;:[
+</span></span></span><span class="line"><span class="cl"><span class="s">                  {
+</span></span></span><span class="line"><span class="cl"><span class="s">                     &#34;</span><span class="n">player</span><span class="o">.</span><span class="na">age</span><span class="s">&#34;:42,
+</span></span></span><span class="line"><span class="cl"><span class="s">                     &#34;</span><span class="n">player</span><span class="o">.</span><span class="na">name</span><span class="s">&#34;:&#34;</span><span class="n">Tim</span> <span class="n">Duncan</span><span class="s">&#34;
+</span></span></span><span class="line"><span class="cl"><span class="s">                  }
+</span></span></span><span class="line"><span class="cl"><span class="s">               ]
+</span></span></span><span class="line"><span class="cl"><span class="s">            }
+</span></span></span><span class="line"><span class="cl"><span class="s">         ],
+</span></span></span><span class="line"><span class="cl"><span class="s">         &#34;</span><span class="n">columns</span><span class="s">&#34;:[
+</span></span></span><span class="line"><span class="cl"><span class="s">            &#34;</span><span class="n">n</span><span class="s">&#34;
+</span></span></span><span class="line"><span class="cl"><span class="s">         ],
+</span></span></span><span class="line"><span class="cl"><span class="s">         &#34;</span><span class="n">errors</span><span class="s">&#34;:{
+</span></span></span><span class="line"><span class="cl"><span class="s">            &#34;</span><span class="n">code</span><span class="s">&#34;:0
+</span></span></span><span class="line"><span class="cl"><span class="s">         },
+</span></span></span><span class="line"><span class="cl"><span class="s">         &#34;</span><span class="n">latencyInUs</span><span class="s">&#34;:4761
+</span></span></span><span class="line"><span class="cl"><span class="s">      }
+</span></span></span><span class="line"><span class="cl"><span class="s">   ]
+</span></span></span><span class="line"><span class="cl"><span class="s">}
+</span></span></span><span class="line"><span class="cl"><span class="s">&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="n">java</span><span class="o">&gt;</span>
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>And I believe you know much better than I do with it.</p>
 <h2 id="conclusion" class="headerLink">
