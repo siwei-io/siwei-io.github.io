@@ -15,17 +15,17 @@
             </div><blockquote>
 <p>Nebula Graph 生态中有哪些 Spark 项目？ 本文为大家介绍 Spark-connector（包括 PySpark）， Nebula Algorithm 和 Nebula Exchange。</p>
 </blockquote>
-<p>最近我试着搭建了方便大家一键试玩的 Nebula Graph 中的 Spark 相关的项目，今天就把它们整理成文分享给大家。而且，我趟出来了 PySpark 下的 Nebula Spark Connector 的使用方式，后边也会一并贡献到文档里。</p>
+<p>最近我试着搭建了方便大家一键试玩的 Nebula Graph 中的 <a href="https://spark.apache.org/" target="_blank" rel="noopener noreffer">Spark</a> 相关的项目，今天就把它们整理成文分享给大家。而且，我趟出来了 PySpark 下的 Nebula Spark Connector 的使用方式，后边也会一并贡献到文档里。</p>
 <h2 id="nebula-graph-的三个-spark-子项目" class="headerLink">
     <a href="#nebula-graph-%e7%9a%84%e4%b8%89%e4%b8%aa-spark-%e5%ad%90%e9%a1%b9%e7%9b%ae" class="header-mark"></a>1 Nebula Graph 的三个 Spark 子项目</h2><p>我曾经围绕 Nebula Graph 的所有数据导入方法画过一个<a href="https://www.siwei.io/sketches/nebula-data-import-options/" target="_blank" rel="noopener noreffer">草图</a>，其中已经包含了 Spark Connector，Nebula Exchange 的简单介绍。在这篇文章中我将它们和另外的 Nebula Algorithm 进行稍微深入的探讨。</p>
 <p>TL;DR</p>
 <ul>
 <li>Nebula Spark Connector 是一个 Spark Lib，它能让 Spark 应用程序能够以 <code>dataframe</code> 的形式从 Nebula Graph 中读取和写入图数据。</li>
-<li>Nebula Exchange 建立在 Nebula Spark Connector 之上，作为一个 Spark Lib 同时可以直接被 Spark 提交 JAR 包执行的应用程序，它的设计目标是和 Nebula Graph 交换不同的数据源（对于开源版本，它是单向的：写入，而对于企业版本，它是双向的。支持的很多不同类型的数据源如：MySQL、Neo4j、PostgreSQL、Clickhouse、Hive 等。除了直接写入 Nebula Graph，它还可以选择生成SST文件，并将其注入 Nebula Graph，以便使用 Nebula Graph 集群之外算力帮助排序底层。</li>
+<li>Nebula Exchange 建立在 Nebula Spark Connector 之上，作为一个 Spark Lib 同时可以直接被 Spark 提交 JAR 包执行的应用程序，它的设计目标是和 Nebula Graph 交换不同的数据源（对于开源版本，它是单向的：写入，而对于企业版本，它是双向的）。Nebula Exchange 支持的很多不同类型的数据源如：<a href="https://www.mysql.com/cn/" target="_blank" rel="noopener noreffer">MySQL</a>、<a href="https://neo4j.com/" target="_blank" rel="noopener noreffer">Neo4j</a>、<a href="https://www.postgresql.org/" target="_blank" rel="noopener noreffer">PostgreSQL</a>、<a href="https://clickhouse.com/" target="_blank" rel="noopener noreffer">ClickHouse</a>、<a href="https://hive.apache.org/" target="_blank" rel="noopener noreffer">Hive</a> 等。除了直接写入 Nebula Graph，它还可以选择生成 SST 文件，并将其注入 Nebula Graph，以便使用 Nebula Graph 集群之外算力帮助排序底层。</li>
 <li>Nebula Algorithm，建立在 Nebula Spark Connector 和 GraphX 之上，也是一个Spark Lib 和 Spark 上的应用程序，它用来在 Nebula Graph 的图上运行常用的图算法（pagerank，LPA等）。</li>
 </ul>
-<h2 id="spark-connector" class="headerLink">
-    <a href="#spark-connector" class="header-mark"></a>2 Spark-Connector</h2><ul>
+<h2 id="nebula-spark-connector" class="headerLink">
+    <a href="#nebula-spark-connector" class="header-mark"></a>2 Nebula Spark Connector</h2><ul>
 <li>代码：https://github.com/vesoft-inc/nebula-spark-connector</li>
 <li>文档：https://docs.nebula-graph.io/3.1.0/nebula-spark-connector/</li>
 <li>JAR 包：https://repo1.maven.org/maven2/com/vesoft/nebula-spark-connector/</li>
@@ -84,10 +84,10 @@
 </span></span><span class="line"><span class="cl">  <span class="o">}</span>
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>写入的例子我这里不列出，不过，前边给出的代码示例的链接里是有更详细的例子的，这里值得一提的是，Spark Connector 读数据为了满足图分析、图计算的大量数据场景，和大部分其他客户端非常不同，直接绕过了 GraphD，通过扫描 MetaD 和 StorageD 获得数据，但是写入的情况则是通过 GraphD 发起 nGQL DML 语句写入的。</p>
-<p>接下来我们来做一个上手联系吧。</p>
+</div><p>写入的例子我这里不列出，不过，前边给出的代码示例的链接里是有更详细的例子，这里值得一提的是，<strong>Spark Connector 读数据为了满足图分析、图计算的大量数据场景</strong>，和大部分其他客户端非常不同，它直接绕过了 GraphD，通过扫描 MetaD 和 StorageD 获得数据，但是写入的情况则是通过 GraphD 发起 nGQL DML 语句写入的。</p>
+<p>接下来我们来做一个上手练习吧。</p>
 <h3 id="上手-nebula-spark-connector" class="headerLink">
-    <a href="#%e4%b8%8a%e6%89%8b-nebula-spark-connector" class="header-mark"></a>2.2 上手 Nebula Spark Connector</h3><p>先决条件：假设下面的程序是在一台有互联网连接的 Linux 机器上运行的，最好是预装了Docker 和 Docker-Compose。</p>
+    <a href="#%e4%b8%8a%e6%89%8b-nebula-spark-connector" class="header-mark"></a>2.2 上手 Nebula Spark Connector</h3><p>先决条件：假设下面的程序是在一台有互联网连接的 Linux 机器上运行的，最好是预装了 Docker 和 Docker-Compose。</p>
 <h4 id="拉起环境" class="headerLink">
     <a href="#%e6%8b%89%e8%b5%b7%e7%8e%af%e5%a2%83" class="header-mark"></a>2.2.1 拉起环境</h4><p>首先，让我们用 <a href="https://github.com/wey-gu/nebula-up/" target="_blank" rel="noopener noreffer">Nebula-Up</a> 部署基于容器的 Nebula Graph Core v3、Nebula Studio、Nebula Console 和 Spark、Hadoop 环境，如果还没安装好它也会尝试为我们安装 Docker 和 Docker-Compose。</p>
 <div class="highlight"><div class="chroma">
@@ -101,9 +101,9 @@
 </span></span></code></pre></td></tr></table>
 </div>
 </div><blockquote>
-<p>你知道吗 <a href="https://github.com/wey-gu/nebula-up/" target="_blank" rel="noopener noreffer">Nebula-UP</a> 可以一键装更多东西，如果你的环境配置大一点（比如 8 GiB RAM）<code>curl -fsSL nebula-up.siwei.io/all-in-one.sh | bash</code> 可以装更多东西，但是请注意 <a href="https://github.com/wey-gu/nebula-up/" target="_blank" rel="noopener noreffer">Nebula-UP</a> 不是为生产环境准备的。</p>
+<p>你知道吗 <a href="https://github.com/wey-gu/nebula-up/" target="_blank" rel="noopener noreffer">Nebula-UP</a> 可以一键装更多东西，如果你的环境配置大一点（比如 8 GB RAM）<code>curl -fsSL nebula-up.siwei.io/all-in-one.sh | bash</code> 可以装更多东西，但是请注意 <a href="https://github.com/wey-gu/nebula-up/" target="_blank" rel="noopener noreffer">Nebula-UP</a> 不是为生产环境准备的。</p>
 </blockquote>
-<p>上述边脚本执行后，让我们用Nebula-Console（Nebula Graph的命令行客户端）来连接它。</p>
+<p>上述边脚本执行后，让我们用 <a href="https://docs.nebula-graph.com.cn/3.1.0/nebula-console/" target="_blank" rel="noopener noreffer">Nebula-Console</a>（Nebula Graph 的命令行客户端）来连接它。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
@@ -138,7 +138,7 @@
 </span></span></code></pre></td></tr></table>
 </div>
 </div><h4 id="进入-spark-环境" class="headerLink">
-    <a href="#%e8%bf%9b%e5%85%a5-spark-%e7%8e%af%e5%a2%83" class="header-mark"></a>2.2.2 进入 Spark 环境</h4><p>执行这一行，我们就可以进入到 Spark 环境</p>
+    <a href="#%e8%bf%9b%e5%85%a5-spark-%e7%8e%af%e5%a2%83" class="header-mark"></a>2.2.2 进入 Spark 环境</h4><p>执行下面这一行，我们就可以进入到 Spark 环境：</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
@@ -147,7 +147,7 @@
 <pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker <span class="nb">exec</span> -it spark_master_1 bash
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>如果我们想执行编译，可以在里边安装 <code>mvn</code></p>
+</div><p>如果我们想执行编译，可以在里边安装 <code>mvn</code>：</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -177,8 +177,8 @@
 </span></span></code></pre></td></tr></table>
 </div>
 </div><h4 id="跑-spark-connector-的例子" class="headerLink">
-    <a href="#%e8%b7%91-spark-connector-%e7%9a%84%e4%be%8b%e5%ad%90" class="header-mark"></a>2.2.3 跑 Spark Connector 的例子</h4><h5 id="选项1推荐通过-pyspark" class="headerLink">
-    <a href="#%e9%80%89%e9%a1%b91%e6%8e%a8%e8%8d%90%e9%80%9a%e8%bf%87-pyspark" class="header-mark"></a>2.2.3.1 选项1（推荐）：通过 PySpark</h5><ul>
+    <a href="#%e8%b7%91-spark-connector-%e7%9a%84%e4%be%8b%e5%ad%90" class="header-mark"></a>2.2.3 跑 Spark Connector 的例子</h4><h5 id="选项-1推荐通过-pyspark" class="headerLink">
+    <a href="#%e9%80%89%e9%a1%b9-1%e6%8e%a8%e8%8d%90%e9%80%9a%e8%bf%87-pyspark" class="header-mark"></a>2.2.3.1 选项 1（推荐）：通过 PySpark</h5><ul>
 <li>进入 PySpark Shell</li>
 </ul>
 <div class="highlight"><div class="chroma">
@@ -279,10 +279,13 @@
 </span></span><span class="line"><span class="cl"><span class="n">only</span> <span class="n">showing</span> <span class="n">top</span> <span class="mi">2</span> <span class="n">rows</span>
 </span></span></code></pre></td></tr></table>
 </div>
-</div><h5 id="选项2编译提交示例-jar-包" class="headerLink">
-    <a href="#%e9%80%89%e9%a1%b92%e7%bc%96%e8%af%91%e6%8f%90%e4%ba%a4%e7%a4%ba%e4%be%8b-jar-%e5%8c%85" class="header-mark"></a>2.2.3.2 选项2：编译、提交示例 JAR 包</h5><ul>
+</div><h5 id="选项-2编译提交示例-jar-包" class="headerLink">
+    <a href="#%e9%80%89%e9%a1%b9-2%e7%bc%96%e8%af%91%e6%8f%90%e4%ba%a4%e7%a4%ba%e4%be%8b-jar-%e5%8c%85" class="header-mark"></a>2.2.3.2 选项 2：编译、提交示例 JAR 包</h5><ul>
 <li>先克隆 Spark Connector 和它示例代码的代码仓库，然后编译：</li>
 </ul>
+<blockquote>
+<p>注意，我们使用了 master 分支，因为当下 master 分支是兼容 3.x 的，一定要保证 spark connector 和数据库内核版本是匹配的，版本对应关系参考代码仓库的 <code>README.md</code> 。</p>
+</blockquote>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
@@ -636,9 +639,9 @@
 </span></span><span class="line"><span class="cl">only showing top 20 rows
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>事实上，在这个代码仓库下还有更多的例子，特别是 GraphX 的例子，你可以尝试自己去探索这部分。</p>
+</div><p>事实上，在这个代码仓库下还有更多的例子，特别是 <a href="https://spark.apache.org/docs/latest/graphx-programming-guide.html" target="_blank" rel="noopener noreffer">GraphX</a> 的例子，你可以尝试自己去探索这部分。</p>
 <blockquote>
-<p>请注意，在 GraphX 假定顶点 ID 是数字类型的，因此对于字符串类型的顶点 ID 情况，需要进行实时转换，请参考<a href="https://github.com/vesoft-inc/nebula-algorithm/blob/a82d7092d928a2f3abc45a727c24afb888ff8e4f/example/src/main/scala/com/vesoft/nebula/algorithm/PageRankExample.scala#L31" target="_blank" rel="noopener noreffer">Nebula Algorithom中的例子</a>，了解如何绕过这一问题。</p>
+<p>请注意，在 GraphX 假定顶点 ID 是数字类型的，因此对于字符串类型的顶点 ID 情况，需要进行实时转换，请参考 <a href="https://github.com/vesoft-inc/nebula-algorithm/blob/a82d7092d928a2f3abc45a727c24afb888ff8e4f/example/src/main/scala/com/vesoft/nebula/algorithm/PageRankExample.scala#L31" target="_blank" rel="noopener noreffer">Nebula Algorithom 中的例子</a>，了解如何绕过这一问题。</p>
 </blockquote>
 <h2 id="nebula-exchange" class="headerLink">
     <a href="#nebula-exchange" class="header-mark"></a>3 Nebula Exchange</h2><ul>
@@ -647,9 +650,9 @@
 <li>JAR 包：https://github.com/vesoft-inc/nebula-exchange/releases</li>
 <li>配置例子： <a href="https://github.com/vesoft-inc/nebula-exchange/blob/master/exchange-common/src/test/resources/application.conf" target="_blank" rel="noopener noreffer">exchange-common/src/test/resources/application.conf</a></li>
 </ul>
-<p>Nebula Exchange 是一个 Spark Lib，也是一个可以直接提交执行的 Spark 应用，它被用来从多个数据源读取数据写入 Nebula Graph 或者输出 Nebula Graph <a href="https://docs.nebula-graph.com.cn/3.1.0/nebula-exchange/use-exchange/ex-ug-import-from-sst/#step_5_import_the_sst_file" target="_blank" rel="noopener noreffer">SST 文件</a>。</p>
+<p>Nebula Exchange 是一个 Spark Lib，也是一个可以直接提交执行的 Spark 应用，它被用来从多个数据源读取数据写入 Nebula Graph 或者输出 <a href="https://docs.nebula-graph.com.cn/3.1.0/nebula-exchange/use-exchange/ex-ug-import-from-sst/#step_5_import_the_sst_file" target="_blank" rel="noopener noreffer">Nebula Graph SST 文件</a>。</p>
 <p></p>
-<p>通过 Spark-submit 的方式使用 Nebula Exchange 的方法很直接：</p>
+<p>通过 spark-submit 的方式使用 Nebula Exchange 的方法很直接：</p>
 <ul>
 <li>首先创建配置文件，让 Exchange 知道应该如何获取和写入数据</li>
 <li>然后用指定的配置文件调用 Exchange 包</li>
@@ -696,10 +699,10 @@
 </span></span></code></pre></td></tr></table>
 </div>
 </div><ul>
-<li>可以看到我们提交 Exchange 任务时候指定的配置文件 <code>exchange.conf</code> 他是一个 <code>HOCON</code> 格式的文件：
+<li>可以看到我们提交 Exchange 任务时候指定的配置文件 <code>exchange.conf</code> 它是一个 <code>HOCON</code> 格式的文件：
 <ul>
 <li>在 <code>.nebula</code> 中描述了 Nebula Graph 集群的相关信息</li>
-<li>在 <code>.tags</code> 中描述了如何将必填字段对应到我们的数据源（这里是CSV文件）等有关 Vertecies 的信息。</li>
+<li>在 <code>.tags</code> 中描述了如何将必填字段对应到我们的数据源（这里是 CSV 文件）等有关 Vertecies 的信息。</li>
 </ul>
 </li>
 </ul>
@@ -972,7 +975,7 @@
 </blockquote>
 <p>在如上通过 Nebula-UP 的 Spark 模式部署了需要的依赖之后</p>
 <ul>
-<li>加载 LiveJournal 数据集</li>
+<li>加载 <a href="https://snap.stanford.edu/data/soc-LiveJournal1.html" target="_blank" rel="noopener noreffer">LiveJournal</a> 数据集</li>
 </ul>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
@@ -1112,7 +1115,7 @@
 <p>对算法的输出格式有更多的控制/定制功能</p>
 </li>
 <li>
-<p>可以对非数字ID的情况进行转换，见<a href="https://github.com/vesoft-inc/nebula-algorithm/blob/a82d7092d928a2f3abc45a727c24afb888ff8e4f/example/src/main/scala/com/vesoft/nebula/algorithm/PageRankExample.scala#L48" target="_blank" rel="noopener noreffer">这里</a></p>
+<p>可以对非数字 ID 的情况进行转换，见<a href="https://github.com/vesoft-inc/nebula-algorithm/blob/a82d7092d928a2f3abc45a727c24afb888ff8e4f/example/src/main/scala/com/vesoft/nebula/algorithm/PageRankExample.scala#L48" target="_blank" rel="noopener noreffer">这里</a></p>
 </li>
 </ul>
 <p>这里我先不给出例子了，如果大家感兴趣可以给 Nebula-UP 提需求，我也会增加相应的例子。</p>
