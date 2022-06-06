@@ -6,30 +6,30 @@
 <!--more-->
 
 
-In this article, I am trying walk you through all three Spark projects of Nebula Graph with some runnable hands-on examples. Also, I managed to make PySpark usable with Nebula Graph Spark Connector, which will be contributed to the Docs later.
+In this article, I am trying to walk you through all three Spark projects of Nebula Graph with some runnable hands-on examples. Also, I managed to make PySpark usable with Nebula Graph Spark Connector, which will be contributed to the Docs later.
 
 ## The three Spark projects for Nebula Graph
 
-I used to draw a sketch around all data importing methods of Nebula Graph [here](https://www.siwei.io/sketches/nebula-data-import-options/), where all three of the Spark based Nebula Graph projects were already briefly introduced. In this article, instead, a slightly deeper dive on all of them will be made based on my recent work on them.
+I used to draw a sketch around all data importing methods of Nebula Graph [here](https://www.siwei.io/sketches/nebula-data-import-options/), where all three of the Spark-based Nebula Graph projects were already briefly introduced. Instead, in this article, a slightly deeper dive into all of them will be made based on my recent work on them.
 
 TL;DR
 
-- Nebula Spark Connector is a Spark Lib to enable spark application reading from and writing to Nebula Graph in form of dataframe.
-- Nebula Exchange, built on top of Nebula Spark Connector, is a Spark Lib and Application to exchange(for Open Source version, it's one way: write, whereas for enterprise version it's bidirectional) different data sources like(MySQL, Neo4j, PostgreSQL, Clickhouse, Hive etc.). Besides write directly to Nebula Graph, it could optionally generate SST files to be ingested into Nebula Graph to off load the storage computation outside of the Nebula Graph cluster.
-- Nebula Algorithm, built on top of Nebula Spark Connector and GraphX, is an Spark Lib and Application to run de facto graph algorithms(pagerank, LPA etc...) on a graph from Nebula Graph.
+- Nebula Spark Connector is a Spark Lib to enable spark application reading from and writing to Nebula Graph in form of a dataframe.
+- Nebula Exchange, built on top of Nebula Spark Connector, is a Spark Lib and Application to exchange(for the Open Source version, it's one way: write, whereas for the enterprise version it's bidirectional) different data sources like(MySQL, Neo4j, PostgreSQL, Clickhouse, Hive, etc.). Besides writing directly to Nebula Graph, it could optionally generate SST files to be ingested into Nebula Graph to offload the storage computation outside of the Nebula Graph cluster.
+- Nebula Algorithm, built on top of Nebula Spark Connector and GraphX, is a Spark Lib and Application to run de facto graph algorithms(PageRank, LPA, etc...) on a graph from Nebula Graph.
 
-Then let's have the long verson of those spark projects more on how-to perspectives.
+Then let's have the long version of those spark projects more on how-to perspectives.
 
 ## Spark-Connector
 
 - Codebase: https://github.com/vesoft-inc/nebula-spark-connector
-- Documentation: https://docs.nebula-graph.io/3.0.2/nebula-spark-connector/ (it's versioned, as for now, I put the lastest released version 3.0.2 here)
+- Documentation: https://docs.nebula-graph.io/3.0.2/nebula-spark-connector/ (it's versioned, as for now, I put the latest released version 3.0.2 here)
 - Jar Package: https://repo1.maven.org/maven2/com/vesoft/nebula-spark-connector/
 - Code Examples: [example](https://github.com/vesoft-inc/nebula-spark-connector/tree/master/example)
 
 ### Nebula Graph Spark Reader
 
-To read data from Nebula Graph, i.e. vertex, Nebula Spark Connector will scan all storage instances who hold given label(TAG): `withLabel("player")`, and we could optionally specify the properties of the vertex: `withReturnCols(List("name", "age"))`.
+To read data from Nebula Graph, i.e. vertex, Nebula Spark Connector will scan all storage instances that hold the given label(TAG): `withLabel("player")`, and we could optionally specify the properties of the vertex: `withReturnCols(List("name", "age"))`.
 
 With needed configuration being provided, a call of `spark.read.nebula.loadVerticesToDF` will return dataframe of the Vertex Scan call towards Nebula Graph: 
 
@@ -58,25 +58,25 @@ With needed configuration being provided, a call of `spark.read.nebula.loadVerti
   }
 ```
 
-It's similar for the writor part and one big difference here is the wrinting path is done via GraphD as underlying Spark Connector is shooting nGQL `INSERT` queries.
+It's similar for the writer part and one big difference here is the writing path is done via GraphD as the underlying Spark Connector is shooting nGQL `INSERT` queries.
 
-Then let's do a hands-on end to end practise.
+Then let's do the hands-on end-to-end practice.
 
 ### Hands-on Spark Connector
 
-Prerequisites: it's assumed below procedure being run on a Linux Machine with internet connection, ideally with Docker and Docker-Compose preinstalled.
+Prerequisites: it's assumed below the procedure is being run on a Linux Machine with an internet connection, ideally with Docker and Docker-Compose preinstalled.
 
 #### Bootstrap a Nebula Graph Cluster
 
-Firstly, let's deploy Nebula Graph Core v3.0 and Nebula Studio with [Nebula-Up](https://github.com/wey-gu/nebula-up/), it will try to install Docker and Docker-Compose for us, in case it failed, please try install Docker and Docker-Compose on your own first.
+Firstly, let's deploy Nebula Graph Core v3.0 and Nebula Studio with [Nebula-Up](https://github.com/wey-gu/nebula-up/), it will try to install Docker and Docker-Compose for us, in case it failed, please try to install Docker and Docker-Compose on your own first.
 
 ```bash
 curl -fsSL nebula-up.siwei.io/install.sh | bash -s -- v3.0
 ```
 
-After the above script being executed, let's connect to it with Nebula-Console, the command line client for Nebula Graph.
+After the above script is executed, let's connect to it with Nebula-Console, the command line client for Nebula Graph.
 
-- Enter the container with console
+- Enter the container with the console
 
 ```bash
 ~/.nebula-up/console.sh
@@ -88,7 +88,7 @@ After the above script being executed, let's connect to it with Nebula-Console, 
 nebula-console -addr graphd -port 9669 -user root -p nebula
 ```
 
-- Activate Storage Instances, and check hosts status
+- Activate Storage Instances, and check the hosts status
 
   > ref: https://docs.nebula-graph.io/3.0.2/4.deployment-and-installation/manage-storage-host/
 
@@ -97,7 +97,7 @@ ADD HOSTS "storaged0":9779,"storaged1":9779,"storaged2":9779;
 SHOW HOSTS;
 ```
 
-- Load the [test graph data](https://docs.nebula-graph.io/3.0.2/3.ngql-guide/1.nGQL-overview/1.overview/#example_data_basketballplayer), which will take one or two minitues to finish.
+- Load the [test graph data](https://docs.nebula-graph.io/3.0.2/3.ngql-guide/1.nGQL-overview/1.overview/#example_data_basketballplayer), which will take one or two minutes to finish.
 
 ```bash
 :play basketballplayer;
@@ -114,9 +114,9 @@ docker run --name spark-master-0 --network nebula-docker-compose_nebula-net \
     bde2020/spark-master:2.4.5-hadoop2.7
 ```
 
-In above one line command, we created a container named `spark-master-0` with a built-in hadoop 2.7 and spark 2.4.5, connected to the Nebula Graph cluster in its docker network named `nebula-docker-compose_nebula-net`, and it mapped the current path to `/root` of the spark container.
+In the above one line command, we created a container named `spark-master-0` with a built-in Hadoop 2.7 and spark 2.4.5, connected to the Nebula Graph cluster in its docker network named `nebula-docker-compose_nebula-net`, and it mapped the current path to `/root` of the spark container.
 
-Then, we could access to the spark env container with:
+Then, we could access the spark env container with:
 
 ```bash
 docker exec -it spark-master-0 bash
@@ -136,8 +136,6 @@ wget http://archive.apache.org/dist/maven/maven-3/$MAVEN_VERSION/binaries/apache
   tar -zxvf apache-maven-$MAVEN_VERSION-bin.tar.gz && \
   rm apache-maven-$MAVEN_VERSION-bin.tar.gz && \
   mv apache-maven-$MAVEN_VERSION /usr/lib/mvn
-
-which /usr/lib/mvn/bin/mvn
 ```
 
 #### Run spark connector example
@@ -318,12 +316,12 @@ only showing top 20 rows
 only showing top 20 rows
 ```
 
-And actually there are more examples under the repo, especially one for GraphX, you could try exploring youself for that part. Please be noted in GraphX it assumed vertex ID to be in numeric type, thus for string typed vertex ID case a convertion on the fly is needed, please refer to [the example in Nebula Algorithom](https://github.com/vesoft-inc/nebula-algorithm/blob/a82d7092d928a2f3abc45a727c24afb888ff8e4f/example/src/main/scala/com/vesoft/nebula/algorithm/PageRankExample.scala#L31) on how to mitigate that.
+And there are more examples under the repo, especially one for GraphX, you could try exploring yourself for that part. Please be noted in GraphX assumed vertex ID to be in numeric type, thus for string typed vertex ID case a conversion on the fly is needed, please refer to [the example in Nebula Algorithom](https://github.com/vesoft-inc/nebula-algorithm/blob/a82d7092d928a2f3abc45a727c24afb888ff8e4f/example/src/main/scala/com/vesoft/nebula/algorithm/PageRankExample.scala#L31) on how to mitigate that.
 
 ## Exchange
 
 - Codebase: https://github.com/vesoft-inc/nebula-exchange/
-- Documentation: https://docs.nebula-graph.io/3.0.2/nebula-exchange/about-exchange/ex-ug-what-is-exchange/ (it's versioned, as for now, I put the lastest released version 3.0.2 here)
+- Documentation: https://docs.nebula-graph.io/3.0.2/nebula-exchange/about-exchange/ex-ug-what-is-exchange/ (it's versioned, as for now, I put the latest released version 3.0.2 here)
 - Jar Package: https://github.com/vesoft-inc/nebula-exchange/releases
 - Configuration Examples: [exchange-common/src/test/resources/application.conf](https://github.com/vesoft-inc/nebula-exchange/blob/master/exchange-common/src/test/resources/application.conf)
 
@@ -331,20 +329,20 @@ Nebula Exchange is a Spark Lib/App to read data from multiple sources, then, wri
 
 ![](https://docs.nebula-graph.io/3.0.2/nebula-exchange/figs/ex-ug-003.png)
 
-The way to leverage Nebula Exchange is only to firstly create the configuration files to let exchange know how data should be fetched and written, then call the exchange package with the conf file specified.
+The way to leverage Nebula Exchange is only to firstly create the configuration files to let the exchange know how data should be fetched and written, then call the exchange package with the conf file specified.
 
-Now let's do a hands on test with the same envrioment created in last chapter.
+Now let's do a hands-on test with the same environment created in the last chapter.
 
 ### Hands-on Exchange
 
-Here, we are using Exchange to consume data source from a CSV file, where first column is Vertex ID, and second, third to be properties of "name" and "age".
+Here, we are using Exchange to consume data source from a CSV file, where the first column is Vertex ID, and the second, and third to be properties of "name" and "age".
 
 ```bash
 player800,"Foo Bar",23
 player801,"Another Name",21
 ```
 
-- Let's get into the spark container created in last chapter, and download the Jar package of Nebula Exchange:
+- Let's get into the spark container created in the last chapter, and download the Jar package of Nebula Exchange:
 
 ```bash
 docker exec -it spark-master bash
@@ -355,8 +353,8 @@ wget https://github.com/vesoft-inc/nebula-exchange/releases/download/v3.0.0/nebu
 ```
 
 - Create a conf file named `exchange.conf` in format `HOCON`, where:
-  - under `.nebula`, information regarding Nebula Graph Cluster were configured
-  - under `.tags`, information regarding Vertecies like how required fields are reflected to our data source(here it's CSV file) were configured
+  - under `.nebula`, information regarding Nebula Graph Cluster was configured
+  - under `.tags`, information regarding Vertices like how required fields are reflected our data source(here it's CSV file) was configured
 
 ```HOCON
 {
@@ -423,10 +421,10 @@ wget https://github.com/vesoft-inc/nebula-exchange/releases/download/v3.0.0/nebu
   }
 
   # Processing tags
-  # There are tag config examples for different dataSources.
+  # There are tag config examples for different data Sources.
   tags: [
 
-    # HDFS csv
+    # HDFS CSV
     # Import mode is client, just change type.sink to sst if you want to use client import mode.
     {
       name: player
@@ -481,35 +479,35 @@ And the result should be like
 
 
 
-Please refer to documentation and conf examples for more datasources. For hands on Exchange writing to SST Files, you could refer to both Documentation and [Nebula Exchange SST 2.x Hands-on Guide](https://www.siwei.io/nebula-exchange-sst-2.x/).
+Please refer to the documentation and conf examples for more data sources. For hands-on Exchange writing to SST Files, you could refer to both Documentation and [Nebula Exchange SST 2.x Hands-on Guide](https://www.siwei.io/nebula-exchange-sst-2.x/).
 
 
 
 ## Algorithm
 
 - Codebase: https://github.com/vesoft-inc/nebula-algorithm
-- Documentation: https://docs.nebula-graph.io/3.0.2/nebula-algorithm/ (it's versioned, as for now, I put the lastest released version 3.0.2 here)
+- Documentation: https://docs.nebula-graph.io/3.0.2/nebula-algorithm/ (it's versioned, as for now, I put the latest released version 3.0.2 here)
 - Jar Package: https://repo1.maven.org/maven2/com/vesoft/nebula-algorithm/
 - Code Examples: [example/src/main/scala/com/vesoft/nebula/algorithm](example/src/main/scala/com/vesoft/nebula/algorithm)
 
-### Calling with spark submit
+### Calling with spark-submit
 
-When we call Nebula Algorithm with spark submit, on how to use perspective, it is quite similar to Exchange. [This post](https://www.siwei.io/en/nebula-livejournal/) already showed us how to do that in actions.
+When we call Nebula Algorithm with spark-submit, on how to use perspective, it is quite similar to Exchange. [This post](https://www.siwei.io/en/nebula-livejournal/) already showed us how to do that in action.
 
 ### Calling as a lib in code
 
-On the other hands, we could call Nebula Algorithm in spark as a Spark Lib, the gain will be:
+On the other hand, we could call Nebula Algorithm in spark as a Spark Lib, the gain will be:
 
 1) More control/customization on the output format of the algorithm
-2) Possbile to perform algorithm for non-numerical vertex ID cases, see [here](https://github.com/vesoft-inc/nebula-algorithm/blob/a82d7092d928a2f3abc45a727c24afb888ff8e4f/example/src/main/scala/com/vesoft/nebula/algorithm/PageRankExample.scala#L48)
+2) Possible to perform algorithm for non-numerical vertex ID cases, see [here](https://github.com/vesoft-inc/nebula-algorithm/blob/a82d7092d928a2f3abc45a727c24afb888ff8e4f/example/src/main/scala/com/vesoft/nebula/algorithm/PageRankExample.scala#L48)
 
 
 
 ## PySpark for Nebula Graph
 
-PySpark comes with capability to call java/scala packages inside python, thus it's also quite easy to use Spark Connector with Python.
+PySpark comes with the capability to call java/scala packages inside python, thus it's also quite easy to use Spark Connector with Python.
 
-Here I am doing this from the pyspark entrypoint in `/spark/bin/pyspark`, with connector's Jar package specified with `--driver-class-path` and `--jars`
+Here I am doing this from the pyspark entrypoint in `/spark/bin/pyspark`, with the connector's Jar package specified with `--driver-class-path` and `--jars`
 
 ```python
 docker exec -it spark-master-0 bash
@@ -543,7 +541,7 @@ df = spark.read.format(
 only showing top 2 rows
 ```
 
-Below are how I figured out how to make this work with almost zero scala knowledge :-P.
+Below are how I figured out how to make this work with almost zero scala knowledge:-P.
 
 - [How reader should be called](https://github.com/vesoft-inc/nebula-spark-connector/blob/master/nebula-spark-connector/src/main/scala/com/vesoft/nebula/connector/package.scala)
 
