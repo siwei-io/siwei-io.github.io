@@ -385,6 +385,10 @@ Nebula Exchange 是一个 Spark Lib，也是一个可以直接提交执行的 Sp
 
 #### 先跑起来看看吧
 
+> 请参考前边[拉起环境](#拉起环境)这一章节，先一键装好环境。
+
+一键执行：
+
 ```
 ~/.nebula-up/nebula-exchange-example.sh
 ```
@@ -554,6 +558,8 @@ drwxrwxr-x    7 1000     1000          4096 Jun  6 03:27 nebula-spark-connector
 ### 通过 spark-submit 提交任务
 
 > 我在[这个代码仓库](https://github.com/wey-gu/nebula-livejournal)里给出了例子，今天我们借助 Nebula-UP 可以更方便体验它。
+>
+> 参考前边[拉起环境](#拉起环境)这一章节，先一键装好环境。
 
 在如上通过 Nebula-UP 的 Spark 模式部署了需要的依赖之后
 
