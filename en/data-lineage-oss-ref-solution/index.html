@@ -1,0 +1,1739 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noodp" />
+    <title class="pjax-title">A Data Lineage OSS Reference Solution - siwei.io</title><meta name="Description" content="I would like to share my opinionated reference data infra stack with some of those best open-source projects with modern ETL, Dashboard, Metadata Governance, and Data Lineage Management."><meta property="og:title" content="A Data Lineage OSS Reference Solution" />
+<meta property="og:description" content="I would like to share my opinionated reference data infra stack with some of those best open-source projects with modern ETL, Dashboard, Metadata Governance, and Data Lineage Management." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://siwei.io/en/data-lineage-oss-ref-solution/" /><meta property="og:image" content="https://siwei.io/en/data-lineage-oss-ref-solution/featured-image.webp"/><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2022-06-09T16:31:43+08:00" />
+<meta property="article:modified_time" content="2022-06-09T16:31:43+08:00" /><meta property="og:site_name" content="siwei.io" />
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://siwei.io/en/data-lineage-oss-ref-solution/featured-image.webp"/>
+<meta name="twitter:title" content="A Data Lineage OSS Reference Solution"/>
+<meta name="twitter:description" content="I would like to share my opinionated reference data infra stack with some of those best open-source projects with modern ETL, Dashboard, Metadata Governance, and Data Lineage Management."/>
+<meta name="application-name" content="siwei.io">
+<meta name="apple-mobile-web-app-title" content="siwei.io">
+
+<meta name="theme-color" content="#f8f8f8"><meta name="msapplication-TileColor" content="#da532c"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="manifest" href="/site.webmanifest"><link rel="canonical" href="https://siwei.io/en/data-lineage-oss-ref-solution/" /><link rel="prev" href="https://siwei.io/en/spark-on-nebula-graph/" /><link rel="stylesheet" href="/lib/normalize/normalize.min.css"><link rel="stylesheet" href="/css/style.min.css"><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/fontawesome-free/all.min.css">
+        <noscript><link rel="stylesheet" href="/lib/fontawesome-free/all.min.css"></noscript><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/animate/animate.min.css">
+        <noscript><link rel="stylesheet" href="/lib/animate/animate.min.css"></noscript>
+    
+    
+    
+    <meta name="baidu-site-verification" content="code-4R67zl7SwH" /><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "A Data Lineage OSS Reference Solution",
+        "inLanguage": "en",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "https:\/\/siwei.io\/en\/data-lineage-oss-ref-solution\/"
+        },"image": ["https:\/\/siwei.io\/images\/site-feature-image.webp"],"genre": "posts","keywords": "Nebula Graph, Amundsen, Data Lineage, Metadata Governance","wordcount":  4864 ,
+        "url": "https:\/\/siwei.io\/en\/data-lineage-oss-ref-solution\/","datePublished": "2022-06-09T16:31:43+08:00","dateModified": "2022-06-09T16:31:43+08:00","publisher": {
+            "@type": "Organization",
+            "name": "Wey Gu","logo": "https:\/\/siwei.io\/images\/site-feature-image.webp"},"author": {
+                "@type": "Person",
+                "name": "Wey Gu"
+            },"description": "I would like to share my opinionated reference data infra stack with some of those best open-source projects with modern ETL, Dashboard, Metadata Governance, and Data Lineage Management."
+    }
+    </script></head>
+
+<body header-desktop="fixed" header-mobile="auto"><script type="text/javascript">
+        function setTheme(theme) {document.body.setAttribute('theme', theme); document.documentElement.style.setProperty('color-scheme', theme === 'light' ? 'light' : 'dark');}
+        function saveTheme(theme) {window.localStorage && localStorage.setItem('theme', theme);}
+        function getMeta(metaName) {const metas = document.getElementsByTagName('meta'); for (let i = 0; i < metas.length; i++) if (metas[i].getAttribute('name') === metaName) return metas[i]; return '';}
+        if (window.localStorage && localStorage.getItem('theme')) {let theme = localStorage.getItem('theme');theme === 'light' || theme === 'dark' || theme === 'black' ? setTheme(theme) : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light')); } else { if ('auto' === 'light' || 'auto' === 'dark' || 'auto' === 'black') setTheme('auto'), saveTheme('auto'); else saveTheme('auto'), window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light');}
+        let metaColors = {'light': '#f8f8f8','dark': '#252627','black': '#000000'}
+        getMeta('theme-color').content = metaColors[document.body.getAttribute('theme')];
+    </script>
+    <div id="back-to-top"></div>
+    <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/en/" title="siwei.io"><span class="header-title-pre"><i class="fas fa-code-branch"></i></span>siwei.io</a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="/en/about/"> About </a><a class="menu-item" href="/en/projects/"> Project </a><a class="menu-item" href="/en/sketch-notes/"> Sketches </a><a class="menu-item" href="/en/posts/"> Blog </a><a class="menu-item" href="/en/cources/"> Hands-on </a><a class="menu-item" href="/en/talk/"> Talks </a><a class="menu-item" href="https://vesoft.com/en/careers/" rel="noopener noreffer" target="_blank"> Hire </a><a class="menu-item" href="/en/about/#contact"> Contact </a><span class="menu-item delimiter"></span><a href="#" onclick="return false;" class="menu-item language" title="Select Language">🌏 English<i class="fas fa-chevron-right fa-fw"></i>
+                        <select class="language-select" title="Select Language" id="language-select-desktop" onchange="location = this.value;"><option value="/en/data-lineage-oss-ref-solution/" selected>🌏 English</option></select>
+                    </a><span class="menu-item search" id="search-desktop">
+                        <input type="text" placeholder="Search titles or contents..." id="search-input-desktop">
+                        <a href="#" onclick="return false;" class="search-button search-toggle" id="search-toggle-desktop" title="Search">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="#" onclick="return false;" class="search-button search-clear" id="search-clear-desktop" title="Clear">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-desktop">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </span><a href="#" onclick="return false;" class="menu-item theme-select" title="Switch Theme">
+                    <i class="fas fa-adjust fa-fw"></i>
+                    <select class="color-theme-select" id="theme-select-desktop" title="Switch Theme">
+                        <option value="light">Light</option>
+                        <option value="dark">Dark</option>
+                        <option value="black">Black</option>
+                        <option value="auto">Auto</option>
+                    </select>
+                </a></div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="/en/" title="siwei.io"><span class="header-title-pre"><i class="fas fa-code-branch"></i></span>siwei.io</a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><div class="search-wrapper">
+                    <div class="search mobile" id="search-mobile">
+                        <input type="text" placeholder="Search titles or contents..." id="search-input-mobile">
+                        <a href="#" onclick="return false;" class="search-button search-toggle" id="search-toggle-mobile" title="Search">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="#" onclick="return false;" class="search-button search-clear" id="search-clear-mobile" title="Clear">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-mobile">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </div>
+                    <a href="#" onclick="return false;" class="search-cancel" id="search-cancel-mobile">
+                        Cancel
+                    </a>
+                </div><a class="menu-item" href="/en/about/" title="">About</a><a class="menu-item" href="/en/projects/" title="">Project</a><a class="menu-item" href="/en/sketch-notes/" title="">Sketches</a><a class="menu-item" href="/en/posts/" title="">Blog</a><a class="menu-item" href="/en/cources/" title="">Hands-on</a><a class="menu-item" href="/en/talk/" title="">Talks</a><a class="menu-item" href="https://vesoft.com/en/careers/" title="" rel="noopener noreffer" target="_blank">Hire</a><a class="menu-item" href="/en/about/#contact" title="">Contact</a><a href="#" onclick="return false;" class="menu-item theme-select" title="Switch Theme">
+                <i class="fas fa-adjust fa-fw"></i>
+                <select class="color-theme-select" id="theme-select-mobile" title="Switch Theme">
+                    <option value="light">Light</option>
+                    <option value="dark">Dark</option>
+                    <option value="black">Black</option>
+                    <option value="auto">Auto</option>
+                </select>
+            </a><a href="#" onclick="return false;" class="menu-item" title="Select Language">🌏 English<i class="fas fa-chevron-right fa-fw"></i>
+                    <select class="language-select" title="Select Language" onchange="location = this.value;"><option value="/en/data-lineage-oss-ref-solution/" selected>🌏 English</option></select>
+                </a></div>
+    </div>
+</header>
+<div class="search-dropdown desktop">
+    <div id="search-dropdown-desktop"></div>
+</div>
+<div class="search-dropdown mobile">
+    <div id="search-dropdown-mobile"></div>
+</div>
+<main class="main">
+            <div class="container"><div class="toc" id="toc-auto">
+        <h2 class="toc-title">Contents</h2>
+        <div class="toc-content always-active" id="toc-content-auto"><nav id="TableOfContents">
+  <ol>
+    <li><a href="#metadata-governance-system">Metadata Governance system</a></li>
+    <li><a href="#the-reference-solution">The reference solution</a>
+      <ol>
+        <li><a href="#motivation">Motivation</a></li>
+        <li><a href="#the-data-stack">The Data Stack</a>
+          <ol>
+            <li><a href="#database-and-data-warehouse">Database and Data Warehouse</a></li>
+            <li><a href="#dataops">DataOps</a></li>
+            <li><a href="#etl">ETL</a></li>
+            <li><a href="#data-visualization">Data Visualization</a></li>
+            <li><a href="#job-orchestration">Job Orchestration</a></li>
+            <li><a href="#metadata-governance">Metadata governance</a></li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+    <li><a href="#environment-bootstrap-component-overview">Environment Bootstrap, Component overview</a>
+      <ol>
+        <li><a href="#run-a-data-warehouse-database">Run a Data Warehouse/ Database</a></li>
+        <li><a href="#setup-dataops-toolchain-for-etl">Setup DataOps toolchain for ETL</a>
+          <ol>
+            <li><a href="#installation-of-meltano">Installation of Meltano</a></li>
+            <li><a href="#the-meltano-ui">The Meltano UI</a></li>
+            <li><a href="#example-meltano-projects">Example Meltano projects</a></li>
+          </ol>
+        </li>
+        <li><a href="#setup-a-bi-platform-for-dashboard">Setup a BI Platform for Dashboard</a>
+          <ol>
+            <li><a href="#bootstrap-meltano-and-superset">Bootstrap Meltano and Superset</a></li>
+            <li><a href="#create-a-dashboard">Create a Dashboard!</a></li>
+          </ol>
+        </li>
+        <li><a href="#metadata-discovery">Metadata Discovery</a>
+          <ol>
+            <li><a href="#deploy-amundsen">Deploy Amundsen</a>
+              <ol>
+                <li><a href="#metadata-service">Metadata service</a></li>
+                <li><a href="#data-builder">Data builder</a></li>
+                <li><a href="#verify-amundsen">Verify Amundsen</a></li>
+              </ol>
+            </li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+    <li><a href="#connecting-the-dots-metadata-discovery">Connecting the dots, Metadata Discovery</a>
+      <ol>
+        <li><a href="#extracting-postgres-metadata">Extracting Postgres metadata</a>
+          <ol>
+            <li><a href="#execution-of-postgres-metadata-etl">Execution of Postgres metadata ETL</a></li>
+            <li><a href="#verify-the-postgres-extraction">Verify the Postgres Extraction</a></li>
+          </ol>
+        </li>
+        <li><a href="#extracting-dbt-metadata">Extracting dbt metadata</a>
+          <ol>
+            <li><a href="#execution-of-dbt-metadata-etl">Execution of dbt metadata ETL</a></li>
+            <li><a href="#verify-the-dbt-extraction">Verify the dbt Extraction</a></li>
+          </ol>
+        </li>
+        <li><a href="#extracting-superset-metadata">Extracting Superset metadata</a>
+          <ol>
+            <li><a href="#execution-of-superset-metadata-etl">Execution of Superset metadata ETL</a></li>
+            <li><a href="#verify-the-superset-dashboard-extraction">Verify the Superset Dashboard Extraction</a></li>
+          </ol>
+        </li>
+        <li><a href="#preview-data-with-superset">Preview data with Superset</a></li>
+        <li><a href="#enable-data-lineage">Enable Data lineage</a>
+          <ol>
+            <li><a href="#get-lineage-in-nebula-graph">Get lineage in Nebula Graph</a></li>
+            <li><a href="#extract-data-lineage">Extract Data Lineage</a>
+              <ol>
+                <li><a href="#dbt">Dbt</a></li>
+                <li><a href="#open-lineage">Open Lineage</a></li>
+              </ol>
+            </li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+    <li><a href="#recap">Recap</a>
+      <ol>
+        <li><a href="#upstream-projects">Upstream Projects</a></li>
+      </ol>
+    </li>
+  </ol>
+</nav></div>
+    </div><script>document.getElementsByTagName("main")[0].setAttribute("pageStyle", "normal")</script><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC", "true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">A Data Lineage OSS Reference Solution</h1><div class="post-meta">
+            <div class="post-meta-line">
+                <span class="post-author"><i class="author fas fa-user-circle fa-fw"></i><a href="https://siwei.io" title="Author" target="_blank" rel="noopener noreffer author" class="author">Wey Gu</a>
+                </span>&nbsp;<span class="post-category">included in </span>&nbsp;<span class="post-category">categories <a href="/en/categories/nebula-graph/"><i class="far fa-folder fa-fw"></i>Nebula Graph</a>&nbsp;<a href="/en/categories/amundsen/"><i class="far fa-folder fa-fw"></i>Amundsen</a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime="2022-06-09">2022-06-09</time>&nbsp;<i class="far fa-edit fa-fw"></i>&nbsp;<time datetime="2022-06-09">2022-06-09</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;4864 words&nbsp;
+                <i class="far fa-clock fa-fw"></i>&nbsp;23 minutes&nbsp;</div>
+        </div><div class="featured-image"><img
+        class="lazyload"
+        data-src="/en/data-lineage-oss-ref-solution/featured-image.webp"
+        data-srcset="/en/data-lineage-oss-ref-solution/featured-image.webp, /en/data-lineage-oss-ref-solution/featured-image.webp 1.5x, /en/data-lineage-oss-ref-solution/featured-image.webp 2x"
+        data-sizes="auto"
+        alt="/en/data-lineage-oss-ref-solution/featured-image.webp"
+        title="I would like to share my opinionated reference data infra stack with some of those best open-source projects with modern ETL, Dashboard, Metadata Governance, and Data Lineage Management." height="872" width="1730"></div><div class="details toc" id="toc-static"  kept="">
+                <div class="details-summary toc-title">
+                    <span>Contents</span>
+                    <span><i class="details-icon fas fa-angle-right"></i></span>
+                </div>
+                <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ol>
+    <li><a href="#metadata-governance-system">Metadata Governance system</a></li>
+    <li><a href="#the-reference-solution">The reference solution</a>
+      <ol>
+        <li><a href="#motivation">Motivation</a></li>
+        <li><a href="#the-data-stack">The Data Stack</a>
+          <ol>
+            <li><a href="#database-and-data-warehouse">Database and Data Warehouse</a></li>
+            <li><a href="#dataops">DataOps</a></li>
+            <li><a href="#etl">ETL</a></li>
+            <li><a href="#data-visualization">Data Visualization</a></li>
+            <li><a href="#job-orchestration">Job Orchestration</a></li>
+            <li><a href="#metadata-governance">Metadata governance</a></li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+    <li><a href="#environment-bootstrap-component-overview">Environment Bootstrap, Component overview</a>
+      <ol>
+        <li><a href="#run-a-data-warehouse-database">Run a Data Warehouse/ Database</a></li>
+        <li><a href="#setup-dataops-toolchain-for-etl">Setup DataOps toolchain for ETL</a>
+          <ol>
+            <li><a href="#installation-of-meltano">Installation of Meltano</a></li>
+            <li><a href="#the-meltano-ui">The Meltano UI</a></li>
+            <li><a href="#example-meltano-projects">Example Meltano projects</a></li>
+          </ol>
+        </li>
+        <li><a href="#setup-a-bi-platform-for-dashboard">Setup a BI Platform for Dashboard</a>
+          <ol>
+            <li><a href="#bootstrap-meltano-and-superset">Bootstrap Meltano and Superset</a></li>
+            <li><a href="#create-a-dashboard">Create a Dashboard!</a></li>
+          </ol>
+        </li>
+        <li><a href="#metadata-discovery">Metadata Discovery</a>
+          <ol>
+            <li><a href="#deploy-amundsen">Deploy Amundsen</a>
+              <ol>
+                <li><a href="#metadata-service">Metadata service</a></li>
+                <li><a href="#data-builder">Data builder</a></li>
+                <li><a href="#verify-amundsen">Verify Amundsen</a></li>
+              </ol>
+            </li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+    <li><a href="#connecting-the-dots-metadata-discovery">Connecting the dots, Metadata Discovery</a>
+      <ol>
+        <li><a href="#extracting-postgres-metadata">Extracting Postgres metadata</a>
+          <ol>
+            <li><a href="#execution-of-postgres-metadata-etl">Execution of Postgres metadata ETL</a></li>
+            <li><a href="#verify-the-postgres-extraction">Verify the Postgres Extraction</a></li>
+          </ol>
+        </li>
+        <li><a href="#extracting-dbt-metadata">Extracting dbt metadata</a>
+          <ol>
+            <li><a href="#execution-of-dbt-metadata-etl">Execution of dbt metadata ETL</a></li>
+            <li><a href="#verify-the-dbt-extraction">Verify the dbt Extraction</a></li>
+          </ol>
+        </li>
+        <li><a href="#extracting-superset-metadata">Extracting Superset metadata</a>
+          <ol>
+            <li><a href="#execution-of-superset-metadata-etl">Execution of Superset metadata ETL</a></li>
+            <li><a href="#verify-the-superset-dashboard-extraction">Verify the Superset Dashboard Extraction</a></li>
+          </ol>
+        </li>
+        <li><a href="#preview-data-with-superset">Preview data with Superset</a></li>
+        <li><a href="#enable-data-lineage">Enable Data lineage</a>
+          <ol>
+            <li><a href="#get-lineage-in-nebula-graph">Get lineage in Nebula Graph</a></li>
+            <li><a href="#extract-data-lineage">Extract Data Lineage</a>
+              <ol>
+                <li><a href="#dbt">Dbt</a></li>
+                <li><a href="#open-lineage">Open Lineage</a></li>
+              </ol>
+            </li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+    <li><a href="#recap">Recap</a>
+      <ol>
+        <li><a href="#upstream-projects">Upstream Projects</a></li>
+      </ol>
+    </li>
+  </ol>
+</nav></div>
+            </div><div class="content" id="content"><blockquote>
+<p>Do I have to create my own graph model and everything to set up a Data Lineage system? Thanks to many great open-source projects, the answer is: No!</p>
+<p>Today, I would like to share my opinionated reference data infra stack with some of those best open-source projects with modern ETL, Dashboard, Metadata Governance, and Data Lineage Management.</p>
+</blockquote>
+<h2 id="metadata-governance-system" class="headerLink">
+    <a href="#metadata-governance-system" class="header-mark"></a>1 Metadata Governance system</h2><p>A Metadata Governance system is a system providing a single view of where and how all the data are formatted, generated, transformed, consumed, presented, and owned.</p>
+<p>Metadata Governance is like a catalog of all of the data warehouses, databases, tables, dashboards, ETL jobs, etc so that people don&rsquo;t have to broadcast their queries on &ldquo;Hi everyone, could I change the schema of this table?&rdquo;, &ldquo;Hey, anyone who knows how I could find the raw data of table-view-foo-bar?&rdquo;, which, explains why we need a Metadata Governance system in a mature data stack with a relatively large scale of data and team(or one to be grown to).</p>
+<p>For the other term, Data Lineage, is one of the Metadata that needs to be managed, for example, some dashboard is the downstream of a table view, which has an upstream as two other tables from different databases. That information should be managed at best when possible, too, to enable a trust chain on a data-driven team.</p>
+<h2 id="the-reference-solution" class="headerLink">
+    <a href="#the-reference-solution" class="header-mark"></a>2 The reference solution</h2><h3 id="motivation" class="headerLink">
+    <a href="#motivation" class="header-mark"></a>2.1 Motivation</h3><p>The metadata and data lineage are by nature fitting to the graph model/graph database well, and the relationship-oriented queries, for instance, &ldquo;finding all n-depth data lineage per given component(i.e. a table)&rdquo; is a <code>FIND ALL PATH</code> query in a graph database.</p>
+<p>This also explains one observation of mine as an OSS contributor of Nebula Graph, a distributed graph database: (from their queries/graph modeling in discussions I could tell) a bunch of teams who are already levering Nebula Graph on their tech stack, are setting up a data lineage system on their own, from scratch.</p>
+<p>A Metadata Governance system needs some of the following components:</p>
+<ul>
+<li>Metadata Extractor
+<ul>
+<li>This part is needed to either pull or be pushed from the different parties of the data stack like databases, data warehouses, dashboards, or even from ETL pipeline and applications, etc.</li>
+</ul>
+</li>
+<li>Metadata Storage
+<ul>
+<li>This could be either a database or even large JSON manifest files</li>
+</ul>
+</li>
+<li>Metadata Catalog
+<ul>
+<li>This could be a system providing API and/or a GUI interface to read/write the metadata and data lineage</li>
+</ul>
+</li>
+</ul>
+<p>From my special perspective and the context comes from the open-source community is always itching on this entropy increase situation when most of the components could be standardized and jointly contributed rather than being built in-house per each team because most of the sources to parse metadata are just those famous big-data projects and products, and the way to model and CURD those metadata should be in common with a high probability.</p>
+<p>Then I came to create an opinionated reference data infra stack with some of those best open-source projects put together. Hopefully, those who were gonna define and iterate their own fashion of Graph Model on Nebula Graph and create in-house Metadata and data linage extracting pipelines can benefit from this project to have a relatively polished, beautifully designed, Metadata Governance system out of the box with a fully evolved graph model.</p>
+<p>To make the reference project self-contained and runnable, I tried to put layers of data infra stack more than just pure metadata related ones, thus, maybe it will help new data engineers who would like to try and see how far had open-source pushed a modern data lab to.</p>
+<p>This is a diagram of all the components in this reference data stack, where I see most of them as Metadata Sources:</p>
+<p><img
+        class="lazyload"
+        data-src="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg"
+        data-srcset="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg, https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg 1.5x, https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg 2x"
+        data-sizes="auto"
+        alt="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg"
+        title="diagram-of-ref-project"></p>
+<h3 id="the-data-stack" class="headerLink">
+    <a href="#the-data-stack" class="header-mark"></a>2.2 The Data Stack</h3><p>Then, let&rsquo;s introduce the components.</p>
+<h4 id="database-and-data-warehouse" class="headerLink">
+    <a href="#database-and-data-warehouse" class="header-mark"></a>2.2.1 Database and Data Warehouse</h4><p>For processing and consuming raw and intermediate data, one or more databases and/or warehouses should be used.</p>
+<p>It could be any DB/DW like Hive, Apache Delta, TiDB, Cassandra, MySQL, or Postgres, in this reference project, we simply choose one of the most popular ones: Postgres. And our reference lab comes with the first service:</p>
+<p>✅ - Data warehouse: Postgres</p>
+<h4 id="dataops" class="headerLink">
+    <a href="#dataops" class="header-mark"></a>2.2.2 DataOps</h4><p>We should have some sort of DataOps setup to enable pipelines and environments to be repeatable, testable, and version-controlled.</p>
+<p>Here, we used <a href="https://gitlab.com/meltano/meltano" target="_blank" rel="noopener noreffer">Meltano</a> created by GitLab.</p>
+<p>Meltano is a just-work DataOps platform that connected <a href="https://singer.io/" target="_blank" rel="noopener noreffer">Singer</a> as the EL and <a href="https://getdbt.com/" target="_blank" rel="noopener noreffer">dbt</a> as the T in a magically elegant way, it is also connected to some other dataInfra utilities such as Apache Superset and Apache Airflow, etc.</p>
+<p>Thus, we have one more thing to be included:</p>
+<p>✅ - GitOps: Meltano</p>
+<h4 id="etl" class="headerLink">
+    <a href="#etl" class="header-mark"></a>2.2.3 ETL</h4><p>And under the hood, we will E(extract) and L(load) data from many different data sources to data targets leveraging <a href="https://singer.io/" target="_blank" rel="noopener noreffer">Singer</a> together with Meltano, and do T(transformation) with <a href="https://getdbt.com/" target="_blank" rel="noopener noreffer">dbt</a>.</p>
+<p>✅ - EL: Singer</p>
+<p>✅ - T: dbt</p>
+<h4 id="data-visualization" class="headerLink">
+    <a href="#data-visualization" class="header-mark"></a>2.2.4 Data Visualization</h4><p>How about creating dashboards, charts, and tables for getting the insights into all the data?</p>
+<p><img
+        class="lazyload"
+        data-src="https://user-images.githubusercontent.com/1651790/172800854-8e01acae-696d-4e07-8e3e-a7d34dec8278.png"
+        data-srcset="https://user-images.githubusercontent.com/1651790/172800854-8e01acae-696d-4e07-8e3e-a7d34dec8278.png, https://user-images.githubusercontent.com/1651790/172800854-8e01acae-696d-4e07-8e3e-a7d34dec8278.png 1.5x, https://user-images.githubusercontent.com/1651790/172800854-8e01acae-696d-4e07-8e3e-a7d34dec8278.png 2x"
+        data-sizes="auto"
+        alt="https://user-images.githubusercontent.com/1651790/172800854-8e01acae-696d-4e07-8e3e-a7d34dec8278.png"
+        title="https://user-images.githubusercontent.com/1651790/172800854-8e01acae-696d-4e07-8e3e-a7d34dec8278.png"></p>
+<p><a href="https://superset.apache.org/" target="_blank" rel="noopener noreffer">Apache Superset</a> is one of the greatest visualization platforms we could choose from, and we just add it to our packet!</p>
+<p>✅ - Dashboard: Apache Superset</p>
+<h4 id="job-orchestration" class="headerLink">
+    <a href="#job-orchestration" class="header-mark"></a>2.2.5 Job Orchestration</h4><p>In most cases, our DataOps jobs grow to the scale to be executed in a long time that needs to be orchestrated, and here comes the <a href="https://airflow.apache.org/" target="_blank" rel="noopener noreffer">Apache Airflow</a>.</p>
+<p>✅ - DAG: Apache Airflow</p>
+<h4 id="metadata-governance" class="headerLink">
+    <a href="#metadata-governance" class="header-mark"></a>2.2.6 Metadata governance</h4><p>With more components and data being introduced to a data infra, there will be massive metadata in all lifecycle of databases, tables, schemas, dashboards, DAGs, applications, and their administrators and teams could be collectively managed, connected, and discovered.</p>
+<p><a href="https://www.amundsen.io/amundsen/" target="_blank" rel="noopener noreffer">Linux Foundation Amundsen</a> is one of the best projects solving this problem.</p>
+<p><img
+        class="lazyload"
+        data-src="https://user-images.githubusercontent.com/1651790/172801018-ecd67fa9-2743-451f-8734-b14f2a814199.png"
+        data-srcset="https://user-images.githubusercontent.com/1651790/172801018-ecd67fa9-2743-451f-8734-b14f2a814199.png, https://user-images.githubusercontent.com/1651790/172801018-ecd67fa9-2743-451f-8734-b14f2a814199.png 1.5x, https://user-images.githubusercontent.com/1651790/172801018-ecd67fa9-2743-451f-8734-b14f2a814199.png 2x"
+        data-sizes="auto"
+        alt="https://user-images.githubusercontent.com/1651790/172801018-ecd67fa9-2743-451f-8734-b14f2a814199.png"
+        title="https://user-images.githubusercontent.com/1651790/172801018-ecd67fa9-2743-451f-8734-b14f2a814199.png"></p>
+<p>✅ - Data Discovery: Linux Foundation Amundsen</p>
+<p>With a graph database as the source of truth to accelerate the multi-hop queries together with elasticsearch as the full-text search engine, Amundsen indexes all the metadata and their lineage smoothly, and beautifully in the next level.</p>
+<p>By default, <a href="https://neo4j.org/" target="_blank" rel="noopener noreffer">neo4j</a> was used as the graph database, while I will be using <a href="http://nebula-graph.io/" target="_blank" rel="noopener noreffer">Nebula Graph</a> instead in this project due to I am more familiar with the latter.</p>
+<p>✅ - Full-text Search: elasticsearch</p>
+<p>✅ - Graph Database: Nebula Graph</p>
+<p>Now, with the components in our stack being revealed, let&rsquo;s have them assembled.</p>
+<h2 id="environment-bootstrap-component-overview" class="headerLink">
+    <a href="#environment-bootstrap-component-overview" class="header-mark"></a>3 Environment Bootstrap, Component overview</h2><p>The reference runnable project is open-source and you could find it here:</p>
+<ul>
+<li><a href="https://github.com/wey-gu/data-lineage-ref-solution" target="_blank" rel="noopener noreffer">https://github.com/wey-gu/data-lineage-ref-solution</a></li>
+</ul>
+<p>I will try my best to make things clean and isolated. It&rsquo;s assumed you are running on a UNIX-like system with internet and Docker Compose being installed.</p>
+<blockquote>
+<p>Please refer <a href="https://docs.docker.com/compose/install/" target="_blank" rel="noopener noreffer">here</a> to install Docker and Docker Compose before moving forward.</p>
+</blockquote>
+<p>I am running it on Ubuntu 20.04 LTS X86_64, but there shouldn&rsquo;t be issues on other distros or versions of Linux.</p>
+<h3 id="run-a-data-warehouse-database" class="headerLink">
+    <a href="#run-a-data-warehouse-database" class="header-mark"></a>3.1 Run a Data Warehouse/ Database</h3><p>First, let&rsquo;s install Postgres as our data warehouse.</p>
+<p>This oneliner will help create a Postgres running in the background with docker, and when being stopped it will be cleaned up(<code>--rm</code>).</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker run --rm --name postgres <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    -e <span class="nv">POSTGRES_PASSWORD</span><span class="o">=</span>lineage_ref <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    -e <span class="nv">POSTGRES_USER</span><span class="o">=</span>lineage_ref <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    -e <span class="nv">POSTGRES_DB</span><span class="o">=</span>warehouse -d <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    -p 5432:5432 postgres
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Then we could verify it with Postgres CLI or GUI clients.</p>
+<blockquote>
+<p>Hint: You could use VS Code extension: <a href="https://marketplace.visualstudio.com/items?itemName=mtxr.sqltools" target="_blank" rel="noopener noreffer">SQL tools</a> to quickly connect to multiple RDBMS(MariaDB, Postgres, etc.) or even Non-SQL DBMS like Cassandra in a GUI fashion.</p>
+</blockquote>
+<h3 id="setup-dataops-toolchain-for-etl" class="headerLink">
+    <a href="#setup-dataops-toolchain-for-etl" class="header-mark"></a>3.2 Setup DataOps toolchain for ETL</h3><p>Then, let&rsquo;s get Meltano with Singler and dbt installed.</p>
+<p>Meltano helps us manage ETL utilities(as plugins) and all of their configurations(the pipelines). Those meta-information sits in meltano configurations and its <a href="https://docs.meltano.com/concepts/project#system-database" target="_blank" rel="noopener noreffer">system database</a>, where the configurations are file-based(could be managed with git) and by default the system database is SQLite.</p>
+<h4 id="installation-of-meltano" class="headerLink">
+    <a href="#installation-of-meltano" class="header-mark"></a>3.2.1 Installation of Meltano</h4><p>The workflow using Meltano is to initiate a <code>meltano project</code> and start to add E, L, and T into the configuration files. The initiation of a project just requires a CLI command call: <code>meltano init yourprojectname</code> and to do that, we could install Meltano either with Python&rsquo;s package manager: pip or via a Docker image:</p>
+<ul>
+<li>Install Meltano with pip in a python virtual env:</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">mkdir .venv
+</span></span><span class="line"><span class="cl"><span class="c1"># example in a debian flavor Linux distro</span>
+</span></span><span class="line"><span class="cl">sudo apt-get install python3-dev python3-pip python3-venv python3-wheel -y
+</span></span><span class="line"><span class="cl">python3 -m venv .venv/meltano
+</span></span><span class="line"><span class="cl"><span class="nb">source</span> .venv/meltano/bin/activate
+</span></span><span class="line"><span class="cl">python3 -m pip install wheel
+</span></span><span class="line"><span class="cl">python3 -m pip install meltano
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># init a project</span>
+</span></span><span class="line"><span class="cl">mkdir meltano_projects <span class="o">&amp;&amp;</span> <span class="nb">cd</span> meltano_projects
+</span></span><span class="line"><span class="cl"><span class="c1"># replace &lt;yourprojectname&gt; with your own one</span>
+</span></span><span class="line"><span class="cl">touch .env
+</span></span><span class="line"><span class="cl">meltano init &lt;yourprojectname&gt;
+</span></span></code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>&ldquo;Install&rdquo; Meltano via Docker</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker pull meltano/meltano:latest
+</span></span><span class="line"><span class="cl">docker run --rm meltano/meltano --version
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># init a project</span>
+</span></span><span class="line"><span class="cl">mkdir meltano_projects <span class="o">&amp;&amp;</span> <span class="nb">cd</span> meltano_projects
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># replace &lt;yourprojectname&gt; with your own one</span>
+</span></span><span class="line"><span class="cl">touch .env
+</span></span><span class="line"><span class="cl">docker run --rm -v <span class="s2">&#34;</span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span><span class="s2">&#34;</span>:/projects <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>             -w /projects --env-file .env <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>             meltano/meltano init &lt;yourprojectname&gt;
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Apart from <code>meltano init</code>, there are a couple of other commands like <code>meltano etl</code> to perform ETL executions, and <code>meltano invoke &lt;plugin&gt;</code> to call plugins&rsquo; command, always check the <a href="https://docs.meltano.com/reference/command-line-interface" target="_blank" rel="noopener noreffer">cheatsheet</a> for quick referencing.</p>
+<h4 id="the-meltano-ui" class="headerLink">
+    <a href="#the-meltano-ui" class="header-mark"></a>3.2.2 The Meltano UI</h4><p>Meltano also comes with a web-based UI, to start it, just run:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">meltano ui
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Then it&rsquo;s listening to http://localhost:5000.</p>
+<p>For Docker, just run the container with the 5000 port exposed, here we didn&rsquo;t provide <code>ui</code> in the end due to the container&rsquo;s default command being <code>meltano ui</code> already.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker run -v <span class="s2">&#34;</span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span><span class="s2">&#34;</span>:/project <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>             -w /project <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>             -p 5000:5000 <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>             meltano/meltano
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="example-meltano-projects" class="headerLink">
+    <a href="#example-meltano-projects" class="header-mark"></a>3.2.3 Example Meltano projects</h4><p>When writing this article, I noticed that <a href="https://github.com/pnadolny13" target="_blank" rel="noopener noreffer">Pat Nadolny</a> had created <a href="https://github.com/pnadolny13/meltano_example_implementations/tree/main/meltano_projects/singer_dbt_jaffle" target="_blank" rel="noopener noreffer">great examples</a> on an example dataset for Meltano with dbt(And with <a href="https://github.com/pnadolny13/meltano_example_implementations/tree/main/meltano_projects/dbt_orchestration" target="_blank" rel="noopener noreffer">Airflow</a> and <a href="https://github.com/pnadolny13/meltano_example_implementations/tree/main/meltano_projects/jaffle_superset" target="_blank" rel="noopener noreffer">Superset</a>, too!). We will not recreate the examples and use Pat&rsquo;s great ones.</p>
+<blockquote>
+<p>Note that Andrew Stewart had created another one with a slightly older version of configuration files.</p>
+</blockquote>
+<p>You could follow <a href="https://github.com/pnadolny13/meltano_example_implementations/tree/main/meltano_projects/singer_dbt_jaffle" target="_blank" rel="noopener noreffer">here</a> to run a pipeline of:</p>
+<ul>
+<li><a href="https://hub.meltano.com/taps/csv" target="_blank" rel="noopener noreffer">tap-CSV</a>(Singer), extracting data from CSV files</li>
+<li><a href="https://hub.meltano.com/targets/postgres" target="_blank" rel="noopener noreffer">target-postgres</a>(Singer), loading data to Postgres</li>
+<li><a href="https://hub.meltano.com/transformers/dbt" target="_blank" rel="noopener noreffer">dbt</a>, transform the data into aggregated tables or views</li>
+</ul>
+<blockquote>
+<p>You should omit the step of running the local Postgres with docker as we had already created one, be sure to change the Postgres user and password in <code>.env</code>.</p>
+<p>And it&rsquo;s basically as this(with meltano being installed as above):</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">git clone https://github.com/pnadolny13/meltano_example_implementations.git
+</span></span><span class="line"><span class="cl"><span class="nb">cd</span> meltano_example_implementations/meltano_projects/singer_dbt_jaffle/
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">meltano install
+</span></span><span class="line"><span class="cl">touch .env
+</span></span><span class="line"><span class="cl"><span class="nb">echo</span> <span class="nv">PG_PASSWORD</span><span class="o">=</span><span class="s2">&#34;lineage_ref&#34;</span> &gt;&gt; .env
+</span></span><span class="line"><span class="cl"><span class="nb">echo</span> <span class="nv">PG_USERNAME</span><span class="o">=</span><span class="s2">&#34;lineage_ref&#34;</span> &gt;&gt; .env
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Extract and Load(with Singer)</span>
+</span></span><span class="line"><span class="cl">meltano run tap-csv target-postgres
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Trasnform(with dbt)</span>
+</span></span><span class="line"><span class="cl">meltano run dbt:run
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Generate dbt docs</span>
+</span></span><span class="line"><span class="cl">meltano invoke dbt docs generate
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Serve generated dbt docs</span>
+</span></span><span class="line"><span class="cl">meltano invoke dbt docs to serve
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Then visit http://localhost:8080</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div></blockquote>
+<p>Now, I assumed you had finished trying out <code>singer_dbt_jaffle</code> following its <a href="https://github.com/pnadolny13/meltano_example_implementations/tree/main/meltano_projects/singer_dbt_jaffle" target="_blank" rel="noopener noreffer">README.md</a>, and we could connect to the Postgres to see the loaded and transformed data being reflected as follow, the screenshot is from the SQLTool of VS Code:</p>
+<p><img
+        class="lazyload"
+        data-src="https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png"
+        data-srcset="https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png, https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png 1.5x, https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png 2x"
+        data-sizes="auto"
+        alt="https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png"
+        title="https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png"></p>
+<h3 id="setup-a-bi-platform-for-dashboard" class="headerLink">
+    <a href="#setup-a-bi-platform-for-dashboard" class="header-mark"></a>3.3 Setup a BI Platform for Dashboard</h3><p>Now, we have the data in data warehouses, with ETL toolchains to pipe different data sources into it. How could those data be consumed?</p>
+<p>BI tools like the dashboard could be one way to help us get insights from the data.</p>
+<p>With Apache Superset, dashboards, and charts based on those data sources could be created and managed smoothly and beautifully.</p>
+<p>The focus of this project was not on Apache Superset itself, thus, we simply reuse examples that <a href="https://github.com/pnadolny13" target="_blank" rel="noopener noreffer">Pat Nadolny</a> had created in <a href="https://github.com/pnadolny13/meltano_example_implementations/tree/main/meltano_projects/jaffle_superset" target="_blank" rel="noopener noreffer">Superset as a utility if meltano Example</a>.</p>
+<h4 id="bootstrap-meltano-and-superset" class="headerLink">
+    <a href="#bootstrap-meltano-and-superset" class="header-mark"></a>3.3.1 Bootstrap Meltano and Superset</h4><p>Create a python venv with Meltano installed:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">mkdir .venv
+</span></span><span class="line"><span class="cl">python3 -m venv .venv/meltano
+</span></span><span class="line"><span class="cl"><span class="nb">source</span> .venv/meltano/bin/activate
+</span></span><span class="line"><span class="cl">python3 -m pip install wheel
+</span></span><span class="line"><span class="cl">python3 -m pip install meltano
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Following <a href="https://github.com/pnadolny13/meltano_example_implementations/tree/main/meltano_projects/jaffle_superset" target="_blank" rel="noopener noreffer">Pat&rsquo;s guide</a>, with tiny modifications:</p>
+<ul>
+<li>Clone the repo, enter the <code>jaffle_superset</code> project</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">git clone https://github.com/pnadolny13/meltano_example_implementations.git
+</span></span><span class="line"><span class="cl"><span class="nb">cd</span> meltano_example_implementations/meltano_projects/jaffle_superset/
+</span></span></code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>Modify the meltano configuration files to let Superset connect to the Postgres we created:</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">vim meltano_projects/jaffle_superset/meltano.yml
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>In my example, I changed the hostname to <code>10.1.1.111</code>, which is the IP of my current host, while if you are running it on your macOS machine, this should be fine to leave with it, the diff before and after the change would be:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-diff" data-lang="diff"><span class="line"><span class="cl"><span class="gd">--- a/meltano_projects/jaffle_superset/meltano.yml
+</span></span></span><span class="line"><span class="cl"><span class="gd"></span><span class="gi">+++ b/meltano_projects/jaffle_superset/meltano.yml
+</span></span></span><span class="line"><span class="cl"><span class="gi"></span><span class="gu">@@ -71,7 +71,7 @@ plugins:
+</span></span></span><span class="line"><span class="cl"><span class="gu"></span>               A list of database driver dependencies can be found here https://superset.apache.org/docs/databases/installing-database-drivers
+</span></span><span class="line"><span class="cl">     config:
+</span></span><span class="line"><span class="cl">       database_name: my_postgres
+</span></span><span class="line"><span class="cl"><span class="gd">-      sqlalchemy_uri: postgresql+psycopg2://${PG_USERNAME}:${PG_PASSWORD}@host.docker.internal:${PG_PORT}/${PG_DATABASE}
+</span></span></span><span class="line"><span class="cl"><span class="gd"></span><span class="gi">+      sqlalchemy_uri: postgresql+psycopg2://${PG_USERNAME}:${PG_PASSWORD}@10.1.1.168:${PG_PORT}/${PG_DATABASE}
+</span></span></span><span class="line"><span class="cl"><span class="gi"></span>       tables:
+</span></span><span class="line"><span class="cl">       - model.my_meltano_project.customers
+</span></span><span class="line"><span class="cl">       - model.my_meltano_project.orders
+</span></span></code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>Add Postgres credential to <code>.env</code> file:</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nb">echo</span> <span class="nv">PG_USERNAME</span><span class="o">=</span>lineage_ref &gt;&gt; .env
+</span></span><span class="line"><span class="cl"><span class="nb">echo</span> <span class="nv">PG_PASSWORD</span><span class="o">=</span>lineage_ref &gt;&gt; .env
+</span></span></code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>Install the Meltano project, run ETL pipeline</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">meltano install
+</span></span><span class="line"><span class="cl">meltano run tap-csv target-postgres dbt:run
+</span></span></code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>Start Superset, please note that the <code>ui</code> is not a meltano command but a user-defined action in the configuration file.</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">meltano invoke superset:ui
+</span></span></code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>In another terminal, run the defined command <code>load_datasources</code></li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">meltano invoke superset:load_datasources
+</span></span></code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>Access Superset in a web browser via http://localhost:8088/</li>
+</ul>
+<p>We should now see Superset Web Interface:</p>
+<p><img
+        class="lazyload"
+        data-src="https://user-images.githubusercontent.com/1651790/168570300-186b56a5-58e8-4ff1-bc06-89fd77d74166.png"
+        data-srcset="https://user-images.githubusercontent.com/1651790/168570300-186b56a5-58e8-4ff1-bc06-89fd77d74166.png, https://user-images.githubusercontent.com/1651790/168570300-186b56a5-58e8-4ff1-bc06-89fd77d74166.png 1.5x, https://user-images.githubusercontent.com/1651790/168570300-186b56a5-58e8-4ff1-bc06-89fd77d74166.png 2x"
+        data-sizes="auto"
+        alt="https://user-images.githubusercontent.com/1651790/168570300-186b56a5-58e8-4ff1-bc06-89fd77d74166.png"
+        title="https://user-images.githubusercontent.com/1651790/168570300-186b56a5-58e8-4ff1-bc06-89fd77d74166.png"></p>
+<h4 id="create-a-dashboard" class="headerLink">
+    <a href="#create-a-dashboard" class="header-mark"></a>3.3.2 Create a Dashboard!</h4><p>Let&rsquo;s try to create a Dashboard on the ETL data in Postgres defined in this Meltano project:</p>
+<ul>
+<li>Click <code>+ DASHBOARD</code>, fill a dashboard name, then click <code>SAVE</code>, then clieck <code>+ CREATE A NEW CHART</code></li>
+</ul>
+<p><img
+        class="lazyload"
+        data-src="https://user-images.githubusercontent.com/1651790/168570363-c6b4f929-2aad-4f03-8e3e-b1b61f560ce5.png"
+        data-srcset="https://user-images.githubusercontent.com/1651790/168570363-c6b4f929-2aad-4f03-8e3e-b1b61f560ce5.png, https://user-images.githubusercontent.com/1651790/168570363-c6b4f929-2aad-4f03-8e3e-b1b61f560ce5.png 1.5x, https://user-images.githubusercontent.com/1651790/168570363-c6b4f929-2aad-4f03-8e3e-b1b61f560ce5.png 2x"
+        data-sizes="auto"
+        alt="https://user-images.githubusercontent.com/1651790/168570363-c6b4f929-2aad-4f03-8e3e-b1b61f560ce5.png"
+        title="https://user-images.githubusercontent.com/1651790/168570363-c6b4f929-2aad-4f03-8e3e-b1b61f560ce5.png"></p>
+<ul>
+<li>In new chart view, we should select a chart type and DATASET. Here, I selected <code>orders</code> table as the data source and <code>Pie Chart</code> chart type:</li>
+</ul>
+<p><img
+        class="lazyload"
+        data-src="https://user-images.githubusercontent.com/1651790/168570927-9559a2a1-fed7-43be-9f6a-f6fb3c263830.png"
+        data-srcset="https://user-images.githubusercontent.com/1651790/168570927-9559a2a1-fed7-43be-9f6a-f6fb3c263830.png, https://user-images.githubusercontent.com/1651790/168570927-9559a2a1-fed7-43be-9f6a-f6fb3c263830.png 1.5x, https://user-images.githubusercontent.com/1651790/168570927-9559a2a1-fed7-43be-9f6a-f6fb3c263830.png 2x"
+        data-sizes="auto"
+        alt="https://user-images.githubusercontent.com/1651790/168570927-9559a2a1-fed7-43be-9f6a-f6fb3c263830.png"
+        title="https://user-images.githubusercontent.com/1651790/168570927-9559a2a1-fed7-43be-9f6a-f6fb3c263830.png"></p>
+<ul>
+<li>After clicking <code>CREATE NEW CHART</code>, we are in the chart defination view, where, I selected <code>Query</code> of <code>status</code> as <code>DIMENSIONS</code>, and <code>COUNT(amount)</code> as <code>METRIC</code>. Thus, we could see a Pie Chart per order status&rsquo;s distribution.</li>
+</ul>
+<p><img
+        class="lazyload"
+        data-src="https://user-images.githubusercontent.com/1651790/168571130-a65ba88e-1ebe-4699-8783-08e5ecf54a0c.png"
+        data-srcset="https://user-images.githubusercontent.com/1651790/168571130-a65ba88e-1ebe-4699-8783-08e5ecf54a0c.png, https://user-images.githubusercontent.com/1651790/168571130-a65ba88e-1ebe-4699-8783-08e5ecf54a0c.png 1.5x, https://user-images.githubusercontent.com/1651790/168571130-a65ba88e-1ebe-4699-8783-08e5ecf54a0c.png 2x"
+        data-sizes="auto"
+        alt="https://user-images.githubusercontent.com/1651790/168571130-a65ba88e-1ebe-4699-8783-08e5ecf54a0c.png"
+        title="https://user-images.githubusercontent.com/1651790/168571130-a65ba88e-1ebe-4699-8783-08e5ecf54a0c.png"></p>
+<ul>
+<li>Click <code>SAVE</code> , it will ask which dashboard this chart should be added to, after it&rsquo;s selected, click <code>SAVE &amp; GO TO DASHBOARD</code>.</li>
+</ul>
+<p><img
+        class="lazyload"
+        data-src="https://user-images.githubusercontent.com/1651790/168571301-8ae69983-eda8-4e75-99cf-6904f583fc7c.png"
+        data-srcset="https://user-images.githubusercontent.com/1651790/168571301-8ae69983-eda8-4e75-99cf-6904f583fc7c.png, https://user-images.githubusercontent.com/1651790/168571301-8ae69983-eda8-4e75-99cf-6904f583fc7c.png 1.5x, https://user-images.githubusercontent.com/1651790/168571301-8ae69983-eda8-4e75-99cf-6904f583fc7c.png 2x"
+        data-sizes="auto"
+        alt="https://user-images.githubusercontent.com/1651790/168571301-8ae69983-eda8-4e75-99cf-6904f583fc7c.png"
+        title="https://user-images.githubusercontent.com/1651790/168571301-8ae69983-eda8-4e75-99cf-6904f583fc7c.png"></p>
+<ul>
+<li>Then, in the dashboard, we coulds see all charts there. You could see that I added another chart showing customer order count distribution, too:</li>
+</ul>
+<p><img
+        class="lazyload"
+        data-src="https://user-images.githubusercontent.com/1651790/168571878-30a77057-1f66-448a-9bbd-0dedcee24cc9.png"
+        data-srcset="https://user-images.githubusercontent.com/1651790/168571878-30a77057-1f66-448a-9bbd-0dedcee24cc9.png, https://user-images.githubusercontent.com/1651790/168571878-30a77057-1f66-448a-9bbd-0dedcee24cc9.png 1.5x, https://user-images.githubusercontent.com/1651790/168571878-30a77057-1f66-448a-9bbd-0dedcee24cc9.png 2x"
+        data-sizes="auto"
+        alt="https://user-images.githubusercontent.com/1651790/168571878-30a77057-1f66-448a-9bbd-0dedcee24cc9.png"
+        title="https://user-images.githubusercontent.com/1651790/168571878-30a77057-1f66-448a-9bbd-0dedcee24cc9.png"></p>
+<ul>
+<li>We could set the refresh inteval, or download the dashboard as you wish by clicking the <code>···</code> button.</li>
+</ul>
+<p><img
+        class="lazyload"
+        data-src="https://user-images.githubusercontent.com/1651790/168573874-b5d57919-2866-4b3c-a4e5-55b6e6ef342e.png"
+        data-srcset="https://user-images.githubusercontent.com/1651790/168573874-b5d57919-2866-4b3c-a4e5-55b6e6ef342e.png, https://user-images.githubusercontent.com/1651790/168573874-b5d57919-2866-4b3c-a4e5-55b6e6ef342e.png 1.5x, https://user-images.githubusercontent.com/1651790/168573874-b5d57919-2866-4b3c-a4e5-55b6e6ef342e.png 2x"
+        data-sizes="auto"
+        alt="https://user-images.githubusercontent.com/1651790/168573874-b5d57919-2866-4b3c-a4e5-55b6e6ef342e.png"
+        title="https://user-images.githubusercontent.com/1651790/168573874-b5d57919-2866-4b3c-a4e5-55b6e6ef342e.png"></p>
+<p>It&rsquo;s quite cool, ah? For now, we have a simple but typical data stack like any hobby data lab with everything open-source!</p>
+<p>Imagine we have 100 datasets in CSV, 200 tables in Data warehouse and a couple of data engineers running different projects that consume, generate different application, dashboard, and databases. When someone would like to discovery some of those table, dataset, dashboard and pipelines running across them, and then even modify some of them, it&rsquo;s proven to be quite costly in both communicationand engineering.</p>
+<p>Here comes the main part of our reference project: Metadata Discovery.</p>
+<h3 id="metadata-discovery" class="headerLink">
+    <a href="#metadata-discovery" class="header-mark"></a>3.4 Metadata Discovery</h3><p>Then, we are stepping to deploy the Amundsen with Nebula Graph and Elasticsearch.</p>
+<blockquote>
+<p>Note: For the time being, the <a href="https://github.com/amundsen-io/amundsen/pull/1817" target="_blank" rel="noopener noreffer">PR Nebula Graph as the Amundsen backend</a> is not yet merged, I am <a href="https://github.com/amundsen-io/rfcs/pull/48" target="_blank" rel="noopener noreffer">working with the Amundsen team</a> to make it happen.</p>
+</blockquote>
+<p>With Amundsen, we could have all metadata of the whole data stack being discovered and managed in one place. And there are mainly two parts of Amundsen:</p>
+<ul>
+<li>Metadata Ingestion
+<ul>
+<li><a href="https://www.amundsen.io/amundsen/databuilder/" target="_blank" rel="noopener noreffer">Amundsen Data builder</a></li>
+</ul>
+</li>
+<li>Metadata Catalog
+<ul>
+<li><a href="https://www.amundsen.io/amundsen/frontend/" target="_blank" rel="noopener noreffer">Amundsen Frontend service</a></li>
+<li><a href="https://www.amundsen.io/amundsen/metadata/" target="_blank" rel="noopener noreffer">Amundsen Metadata service</a></li>
+<li><a href="https://www.amundsen.io/amundsen/search/" target="_blank" rel="noopener noreffer">Amundsen Search service</a></li>
+</ul>
+</li>
+</ul>
+<p>We will be leveraging <code>Data builder</code> to pull metadata from different sources, and persist metadata into the backend storage of the <code>Meta service</code> and the backend storage of the <code>Search service</code>, then we could search, discover and manage them from the <code>Frontend service</code> or through the API of the <code>Metadata service</code>.</p>
+<h4 id="deploy-amundsen" class="headerLink">
+    <a href="#deploy-amundsen" class="header-mark"></a>3.4.1 Deploy Amundsen</h4><h5 id="metadata-service" class="headerLink">
+    <a href="#metadata-service" class="header-mark"></a>3.4.1.1 Metadata service</h5><p>We are going to deploy a cluster of Amundsen with its docker-compose file. As the Nebula Graph backend support is not yet merged, we are referring to my fork.</p>
+<p>First, let&rsquo;s clone the repo with all submodules:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">git clone -b amundsen_nebula_graph --recursive git@github.com:wey-gu/amundsen.git
+</span></span><span class="line"><span class="cl"><span class="nb">cd</span> amundsen
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Then, start all catalog services and their backend storage:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker-compose -f docker-amundsen-nebula.yml up
+</span></span></code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>You could add <code>-d</code> to put the containers running in the background:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker-compose -f docker-amundsen-nebula.yml up -d
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>And this will stop the cluster:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker-compose -f docker-amundsen-nebula.yml stop
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>This will remove the cluster:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker-compose -f docker-amundsen-nebula.yml down
+</span></span></code></pre></td></tr></table>
+</div>
+</div></blockquote>
+<p>Due to this docker-compose file is for developers to play and hack Amundsen easily rather than for production deployment, it&rsquo;s building images from the codebase, which, will take some time for the very first time.</p>
+<p>After it&rsquo;s being deployed, please hold on a second before we load some dummy data into its storage with Data builder.</p>
+<h5 id="data-builder" class="headerLink">
+    <a href="#data-builder" class="header-mark"></a>3.4.1.2 Data builder</h5><p>Amundsen Data builder is just like a Meltano but for ETL of Metadata to <code>Metadata service</code> and <code>Search service</code>‘s backend storage: Nebula Graph and Elasticsearch. The Data builder here is only a python module and the ETL job could be either run as a script or orchestrated with a DAG platform like Apache Airflow.</p>
+<p>With <a href="https://github.com/amundsen-io/amundsen/tree/main/databuilder" target="_blank" rel="noopener noreffer">Amundsen Data builder</a> being installed:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nb">cd</span> databuilder
+</span></span><span class="line"><span class="cl">python3 -m venv .venv
+</span></span><span class="line"><span class="cl"><span class="nb">source</span> .venv/bin/activate
+</span></span><span class="line"><span class="cl">python3 -m pip install wheel
+</span></span><span class="line"><span class="cl">python3 -m pip install -r requirements.txt
+</span></span><span class="line"><span class="cl">python3 setup.py install
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Let&rsquo;s call this sample Data builder ETL script to have some dummy data filled in.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">python3 example/scripts/sample_data_loader_nebula.py
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h5 id="verify-amundsen" class="headerLink">
+    <a href="#verify-amundsen" class="header-mark"></a>3.4.1.3 Verify Amundsen</h5><p>Before accessing Amundsen, we need to create a test user:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># run a container with curl attached to amundsenfrontend</span>
+</span></span><span class="line"><span class="cl">docker run -it --rm --net container:amundsenfrontend nicolaka/netshoot
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Create a user with id test_user_id</span>
+</span></span><span class="line"><span class="cl">curl -X PUT -v http://amundsenmetadata:5002/user <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    -H <span class="s2">&#34;Content-Type: application/json&#34;</span> <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    --data <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    <span class="s1">&#39;{&#34;user_id&#34;:&#34;test_user_id&#34;,&#34;first_name&#34;:&#34;test&#34;,&#34;last_name&#34;:&#34;user&#34;, &#34;email&#34;:&#34;test_user_id@mail.com&#34;}&#39;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nb">exit</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Then we could view UI at <a href="http://localhost:5000/" target="_blank" rel="noopener noreffer"><code>http://localhost:5000</code></a> and try to search <code>test</code>, it should return some results.</p>
+<p><img
+        class="lazyload"
+        data-src="https://github.com/amundsen-io/amundsen/raw/master/docs/img/search-page.png"
+        data-srcset="https://github.com/amundsen-io/amundsen/raw/master/docs/img/search-page.png, https://github.com/amundsen-io/amundsen/raw/master/docs/img/search-page.png 1.5x, https://github.com/amundsen-io/amundsen/raw/master/docs/img/search-page.png 2x"
+        data-sizes="auto"
+        alt="https://github.com/amundsen-io/amundsen/raw/master/docs/img/search-page.png"
+        title="https://github.com/amundsen-io/amundsen/raw/master/docs/img/search-page.png"></p>
+<p>Then you could click and explore those dummy metadata loaded to Amundsen during the <code>sample_data_loader_nebula.py</code> on your own.</p>
+<p>Additionally, you could access the Graph Database with Nebula Studio(http://localhost:7001).</p>
+<blockquote>
+<p>Note in Nebula Studio, the default fields to log in will be:</p>
+<ul>
+<li>Hosts: <code>graphd:9669</code></li>
+<li>User: <code>root</code></li>
+<li>Password: <code>nebula</code></li>
+</ul>
+</blockquote>
+<p>This diagram shows some more details on the components of Amundsen:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">       ┌────────────────────────┐ ┌────────────────────────────────────────┐
+</span></span><span class="line"><span class="cl">       │ Frontend:5000          │ │ Metadata Sources                       │
+</span></span><span class="line"><span class="cl">       ├────────────────────────┤ │ ┌────────┐ ┌─────────┐ ┌─────────────┐ │
+</span></span><span class="line"><span class="cl">       │ Metaservice:5001       │ │ │        │ │         │ │             │ │
+</span></span><span class="line"><span class="cl">       │ ┌──────────────┐       │ │ │ Foo DB │ │ Bar App │ │ X Dashboard │ │
+</span></span><span class="line"><span class="cl">  ┌────┼─┤ Nebula Proxy │       │ │ │        │ │         │ │             │ │
+</span></span><span class="line"><span class="cl">  │    │ └──────────────┘       │ │ │        │ │         │ │             │ │
+</span></span><span class="line"><span class="cl">  │    ├────────────────────────┤ │ └────────┘ └─────┬───┘ └─────────────┘ │
+</span></span><span class="line"><span class="cl">┌─┼────┤ Search searvice:5002   │ │                  │                     │
+</span></span><span class="line"><span class="cl">│ │    └────────────────────────┘ └──────────────────┼─────────────────────┘
+</span></span><span class="line"><span class="cl">│ │    ┌─────────────────────────────────────────────┼───────────────────────┐
+</span></span><span class="line"><span class="cl">│ │    │                                             │                       │
+</span></span><span class="line"><span class="cl">│ │    │ Databuilder     ┌───────────────────────────┘                       │
+</span></span><span class="line"><span class="cl">│ │    │                 │                                                   │
+</span></span><span class="line"><span class="cl">│ │    │ ┌───────────────▼────────────────┐ ┌──────────────────────────────┐ │
+</span></span><span class="line"><span class="cl">│ │ ┌──┼─► Extractor of Sources           ├─► nebula_search_data_extractor │ │
+</span></span><span class="line"><span class="cl">│ │ │  │ └───────────────┬────────────────┘ └──────────────┬───────────────┘ │
+</span></span><span class="line"><span class="cl">│ │ │  │ ┌───────────────▼────────────────┐ ┌──────────────▼───────────────┐ │
+</span></span><span class="line"><span class="cl">│ │ │  │ │ Loader filesystem_csv_nebula   │ │ Loader Elastic FS loader     │ │
+</span></span><span class="line"><span class="cl">│ │ │  │ └───────────────┬────────────────┘ └──────────────┬───────────────┘ │
+</span></span><span class="line"><span class="cl">│ │ │  │ ┌───────────────▼────────────────┐ ┌──────────────▼───────────────┐ │
+</span></span><span class="line"><span class="cl">│ │ │  │ │ Publisher nebula_csv_publisher │ │ Publisher Elasticsearch      │ │
+</span></span><span class="line"><span class="cl">│ │ │  │ └───────────────┬────────────────┘ └──────────────┬───────────────┘ │
+</span></span><span class="line"><span class="cl">│ │ │  └─────────────────┼─────────────────────────────────┼─────────────────┘
+</span></span><span class="line"><span class="cl">│ │ └────────────────┐   │                                 │
+</span></span><span class="line"><span class="cl">│ │    ┌─────────────┼───►─────────────────────────┐ ┌─────▼─────┐
+</span></span><span class="line"><span class="cl">│ │    │ Nebula Graph│   │                         │ │           │
+</span></span><span class="line"><span class="cl">│ └────┼─────┬───────┴───┼───────────┐     ┌─────┐ │ │           │
+</span></span><span class="line"><span class="cl">│      │     │           │           │     │MetaD│ │ │           │
+</span></span><span class="line"><span class="cl">│      │ ┌───▼──┐    ┌───▼──┐    ┌───▼──┐  └─────┘ │ │           │
+</span></span><span class="line"><span class="cl">│ ┌────┼─►GraphD│    │GraphD│    │GraphD│          │ │           │
+</span></span><span class="line"><span class="cl">│ │    │ └──────┘    └──────┘    └──────┘  ┌─────┐ │ │           │
+</span></span><span class="line"><span class="cl">│ │    │ :9669                             │MetaD│ │ │  Elastic  │
+</span></span><span class="line"><span class="cl">│ │    │ ┌────────┐ ┌────────┐ ┌────────┐  └─────┘ │ │  Search   │
+</span></span><span class="line"><span class="cl">│ │    │ │        │ │        │ │        │          │ │  Cluster  │
+</span></span><span class="line"><span class="cl">│ │    │ │StorageD│ │StorageD│ │StorageD│  ┌─────┐ │ │  :9200    │
+</span></span><span class="line"><span class="cl">│ │    │ │        │ │        │ │        │  │MetaD│ │ │           │
+</span></span><span class="line"><span class="cl">│ │    │ └────────┘ └────────┘ └────────┘  └─────┘ │ │           │
+</span></span><span class="line"><span class="cl">│ │    ├───────────────────────────────────────────┤ │           │
+</span></span><span class="line"><span class="cl">│ └────┤ Nebula Studio:7001                        │ │           │
+</span></span><span class="line"><span class="cl">│      └───────────────────────────────────────────┘ └─────▲─────┘
+</span></span><span class="line"><span class="cl">└──────────────────────────────────────────────────────────┘
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="connecting-the-dots-metadata-discovery" class="headerLink">
+    <a href="#connecting-the-dots-metadata-discovery" class="header-mark"></a>4 Connecting the dots, Metadata Discovery</h2><p>With the basic environment being set up, let&rsquo;s put everything together.</p>
+<p>Remember we had ELT some data to PostgreSQL as this?</p>
+<p><img
+        class="lazyload"
+        data-src="https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png"
+        data-srcset="https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png, https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png 1.5x, https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png 2x"
+        data-sizes="auto"
+        alt="https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png"
+        title="https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png"></p>
+<p>How could we let Amundsen discover metadata regarding those data and ETL?</p>
+<h3 id="extracting-postgres-metadata" class="headerLink">
+    <a href="#extracting-postgres-metadata" class="header-mark"></a>4.1 Extracting Postgres metadata</h3><p>We started on the data source: Postgres, first.</p>
+<p>We install the Postgres Client for python3:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sudo apt-get install libpq-dev
+</span></span><span class="line"><span class="cl">pip3 install Psycopg2
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="execution-of-postgres-metadata-etl" class="headerLink">
+    <a href="#execution-of-postgres-metadata-etl" class="header-mark"></a>4.1.1 Execution of Postgres metadata ETL</h4><p>Run a script to parse Postgres Metadata:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">CREDENTIALS_POSTGRES_USER</span><span class="o">=</span>lineage_ref
+</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">CREDENTIALS_POSTGRES_PASSWORD</span><span class="o">=</span>lineage_ref
+</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">CREDENTIALS_POSTGRES_DATABASE</span><span class="o">=</span>warehouse
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">python3 example/scripts/sample_postgres_loader_nebula.py
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>If you look into the code of the sample script for loading Postgres metadata to Nebula, the main lines are quite straightforward:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="c1"># part 1: PostgressMetadata --&gt; CSV --&gt; Nebula Graph</span>
+</span></span><span class="line"><span class="cl"><span class="n">job</span> <span class="o">=</span> <span class="n">DefaultJob</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">      <span class="n">conf</span><span class="o">=</span><span class="n">job_config</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="n">task</span><span class="o">=</span><span class="n">DefaultTask</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">          <span class="n">extractor</span><span class="o">=</span><span class="n">PostgresMetadataExtractor</span><span class="p">(),</span>
+</span></span><span class="line"><span class="cl">          <span class="n">loader</span><span class="o">=</span><span class="n">FsNebulaCSVLoader</span><span class="p">()),</span>
+</span></span><span class="line"><span class="cl">      <span class="n">publisher</span><span class="o">=</span><span class="n">NebulaCsvPublisher</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="o">...</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># part 2: Metadata stored in NebulaGraph --&gt; Elasticsearch</span>
+</span></span><span class="line"><span class="cl"><span class="n">extractor</span> <span class="o">=</span> <span class="n">NebulaSearchDataExtractor</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="n">task</span> <span class="o">=</span> <span class="n">SearchMetadatatoElasticasearchTask</span><span class="p">(</span><span class="n">extractor</span><span class="o">=</span><span class="n">extractor</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">job</span> <span class="o">=</span> <span class="n">DefaultJob</span><span class="p">(</span><span class="n">conf</span><span class="o">=</span><span class="n">job_config</span><span class="p">,</span> <span class="n">task</span><span class="o">=</span><span class="n">task</span><span class="p">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>The first job was to load data in path:<code>PostgressMetadata --&gt; CSV --&gt; Nebula Graph</code></p>
+<ul>
+<li><code>PostgresMetadataExtractor</code> was used to extract/pull metadata from Postgres, refer <a href="https://www.amundsen.io/amundsen/databuilder/#postgresmetadataextractor" target="_blank" rel="noopener noreffer">here</a> for its documentation.</li>
+<li><code>FsNebulaCSVLoader</code> was used to put extracted data intermediately as CSV files</li>
+<li><code>NebulaCsvPublisher</code> was used to publish metadata in form of CSV to Nebula Graph</li>
+</ul>
+<p>The second job was to load in the path: <code>Metadata stored in NebulaGraph --&gt; Elasticsearch</code></p>
+<ul>
+<li><code>NebulaSearchDataExtractor</code> was used to fetch metadata stored in Nebula Graph</li>
+<li><code>SearchMetadatatoElasticasearchTask</code> was used to make metadata indexed with Elasticsearch.</li>
+</ul>
+<blockquote>
+<p>Note, in production, we could trigger those jobs either in scripts or with an orchestration platform like Apache Airflow.</p>
+</blockquote>
+<h4 id="verify-the-postgres-extraction" class="headerLink">
+    <a href="#verify-the-postgres-extraction" class="header-mark"></a>4.1.2 Verify the Postgres Extraction</h4><p>Search <code>payments</code> or directly visit http://localhost:5000/table_detail/warehouse/postgres/public/payments, you could see the metadata from our Postgres like:</p>
+<p><img
+        class="lazyload"
+        data-src="https://user-images.githubusercontent.com/1651790/168475180-ebfaa188-268c-4fbe-a614-135d56d07e5d.png"
+        data-srcset="https://user-images.githubusercontent.com/1651790/168475180-ebfaa188-268c-4fbe-a614-135d56d07e5d.png, https://user-images.githubusercontent.com/1651790/168475180-ebfaa188-268c-4fbe-a614-135d56d07e5d.png 1.5x, https://user-images.githubusercontent.com/1651790/168475180-ebfaa188-268c-4fbe-a614-135d56d07e5d.png 2x"
+        data-sizes="auto"
+        alt="https://user-images.githubusercontent.com/1651790/168475180-ebfaa188-268c-4fbe-a614-135d56d07e5d.png"
+        title="https://user-images.githubusercontent.com/1651790/168475180-ebfaa188-268c-4fbe-a614-135d56d07e5d.png"></p>
+<p>Then, metadata management actions like adding tags, owners, and descriptions could be done easily as it was in the above screen capture, too.</p>
+<h3 id="extracting-dbt-metadata" class="headerLink">
+    <a href="#extracting-dbt-metadata" class="header-mark"></a>4.2 Extracting dbt metadata</h3><p>Actually, we could also pull metadata from <a href="https://www.getdbt.com/" target="_blank" rel="noopener noreffer">dbt</a> itself.</p>
+<p>The Amundsen <a href="https://www.amundsen.io/amundsen/databuilder/#dbtextractor" target="_blank" rel="noopener noreffer">DbtExtractor</a>, will parse the <code>catalog.json</code> or <code>manifest.json</code> file to load metadata to Amundsen storage(Nebula Graph and Elasticsearch).</p>
+<p>In above meltano chapter, we had already generated that file with <code>meltano invoke dbt docs generate</code>, and the output like the following is telling us the <code>catalog.json</code> file:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">14:23:15  Done.
+</span></span><span class="line"><span class="cl">14:23:15  Building catalog
+</span></span><span class="line"><span class="cl">14:23:15  Catalog written to /home/ubuntu/ref-data-lineage/meltano_example_implementations/meltano_projects/singer_dbt_jaffle/.meltano/transformers/dbt/target/catalog.json
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="execution-of-dbt-metadata-etl" class="headerLink">
+    <a href="#execution-of-dbt-metadata-etl" class="header-mark"></a>4.2.1 Execution of dbt metadata ETL</h4><p>There is an example script with a sample dbt output files:</p>
+<p>The sample dbt files:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ ls -l example/sample_data/dbt/
+</span></span><span class="line"><span class="cl">total <span class="m">184</span>
+</span></span><span class="line"><span class="cl">-rw-rw-r-- <span class="m">1</span> w w   <span class="m">5320</span> May <span class="m">15</span> 07:17 catalog.json
+</span></span><span class="line"><span class="cl">-rw-rw-r-- <span class="m">1</span> w w <span class="m">177163</span> May <span class="m">15</span> 07:17 manifest.json
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>We could load this sample dbt manifest with:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">python3 example/scripts/sample_dbt_loader_nebula.py
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>From this lines of python code, we could tell those process as:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="c1"># part 1: Dbt manifest --&gt; CSV --&gt; Nebula Graph</span>
+</span></span><span class="line"><span class="cl"><span class="n">job</span> <span class="o">=</span> <span class="n">DefaultJob</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">      <span class="n">conf</span><span class="o">=</span><span class="n">job_config</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="n">task</span><span class="o">=</span><span class="n">DefaultTask</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">          <span class="n">extractor</span><span class="o">=</span><span class="n">DbtExtractor</span><span class="p">(),</span>
+</span></span><span class="line"><span class="cl">          <span class="n">loader</span><span class="o">=</span><span class="n">FsNebulaCSVLoader</span><span class="p">()),</span>
+</span></span><span class="line"><span class="cl">      <span class="n">publisher</span><span class="o">=</span><span class="n">NebulaCsvPublisher</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="o">...</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># part 2: Metadata stored in NebulaGraph --&gt; Elasticsearch</span>
+</span></span><span class="line"><span class="cl"><span class="n">extractor</span> <span class="o">=</span> <span class="n">NebulaSearchDataExtractor</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="n">task</span> <span class="o">=</span> <span class="n">SearchMetadatatoElasticasearchTask</span><span class="p">(</span><span class="n">extractor</span><span class="o">=</span><span class="n">extractor</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">job</span> <span class="o">=</span> <span class="n">DefaultJob</span><span class="p">(</span><span class="n">conf</span><span class="o">=</span><span class="n">job_config</span><span class="p">,</span> <span class="n">task</span><span class="o">=</span><span class="n">task</span><span class="p">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>And the only differences from the Postgres meta ETL is the <code>extractor=DbtExtractor()</code>, where it comes with following confiugrations to get below information regarding dbt projects:</p>
+<ul>
+<li>databases_name</li>
+<li>catalog_json</li>
+<li>manifest_json</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">job_config</span> <span class="o">=</span> <span class="n">ConfigFactory</span><span class="o">.</span><span class="n">from_dict</span><span class="p">({</span>
+</span></span><span class="line"><span class="cl">  <span class="s1">&#39;extractor.dbt.database_name&#39;</span><span class="p">:</span> <span class="n">database_name</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s1">&#39;extractor.dbt.catalog_json&#39;</span><span class="p">:</span> <span class="n">catalog_file_loc</span><span class="p">,</span>  <span class="c1"># File</span>
+</span></span><span class="line"><span class="cl">  <span class="s1">&#39;extractor.dbt.manifest_json&#39;</span><span class="p">:</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">manifest_data</span><span class="p">),</span>  <span class="c1"># JSON Dumped objecy</span>
+</span></span><span class="line"><span class="cl">  <span class="s1">&#39;extractor.dbt.source_url&#39;</span><span class="p">:</span> <span class="n">source_url</span><span class="p">})</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="verify-the-dbt-extraction" class="headerLink">
+    <a href="#verify-the-dbt-extraction" class="header-mark"></a>4.2.2 Verify the dbt Extraction</h4><p>Search <code>dbt_demo</code> or visit http://localhost:5000/table_detail/dbt_demo/snowflake/public/raw_inventory_value to see:</p>
+<p><img
+        class="lazyload"
+        data-src="https://user-images.githubusercontent.com/1651790/168479864-2f73ea73-265f-4cd2-999f-e7effbaf3ec1.png"
+        data-srcset="https://user-images.githubusercontent.com/1651790/168479864-2f73ea73-265f-4cd2-999f-e7effbaf3ec1.png, https://user-images.githubusercontent.com/1651790/168479864-2f73ea73-265f-4cd2-999f-e7effbaf3ec1.png 1.5x, https://user-images.githubusercontent.com/1651790/168479864-2f73ea73-265f-4cd2-999f-e7effbaf3ec1.png 2x"
+        data-sizes="auto"
+        alt="https://user-images.githubusercontent.com/1651790/168479864-2f73ea73-265f-4cd2-999f-e7effbaf3ec1.png"
+        title="https://user-images.githubusercontent.com/1651790/168479864-2f73ea73-265f-4cd2-999f-e7effbaf3ec1.png"></p>
+<blockquote>
+<p>Tips: we could optionally enable debug logging to see what had been sent to Elasticsearch and Nebula Graph!</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-diff" data-lang="diff"><span class="line"><span class="cl"><span class="gd">- logging.basicConfig(level=logging.INFO)
+</span></span></span><span class="line"><span class="cl"><span class="gd"></span><span class="gi">+ logging.basicConfig(level=logging.DEBUG)
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div></blockquote>
+<p>Or, alternatively, explore the imported data in Nebula Studio:</p>
+<p>First, click &ldquo;Start with Vertices&rdquo;, fill in the vertex id: <code>snowflake://dbt_demo.public/fact_warehouse_inventory</code></p>
+<p><img
+        class="lazyload"
+        data-src="https://user-images.githubusercontent.com/1651790/168480047-26c28cde-5df8-40af-8da4-6ab0203094e2.png"
+        data-srcset="https://user-images.githubusercontent.com/1651790/168480047-26c28cde-5df8-40af-8da4-6ab0203094e2.png, https://user-images.githubusercontent.com/1651790/168480047-26c28cde-5df8-40af-8da4-6ab0203094e2.png 1.5x, https://user-images.githubusercontent.com/1651790/168480047-26c28cde-5df8-40af-8da4-6ab0203094e2.png 2x"
+        data-sizes="auto"
+        alt="https://user-images.githubusercontent.com/1651790/168480047-26c28cde-5df8-40af-8da4-6ab0203094e2.png"
+        title="https://user-images.githubusercontent.com/1651790/168480047-26c28cde-5df8-40af-8da4-6ab0203094e2.png"></p>
+<p>Then, we could see the vertex being shown as the pink dot. Let&rsquo;s modify the <code>Expand</code> options with:</p>
+<ul>
+<li>Direction: Bidirect</li>
+<li>Steps: Single with 3</li>
+</ul>
+<p><img
+        class="lazyload"
+        data-src="https://user-images.githubusercontent.com/1651790/168480101-7b7b5824-06d9-4155-87c9-798db0dc7612.png"
+        data-srcset="https://user-images.githubusercontent.com/1651790/168480101-7b7b5824-06d9-4155-87c9-798db0dc7612.png, https://user-images.githubusercontent.com/1651790/168480101-7b7b5824-06d9-4155-87c9-798db0dc7612.png 1.5x, https://user-images.githubusercontent.com/1651790/168480101-7b7b5824-06d9-4155-87c9-798db0dc7612.png 2x"
+        data-sizes="auto"
+        alt="https://user-images.githubusercontent.com/1651790/168480101-7b7b5824-06d9-4155-87c9-798db0dc7612.png"
+        title="https://user-images.githubusercontent.com/1651790/168480101-7b7b5824-06d9-4155-87c9-798db0dc7612.png"></p>
+<p>And double click the vertex(dot), it will expand 3 steps in bidirection:</p>
+<p><img
+        class="lazyload"
+        data-src="https://user-images.githubusercontent.com/1651790/168480280-1dc88d1b-1f1e-48fd-9997-972965522ef5.png"
+        data-srcset="https://user-images.githubusercontent.com/1651790/168480280-1dc88d1b-1f1e-48fd-9997-972965522ef5.png, https://user-images.githubusercontent.com/1651790/168480280-1dc88d1b-1f1e-48fd-9997-972965522ef5.png 1.5x, https://user-images.githubusercontent.com/1651790/168480280-1dc88d1b-1f1e-48fd-9997-972965522ef5.png 2x"
+        data-sizes="auto"
+        alt="https://user-images.githubusercontent.com/1651790/168480280-1dc88d1b-1f1e-48fd-9997-972965522ef5.png"
+        title="https://user-images.githubusercontent.com/1651790/168480280-1dc88d1b-1f1e-48fd-9997-972965522ef5.png"></p>
+<p>From this graph view, the insight of the metadata is extremely easy to be explored, right?</p>
+<blockquote>
+<p>Tips, you may like to click the 👁 icon to select some properties to be shown, which was done by me before capturing the screen as above.</p>
+</blockquote>
+<p>And, what we had seen in the Nebula Studio echoes the data model of Amundsen metadata service, too:</p>
+<p><img
+        class="lazyload"
+        data-src="https://www.amundsen.io/amundsen/img/graph_model.png"
+        data-srcset="https://www.amundsen.io/amundsen/img/graph_model.png, https://www.amundsen.io/amundsen/img/graph_model.png 1.5x, https://www.amundsen.io/amundsen/img/graph_model.png 2x"
+        data-sizes="auto"
+        alt="https://www.amundsen.io/amundsen/img/graph_model.png"
+        title="https://www.amundsen.io/amundsen/img/graph_model.png"></p>
+<p>Finally, remember we had leveraged dbt to transform some data in meltano, and the menifest file path is <code>.meltano/transformers/dbt/target/catalog.json</code>, you can try create a databuilder job to import it.</p>
+<h3 id="extracting-superset-metadata" class="headerLink">
+    <a href="#extracting-superset-metadata" class="header-mark"></a>4.3 Extracting Superset metadata</h3><p><a href="https://www.amundsen.io/amundsen/databuilder/databuilder/extractor/dashboard/apache_superset/apache_superset_metadata_extractor.py" target="_blank" rel="noopener noreffer">Dashboards</a>, <a href="https://www.amundsen.io/amundsen/databuilder/databuilder/extractor/dashboard/apache_superset/apache_superset_chart_extractor.py" target="_blank" rel="noopener noreffer">Charts</a> and the <a href="https://www.amundsen.io/amundsen/databuilder/databuilder/extractor/dashboard/apache_superset/apache_superset_table_extractor.py" target="_blank" rel="noopener noreffer">relationships with Tables</a> can be extracted by Amundsen data builder, as we already setup a Superset Dashboard, let&rsquo;s try ingesting its metadata.</p>
+<h4 id="execution-of-superset-metadata-etl" class="headerLink">
+    <a href="#execution-of-superset-metadata-etl" class="header-mark"></a>4.3.1 Execution of Superset metadata ETL</h4><p>The sample superset script will fetch data from Superset and load metadata into Nebula Graph and Elasticsearch.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">python3</span> <span class="n">sample_superset_data_loader_nebula</span><span class="o">.</span><span class="n">py</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>If we set the logging level to <code>DEBUG</code>, we could actually see lines like:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="c1"># fetching metadata from superset</span>
+</span></span><span class="line"><span class="cl"><span class="n">DEBUG</span><span class="p">:</span><span class="n">urllib3</span><span class="o">.</span><span class="n">connectionpool</span><span class="p">:</span><span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">localhost</span><span class="p">:</span><span class="mi">8088</span> <span class="s2">&#34;POST /api/v1/security/login HTTP/1.1&#34;</span> <span class="mi">200</span> <span class="mi">280</span>
+</span></span><span class="line"><span class="cl"><span class="n">INFO</span><span class="p">:</span><span class="n">databuilder</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">task</span><span class="p">:</span><span class="n">Running</span> <span class="n">a</span> <span class="n">task</span>
+</span></span><span class="line"><span class="cl"><span class="n">DEBUG</span><span class="p">:</span><span class="n">urllib3</span><span class="o">.</span><span class="n">connectionpool</span><span class="p">:</span><span class="n">Starting</span> <span class="n">new</span> <span class="n">HTTP</span> <span class="n">connection</span> <span class="p">(</span><span class="mi">1</span><span class="p">):</span> <span class="n">localhost</span><span class="p">:</span><span class="mi">8088</span>
+</span></span><span class="line"><span class="cl"><span class="n">DEBUG</span><span class="p">:</span><span class="n">urllib3</span><span class="o">.</span><span class="n">connectionpool</span><span class="p">:</span><span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">localhost</span><span class="p">:</span><span class="mi">8088</span> <span class="s2">&#34;GET /api/v1/dashboard?q=(page_size:20,page:0,order_direction:desc) HTTP/1.1&#34;</span> <span class="mi">308</span> <span class="mi">374</span>
+</span></span><span class="line"><span class="cl"><span class="n">DEBUG</span><span class="p">:</span><span class="n">urllib3</span><span class="o">.</span><span class="n">connectionpool</span><span class="p">:</span><span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">localhost</span><span class="p">:</span><span class="mi">8088</span> <span class="s2">&#34;GET /api/v1/dashboard/?q=(page_size:20,page:0,order_direction:desc) HTTP/1.1&#34;</span> <span class="mi">200</span> <span class="mi">1058</span>
+</span></span><span class="line"><span class="cl"><span class="o">...</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># insert Dashboard</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">DEBUG</span><span class="p">:</span><span class="n">databuilder</span><span class="o">.</span><span class="n">publisher</span><span class="o">.</span><span class="n">nebula_csv_publisher</span><span class="p">:</span><span class="n">Query</span><span class="p">:</span> <span class="n">INSERT</span> <span class="n">VERTEX</span> <span class="err">`</span><span class="n">Dashboard</span><span class="err">`</span> <span class="p">(</span><span class="err">`</span><span class="n">dashboard_url</span><span class="err">`</span><span class="p">,</span> <span class="err">`</span><span class="n">name</span><span class="err">`</span><span class="p">,</span> <span class="n">published_tag</span><span class="p">,</span> <span class="n">publisher_last_updated_epoch_ms</span><span class="p">)</span> <span class="n">VALUES</span>  <span class="s2">&#34;superset_dashboard://my_cluster.1/3&#34;</span><span class="p">:(</span><span class="s2">&#34;http://localhost:8088/superset/dashboard/3/&#34;</span><span class="p">,</span><span class="s2">&#34;my_dashboard&#34;</span><span class="p">,</span><span class="s2">&#34;unique_tag&#34;</span><span class="p">,</span><span class="n">timestamp</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl"><span class="o">...</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># insert a DASHBOARD_WITH_TABLE relationship/edge</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">INFO</span><span class="p">:</span><span class="n">databuilder</span><span class="o">.</span><span class="n">publisher</span><span class="o">.</span><span class="n">nebula_csv_publisher</span><span class="p">:</span><span class="n">Importing</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">edge</span> <span class="n">files</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;/tmp/amundsen/dashboard/relationships/Dashboard_Table_DASHBOARD_WITH_TABLE.csv&#39;</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl"><span class="n">DEBUG</span><span class="p">:</span><span class="n">databuilder</span><span class="o">.</span><span class="n">publisher</span><span class="o">.</span><span class="n">nebula_csv_publisher</span><span class="p">:</span><span class="n">Query</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl"><span class="n">INSERT</span> <span class="n">edge</span> <span class="err">`</span><span class="n">DASHBOARD_WITH_TABLE</span><span class="err">`</span> <span class="p">(</span><span class="err">`</span><span class="n">END_LABEL</span><span class="err">`</span><span class="p">,</span> <span class="err">`</span><span class="n">START_LABEL</span><span class="err">`</span><span class="p">,</span> <span class="n">published_tag</span><span class="p">,</span> <span class="n">publisher_last_updated_epoch_ms</span><span class="p">)</span> <span class="n">VALUES</span> <span class="s2">&#34;superset_dashboard://my_cluster.1/3&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;postgresql+psycopg2://my_cluster.warehouse/orders&#34;</span><span class="p">:(</span><span class="s2">&#34;Table&#34;</span><span class="p">,</span><span class="s2">&#34;Dashboard&#34;</span><span class="p">,</span><span class="s2">&#34;unique_tag&#34;</span><span class="p">,</span> <span class="n">timestamp</span><span class="p">()),</span> <span class="s2">&#34;superset_dashboard://my_cluster.1/3&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;postgresql+psycopg2://my_cluster.warehouse/customers&#34;</span><span class="p">:(</span><span class="s2">&#34;Table&#34;</span><span class="p">,</span><span class="s2">&#34;Dashboard&#34;</span><span class="p">,</span><span class="s2">&#34;unique_tag&#34;</span><span class="p">,</span> <span class="n">timestamp</span><span class="p">());</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="verify-the-superset-dashboard-extraction" class="headerLink">
+    <a href="#verify-the-superset-dashboard-extraction" class="header-mark"></a>4.3.2 Verify the Superset Dashboard Extraction</h4><p>By searching it in Amundsen, we could the Dashboard info now. And we could verify it from Nebula Studio, too.</p>
+<p><img
+        class="lazyload"
+        data-src="https://user-images.githubusercontent.com/1651790/168719624-738323dd-4c6e-475f-a370-f149181c6184.png"
+        data-srcset="https://user-images.githubusercontent.com/1651790/168719624-738323dd-4c6e-475f-a370-f149181c6184.png, https://user-images.githubusercontent.com/1651790/168719624-738323dd-4c6e-475f-a370-f149181c6184.png 1.5x, https://user-images.githubusercontent.com/1651790/168719624-738323dd-4c6e-475f-a370-f149181c6184.png 2x"
+        data-sizes="auto"
+        alt="https://user-images.githubusercontent.com/1651790/168719624-738323dd-4c6e-475f-a370-f149181c6184.png"
+        title="https://user-images.githubusercontent.com/1651790/168719624-738323dd-4c6e-475f-a370-f149181c6184.png"></p>
+<blockquote>
+<p>Note, see also the Dashboard&rsquo;s model in Amundsen from <a href="https://www.amundsen.io/amundsen/databuilder/docs/dashboard_ingestion_guide/" target="_blank" rel="noopener noreffer">the dashboard ingestion guide</a>:</p>
+<p><img
+        class="lazyload"
+        data-src="https://www.amundsen.io/amundsen/databuilder/docs/assets/dashboard_graph_modeling.png?raw=true"
+        data-srcset="https://www.amundsen.io/amundsen/databuilder/docs/assets/dashboard_graph_modeling.png?raw=true, https://www.amundsen.io/amundsen/databuilder/docs/assets/dashboard_graph_modeling.png?raw=true 1.5x, https://www.amundsen.io/amundsen/databuilder/docs/assets/dashboard_graph_modeling.png?raw=true 2x"
+        data-sizes="auto"
+        alt="https://www.amundsen.io/amundsen/databuilder/docs/assets/dashboard_graph_modeling.png?raw=true"
+        title="dashboard_graph_modeling"></p>
+</blockquote>
+<h3 id="preview-data-with-superset" class="headerLink">
+    <a href="#preview-data-with-superset" class="header-mark"></a>4.4 Preview data with Superset</h3><p>Superset could be used to preview Table Data like this. Corresponding documentation could be referred <a href="https://www.amundsen.io/amundsen/frontend/docs/configuration/#preview-client" target="_blank" rel="noopener noreffer">here</a>, where the API of <code>/superset/sql_json/</code> will be called by Amundsen Frontend.</p>
+<p><img
+        class="lazyload"
+        data-src="https://github.com/amundsen-io/amundsenfrontendlibrary/blob/master/docs/img/data_preview.png?raw=true"
+        data-srcset="https://github.com/amundsen-io/amundsenfrontendlibrary/blob/master/docs/img/data_preview.png?raw=true, https://github.com/amundsen-io/amundsenfrontendlibrary/blob/master/docs/img/data_preview.png?raw=true 1.5x, https://github.com/amundsen-io/amundsenfrontendlibrary/blob/master/docs/img/data_preview.png?raw=true 2x"
+        data-sizes="auto"
+        alt="https://github.com/amundsen-io/amundsenfrontendlibrary/blob/master/docs/img/data_preview.png?raw=true"
+        title="https://github.com/amundsen-io/amundsenfrontendlibrary/blob/master/docs/img/data_preview.png?raw=true"></p>
+<h3 id="enable-data-lineage" class="headerLink">
+    <a href="#enable-data-lineage" class="header-mark"></a>4.5 Enable Data lineage</h3><p>By default, data lineage was not enabled, we could enable it by:</p>
+<ol start="0">
+<li>Go to the Amundsen repo, that&rsquo;s also where we run the <code>docker-compose -f docker-amundsen-nebula.yml up</code> command</li>
+</ol>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nb">cd</span> amundsen
+</span></span></code></pre></td></tr></table>
+</div>
+</div><ol>
+<li>Modify frontend  JS configuration:</li>
+</ol>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-diff" data-lang="diff"><span class="line"><span class="cl"><span class="gd">--- a/frontend/amundsen_application/static/js/config/config-default.ts
+</span></span></span><span class="line"><span class="cl"><span class="gd"></span><span class="gi">+++ b/frontend/amundsen_application/static/js/config/config-default.ts
+</span></span></span><span class="line"><span class="cl"><span class="gi"></span>   tableLineage: {
+</span></span><span class="line"><span class="cl"><span class="gd">-    inAppListEnabled: false,
+</span></span></span><span class="line"><span class="cl"><span class="gd">-    inAppPageEnabled: false,
+</span></span></span><span class="line"><span class="cl"><span class="gd"></span><span class="gi">+    inAppListEnabled: true,
+</span></span></span><span class="line"><span class="cl"><span class="gi">+    inAppPageEnabled: true,
+</span></span></span><span class="line"><span class="cl"><span class="gi"></span>     externalEnabled: false,
+</span></span><span class="line"><span class="cl">     iconPath: &#39;PATH_TO_ICON&#39;,
+</span></span><span class="line"><span class="cl">     isBeta: false,
+</span></span></code></pre></td></tr></table>
+</div>
+</div><ol start="2">
+<li>Now let&rsquo;s run again build for docker image, where the frontend image will be rebuilt.</li>
+</ol>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker-compose -f docker-amundsen-nebula.yml build
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Then, rerun the <code>up -d</code> to ensure frontend container to be recreated with new configuration:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker-compose -f docker-amundsen-nebula.yml up -d
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>We could see something like this:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ docker-compose -f docker-amundsen-nebula.yml up -d
+</span></span><span class="line"><span class="cl">...
+</span></span><span class="line"><span class="cl">Recreating amundsenfrontend           ... <span class="k">done</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>After that, we could visit http://localhost:5000/lineage/table/gold/hive/test_schema/test_table1 to see the <code>Lineage</code> is shown as:</p>
+<p><img
+        class="lazyload"
+        data-src="https://user-images.githubusercontent.com/1651790/168838731-79d0e3bc-439e-4f6b-8ef7-83b37e9bcb12.png"
+        data-srcset="https://user-images.githubusercontent.com/1651790/168838731-79d0e3bc-439e-4f6b-8ef7-83b37e9bcb12.png, https://user-images.githubusercontent.com/1651790/168838731-79d0e3bc-439e-4f6b-8ef7-83b37e9bcb12.png 1.5x, https://user-images.githubusercontent.com/1651790/168838731-79d0e3bc-439e-4f6b-8ef7-83b37e9bcb12.png 2x"
+        data-sizes="auto"
+        alt="https://user-images.githubusercontent.com/1651790/168838731-79d0e3bc-439e-4f6b-8ef7-83b37e9bcb12.png"
+        title="https://user-images.githubusercontent.com/1651790/168838731-79d0e3bc-439e-4f6b-8ef7-83b37e9bcb12.png"></p>
+<p>We could click <code>Downstream</code>(if there is) to see downstream resources of this table:</p>
+<p><img
+        class="lazyload"
+        data-src="https://user-images.githubusercontent.com/1651790/168839251-efd523af-d729-44cf-a40b-fa83a0852654.png"
+        data-srcset="https://user-images.githubusercontent.com/1651790/168839251-efd523af-d729-44cf-a40b-fa83a0852654.png, https://user-images.githubusercontent.com/1651790/168839251-efd523af-d729-44cf-a40b-fa83a0852654.png 1.5x, https://user-images.githubusercontent.com/1651790/168839251-efd523af-d729-44cf-a40b-fa83a0852654.png 2x"
+        data-sizes="auto"
+        alt="https://user-images.githubusercontent.com/1651790/168839251-efd523af-d729-44cf-a40b-fa83a0852654.png"
+        title="https://user-images.githubusercontent.com/1651790/168839251-efd523af-d729-44cf-a40b-fa83a0852654.png"></p>
+<p>Or click Lineage to see the graph:</p>
+<p><img
+        class="lazyload"
+        data-src="https://user-images.githubusercontent.com/1651790/168838814-e6ff5152-c24b-470e-a46a-48f183ba7201.png"
+        data-srcset="https://user-images.githubusercontent.com/1651790/168838814-e6ff5152-c24b-470e-a46a-48f183ba7201.png, https://user-images.githubusercontent.com/1651790/168838814-e6ff5152-c24b-470e-a46a-48f183ba7201.png 1.5x, https://user-images.githubusercontent.com/1651790/168838814-e6ff5152-c24b-470e-a46a-48f183ba7201.png 2x"
+        data-sizes="auto"
+        alt="https://user-images.githubusercontent.com/1651790/168838814-e6ff5152-c24b-470e-a46a-48f183ba7201.png"
+        title="https://user-images.githubusercontent.com/1651790/168838814-e6ff5152-c24b-470e-a46a-48f183ba7201.png"></p>
+<p>There are API for lineage query, too. Here is an example to query that with cURL, where we leverage the netshoot container as we did before for user creation.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker run -it --rm --net container:amundsenfrontend nicolaka/netshoot
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">curl <span class="s2">&#34;http://amundsenmetadata:5002/table/snowflake://dbt_demo.public/raw_inventory_value/lineage?depth=3&amp;direction=both&#34;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>The above API call was to query linage on both upstream and downstream direction, with depth 3 for table <code>snowflake://dbt_demo.public/raw_inventory_value</code>.</p>
+<p>And the result should be like:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;depth&#34;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;downstream_entities&#34;</span><span class="p">:</span> <span class="p">[</span>
+</span></span><span class="line"><span class="cl">        <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&#34;level&#34;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&#34;usage&#34;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&#34;key&#34;</span><span class="p">:</span> <span class="s2">&#34;snowflake://dbt_demo.public/fact_daily_expenses&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&#34;parent&#34;</span><span class="p">:</span> <span class="s2">&#34;snowflake://dbt_demo.public/fact_warehouse_inventory&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&#34;badges&#34;</span><span class="p">:</span> <span class="p">[],</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&#34;source&#34;</span><span class="p">:</span> <span class="s2">&#34;snowflake&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="p">},</span>
+</span></span><span class="line"><span class="cl">        <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&#34;level&#34;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&#34;usage&#34;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&#34;key&#34;</span><span class="p">:</span> <span class="s2">&#34;snowflake://dbt_demo.public/fact_warehouse_inventory&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&#34;parent&#34;</span><span class="p">:</span> <span class="s2">&#34;snowflake://dbt_demo.public/raw_inventory_value&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&#34;badges&#34;</span><span class="p">:</span> <span class="p">[],</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&#34;source&#34;</span><span class="p">:</span> <span class="s2">&#34;snowflake&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">],</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;key&#34;</span><span class="p">:</span> <span class="s2">&#34;snowflake://dbt_demo.public/raw_inventory_value&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;direction&#34;</span><span class="p">:</span> <span class="s2">&#34;both&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;upstream_entities&#34;</span><span class="p">:</span> <span class="p">[]</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>In fact, this lineage data was just extracted and loaded during our <a href="https://github.com/amundsen-io/amundsen/blob/main/databuilder/databuilder/extractor/dbt_extractor.py" target="_blank" rel="noopener noreffer">DbtExtractor</a> execution, where <code>extractor.dbt.{DbtExtractor.EXTRACT_LINEAGE}</code> by default was <code>True</code>, thus lineage metadata were created and loaded to Amundsen.</p>
+<h4 id="get-lineage-in-nebula-graph" class="headerLink">
+    <a href="#get-lineage-in-nebula-graph" class="header-mark"></a>4.5.1 Get lineage in Nebula Graph</h4><p>Two of the advantages to use a Graph Database as Metadata Storage are:</p>
+<ul>
+<li>The graph query itself is a flexible DSL for lineage API, for example, this query helps us do the equivalent query of the Amundsen metadata API for fetching lineage:</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">MATCH p=(t:Table) -[:HAS_UPSTREAM|:HAS_DOWNSTREAM *1..3]-&gt;(x)
+</span></span><span class="line"><span class="cl">WHERE id(t) == &#34;snowflake://dbt_demo.public/raw_inventory_value&#34; RETURN p
+</span></span></code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>We could now even query it in Nebula Graph Studio&rsquo;s console, and click <code>View Subgraphs</code> to make it rendered in a graph view then.</li>
+</ul>
+<p><img
+        class="lazyload"
+        data-src="https://user-images.githubusercontent.com/1651790/168844882-ca3d0587-7946-4e17-8264-9dc973a44673.png"
+        data-srcset="https://user-images.githubusercontent.com/1651790/168844882-ca3d0587-7946-4e17-8264-9dc973a44673.png, https://user-images.githubusercontent.com/1651790/168844882-ca3d0587-7946-4e17-8264-9dc973a44673.png 1.5x, https://user-images.githubusercontent.com/1651790/168844882-ca3d0587-7946-4e17-8264-9dc973a44673.png 2x"
+        data-sizes="auto"
+        alt="https://user-images.githubusercontent.com/1651790/168844882-ca3d0587-7946-4e17-8264-9dc973a44673.png"
+        title="https://user-images.githubusercontent.com/1651790/168844882-ca3d0587-7946-4e17-8264-9dc973a44673.png"></p>
+<p><img
+        class="lazyload"
+        data-src="https://user-images.githubusercontent.com/1651790/168845155-b0e7a5ce-3ddf-4cc9-89a3-aaf1bbb0f5ec.png"
+        data-srcset="https://user-images.githubusercontent.com/1651790/168845155-b0e7a5ce-3ddf-4cc9-89a3-aaf1bbb0f5ec.png, https://user-images.githubusercontent.com/1651790/168845155-b0e7a5ce-3ddf-4cc9-89a3-aaf1bbb0f5ec.png 1.5x, https://user-images.githubusercontent.com/1651790/168845155-b0e7a5ce-3ddf-4cc9-89a3-aaf1bbb0f5ec.png 2x"
+        data-sizes="auto"
+        alt="https://user-images.githubusercontent.com/1651790/168845155-b0e7a5ce-3ddf-4cc9-89a3-aaf1bbb0f5ec.png"
+        title="https://user-images.githubusercontent.com/1651790/168845155-b0e7a5ce-3ddf-4cc9-89a3-aaf1bbb0f5ec.png"></p>
+<h4 id="extract-data-lineage" class="headerLink">
+    <a href="#extract-data-lineage" class="header-mark"></a>4.5.2 Extract Data Lineage</h4><h5 id="dbt" class="headerLink">
+    <a href="#dbt" class="header-mark"></a>4.5.2.1 Dbt</h5><p>As mentioned above, <a href="https://www.amundsen.io/amundsen/databuilder/#dbtextractor" target="_blank" rel="noopener noreffer">DbtExtractor</a> will extract table level lineage, together with other information defined in the dbt ETL pipeline.</p>
+<h5 id="open-lineage" class="headerLink">
+    <a href="#open-lineage" class="header-mark"></a>4.5.2.2 Open Lineage</h5><p>The other linage extractor out-of-the-box in Amundsen is <a href="https://www.amundsen.io/amundsen/databuilder/#openlineagetablelineageextractor" target="_blank" rel="noopener noreffer">OpenLineageTableLineageExtractor</a>.</p>
+<p><a href="https://openlineage.io/" target="_blank" rel="noopener noreffer">Open Lineage</a> is an open framework to collect lineage data from different sources in one place, which can output linage information as JSON files to be extracted by <a href="https://www.amundsen.io/amundsen/databuilder/#openlineagetablelineageextractor" target="_blank" rel="noopener noreffer">OpenLineageTableLineageExtractor</a>:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">dict_config</span> <span class="o">=</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># ...</span>
+</span></span><span class="line"><span class="cl">    <span class="sa">f</span><span class="s1">&#39;extractor.openlineage_tablelineage.</span><span class="si">{</span><span class="n">OpenLineageTableLineageExtractor</span><span class="o">.</span><span class="n">CLUSTER_NAME</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">:</span> <span class="s1">&#39;datalab&#39;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="sa">f</span><span class="s1">&#39;extractor.openlineage_tablelineage.</span><span class="si">{</span><span class="n">OpenLineageTableLineageExtractor</span><span class="o">.</span><span class="n">OL_DATASET_NAMESPACE_OVERRIDE</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">:</span> <span class="s1">&#39;hive_table&#39;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="sa">f</span><span class="s1">&#39;extractor.openlineage_tablelineage.</span><span class="si">{</span><span class="n">OpenLineageTableLineageExtractor</span><span class="o">.</span><span class="n">TABLE_LINEAGE_FILE_LOCATION</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">:</span> <span class="s1">&#39;input_dir/openlineage_nd.json&#39;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">...</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">task</span> <span class="o">=</span> <span class="n">DefaultTask</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">extractor</span><span class="o">=</span><span class="n">OpenLineageTableLineageExtractor</span><span class="p">(),</span>
+</span></span><span class="line"><span class="cl">    <span class="n">loader</span><span class="o">=</span><span class="n">FsNebulaCSVLoader</span><span class="p">())</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="recap" class="headerLink">
+    <a href="#recap" class="header-mark"></a>5 Recap</h2><p>The whole idea of Metadata Governance/Discovery is to:</p>
+<ul>
+<li>Put all components in the stack as Metadata Sources(from any DB or DW to dbt, Airflow, Openlineage, Superset, etc.)</li>
+<li>Run metadata ETL with Databuilder(as a script, or DAG) to store and index with Nebula Graph(or other Graph Database) and Elasticsearch</li>
+<li>Consume, manage, and discover metadata from Frontend UI(with Superset for preview) or API</li>
+<li>Have more possibilities, flexibility, and insights on Nebula Graph from queries and UI</li>
+</ul>
+<p><img
+        class="lazyload"
+        data-src="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg"
+        data-srcset="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg, https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg 1.5x, https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg 2x"
+        data-sizes="auto"
+        alt="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg"
+        title="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg"></p>
+<h3 id="upstream-projects" class="headerLink">
+    <a href="#upstream-projects" class="header-mark"></a>5.1 Upstream Projects</h3><p>All projects used in this reference project are listed below in lexicographic order.</p>
+<ul>
+<li>Amundsen</li>
+<li>Apache Airflow</li>
+<li>Apache Superset</li>
+<li>dbt</li>
+<li>Elasticsearch</li>
+<li>meltano</li>
+<li>Nebula Graph</li>
+<li>Open Lineage</li>
+<li>singer</li>
+</ul>
+<blockquote>
+<p>Feature Image credit to <a href="https://unsplash.com/photos/PhnJhjH9Y9s" target="_blank" rel="noopener noreffer">Phil Hearing</a></p>
+</blockquote></div>
+
+        <div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>Updated on 2022-06-09</span>
+            </div>
+            <div class="post-info-license"></div>
+        </div>
+        <div class="post-info-line">
+            <div class="post-info-md"><span><a class="link-to-mardown" href=/en/data-lineage-oss-ref-solution/index.md target="_blank" rel="noopener noreferrer">Read markdown</a>
+                    </span></div>
+            <div class="post-info-share">
+                <span><a href="#" onclick="return false;" title="Share on Twitter" data-sharer="twitter" data-url="https://siwei.io/en/data-lineage-oss-ref-solution/" data-title="A Data Lineage OSS Reference Solution" data-via="wey_gu" data-hashtags="Nebula Graph,Amundsen,Data Lineage,Metadata Governance"><i class="fab fa-twitter fa-fw"></i></a><a href="#" onclick="return false;" title="Share on Facebook" data-sharer="facebook" data-url="https://siwei.io/en/data-lineage-oss-ref-solution/" data-hashtag="Nebula Graph"><i class="fab fa-facebook-square fa-fw"></i></a><a href="#" onclick="return false;" title="Share on WhatsApp" data-sharer="whatsapp" data-url="https://siwei.io/en/data-lineage-oss-ref-solution/" data-title="A Data Lineage OSS Reference Solution" data-web><i class="fab fa-whatsapp fa-fw"></i></a><a href="#" onclick="return false;" title="Share on Line" data-sharer="line" data-url="https://siwei.io/en/data-lineage-oss-ref-solution/" data-title="A Data Lineage OSS Reference Solution"><i data-svg-src="/lib/simple-icons/icons/line.min.svg"></i></a><a href="#" onclick="return false;" title="Share on 微博" data-sharer="weibo" data-url="https://siwei.io/en/data-lineage-oss-ref-solution/" data-title="A Data Lineage OSS Reference Solution" data-image="featured-image.webp" data-ralateuid="siweigu"><i class="fab fa-weibo fa-fw"></i></a><a href="#" onclick="return false;" title="Share on Myspace" data-sharer="myspace" data-url="https://siwei.io/en/data-lineage-oss-ref-solution/" data-title="A Data Lineage OSS Reference Solution" data-description="I would like to share my opinionated reference data infra stack with some of those best open-source projects with modern ETL, Dashboard, Metadata Governance, and Data Lineage Management."><i data-svg-src="/lib/simple-icons/icons/myspace.min.svg"></i></a><a href="#" onclick="return false;" title="Share on Blogger" data-sharer="blogger" data-url="https://siwei.io/en/data-lineage-oss-ref-solution/" data-title="A Data Lineage OSS Reference Solution" data-description="I would like to share my opinionated reference data infra stack with some of those best open-source projects with modern ETL, Dashboard, Metadata Governance, and Data Lineage Management."><i class="fab fa-blogger fa-fw"></i></a><a href="#" onclick="return false;" title="Share on Evernote" data-sharer="evernote" data-url="https://siwei.io/en/data-lineage-oss-ref-solution/" data-title="A Data Lineage OSS Reference Solution"><i class="fab fa-evernote fa-fw"></i></a></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section class="post-tags"><i class="fas fa-tags fa-fw"></i>&nbsp;<a href="/en/tags/nebula-graph/">Nebula Graph</a>,&nbsp;<a href="/en/tags/amundsen/">Amundsen</a>,&nbsp;<a href="/en/tags/data-lineage/">Data Lineage</a>,&nbsp;<a href="/en/tags/metadata-governance/">Metadata Governance</a></section>
+        <section>
+            <span><a href="javascript:void(0);" onclick="window.history.back();">Back</a></span>&nbsp;|&nbsp;<span><a href="/en/">Home</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/en/spark-on-nebula-graph/" class="prev" rel="prev" title="Spark on Nebula Graph"><i class="fas fa-angle-left fa-fw"></i>Spark on Nebula Graph</a></div>
+</div>
+<div id="comments"><div id="waline" class="comment"></div><noscript>
+                Please enable JavaScript to view the comments powered by <a href="https://waline.js.org/">Waline</a>.
+            </noscript></div></article></div>
+        </main><footer class="footer">
+        <div class="footer-container"><div class="footer-line">
+                    Powered by <a href="https://gohugo.io/" target="_blank" rel="noopener noreffer" title="Hugo 0.97.3">Hugo</a>&nbsp;|&nbsp;Theme - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreffer" title="DoIt 0.2.13"><i class="far fa-edit fa-fw"></i> DoIt</a>
+                </div><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2018 - 2022</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="https://siwei.io" target="_blank" rel="noopener noreferrer">Wey Gu</a></span>&nbsp;|&nbsp;<span class="license"><a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">CC BY-NC 4.0</a></span></div>
+            <div class="footer-line"></div>
+            <div class="footer-line">
+            </div>
+        </div><script>
+                    if('serviceWorker' in navigator) {
+                        navigator.serviceWorker
+                            .register('/sw.min.js', { scope: '/' })
+                            .then(function(registration) {
+                            });
+                
+                        navigator.serviceWorker
+                            .ready
+                            .then(function(registration) {
+                            });
+                    }
+                </script></footer></div>
+
+    <div id="fixed-buttons"><a href="#back-to-top" id="back-to-top-button" class="fixed-button" title="Back to Top">
+            <i class="fas fa-arrow-up fa-fw"></i>
+        </a><a href="#" id="view-comments" class="fixed-button" title="View Comments">
+            <i class="fas fa-comment fa-fw"></i>
+        </a>
+    </div><div class="assets"><script type="text/javascript" src="/lib/autocomplete/autocomplete.min.js"></script><script type="text/javascript" src="/lib/fuse/fuse.min.js"></script><script type="text/javascript" src="/lib/lazysizes/lazysizes.min.js"></script><script type="text/javascript" src="/lib/tablesort/tablesort.min.js"></script><script type="text/javascript" src="/lib/topbar/topbar.min.js"></script><script type="text/javascript" src="/lib/pjax/pjax.min.js"></script><script type="text/javascript" src="/js/theme.min.js" defer></script><script type="text/javascript">
+            window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());
+            gtag('config', 'UA-659952-4', { 'anonymize_ip': true });
+        </script><script type="text/javascript" src="https://www.googletagmanager.com/gtag/js?id=UA-659952-4" async></script></div>
+
+<div class="pjax-assets"><script type="text/javascript">window.config={"code":{"copyTitle":"Copy to clipboard","maxShownLines":10},"comment":{"waline":{"copyright":true,"dark":"body[theme='dark'], body[theme='black']","el":"#waline","lang":"en","meta":["nick","mail","link"],"pageSize":10,"serverURL":"https://siwei-io.vercel.app"}},"math":{"delimiters":[{"display":true,"left":"$$","right":"$$"},{"display":true,"left":"\\[","right":"\\]"},{"display":false,"left":"$","right":"$"},{"display":false,"left":"\\(","right":"\\)"}],"strict":false},"search":{"distance":100,"findAllMatches":true,"fuseIndexURL":"/en/index.json","highlightTag":"em","ignoreFieldNorm":false,"ignoreLocation":false,"isCaseSensitive":false,"location":0,"maxResultLength":10,"minMatchCharLength":2,"noResultsFound":"No results found","snippetLength":50,"threshold":0.3,"type":"fuse","useExtendedSearch":false},"sharerjs":true,"table":{"sort":true}};</script><script type="text/javascript" src="/lib/waline/waline.js" defer></script><script type="text/javascript" src="/js/waline.min.js" defer></script><script type="text/javascript" src="/lib/clipboard/clipboard.min.js"></script><script type="text/javascript" src="/lib/sharer/sharer.min.js"></script><script type="text/javascript" src="/lib/katex/katex.min.js" defer></script><script type="text/javascript" src="/lib/katex/auto-render.min.js" defer></script><script type="text/javascript" src="/lib/katex/copy-tex.min.js" defer></script><script type="text/javascript" src="/lib/katex/mhchem.min.js" defer></script><script type="text/javascript" src="/js/katex.min.js" defer></script><link rel="stylesheet" href="/lib/waline/waline.min.css"><link rel="stylesheet" href="/lib/katex/katex.min.css"><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/katex/copy-tex.min.css">
+        <noscript><link rel="stylesheet" href="/lib/katex/copy-tex.min.css"></noscript></div>
+</body>
+
+</html>
