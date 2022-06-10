@@ -32,7 +32,7 @@ A Metadata Governance system needs some of the following components:
 - Metadata Catalog
   - This could be a system providing API and/or a GUI interface to read/write the metadata and data lineage
 
-From my special perspective and the context comes from the open-source community is always itching on this entropy increase situation when most of the components could be standardized and jointly contributed rather than being built in-house per each team because most of the sources to parse metadata are just those famous big-data projects and products, and the way to model and CURD those metadata should be in common with a high probability.
+In Nebula Graph community, I had been seeing many graph database users were building their in-house data lineage system. It’s itching witnessing this entropy increase situation not be standarized or jointly contributed instead, as most of their work are parsing metadata from well-known big-data projects, and persistent into a graph database, which, I consider high probability that the work is common.
 
 Then I came to create an opinionated reference data infra stack with some of those best open-source projects put together. Hopefully, those who were gonna define and iterate their own fashion of Graph Model on Nebula Graph and create in-house Metadata and data linage extracting pipelines can benefit from this project to have a relatively polished, beautifully designed, Metadata Governance system out of the box with a fully evolved graph model.
 
