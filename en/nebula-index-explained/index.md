@@ -88,8 +88,10 @@ The reason is Nebula Graph stores data in a distributed and graph-oriented way, 
 > Note: from v3.0, it's possible to do TopN Scan without INDEX, where the `LIMIT <n>` is used, this is different from the fullscan case(INDEX is a must), which will be explained later.
 >
 > ```cypher
-> MATCH (v:player { name: 'Tim Duncan' })-->(v2:player) \
->         RETURN v2.player.name AS Name LIMIT 3;
+> # sample vertex
+> MATCH (v:team) RETURN v LIMIT 3
+> # or sample edge
+> MATCH ()-[e:follow]->() RETURN e LIMIT 3
 > ```
 
 ### Why starting point only

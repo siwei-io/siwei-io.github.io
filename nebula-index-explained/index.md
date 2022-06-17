@@ -86,8 +86,10 @@ MATCH (v:player { name: 'Tim Duncan' })--(v2) \
 > 注: 如果不追求全部数据，只要采样一部分，3.0 里之后是支持不强制索引 LIMIT <n> 的情况的，如下查询（有 LIMIT）不需要索引：
 >
 > ```cypher
-> MATCH (v:player { name: 'Tim Duncan' })-->(v2:player) \
->         RETURN v2.player.name AS Name LIMIT 3;
+> # sample vertex
+> MATCH (v:team) RETURN v LIMIT 3
+> # or sample edge
+> MATCH ()-[e:follow]->() RETURN e LIMIT 3
 > ```
 
 ### 为什么只有纯属性条件出发查询
