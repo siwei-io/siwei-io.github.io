@@ -5,1216 +5,32 @@
         <description>所有文章 | siwei.io</description>
         <generator>Hugo -- gohugo.io</generator><language>zh-CN</language><managingEditor>weyl.gu@gmail.com (Wey Gu)</managingEditor>
             <webMaster>weyl.gu@gmail.com (Wey Gu)</webMaster><lastBuildDate>Mon, 06 Jun 2022 10:19:11 &#43;0800</lastBuildDate><atom:link href="https://siwei.io/posts/" rel="self" type="application/rss+xml" /><item>
-    <title>Nebula-Up，一键拉起一个 Nebula 测试环境</title>
-    <link>https://siwei.io/nebula-up/</link>
-    <pubDate>Mon, 26 Apr 2021 11:11:04 &#43;0800</pubDate><author>
+    <title>Nebula Graph 索引详解</title>
+    <link>https://siwei.io/nebula-index-explained/</link>
+    <pubDate>Sun, 20 Feb 2022 16:35:53 &#43;0800</pubDate><author>
         <name>Wey Gu</name>
-    </author><guid>https://siwei.io/nebula-up/</guid>
+    </author><guid>https://siwei.io/nebula-index-explained/</guid>
     <description><![CDATA[<div class="featured-image">
                 <img src="/featured-image.webp" referrerpolicy="no-referrer">
             </div><blockquote>
-<p>Update: the All-in-one mode is introduced! Check <a href="#all-in-one-mode" rel="">here</a> and try it!</p>
+<p><code>index not found</code>？找不到索引？为什么我要创建 Nebula Graph 索引？什么时候要用到 Nebula Graph 原生索引，一文把这些搞清楚。</p>
 </blockquote>
-<p><a href="https://asciinema.org/a/407151" title="Nebula Up Demo" target="_blank" rel="noopener noreffer"></a></p>
-<p><code>Nebula-Up</code> is PoC utility to enable developer to bootstrap an nebula-graph cluster with nebula-graph-studio(Web UI) + nebula-graph-console(Command UI) ready out of box in an oneliner run. All required packages will handled with <code>nebula-up</code> as well, including Docker on Linux(Ubuntu/CentOS), Docker Desktop on macOS(including both Intel and M1 chip based), and Docker Desktop Windows.</p>
-<p>Also, it&rsquo;s optimized to leverage China Repo Mirrors(docker, brew, gitee, etc&hellip;) in case needed enable a smooth deployment for both Mainland China users and others.</p>
-<p>macOS and Linux with Shell:</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">curl -fsSL nebula-up.siwei.io/install.sh <span class="p">|</span> bash
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p></p>
-<p>Note: you could specify the version of Nebula Graph like:</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">curl -fsSL nebula-up.siwei.io/install.sh <span class="p">|</span> bash -s -- v2.6
-</span></span></code></pre></td></tr></table>
-</div>
-</div><h2 id="all-in-one-mode" class="headerLink">
-    <a href="#all-in-one-mode" class="header-mark"></a>1 All-in-one mode</h2><p>With all-in-one mode, you could play with many Nebula Tools in one command, too:</p>
-<p></p>
-<p>Supported tools:</p>
+<p>Nebula Graph 的索引其实和传统的关系型数据库中的索引很像，但是又有一些容易让人疑惑的区别。刚开始了解 Nebula 的同学会疑惑于：</p>
 <ul>
-<li><i class="far fa-check-square fa-fw"></i> Nebula Dashboard</li>
-<li><i class="far fa-check-square fa-fw"></i> Nebula Graph Studio</li>
-<li><i class="far fa-check-square fa-fw"></i> Nebula Graph Console</li>
-<li><i class="far fa-check-square fa-fw"></i> Nebula BR(backup &amp; restore)</li>
-<li><i class="far fa-check-square fa-fw"></i> Nebula Graph Spark utils
+<li>不清楚 Nebula Graph 图数据库中的索引到的是什么概念</li>
+<li>我应该什么时候使用 Nebula Graph 索引</li>
+<li>Nebula Graph 索引怎么影响到写入性能</li>
+</ul>
+<p>这篇文章里，我们就把这些问题回答好。</p>
+<h2 id="到底-nebula-graph-索引是什么" class="headerLink">
+    <a href="#%e5%88%b0%e5%ba%95-nebula-graph-%e7%b4%a2%e5%bc%95%e6%98%af%e4%bb%80%e4%b9%88" class="header-mark"></a>1 到底 Nebula Graph 索引是什么</h2><p>简而言之，Nebula Graph 索引是用来，且只用来针对纯属性条件出发查询场景的</p>
 <ul>
-<li><i class="far fa-check-square fa-fw"></i> Nebula Graph Spark Connector/PySpark</li>
-<li><i class="far fa-check-square fa-fw"></i> Nebula Graph Algorithm</li>
-<li><i class="far fa-check-square fa-fw"></i> Nebula Graph Exchange</li>
+<li>图游走（walk）查询中的属性条件过滤不需要它</li>
+<li>纯属性条件出发查询（注：非采样情况）必须创建索引</li>
 </ul>
-</li>
-<li><i class="far fa-square fa-fw"></i> Nebula Graph Importer</li>
-<li><i class="far fa-square fa-fw"></i> Nebula Graph Fulltext Search</li>
-<li><i class="far fa-square fa-fw"></i> Nebula Bench</li>
-</ul>
-<h3 id="install-all-in-one" class="headerLink">
-    <a href="#install-all-in-one" class="header-mark"></a>1.1 Install all in one</h3><div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># Install Nebula Core with all-in-one mode</span>
-</span></span><span class="line"><span class="cl">curl -fsSL nebula-up.siwei.io/all-in-one.sh <span class="p">|</span> bash
-</span></span></code></pre></td></tr></table>
-</div>
-</div><h3 id="install-nebula-core-and-one-of-the-coponent" class="headerLink">
-    <a href="#install-nebula-core-and-one-of-the-coponent" class="header-mark"></a>1.2 Install Nebula Core and One of the coponent:</h3><div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># Install Core with Backup and Restore with MinIO</span>
-</span></span><span class="line"><span class="cl">curl -fsSL nebula-up.siwei.io/all-in-one.sh <span class="p">|</span> bash -s -- v3 br
-</span></span><span class="line"><span class="cl"><span class="c1"># Install Core with Spark Connector, Nebula Algorithm, Nebula Exchange</span>
-</span></span><span class="line"><span class="cl">curl -fsSL nebula-up.siwei.io/all-in-one.sh <span class="p">|</span> bash -s -- v3 spark
-</span></span><span class="line"><span class="cl"><span class="c1"># Install Core with Dashboard</span>
-</span></span><span class="line"><span class="cl">curl -fsSL nebula-up.siwei.io/all-in-one.sh <span class="p">|</span> bash -s -- v3 dashboard
-</span></span></code></pre></td></tr></table>
-</div>
-</div><h3 id="how-to-play-with-all-in-one-mode" class="headerLink">
-    <a href="#how-to-play-with-all-in-one-mode" class="header-mark"></a>1.3 How to play with all-in-one mode:</h3><h4 id="console-and-basketballplayer-dataset-loading" class="headerLink">
-    <a href="#console-and-basketballplayer-dataset-loading" class="header-mark"></a>1.3.1 Console and Basketballplayer Dataset Loading</h4><p>Then you could call Nebula Console like:</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span><span class="lnt">7
-</span><span class="lnt">8
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># Connect to nebula with console</span>
-</span></span><span class="line"><span class="cl">~/.nebula-up/console.sh
-</span></span><span class="line"><span class="cl"><span class="c1"># Execute queryies like</span>
-</span></span><span class="line"><span class="cl">~/.nebula-up/console.sh -e <span class="s2">&#34;SHOW HOSTS&#34;</span>
-</span></span><span class="line"><span class="cl"><span class="c1"># Load the sample dataset</span>
-</span></span><span class="line"><span class="cl">~/.nebula-up/load-basketballplayer-dataset.sh
-</span></span><span class="line"><span class="cl"><span class="c1"># Make a Graph Query the sample dataset</span>
-</span></span><span class="line"><span class="cl">~/.nebula-up/console.sh -e <span class="s1">&#39;USE basketballplayer; FIND ALL PATH FROM &#34;player100&#34; TO &#34;team204&#34; OVER * WHERE follow.degree is EMPTY or follow.degree &gt;=0 YIELD path AS p;&#39;</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><h4 id="monitor-the-whole-cluster-with-nebula-dashboard" class="headerLink">
-    <a href="#monitor-the-whole-cluster-with-nebula-dashboard" class="header-mark"></a>1.3.2 Monitor the whole cluster with Nebula Dashboard</h4><p>Visit http://127.0.0.1:7003 with user: <code>root</code>, password: <code>nebula</code>.</p>
-<blockquote>
-<p>Note, thanks to the sponsorship of Microsoft, we have a demo site of Nebula-UP on Azure: you could visit the dashboard here: <a href="http://nebula-demo.siwei.io:7003" target="_blank" rel="noopener noreffer">http://nebula-demo.siwei.io:7003</a> .</p>
-</blockquote>
-<h4 id="access-nebula-graph-studio" class="headerLink">
-    <a href="#access-nebula-graph-studio" class="header-mark"></a>1.3.3 Access Nebula Graph Studio</h4><p>Visit http://127.0.0.1:7001 with user: <code>root</code>, password: <code>nebula</code>, host: <code>graphd:9669</code>(for non-all-in-one case, this should be <code>&lt;host-ip&gt;:9669</code>).</p>
-<blockquote>
-<p>Note, thanks to the sponsorship of Microsoft, we have a demo site of Nebula-UP on Azure: you could visit the studio here: <a href="http://nebula-demo.siwei.io:7001" target="_blank" rel="noopener noreffer">http://nebula-demo.siwei.io:7001</a> .</p>
-</blockquote>
-<h4 id="query-data-with-nebula-spark-connector-in-pyspark-shell" class="headerLink">
-    <a href="#query-data-with-nebula-spark-connector-in-pyspark-shell" class="header-mark"></a>1.3.4 Query Data with Nebula Spark Connector in PySpark Shell</h4><p>Or play in PySpark like:</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">~/.nebula-up/nebula-pyspark.sh
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="c1"># call Nebula Spark Connector Reader</span>
-</span></span><span class="line"><span class="cl"><span class="nv">df</span> <span class="o">=</span> spark.read.format<span class="o">(</span>
-</span></span><span class="line"><span class="cl">  <span class="s2">&#34;com.vesoft.nebula.connector.NebulaDataSource&#34;</span><span class="o">)</span>.option<span class="o">(</span>
-</span></span><span class="line"><span class="cl">    <span class="s2">&#34;type&#34;</span>, <span class="s2">&#34;vertex&#34;</span><span class="o">)</span>.option<span class="o">(</span>
-</span></span><span class="line"><span class="cl">    <span class="s2">&#34;spaceName&#34;</span>, <span class="s2">&#34;basketballplayer&#34;</span><span class="o">)</span>.option<span class="o">(</span>
-</span></span><span class="line"><span class="cl">    <span class="s2">&#34;label&#34;</span>, <span class="s2">&#34;player&#34;</span><span class="o">)</span>.option<span class="o">(</span>
-</span></span><span class="line"><span class="cl">    <span class="s2">&#34;returnCols&#34;</span>, <span class="s2">&#34;name,age&#34;</span><span class="o">)</span>.option<span class="o">(</span>
-</span></span><span class="line"><span class="cl">    <span class="s2">&#34;metaAddress&#34;</span>, <span class="s2">&#34;metad0:9559&#34;</span><span class="o">)</span>.option<span class="o">(</span>
-</span></span><span class="line"><span class="cl">    <span class="s2">&#34;partitionNumber&#34;</span>, 1<span class="o">)</span>.load<span class="o">()</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="c1"># show the dataframe with limit 2</span>
-</span></span><span class="line"><span class="cl">df.show<span class="o">(</span><span class="nv">n</span><span class="o">=</span>2<span class="o">)</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>The output may look like:</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl">      <span class="n">____</span>              <span class="n">__</span>
-</span></span><span class="line"><span class="cl">     <span class="o">/</span> <span class="n">__</span><span class="o">/</span><span class="n">__</span>  <span class="n">___</span> <span class="n">_____</span><span class="o">/</span> <span class="o">/</span><span class="n">__</span>
-</span></span><span class="line"><span class="cl">    <span class="n">_</span>\ \<span class="o">/</span> <span class="n">_</span> \<span class="o">/</span> <span class="n">_</span> <span class="err">`</span><span class="o">/</span> <span class="n">__</span><span class="o">/</span>  <span class="s1">&#39;_/</span>
-</span></span><span class="line"><span class="cl">   <span class="o">/</span><span class="n">__</span> <span class="o">/</span> <span class="o">.</span><span class="n">__</span><span class="o">/</span>\<span class="n">_</span><span class="p">,</span><span class="n">_</span><span class="o">/</span><span class="n">_</span><span class="o">/</span> <span class="o">/</span><span class="n">_</span><span class="o">/</span>\<span class="n">_</span>\   <span class="n">version</span> <span class="mf">2.4.5</span>
-</span></span><span class="line"><span class="cl">      <span class="o">/</span><span class="n">_</span><span class="o">/</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">Using</span> <span class="n">Python</span> <span class="n">version</span> <span class="mf">2.7.16</span> <span class="p">(</span><span class="n">default</span><span class="p">,</span> <span class="n">Jan</span> <span class="mi">14</span> <span class="mi">2020</span> <span class="mi">07</span><span class="p">:</span><span class="mi">22</span><span class="p">:</span><span class="mi">06</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="n">SparkSession</span> <span class="n">available</span> <span class="k">as</span> <span class="s1">&#39;spark&#39;</span><span class="o">.</span>
-</span></span><span class="line"><span class="cl"><span class="o">&gt;&gt;&gt;</span> <span class="n">df</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl"><span class="o">...</span>   <span class="s2">&#34;com.vesoft.nebula.connector.NebulaDataSource&#34;</span><span class="p">)</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl"><span class="o">...</span>     <span class="s2">&#34;type&#34;</span><span class="p">,</span> <span class="s2">&#34;vertex&#34;</span><span class="p">)</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl"><span class="o">...</span>     <span class="s2">&#34;spaceName&#34;</span><span class="p">,</span> <span class="s2">&#34;basketballplayer&#34;</span><span class="p">)</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl"><span class="o">...</span>     <span class="s2">&#34;label&#34;</span><span class="p">,</span> <span class="s2">&#34;player&#34;</span><span class="p">)</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl"><span class="o">...</span>     <span class="s2">&#34;returnCols&#34;</span><span class="p">,</span> <span class="s2">&#34;name,age&#34;</span><span class="p">)</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl"><span class="o">...</span>     <span class="s2">&#34;metaAddress&#34;</span><span class="p">,</span> <span class="s2">&#34;metad0:9559&#34;</span><span class="p">)</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl"><span class="o">...</span>     <span class="s2">&#34;partitionNumber&#34;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl"><span class="o">&gt;&gt;&gt;</span> <span class="n">df</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="o">+---------+--------------+---+</span>
-</span></span><span class="line"><span class="cl"><span class="o">|</span><span class="n">_vertexId</span><span class="o">|</span>          <span class="n">name</span><span class="o">|</span><span class="n">age</span><span class="o">|</span>
-</span></span><span class="line"><span class="cl"><span class="o">+---------+--------------+---+</span>
-</span></span><span class="line"><span class="cl"><span class="o">|</span><span class="n">player105</span><span class="o">|</span>   <span class="n">Danny</span> <span class="n">Green</span><span class="o">|</span> <span class="mi">31</span><span class="o">|</span>
-</span></span><span class="line"><span class="cl"><span class="o">|</span><span class="n">player109</span><span class="o">|</span><span class="n">Tiago</span> <span class="n">Splitter</span><span class="o">|</span> <span class="mi">34</span><span class="o">|</span>
-</span></span><span class="line"><span class="cl"><span class="o">+---------+--------------+---+</span>
-</span></span><span class="line"><span class="cl"><span class="n">only</span> <span class="n">showing</span> <span class="n">top</span> <span class="mi">2</span> <span class="n">rows</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><h4 id="run-nebula-exchange" class="headerLink">
-    <a href="#run-nebula-exchange" class="header-mark"></a>1.3.5 Run Nebula Exchange</h4><p>Or run an example Nebula Exchange job to import data from CSV file:</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">~/.nebula-up/nebula-exchange-example.sh
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>You could check the example configuration file in <code>~/.nebula-up/nebula-up/spark/exchange.conf</code></p>
-<h4 id="run-nebula-graph-algorithm" class="headerLink">
-    <a href="#run-nebula-graph-algorithm" class="header-mark"></a>1.3.6 Run Nebula Graph Algorithm</h4><blockquote>
-<p>Reference: <a href="https://github.com/wey-gu/nebula-livejournal" target="_blank" rel="noopener noreffer">https://github.com/wey-gu/nebula-livejournal</a></p>
-</blockquote>
-<p>Load LiveJournal dataset with Nebula Importer:</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">~/.nebula-up/load-LiveJournal-dataset.sh
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>Run Nebula Algorithm like:</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">~/.nebula-up/nebula-algo-pagerank-example.sh
-</span></span></code></pre></td></tr></table>
-</div>
-</div><h4 id="try-backup-and-restore-with-minio-as-storage" class="headerLink">
-    <a href="#try-backup-and-restore-with-minio-as-storage" class="header-mark"></a>1.3.7 Try Backup and Restore with MinIO as Storage</h4><div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># Create a full backup to MinIO(Be sure to run load-basketballplayer-dataset.sh before doing so)</span>
-</span></span><span class="line"><span class="cl">~/.nebula-up/nebula-br-backup-full.sh
-</span></span><span class="line"><span class="cl"><span class="c1"># Show all backups</span>
-</span></span><span class="line"><span class="cl">~/.nebula-up/nebula-br-show.sh
-</span></span><span class="line"><span class="cl"><span class="c1"># Restore to a backup named BACKUP_2022_05_08_11_38_08</span>
-</span></span><span class="line"><span class="cl">~/.nebula-up/nebula-br-restore-full.sh BACKUP_2022_05_08_11_38_08
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>Note, you could also browser files in MinIO with from http://127.0.0.1:9001 with user: <code>minioadmin</code>, password: <code>minioadmin</code>.</p>
-<blockquote>
-<p>Note, thanks to the sponsorship of Microsoft, we have a demo site of Nebula-UP on Azure: you could visit the MinIO site here: <a href="http://nebula-demo.siwei.io:9001" target="_blank" rel="noopener noreffer">http://nebula-demo.siwei.io:9001</a> .</p>
-</blockquote>
-<hr>
-<p><del>Windows with PowerShell</del>(Working In Progress):</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">iwr nebula-up</span><span class="p">.</span><span class="n">siwei</span><span class="p">.</span><span class="n">io</span><span class="p">/</span><span class="n">install</span><span class="p">.</span><span class="n">ps1</span> <span class="n">-useb</span> <span class="p">|</span> <span class="nb">iex
-</span></span></span></code></pre></td></tr></table>
-</div>
-</div><p>TBD:</p>
-<ul>
-<li><i class="far fa-square fa-fw"></i> Finished Windows(Docker Desktop instead of the WSL 1&amp;2 in initial phase) part, leveraging chocolatey package manager as homebrew was used in macOS</li>
-<li><i class="far fa-square fa-fw"></i> Fully optimized for CN users, for now, git/apt/yum repo were not optimised, newly installed docker repo, brew repo were automatically optimised for CN internet access</li>
-<li><i class="far fa-square fa-fw"></i> Packaging similar content into homebrew/chocolatey?</li>
-<li><i class="far fa-square fa-fw"></i> CI/UT</li>
-</ul>]]></description>
-</item><item>
-    <title>一文了解 Nebula Graph 上的 Spark 项目</title>
-    <link>https://siwei.io/spark-on-nebula-graph/</link>
-    <pubDate>Mon, 06 Jun 2022 10:19:11 &#43;0800</pubDate><author>
-        <name>Wey Gu</name>
-    </author><guid>https://siwei.io/spark-on-nebula-graph/</guid>
-    <description><![CDATA[<div class="featured-image">
-                <img src="/featured-image.webp" referrerpolicy="no-referrer">
-            </div><blockquote>
-<p>Nebula Graph 生态中有哪些 Spark 项目？ 本文为大家介绍 Spark-connector（包括 PySpark）， Nebula Algorithm 和 Nebula Exchange。</p>
-</blockquote>
-<p>最近我试着搭建了方便大家一键试玩的 Nebula Graph 中的 <a href="https://spark.apache.org/" target="_blank" rel="noopener noreffer">Spark</a> 相关的项目，今天就把它们整理成文分享给大家。而且，我趟出来了 PySpark 下的 Nebula Spark Connector 的使用方式，后边也会一并贡献到文档里。</p>
-<h2 id="nebula-graph-的三个-spark-子项目" class="headerLink">
-    <a href="#nebula-graph-%e7%9a%84%e4%b8%89%e4%b8%aa-spark-%e5%ad%90%e9%a1%b9%e7%9b%ae" class="header-mark"></a>1 Nebula Graph 的三个 Spark 子项目</h2><p>我曾经围绕 Nebula Graph 的所有数据导入方法画过一个<a href="https://www.siwei.io/sketches/nebula-data-import-options/" target="_blank" rel="noopener noreffer">草图</a>，其中已经包含了 Spark Connector，Nebula Exchange 的简单介绍。在这篇文章中我将它们和另外的 Nebula Algorithm 进行稍微深入的探讨。</p>
-<p>TL;DR</p>
-<ul>
-<li>Nebula Spark Connector 是一个 Spark Lib，它能让 Spark 应用程序能够以 <code>dataframe</code> 的形式从 Nebula Graph 中读取和写入图数据。</li>
-<li>Nebula Exchange 建立在 Nebula Spark Connector 之上，作为一个 Spark Lib 同时可以直接被 Spark 提交 JAR 包执行的应用程序，它的设计目标是和 Nebula Graph 交换不同的数据源（对于开源版本，它是单向的：写入，而对于企业版本，它是双向的）。Nebula Exchange 支持的很多不同类型的数据源如：<a href="https://www.mysql.com/cn/" target="_blank" rel="noopener noreffer">MySQL</a>、<a href="https://neo4j.com/" target="_blank" rel="noopener noreffer">Neo4j</a>、<a href="https://www.postgresql.org/" target="_blank" rel="noopener noreffer">PostgreSQL</a>、<a href="https://clickhouse.com/" target="_blank" rel="noopener noreffer">ClickHouse</a>、<a href="https://hive.apache.org/" target="_blank" rel="noopener noreffer">Hive</a> 等。除了直接写入 Nebula Graph，它还可以选择生成 SST 文件，并将其注入 Nebula Graph，以便使用 Nebula Graph 集群之外算力帮助排序底层。</li>
-<li>Nebula Algorithm，建立在 Nebula Spark Connector 和 GraphX 之上，也是一个Spark Lib 和 Spark 上的应用程序，它用来在 Nebula Graph 的图上运行常用的图算法（pagerank，LPA等）。</li>
-</ul>
-<h2 id="nebula-spark-connector" class="headerLink">
-    <a href="#nebula-spark-connector" class="header-mark"></a>2 Nebula Spark Connector</h2><ul>
-<li>代码：https://github.com/vesoft-inc/nebula-spark-connector</li>
-<li>文档：https://docs.nebula-graph.io/3.1.0/nebula-spark-connector/</li>
-<li>JAR 包：https://repo1.maven.org/maven2/com/vesoft/nebula-spark-connector/</li>
-<li>代码例子：<a href="https://github.com/vesoft-inc/nebula-spark-connector/tree/master/example" target="_blank" rel="noopener noreffer">example</a></li>
-</ul>
-<h3 id="nebula-graph-spark-reader" class="headerLink">
-    <a href="#nebula-graph-spark-reader" class="header-mark"></a>2.1 Nebula Graph Spark Reader</h3><p>为了从 Nebula Graph 中读取数据，比如读 vertex，Nebula Spark Connector 将扫描所有带有给定 TAG 的 Nebula StorageD，比如这样表示扫描 <code>player</code> 这个 TAG ：<code>withLabel(&quot;player&quot;)</code>，我们还可以指定 vertex 的属性：<code>withReturnCols(List(&quot;name&quot;, &quot;age&quot;))</code>。</p>
-<p>指定好所有的读 TAG 相关的配置之后，调用 <code>spark.read.nebula.loadVerticesToDF</code> 返回得到的就是扫描 Nebula Graph 之后转换为 Dataframe 的图数据，像这样：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-scala" data-lang="scala"><span class="line"><span class="cl">  <span class="k">def</span> <span class="n">readVertex</span><span class="o">(</span><span class="n">spark</span><span class="k">:</span> <span class="kt">SparkSession</span><span class="o">)</span><span class="k">:</span> <span class="kt">Unit</span> <span class="o">=</span> <span class="o">{</span>
-</span></span><span class="line"><span class="cl">    <span class="nc">LOG</span><span class="o">.</span><span class="n">info</span><span class="o">(</span><span class="s">&#34;start to read nebula vertices&#34;</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">    <span class="k">val</span> <span class="n">config</span> <span class="k">=</span>
-</span></span><span class="line"><span class="cl">      <span class="nc">NebulaConnectionConfig</span>
-</span></span><span class="line"><span class="cl">        <span class="o">.</span><span class="n">builder</span><span class="o">()</span>
-</span></span><span class="line"><span class="cl">        <span class="o">.</span><span class="n">withMetaAddress</span><span class="o">(</span><span class="s">&#34;metad0:9559,metad1:9559,metad2:9559&#34;</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">        <span class="o">.</span><span class="n">withConenctionRetry</span><span class="o">(</span><span class="mi">2</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">        <span class="o">.</span><span class="n">build</span><span class="o">()</span>
-</span></span><span class="line"><span class="cl">    <span class="k">val</span> <span class="n">nebulaReadVertexConfig</span><span class="k">:</span> <span class="kt">ReadNebulaConfig</span> <span class="o">=</span> <span class="nc">ReadNebulaConfig</span>
-</span></span><span class="line"><span class="cl">      <span class="o">.</span><span class="n">builder</span><span class="o">()</span>
-</span></span><span class="line"><span class="cl">      <span class="o">.</span><span class="n">withSpace</span><span class="o">(</span><span class="s">&#34;basketballplayer&#34;</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">      <span class="o">.</span><span class="n">withLabel</span><span class="o">(</span><span class="s">&#34;player&#34;</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">      <span class="o">.</span><span class="n">withNoColumn</span><span class="o">(</span><span class="kc">false</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">      <span class="o">.</span><span class="n">withReturnCols</span><span class="o">(</span><span class="nc">List</span><span class="o">(</span><span class="s">&#34;name&#34;</span><span class="o">,</span> <span class="s">&#34;age&#34;</span><span class="o">))</span>
-</span></span><span class="line"><span class="cl">      <span class="o">.</span><span class="n">withLimit</span><span class="o">(</span><span class="mi">10</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">      <span class="o">.</span><span class="n">withPartitionNum</span><span class="o">(</span><span class="mi">10</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">      <span class="o">.</span><span class="n">build</span><span class="o">()</span>
-</span></span><span class="line"><span class="cl">    <span class="k">val</span> <span class="n">vertex</span> <span class="k">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">nebula</span><span class="o">(</span><span class="n">config</span><span class="o">,</span> <span class="n">nebulaReadVertexConfig</span><span class="o">).</span><span class="n">loadVerticesToDF</span><span class="o">()</span>
-</span></span><span class="line"><span class="cl">    <span class="n">vertex</span><span class="o">.</span><span class="n">printSchema</span><span class="o">()</span>
-</span></span><span class="line"><span class="cl">    <span class="n">vertex</span><span class="o">.</span><span class="n">show</span><span class="o">(</span><span class="mi">20</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">    <span class="n">println</span><span class="o">(</span><span class="s">&#34;vertex count: &#34;</span> <span class="o">+</span> <span class="n">vertex</span><span class="o">.</span><span class="n">count</span><span class="o">())</span>
-</span></span><span class="line"><span class="cl">  <span class="o">}</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>写入的例子我这里不列出，不过，前边给出的代码示例的链接里是有更详细的例子，这里值得一提的是，<strong>Spark Connector 读数据为了满足图分析、图计算的大量数据场景</strong>，和大部分其他客户端非常不同，它直接绕过了 GraphD，通过扫描 MetaD 和 StorageD 获得数据，但是写入的情况则是通过 GraphD 发起 nGQL DML 语句写入的。</p>
-<p>接下来我们来做一个上手练习吧。</p>
-<h3 id="上手-nebula-spark-connector" class="headerLink">
-    <a href="#%e4%b8%8a%e6%89%8b-nebula-spark-connector" class="header-mark"></a>2.2 上手 Nebula Spark Connector</h3><p>先决条件：假设下面的程序是在一台有互联网连接的 Linux 机器上运行的，最好是预装了 Docker 和 Docker-Compose。</p>
-<h4 id="拉起环境" class="headerLink">
-    <a href="#%e6%8b%89%e8%b5%b7%e7%8e%af%e5%a2%83" class="header-mark"></a>2.2.1 拉起环境</h4><p>首先，让我们用 <a href="https://github.com/wey-gu/nebula-up/" target="_blank" rel="noopener noreffer">Nebula-Up</a> 部署基于容器的 Nebula Graph Core v3、Nebula Studio、Nebula Console 和 Spark、Hadoop 环境，如果还没安装好它也会尝试为我们安装 Docker 和 Docker-Compose。</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># Install Core with Spark Connector, Nebula Algorithm, Nebula Exchange</span>
-</span></span><span class="line"><span class="cl">curl -fsSL nebula-up.siwei.io/all-in-one.sh <span class="p">|</span> bash -s -- v3 spark
-</span></span></code></pre></td></tr></table>
-</div>
-</div><blockquote>
-<p>你知道吗 <a href="https://github.com/wey-gu/nebula-up/" target="_blank" rel="noopener noreffer">Nebula-UP</a> 可以一键装更多东西，如果你的环境配置大一点（比如 8 GB RAM）<code>curl -fsSL nebula-up.siwei.io/all-in-one.sh | bash</code> 可以装更多东西，但是请注意 <a href="https://github.com/wey-gu/nebula-up/" target="_blank" rel="noopener noreffer">Nebula-UP</a> 不是为生产环境准备的。</p>
-</blockquote>
-<p>上述边脚本执行后，让我们用 <a href="https://docs.nebula-graph.com.cn/3.1.0/nebula-console/" target="_blank" rel="noopener noreffer">Nebula-Console</a>（Nebula Graph 的命令行客户端）来连接它。</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># Connect to nebula with console</span>
-</span></span><span class="line"><span class="cl">~/.nebula-up/console.sh
-</span></span><span class="line"><span class="cl"><span class="c1"># Execute any queryies like</span>
-</span></span><span class="line"><span class="cl">~/.nebula-up/console.sh -e <span class="s2">&#34;SHOW HOSTS&#34;</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>加载一份数据进去，并执行一个图查询：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># Load the sample dataset</span>
-</span></span><span class="line"><span class="cl">~/.nebula-up/load-basketballplayer-dataset.sh
-</span></span><span class="line"><span class="cl"><span class="c1"># 等一分钟左右</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="c1"># Make a Graph Query the sample dataset</span>
-</span></span><span class="line"><span class="cl">~/.nebula-up/console.sh -e <span class="s1">&#39;USE basketballplayer; FIND ALL PATH FROM &#34;player100&#34; TO &#34;team204&#34; OVER * WHERE follow.degree is EMPTY or follow.degree &gt;=0 YIELD path AS p;&#39;</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><h4 id="进入-spark-环境" class="headerLink">
-    <a href="#%e8%bf%9b%e5%85%a5-spark-%e7%8e%af%e5%a2%83" class="header-mark"></a>2.2.2 进入 Spark 环境</h4><p>执行下面这一行，我们就可以进入到 Spark 环境：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker <span class="nb">exec</span> -it spark_master_1 bash
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>如果我们想执行编译，可以在里边安装 <code>mvn</code>：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker <span class="nb">exec</span> -it spark_master_1 bash
-</span></span><span class="line"><span class="cl"><span class="c1"># in the container shell</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">MAVEN_VERSION</span><span class="o">=</span>3.5.4
-</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">MAVEN_HOME</span><span class="o">=</span>/usr/lib/mvn
-</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">PATH</span><span class="o">=</span><span class="nv">$MAVEN_HOME</span>/bin:<span class="nv">$PATH</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">wget http://archive.apache.org/dist/maven/maven-3/<span class="nv">$MAVEN_VERSION</span>/binaries/apache-maven-<span class="nv">$MAVEN_VERSION</span>-bin.tar.gz <span class="o">&amp;&amp;</span> <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>  tar -zxvf apache-maven-<span class="nv">$MAVEN_VERSION</span>-bin.tar.gz <span class="o">&amp;&amp;</span> <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>  rm apache-maven-<span class="nv">$MAVEN_VERSION</span>-bin.tar.gz <span class="o">&amp;&amp;</span> <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>  mv apache-maven-<span class="nv">$MAVEN_VERSION</span> /usr/lib/mvn
-</span></span></code></pre></td></tr></table>
-</div>
-</div><h4 id="跑-spark-connector-的例子" class="headerLink">
-    <a href="#%e8%b7%91-spark-connector-%e7%9a%84%e4%be%8b%e5%ad%90" class="header-mark"></a>2.2.3 跑 Spark Connector 的例子</h4><h5 id="选项-1推荐通过-pyspark" class="headerLink">
-    <a href="#%e9%80%89%e9%a1%b9-1%e6%8e%a8%e8%8d%90%e9%80%9a%e8%bf%87-pyspark" class="header-mark"></a>2.2.3.1 选项 1（推荐）：通过 PySpark</h5><ul>
-<li>进入 PySpark Shell</li>
-</ul>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">~/.nebula-up/nebula-pyspark.sh
-</span></span></code></pre></td></tr></table>
-</div>
-</div><ul>
-<li>调用 Nebula Spark Reader</li>
-</ul>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="c1"># call Nebula Spark Connector Reader</span>
-</span></span><span class="line"><span class="cl"><span class="n">df</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">  <span class="s2">&#34;com.vesoft.nebula.connector.NebulaDataSource&#34;</span><span class="p">)</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="s2">&#34;type&#34;</span><span class="p">,</span> <span class="s2">&#34;vertex&#34;</span><span class="p">)</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="s2">&#34;spaceName&#34;</span><span class="p">,</span> <span class="s2">&#34;basketballplayer&#34;</span><span class="p">)</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="s2">&#34;label&#34;</span><span class="p">,</span> <span class="s2">&#34;player&#34;</span><span class="p">)</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="s2">&#34;returnCols&#34;</span><span class="p">,</span> <span class="s2">&#34;name,age&#34;</span><span class="p">)</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="s2">&#34;metaAddress&#34;</span><span class="p">,</span> <span class="s2">&#34;metad0:9559&#34;</span><span class="p">)</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="s2">&#34;partitionNumber&#34;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="c1"># show the dataframe with limit of 2</span>
-</span></span><span class="line"><span class="cl"><span class="n">df</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><ul>
-<li>返回结果例子</li>
-</ul>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl">      <span class="n">____</span>              <span class="n">__</span>
-</span></span><span class="line"><span class="cl">     <span class="o">/</span> <span class="n">__</span><span class="o">/</span><span class="n">__</span>  <span class="n">___</span> <span class="n">_____</span><span class="o">/</span> <span class="o">/</span><span class="n">__</span>
-</span></span><span class="line"><span class="cl">    <span class="n">_</span>\ \<span class="o">/</span> <span class="n">_</span> \<span class="o">/</span> <span class="n">_</span> <span class="err">`</span><span class="o">/</span> <span class="n">__</span><span class="o">/</span>  <span class="s1">&#39;_/</span>
-</span></span><span class="line"><span class="cl">   <span class="o">/</span><span class="n">__</span> <span class="o">/</span> <span class="o">.</span><span class="n">__</span><span class="o">/</span>\<span class="n">_</span><span class="p">,</span><span class="n">_</span><span class="o">/</span><span class="n">_</span><span class="o">/</span> <span class="o">/</span><span class="n">_</span><span class="o">/</span>\<span class="n">_</span>\   <span class="n">version</span> <span class="mf">2.4.5</span>
-</span></span><span class="line"><span class="cl">      <span class="o">/</span><span class="n">_</span><span class="o">/</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">Using</span> <span class="n">Python</span> <span class="n">version</span> <span class="mf">2.7.16</span> <span class="p">(</span><span class="n">default</span><span class="p">,</span> <span class="n">Jan</span> <span class="mi">14</span> <span class="mi">2020</span> <span class="mi">07</span><span class="p">:</span><span class="mi">22</span><span class="p">:</span><span class="mi">06</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="n">SparkSession</span> <span class="n">available</span> <span class="k">as</span> <span class="s1">&#39;spark&#39;</span><span class="o">.</span>
-</span></span><span class="line"><span class="cl"><span class="o">&gt;&gt;&gt;</span> <span class="n">df</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl"><span class="o">...</span>   <span class="s2">&#34;com.vesoft.nebula.connector.NebulaDataSource&#34;</span><span class="p">)</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl"><span class="o">...</span>     <span class="s2">&#34;type&#34;</span><span class="p">,</span> <span class="s2">&#34;vertex&#34;</span><span class="p">)</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl"><span class="o">...</span>     <span class="s2">&#34;spaceName&#34;</span><span class="p">,</span> <span class="s2">&#34;basketballplayer&#34;</span><span class="p">)</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl"><span class="o">...</span>     <span class="s2">&#34;label&#34;</span><span class="p">,</span> <span class="s2">&#34;player&#34;</span><span class="p">)</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl"><span class="o">...</span>     <span class="s2">&#34;returnCols&#34;</span><span class="p">,</span> <span class="s2">&#34;name,age&#34;</span><span class="p">)</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl"><span class="o">...</span>     <span class="s2">&#34;metaAddress&#34;</span><span class="p">,</span> <span class="s2">&#34;metad0:9559&#34;</span><span class="p">)</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl"><span class="o">...</span>     <span class="s2">&#34;partitionNumber&#34;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl"><span class="o">&gt;&gt;&gt;</span> <span class="n">df</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="o">+---------+--------------+---+</span>
-</span></span><span class="line"><span class="cl"><span class="o">|</span><span class="n">_vertexId</span><span class="o">|</span>          <span class="n">name</span><span class="o">|</span><span class="n">age</span><span class="o">|</span>
-</span></span><span class="line"><span class="cl"><span class="o">+---------+--------------+---+</span>
-</span></span><span class="line"><span class="cl"><span class="o">|</span><span class="n">player105</span><span class="o">|</span>   <span class="n">Danny</span> <span class="n">Green</span><span class="o">|</span> <span class="mi">31</span><span class="o">|</span>
-</span></span><span class="line"><span class="cl"><span class="o">|</span><span class="n">player109</span><span class="o">|</span><span class="n">Tiago</span> <span class="n">Splitter</span><span class="o">|</span> <span class="mi">34</span><span class="o">|</span>
-</span></span><span class="line"><span class="cl"><span class="o">+---------+--------------+---+</span>
-</span></span><span class="line"><span class="cl"><span class="n">only</span> <span class="n">showing</span> <span class="n">top</span> <span class="mi">2</span> <span class="n">rows</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><h5 id="选项-2编译提交示例-jar-包" class="headerLink">
-    <a href="#%e9%80%89%e9%a1%b9-2%e7%bc%96%e8%af%91%e6%8f%90%e4%ba%a4%e7%a4%ba%e4%be%8b-jar-%e5%8c%85" class="header-mark"></a>2.2.3.2 选项 2：编译、提交示例 JAR 包</h5><ul>
-<li>先克隆 Spark Connector 和它示例代码的代码仓库，然后编译：</li>
-</ul>
-<blockquote>
-<p>注意，我们使用了 master 分支，因为当下 master 分支是兼容 3.x 的，一定要保证 spark connector 和数据库内核版本是匹配的，版本对应关系参考代码仓库的 <code>README.md</code> 。</p>
-</blockquote>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nb">cd</span> ~/.nebula-up/nebula-up/spark
-</span></span><span class="line"><span class="cl">git clone https://github.com/vesoft-inc/nebula-spark-connector.git
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">docker <span class="nb">exec</span> -it spark_master_1 bash
-</span></span><span class="line"><span class="cl"><span class="nb">cd</span> /root/nebula-spark-connector
-</span></span></code></pre></td></tr></table>
-</div>
-</div><ul>
-<li>替换示例项目的代码</li>
-</ul>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nb">echo</span> &gt; example/src/main/scala/com/vesoft/nebula/examples/connector/NebulaSparkReaderExample.scala
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">vi example/src/main/scala/com/vesoft/nebula/examples/connector/NebulaSparkReaderExample.scala
-</span></span></code></pre></td></tr></table>
-</div>
-</div><ul>
-<li>把如下的代码粘贴进去，这里边我们对前边加载的图： <code>basketballplayer</code> 上做了顶点和边的读操作：分别调用 <code>readVertex</code> 和 <code>readEdges</code>。</li>
-</ul>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
-</span><span class="lnt">28
-</span><span class="lnt">29
-</span><span class="lnt">30
-</span><span class="lnt">31
-</span><span class="lnt">32
-</span><span class="lnt">33
-</span><span class="lnt">34
-</span><span class="lnt">35
-</span><span class="lnt">36
-</span><span class="lnt">37
-</span><span class="lnt">38
-</span><span class="lnt">39
-</span><span class="lnt">40
-</span><span class="lnt">41
-</span><span class="lnt">42
-</span><span class="lnt">43
-</span><span class="lnt">44
-</span><span class="lnt">45
-</span><span class="lnt">46
-</span><span class="lnt">47
-</span><span class="lnt">48
-</span><span class="lnt">49
-</span><span class="lnt">50
-</span><span class="lnt">51
-</span><span class="lnt">52
-</span><span class="lnt">53
-</span><span class="lnt">54
-</span><span class="lnt">55
-</span><span class="lnt">56
-</span><span class="lnt">57
-</span><span class="lnt">58
-</span><span class="lnt">59
-</span><span class="lnt">60
-</span><span class="lnt">61
-</span><span class="lnt">62
-</span><span class="lnt">63
-</span><span class="lnt">64
-</span><span class="lnt">65
-</span><span class="lnt">66
-</span><span class="lnt">67
-</span><span class="lnt">68
-</span><span class="lnt">69
-</span><span class="lnt">70
-</span><span class="lnt">71
-</span><span class="lnt">72
-</span><span class="lnt">73
-</span><span class="lnt">74
-</span><span class="lnt">75
-</span><span class="lnt">76
-</span><span class="lnt">77
-</span><span class="lnt">78
-</span><span class="lnt">79
-</span><span class="lnt">80
-</span><span class="lnt">81
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-scala" data-lang="scala"><span class="line"><span class="cl"><span class="k">package</span> <span class="nn">com.vesoft.nebula.examples.connector</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="k">import</span> <span class="nn">com.facebook.thrift.protocol.TCompactProtocol</span>
-</span></span><span class="line"><span class="cl"><span class="k">import</span> <span class="nn">com.vesoft.nebula.connector.connector.NebulaDataFrameReader</span>
-</span></span><span class="line"><span class="cl"><span class="k">import</span> <span class="nn">com.vesoft.nebula.connector.</span><span class="o">{</span><span class="nc">NebulaConnectionConfig</span><span class="o">,</span> <span class="nc">ReadNebulaConfig</span><span class="o">}</span>
-</span></span><span class="line"><span class="cl"><span class="k">import</span> <span class="nn">org.apache.spark.SparkConf</span>
-</span></span><span class="line"><span class="cl"><span class="k">import</span> <span class="nn">org.apache.spark.sql.SparkSession</span>
-</span></span><span class="line"><span class="cl"><span class="k">import</span> <span class="nn">org.slf4j.LoggerFactory</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="k">object</span> <span class="nc">NebulaSparkReaderExample</span> <span class="o">{</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">  <span class="k">private</span> <span class="k">val</span> <span class="nc">LOG</span> <span class="k">=</span> <span class="nc">LoggerFactory</span><span class="o">.</span><span class="n">getLogger</span><span class="o">(</span><span class="k">this</span><span class="o">.</span><span class="n">getClass</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">  <span class="k">def</span> <span class="n">main</span><span class="o">(</span><span class="n">args</span><span class="k">:</span> <span class="kt">Array</span><span class="o">[</span><span class="kt">String</span><span class="o">])</span><span class="k">:</span> <span class="kt">Unit</span> <span class="o">=</span> <span class="o">{</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="k">val</span> <span class="n">sparkConf</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">SparkConf</span>
-</span></span><span class="line"><span class="cl">    <span class="n">sparkConf</span>
-</span></span><span class="line"><span class="cl">      <span class="o">.</span><span class="n">set</span><span class="o">(</span><span class="s">&#34;spark.serializer&#34;</span><span class="o">,</span> <span class="s">&#34;org.apache.spark.serializer.KryoSerializer&#34;</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">      <span class="o">.</span><span class="n">registerKryoClasses</span><span class="o">(</span><span class="nc">Array</span><span class="o">[</span><span class="kt">Class</span><span class="o">[</span><span class="k">_</span><span class="o">]](</span><span class="n">classOf</span><span class="o">[</span><span class="kt">TCompactProtocol</span><span class="o">]))</span>
-</span></span><span class="line"><span class="cl">    <span class="k">val</span> <span class="n">spark</span> <span class="k">=</span> <span class="nc">SparkSession</span>
-</span></span><span class="line"><span class="cl">      <span class="o">.</span><span class="n">builder</span><span class="o">()</span>
-</span></span><span class="line"><span class="cl">      <span class="o">.</span><span class="n">master</span><span class="o">(</span><span class="s">&#34;local&#34;</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">      <span class="o">.</span><span class="n">config</span><span class="o">(</span><span class="n">sparkConf</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">      <span class="o">.</span><span class="n">getOrCreate</span><span class="o">()</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="n">readVertex</span><span class="o">(</span><span class="n">spark</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">    <span class="n">readEdges</span><span class="o">(</span><span class="n">spark</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="n">spark</span><span class="o">.</span><span class="n">close</span><span class="o">()</span>
-</span></span><span class="line"><span class="cl">    <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="o">()</span>
-</span></span><span class="line"><span class="cl">  <span class="o">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">  <span class="k">def</span> <span class="n">readVertex</span><span class="o">(</span><span class="n">spark</span><span class="k">:</span> <span class="kt">SparkSession</span><span class="o">)</span><span class="k">:</span> <span class="kt">Unit</span> <span class="o">=</span> <span class="o">{</span>
-</span></span><span class="line"><span class="cl">    <span class="nc">LOG</span><span class="o">.</span><span class="n">info</span><span class="o">(</span><span class="s">&#34;start to read nebula vertices&#34;</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">    <span class="k">val</span> <span class="n">config</span> <span class="k">=</span>
-</span></span><span class="line"><span class="cl">      <span class="nc">NebulaConnectionConfig</span>
-</span></span><span class="line"><span class="cl">        <span class="o">.</span><span class="n">builder</span><span class="o">()</span>
-</span></span><span class="line"><span class="cl">        <span class="o">.</span><span class="n">withMetaAddress</span><span class="o">(</span><span class="s">&#34;metad0:9559,metad1:9559,metad2:9559&#34;</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">        <span class="o">.</span><span class="n">withConenctionRetry</span><span class="o">(</span><span class="mi">2</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">        <span class="o">.</span><span class="n">build</span><span class="o">()</span>
-</span></span><span class="line"><span class="cl">    <span class="k">val</span> <span class="n">nebulaReadVertexConfig</span><span class="k">:</span> <span class="kt">ReadNebulaConfig</span> <span class="o">=</span> <span class="nc">ReadNebulaConfig</span>
-</span></span><span class="line"><span class="cl">      <span class="o">.</span><span class="n">builder</span><span class="o">()</span>
-</span></span><span class="line"><span class="cl">      <span class="o">.</span><span class="n">withSpace</span><span class="o">(</span><span class="s">&#34;basketballplayer&#34;</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">      <span class="o">.</span><span class="n">withLabel</span><span class="o">(</span><span class="s">&#34;player&#34;</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">      <span class="o">.</span><span class="n">withNoColumn</span><span class="o">(</span><span class="kc">false</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">      <span class="o">.</span><span class="n">withReturnCols</span><span class="o">(</span><span class="nc">List</span><span class="o">(</span><span class="s">&#34;name&#34;</span><span class="o">,</span> <span class="s">&#34;age&#34;</span><span class="o">))</span>
-</span></span><span class="line"><span class="cl">      <span class="o">.</span><span class="n">withLimit</span><span class="o">(</span><span class="mi">10</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">      <span class="o">.</span><span class="n">withPartitionNum</span><span class="o">(</span><span class="mi">10</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">      <span class="o">.</span><span class="n">build</span><span class="o">()</span>
-</span></span><span class="line"><span class="cl">    <span class="k">val</span> <span class="n">vertex</span> <span class="k">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">nebula</span><span class="o">(</span><span class="n">config</span><span class="o">,</span> <span class="n">nebulaReadVertexConfig</span><span class="o">).</span><span class="n">loadVerticesToDF</span><span class="o">()</span>
-</span></span><span class="line"><span class="cl">    <span class="n">vertex</span><span class="o">.</span><span class="n">printSchema</span><span class="o">()</span>
-</span></span><span class="line"><span class="cl">    <span class="n">vertex</span><span class="o">.</span><span class="n">show</span><span class="o">(</span><span class="mi">20</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">    <span class="n">println</span><span class="o">(</span><span class="s">&#34;vertex count: &#34;</span> <span class="o">+</span> <span class="n">vertex</span><span class="o">.</span><span class="n">count</span><span class="o">())</span>
-</span></span><span class="line"><span class="cl">  <span class="o">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">  <span class="k">def</span> <span class="n">readEdges</span><span class="o">(</span><span class="n">spark</span><span class="k">:</span> <span class="kt">SparkSession</span><span class="o">)</span><span class="k">:</span> <span class="kt">Unit</span> <span class="o">=</span> <span class="o">{</span>
-</span></span><span class="line"><span class="cl">    <span class="nc">LOG</span><span class="o">.</span><span class="n">info</span><span class="o">(</span><span class="s">&#34;start to read nebula edges&#34;</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="k">val</span> <span class="n">config</span> <span class="k">=</span>
-</span></span><span class="line"><span class="cl">      <span class="nc">NebulaConnectionConfig</span>
-</span></span><span class="line"><span class="cl">        <span class="o">.</span><span class="n">builder</span><span class="o">()</span>
-</span></span><span class="line"><span class="cl">        <span class="o">.</span><span class="n">withMetaAddress</span><span class="o">(</span><span class="s">&#34;metad0:9559,metad1:9559,metad2:9559&#34;</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">        <span class="o">.</span><span class="n">withTimeout</span><span class="o">(</span><span class="mi">6000</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">        <span class="o">.</span><span class="n">withConenctionRetry</span><span class="o">(</span><span class="mi">2</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">        <span class="o">.</span><span class="n">build</span><span class="o">()</span>
-</span></span><span class="line"><span class="cl">    <span class="k">val</span> <span class="n">nebulaReadEdgeConfig</span><span class="k">:</span> <span class="kt">ReadNebulaConfig</span> <span class="o">=</span> <span class="nc">ReadNebulaConfig</span>
-</span></span><span class="line"><span class="cl">      <span class="o">.</span><span class="n">builder</span><span class="o">()</span>
-</span></span><span class="line"><span class="cl">      <span class="o">.</span><span class="n">withSpace</span><span class="o">(</span><span class="s">&#34;basketballplayer&#34;</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">      <span class="o">.</span><span class="n">withLabel</span><span class="o">(</span><span class="s">&#34;follow&#34;</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">      <span class="o">.</span><span class="n">withNoColumn</span><span class="o">(</span><span class="kc">false</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">      <span class="o">.</span><span class="n">withReturnCols</span><span class="o">(</span><span class="nc">List</span><span class="o">(</span><span class="s">&#34;degree&#34;</span><span class="o">))</span>
-</span></span><span class="line"><span class="cl">      <span class="o">.</span><span class="n">withLimit</span><span class="o">(</span><span class="mi">10</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">      <span class="o">.</span><span class="n">withPartitionNum</span><span class="o">(</span><span class="mi">10</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">      <span class="o">.</span><span class="n">build</span><span class="o">()</span>
-</span></span><span class="line"><span class="cl">    <span class="k">val</span> <span class="n">edge</span> <span class="k">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">nebula</span><span class="o">(</span><span class="n">config</span><span class="o">,</span> <span class="n">nebulaReadEdgeConfig</span><span class="o">).</span><span class="n">loadEdgesToDF</span><span class="o">()</span>
-</span></span><span class="line"><span class="cl">    <span class="n">edge</span><span class="o">.</span><span class="n">printSchema</span><span class="o">()</span>
-</span></span><span class="line"><span class="cl">    <span class="n">edge</span><span class="o">.</span><span class="n">show</span><span class="o">(</span><span class="mi">20</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">    <span class="n">println</span><span class="o">(</span><span class="s">&#34;edge count: &#34;</span> <span class="o">+</span> <span class="n">edge</span><span class="o">.</span><span class="n">count</span><span class="o">())</span>
-</span></span><span class="line"><span class="cl">  <span class="o">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="o">}</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><ul>
-<li>然后打包成 JAR 包</li>
-</ul>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">/usr/lib/mvn/bin/mvn install -Dgpg.skip -Dmaven.javadoc.skip<span class="o">=</span><span class="nb">true</span> -Dmaven.test.skip<span class="o">=</span><span class="nb">true</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><ul>
-<li>最后，把它提交到 Spark 里执行：</li>
-</ul>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span><span class="lnt">7
-</span><span class="lnt">8
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nb">cd</span> example
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">/spark/bin/spark-submit --master <span class="s2">&#34;local&#34;</span> <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    --class com.vesoft.nebula.examples.connector.NebulaSparkReaderExample <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    --driver-memory 4g target/example-3.0-SNAPSHOT.jar
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="c1"># 退出 spark 容器</span>
-</span></span><span class="line"><span class="cl"><span class="nb">exit</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><ul>
-<li>成功之后，我们会得到返回结果：</li>
-</ul>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
-</span><span class="lnt">28
-</span><span class="lnt">29
-</span><span class="lnt">30
-</span><span class="lnt">31
-</span><span class="lnt">32
-</span><span class="lnt">33
-</span><span class="lnt">34
-</span><span class="lnt">35
-</span><span class="lnt">36
-</span><span class="lnt">37
-</span><span class="lnt">38
-</span><span class="lnt">39
-</span><span class="lnt">40
-</span><span class="lnt">41
-</span><span class="lnt">42
-</span><span class="lnt">43
-</span><span class="lnt">44
-</span><span class="lnt">45
-</span><span class="lnt">46
-</span><span class="lnt">47
-</span><span class="lnt">48
-</span><span class="lnt">49
-</span><span class="lnt">50
-</span><span class="lnt">51
-</span><span class="lnt">52
-</span><span class="lnt">53
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">22/04/19 07:29:34 INFO DAGScheduler: Job 1 finished: show at NebulaSparkReaderExample.scala:57, took 0.199310 s
-</span></span><span class="line"><span class="cl">+---------+------------------+---+
-</span></span><span class="line"><span class="cl">|_vertexId|              name|age|
-</span></span><span class="line"><span class="cl">+---------+------------------+---+
-</span></span><span class="line"><span class="cl">|player105|       Danny Green| 31|
-</span></span><span class="line"><span class="cl">|player109|    Tiago Splitter| 34|
-</span></span><span class="line"><span class="cl">|player111|        David West| 38|
-</span></span><span class="line"><span class="cl">|player118| Russell Westbrook| 30|
-</span></span><span class="line"><span class="cl">|player143|Kristaps Porzingis| 23|
-</span></span><span class="line"><span class="cl">|player114|     Tracy McGrady| 39|
-</span></span><span class="line"><span class="cl">|player150|       Luka Doncic| 20|
-</span></span><span class="line"><span class="cl">|player103|          Rudy Gay| 32|
-</span></span><span class="line"><span class="cl">|player113|   Dejounte Murray| 29|
-</span></span><span class="line"><span class="cl">|player121|        Chris Paul| 33|
-</span></span><span class="line"><span class="cl">|player128|   Carmelo Anthony| 34|
-</span></span><span class="line"><span class="cl">|player130|       Joel Embiid| 25|
-</span></span><span class="line"><span class="cl">|player136|        Steve Nash| 45|
-</span></span><span class="line"><span class="cl">|player108|        Boris Diaw| 36|
-</span></span><span class="line"><span class="cl">|player122|    DeAndre Jordan| 30|
-</span></span><span class="line"><span class="cl">|player123|       Ricky Rubio| 28|
-</span></span><span class="line"><span class="cl">|player139|        Marc Gasol| 34|
-</span></span><span class="line"><span class="cl">|player142|     Klay Thompson| 29|
-</span></span><span class="line"><span class="cl">|player145|      JaVale McGee| 31|
-</span></span><span class="line"><span class="cl">|player102| LaMarcus Aldridge| 33|
-</span></span><span class="line"><span class="cl">+---------+------------------+---+
-</span></span><span class="line"><span class="cl">only showing top 20 rows
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">22/04/19 07:29:36 INFO DAGScheduler: Job 4 finished: show at NebulaSparkReaderExample.scala:82, took 0.135543 s
-</span></span><span class="line"><span class="cl">+---------+---------+-----+------+
-</span></span><span class="line"><span class="cl">|   _srcId|   _dstId|_rank|degree|
-</span></span><span class="line"><span class="cl">+---------+---------+-----+------+
-</span></span><span class="line"><span class="cl">|player105|player100|    0|    70|
-</span></span><span class="line"><span class="cl">|player105|player104|    0|    83|
-</span></span><span class="line"><span class="cl">|player105|player116|    0|    80|
-</span></span><span class="line"><span class="cl">|player109|player100|    0|    80|
-</span></span><span class="line"><span class="cl">|player109|player125|    0|    90|
-</span></span><span class="line"><span class="cl">|player118|player120|    0|    90|
-</span></span><span class="line"><span class="cl">|player118|player131|    0|    90|
-</span></span><span class="line"><span class="cl">|player143|player150|    0|    90|
-</span></span><span class="line"><span class="cl">|player114|player103|    0|    90|
-</span></span><span class="line"><span class="cl">|player114|player115|    0|    90|
-</span></span><span class="line"><span class="cl">|player114|player140|    0|    90|
-</span></span><span class="line"><span class="cl">|player150|player120|    0|    80|
-</span></span><span class="line"><span class="cl">|player150|player137|    0|    90|
-</span></span><span class="line"><span class="cl">|player150|player143|    0|    90|
-</span></span><span class="line"><span class="cl">|player103|player102|    0|    70|
-</span></span><span class="line"><span class="cl">|player113|player100|    0|    99|
-</span></span><span class="line"><span class="cl">|player113|player101|    0|    99|
-</span></span><span class="line"><span class="cl">|player113|player104|    0|    99|
-</span></span><span class="line"><span class="cl">|player113|player105|    0|    99|
-</span></span><span class="line"><span class="cl">|player113|player106|    0|    99|
-</span></span><span class="line"><span class="cl">+---------+---------+-----+------+
-</span></span><span class="line"><span class="cl">only showing top 20 rows
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>事实上，在这个代码仓库下还有更多的例子，特别是 <a href="https://spark.apache.org/docs/latest/graphx-programming-guide.html" target="_blank" rel="noopener noreffer">GraphX</a> 的例子，你可以尝试自己去探索这部分。</p>
-<blockquote>
-<p>请注意，在 GraphX 假定顶点 ID 是数字类型的，因此对于字符串类型的顶点 ID 情况，需要进行实时转换，请参考 <a href="https://github.com/vesoft-inc/nebula-algorithm/blob/a82d7092d928a2f3abc45a727c24afb888ff8e4f/example/src/main/scala/com/vesoft/nebula/algorithm/PageRankExample.scala#L31" target="_blank" rel="noopener noreffer">Nebula Algorithom 中的例子</a>，了解如何绕过这一问题。</p>
-</blockquote>
-<h2 id="nebula-exchange" class="headerLink">
-    <a href="#nebula-exchange" class="header-mark"></a>3 Nebula Exchange</h2><ul>
-<li>代码：https://github.com/vesoft-inc/nebula-exchange/</li>
-<li>文档：https://docs.nebula-graph.com.cn/3.1.0/nebula-exchange/about-exchange/ex-ug-what-is-exchange/</li>
-<li>JAR 包：https://github.com/vesoft-inc/nebula-exchange/releases</li>
-<li>配置例子： <a href="https://github.com/vesoft-inc/nebula-exchange/blob/master/exchange-common/src/test/resources/application.conf" target="_blank" rel="noopener noreffer">exchange-common/src/test/resources/application.conf</a></li>
-</ul>
-<p>Nebula Exchange 是一个 Spark Lib，也是一个可以直接提交执行的 Spark 应用，它被用来从多个数据源读取数据写入 Nebula Graph 或者输出 <a href="https://docs.nebula-graph.com.cn/3.1.0/nebula-exchange/use-exchange/ex-ug-import-from-sst/#step_5_import_the_sst_file" target="_blank" rel="noopener noreffer">Nebula Graph SST 文件</a>。</p>
-<p></p>
-<p>通过 spark-submit 的方式使用 Nebula Exchange 的方法很直接：</p>
-<ul>
-<li>首先创建配置文件，让 Exchange 知道应该如何获取和写入数据</li>
-<li>然后用指定的配置文件调用 Exchange 包</li>
-</ul>
-<p>现在，让我们用上一章中创建的相同环境做一个实际测试。</p>
-<h3 id="一键试玩-exchange" class="headerLink">
-    <a href="#%e4%b8%80%e9%94%ae%e8%af%95%e7%8e%a9-exchange" class="header-mark"></a>3.1 一键试玩 Exchange</h3><h4 id="先跑起来看看吧" class="headerLink">
-    <a href="#%e5%85%88%e8%b7%91%e8%b5%b7%e6%9d%a5%e7%9c%8b%e7%9c%8b%e5%90%a7" class="header-mark"></a>3.1.1 先跑起来看看吧</h4><blockquote>
-<p>请参考前边<a href="#%e6%8b%89%e8%b5%b7%e7%8e%af%e5%a2%83" rel="">拉起环境</a>这一章节，先一键装好环境。</p>
-</blockquote>
-<p>一键执行：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">~/.nebula-up/nebula-exchange-example.sh
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>恭喜你，已经第一次执行成功一个 Exchange 的数据导入任务啦！</p>
-<h4 id="再看看一些细节" class="headerLink">
-    <a href="#%e5%86%8d%e7%9c%8b%e7%9c%8b%e4%b8%80%e4%ba%9b%e7%bb%86%e8%8a%82" class="header-mark"></a>3.1.2 再看看一些细节</h4><p>这个例子里，我们实际上是用 Exchange 从 CSV 文件这一其中支持的数据源中读取数据写入 Nebula Graph 集群的。这个 CSV 文件中第一列是顶点 ID，第二和第三列是 &ldquo;姓名 &ldquo;和 &ldquo;年龄 &ldquo;的属性：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">player800,<span class="s2">&#34;Foo Bar&#34;</span>,23
-</span></span><span class="line"><span class="cl">player801,<span class="s2">&#34;Another Name&#34;</span>,21
-</span></span></code></pre></td></tr></table>
-</div>
-</div><ul>
-<li>咱们可以进到 Spark 环境里看看</li>
-</ul>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker <span class="nb">exec</span> -it spark_master_1 bash
-</span></span><span class="line"><span class="cl"><span class="nb">cd</span> /root
-</span></span></code></pre></td></tr></table>
-</div>
-</div><ul>
-<li>可以看到我们提交 Exchange 任务时候指定的配置文件 <code>exchange.conf</code> 它是一个 <code>HOCON</code> 格式的文件：
-<ul>
-<li>在 <code>.nebula</code> 中描述了 Nebula Graph 集群的相关信息</li>
-<li>在 <code>.tags</code> 中描述了如何将必填字段对应到我们的数据源（这里是 CSV 文件）等有关 Vertecies 的信息。</li>
-</ul>
-</li>
-</ul>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
-</span><span class="lnt">28
-</span><span class="lnt">29
-</span><span class="lnt">30
-</span><span class="lnt">31
-</span><span class="lnt">32
-</span><span class="lnt">33
-</span><span class="lnt">34
-</span><span class="lnt">35
-</span><span class="lnt">36
-</span><span class="lnt">37
-</span><span class="lnt">38
-</span><span class="lnt">39
-</span><span class="lnt">40
-</span><span class="lnt">41
-</span><span class="lnt">42
-</span><span class="lnt">43
-</span><span class="lnt">44
-</span><span class="lnt">45
-</span><span class="lnt">46
-</span><span class="lnt">47
-</span><span class="lnt">48
-</span><span class="lnt">49
-</span><span class="lnt">50
-</span><span class="lnt">51
-</span><span class="lnt">52
-</span><span class="lnt">53
-</span><span class="lnt">54
-</span><span class="lnt">55
-</span><span class="lnt">56
-</span><span class="lnt">57
-</span><span class="lnt">58
-</span><span class="lnt">59
-</span><span class="lnt">60
-</span><span class="lnt">61
-</span><span class="lnt">62
-</span><span class="lnt">63
-</span><span class="lnt">64
-</span><span class="lnt">65
-</span><span class="lnt">66
-</span><span class="lnt">67
-</span><span class="lnt">68
-</span><span class="lnt">69
-</span><span class="lnt">70
-</span><span class="lnt">71
-</span><span class="lnt">72
-</span><span class="lnt">73
-</span><span class="lnt">74
-</span><span class="lnt">75
-</span><span class="lnt">76
-</span><span class="lnt">77
-</span><span class="lnt">78
-</span><span class="lnt">79
-</span><span class="lnt">80
-</span><span class="lnt">81
-</span><span class="lnt">82
-</span><span class="lnt">83
-</span><span class="lnt">84
-</span><span class="lnt">85
-</span><span class="lnt">86
-</span><span class="lnt">87
-</span><span class="lnt">88
-</span><span class="lnt">89
-</span><span class="lnt">90
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-zed" data-lang="zed"><span class="line"><span class="cl"><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="err">#</span><span class="w"> </span><span class="n">Spark</span><span class="w"> </span><span class="kn">relation</span><span class="w"> </span><span class="n">config</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">spark</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">app</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">name</span><span class="o">:</span><span class="w"> </span><span class="n">Nebula</span><span class="w"> </span><span class="n">Exchange</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">master</span><span class="o">:</span><span class="n">local</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">driver</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">cores</span><span class="o">:</span><span class="w"> </span><span class="err">1</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">maxResultSize</span><span class="o">:</span><span class="w"> </span><span class="err">1</span><span class="n">G</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">executor</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">memory</span><span class="o">:</span><span class="w"> </span><span class="err">1</span><span class="n">G</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">cores</span><span class="o">:</span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">max</span><span class="o">:</span><span class="w"> </span><span class="err">16</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="err">#</span><span class="w"> </span><span class="n">Nebula</span><span class="w"> </span><span class="n">Graph</span><span class="w"> </span><span class="kn">relation</span><span class="w"> </span><span class="n">config</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">nebula</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">address</span><span class="o">:</span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">graph</span><span class="o">:</span><span class="p">[</span><span class="err">&#34;</span><span class="n">graphd</span><span class="o">:</span><span class="err">9669&#34;</span><span class="p">]</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">meta</span><span class="o">:</span><span class="p">[</span><span class="err">&#34;</span><span class="n">metad0</span><span class="o">:</span><span class="err">9559&#34;</span><span class="p">,</span><span class="w"> </span><span class="err">&#34;</span><span class="n">metad1</span><span class="o">:</span><span class="err">9559&#34;</span><span class="p">,</span><span class="w"> </span><span class="err">&#34;</span><span class="n">metad2</span><span class="o">:</span><span class="err">9559&#34;</span><span class="p">]</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">user</span><span class="o">:</span><span class="w"> </span><span class="n">root</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">pswd</span><span class="o">:</span><span class="w"> </span><span class="n">nebula</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">space</span><span class="o">:</span><span class="w"> </span><span class="n">basketballplayer</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="err">#</span><span class="w"> </span><span class="n">parameters</span><span class="w"> </span><span class="n">for</span><span class="w"> </span><span class="n">SST</span><span class="w"> </span><span class="n">import</span><span class="p">,</span><span class="w"> </span><span class="n">not</span><span class="w"> </span><span class="n">required</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">path</span><span class="o">:</span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">local</span><span class="o">:</span><span class="err">&#34;</span><span class="o">/</span><span class="n">tmp</span><span class="err">&#34;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">remote</span><span class="o">:</span><span class="err">&#34;</span><span class="o">/</span><span class="n">sst</span><span class="err">&#34;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">hdfs</span><span class="p">.</span><span class="n">namenode</span><span class="o">:</span><span class="w"> </span><span class="err">&#34;</span><span class="n">hdfs</span><span class="o">:</span><span class="c1">//localhost:9000&#34;
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">    </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="err">#</span><span class="w"> </span><span class="n">nebula</span><span class="w"> </span><span class="n">client</span><span class="w"> </span><span class="n">connection</span><span class="w"> </span><span class="n">parameters</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">connection</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="err">#</span><span class="w"> </span><span class="n">socket</span><span class="w"> </span><span class="n">connect</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">execute</span><span class="w"> </span><span class="n">timeout</span><span class="p">,</span><span class="w"> </span><span class="n">unit</span><span class="o">:</span><span class="w"> </span><span class="n">millisecond</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">timeout</span><span class="o">:</span><span class="w"> </span><span class="err">30000</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">error</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="err">#</span><span class="w"> </span><span class="n">max</span><span class="w"> </span><span class="n">number</span><span class="w"> </span><span class="n">of</span><span class="w"> </span><span class="n">failures</span><span class="p">,</span><span class="w"> </span><span class="n">if</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">number</span><span class="w"> </span><span class="n">of</span><span class="w"> </span><span class="n">failures</span><span class="w"> </span><span class="n">is</span><span class="w"> </span><span class="n">bigger</span><span class="w"> </span><span class="n">than</span><span class="w"> </span><span class="n">max</span><span class="p">,</span><span class="w"> </span><span class="n">then</span><span class="w"> </span><span class="n">exit</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">application</span><span class="p">.</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">max</span><span class="o">:</span><span class="w"> </span><span class="err">32</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="err">#</span><span class="w"> </span><span class="n">failed</span><span class="w"> </span><span class="n">import</span><span class="w"> </span><span class="n">job</span><span class="w"> </span><span class="n">will</span><span class="w"> </span><span class="n">be</span><span class="w"> </span><span class="n">recorded</span><span class="w"> </span><span class="n">in</span><span class="w"> </span><span class="n">output</span><span class="w"> </span><span class="n">path</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">output</span><span class="o">:</span><span class="w"> </span><span class="o">/</span><span class="nn">tmp/</span><span class="n">errors</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="err">#</span><span class="w"> </span><span class="n">use</span><span class="w"> </span><span class="n">google</span><span class="err">&#39;</span><span class="n">s</span><span class="w"> </span><span class="n">RateLimiter</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">limit</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">requests</span><span class="w"> </span><span class="n">send</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">NebulaGraph</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">rate</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="err">#</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">stable</span><span class="w"> </span><span class="n">throughput</span><span class="w"> </span><span class="n">of</span><span class="w"> </span><span class="n">RateLimiter</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">limit</span><span class="o">:</span><span class="w"> </span><span class="err">1024</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="err">#</span><span class="w"> </span><span class="n">Acquires</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">permit</span><span class="w"> </span><span class="n">from</span><span class="w"> </span><span class="n">RateLimiter</span><span class="p">,</span><span class="w"> </span><span class="n">unit</span><span class="o">:</span><span class="w"> </span><span class="n">MILLISECONDS</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="err">#</span><span class="w"> </span><span class="n">if</span><span class="w"> </span><span class="n">it</span><span class="w"> </span><span class="n">can</span><span class="err">&#39;</span><span class="n">t</span><span class="w"> </span><span class="n">be</span><span class="w"> </span><span class="n">obtained</span><span class="w"> </span><span class="n">within</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">specified</span><span class="w"> </span><span class="n">timeout</span><span class="p">,</span><span class="w"> </span><span class="n">then</span><span class="w"> </span><span class="n">give</span><span class="w"> </span><span class="n">up</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">request</span><span class="p">.</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">timeout</span><span class="o">:</span><span class="w"> </span><span class="err">1000</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="err">#</span><span class="w"> </span><span class="n">Processing</span><span class="w"> </span><span class="n">tags</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="err">#</span><span class="w"> </span><span class="n">There</span><span class="w"> </span><span class="n">are</span><span class="w"> </span><span class="n">tag</span><span class="w"> </span><span class="n">config</span><span class="w"> </span><span class="n">examples</span><span class="w"> </span><span class="n">for</span><span class="w"> </span><span class="n">different</span><span class="w"> </span><span class="n">dataSources</span><span class="p">.</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">tags</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="err">#</span><span class="w"> </span><span class="n">HDFS</span><span class="w"> </span><span class="n">csv</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="err">#</span><span class="w"> </span><span class="n">Import</span><span class="w"> </span><span class="n">mode</span><span class="w"> </span><span class="n">is</span><span class="w"> </span><span class="n">client</span><span class="p">,</span><span class="w"> </span><span class="n">just</span><span class="w"> </span><span class="n">change</span><span class="w"> </span><span class="n">type</span><span class="p">.</span><span class="n">sink</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">sst</span><span class="w"> </span><span class="n">if</span><span class="w"> </span><span class="n">you</span><span class="w"> </span><span class="n">want</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">use</span><span class="w"> </span><span class="n">client</span><span class="w"> </span><span class="n">import</span><span class="w"> </span><span class="n">mode</span><span class="p">.</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">name</span><span class="o">:</span><span class="w"> </span><span class="n">player</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">type</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">source</span><span class="o">:</span><span class="w"> </span><span class="n">csv</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">sink</span><span class="o">:</span><span class="w"> </span><span class="n">client</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">path</span><span class="o">:</span><span class="w"> </span><span class="err">&#34;</span><span class="n">file</span><span class="o">:</span><span class="c1">///root/player.csv&#34;
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">      </span><span class="err">#</span><span class="w"> </span><span class="n">if</span><span class="w"> </span><span class="n">your</span><span class="w"> </span><span class="n">csv</span><span class="w"> </span><span class="n">file</span><span class="w"> </span><span class="n">has</span><span class="w"> </span><span class="n">no</span><span class="w"> </span><span class="n">header</span><span class="p">,</span><span class="w"> </span><span class="n">then</span><span class="w"> </span><span class="n">use</span><span class="w"> </span><span class="n">_c0</span><span class="p">,</span><span class="n">_c1</span><span class="p">,</span><span class="n">_c2</span><span class="p">,..</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">indicate</span><span class="w"> </span><span class="n">fields</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">fields</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="n">_c1</span><span class="p">,</span><span class="w"> </span><span class="n">_c2</span><span class="p">]</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">nebula</span><span class="p">.</span><span class="n">fields</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">age</span><span class="p">]</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">vertex</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">field</span><span class="o">:</span><span class="n">_c0</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">separator</span><span class="o">:</span><span class="w"> </span><span class="err">&#34;</span><span class="p">,</span><span class="err">&#34;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">header</span><span class="o">:</span><span class="w"> </span><span class="n">false</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">batch</span><span class="o">:</span><span class="w"> </span><span class="err">256</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">partition</span><span class="o">:</span><span class="w"> </span><span class="err">32</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">]</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
-</span></span></span></code></pre></td></tr></table>
-</div>
-</div><ul>
-<li>我们应该能看到那个 CSV 数据源和这个配置文件都在同一个目录下了：</li>
-</ul>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span><span class="lnt">7
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">bash-5.0# ls -l
-</span></span><span class="line"><span class="cl">total <span class="m">24</span>
-</span></span><span class="line"><span class="cl">drwxrwxr-x    <span class="m">2</span> <span class="m">1000</span>     <span class="m">1000</span>          <span class="m">4096</span> Jun  <span class="m">1</span> 04:26 download
-</span></span><span class="line"><span class="cl">-rw-rw-r--    <span class="m">1</span> <span class="m">1000</span>     <span class="m">1000</span>          <span class="m">1908</span> Jun  <span class="m">1</span> 04:23 exchange.conf
-</span></span><span class="line"><span class="cl">-rw-rw-r--    <span class="m">1</span> <span class="m">1000</span>     <span class="m">1000</span>          <span class="m">2593</span> Jun  <span class="m">1</span> 04:23 hadoop.env
-</span></span><span class="line"><span class="cl">drwxrwxr-x    <span class="m">7</span> <span class="m">1000</span>     <span class="m">1000</span>          <span class="m">4096</span> Jun  <span class="m">6</span> 03:27 nebula-spark-connector
-</span></span><span class="line"><span class="cl">-rw-rw-r--    <span class="m">1</span> <span class="m">1000</span>     <span class="m">1000</span>            <span class="m">51</span> Jun  <span class="m">1</span> 04:23 player.csv
-</span></span></code></pre></td></tr></table>
-</div>
-</div><ul>
-<li>然后，实际上我们可以手动再次提交一下这个 Exchange 任务</li>
-</ul>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">/spark/bin/spark-submit --master <span class="nb">local</span> <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    --class com.vesoft.nebula.exchange.Exchange download/nebula-exchange.jar <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    -c exchange.conf
-</span></span></code></pre></td></tr></table>
-</div>
-</div><ul>
-<li>部分返回结果</li>
-</ul>
+<h3 id="纯属性条件出发查询" class="headerLink">
+    <a href="#%e7%ba%af%e5%b1%9e%e6%80%a7%e6%9d%a1%e4%bb%b6%e5%87%ba%e5%8f%91%e6%9f%a5%e8%af%a2" class="header-mark"></a>1.1 纯属性条件出发查询</h3><p>我们知道在传统关系型数据库中，索引是对表数据的一个或多个针对特定<strong>列</strong>重排序的副本，它用来<strong>加速特定列过滤条件的读查询</strong>并带来了额外的数据写入（加速而非这样查询的必须前提）。</p>
+<p>在 Nebula Graph 图数据库里，索引则是对<strong>点、边特定属性数据</strong>重排序的副本，用来提供<strong>纯属性条件出发查询</strong>（如下边的查询：从只给定了点边属性条件，而非点的 ID 出发去获取图数据）</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
@@ -1228,111 +44,18 @@
 </span><span class="lnt">9
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">22/06/06 03:56:26 INFO Exchange$: Processing Tag player
-</span></span><span class="line"><span class="cl">22/06/06 03:56:26 INFO Exchange$: field keys: _c1, _c2
-</span></span><span class="line"><span class="cl">22/06/06 03:56:26 INFO Exchange$: nebula keys: name, age
-</span></span><span class="line"><span class="cl">22/06/06 03:56:26 INFO Exchange$: Loading CSV files from file:///root/player.csv
-</span></span><span class="line"><span class="cl">...
-</span></span><span class="line"><span class="cl">22/06/06 03:56:41 INFO Exchange$: import for tag player cost time: 3.35 s
-</span></span><span class="line"><span class="cl">22/06/06 03:56:41 INFO Exchange$: Client-Import: batchSuccess.player: 2
-</span></span><span class="line"><span class="cl">22/06/06 03:56:41 INFO Exchange$: Client-Import: batchFailure.player: 0
-</span></span><span class="line"><span class="cl">...
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="o">####</span><span class="w"> </span><span class="err">必须</span><span class="w"> </span><span class="n">Nebula</span><span class="w"> </span><span class="n">Graph</span><span class="w"> </span><span class="err">索引存在的查询</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">#</span><span class="w"> </span><span class="n">query</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="err">纯属性条件出发查询</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">LOOKUP</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">tag1</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">col1</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">col2</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&#34;foo&#34;</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">YIELD</span><span class="w"> </span><span class="n">tag1</span><span class="p">.</span><span class="n">col1</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">col1</span><span class="p">,</span><span class="w"> </span><span class="n">tag1</span><span class="p">.</span><span class="n">col3</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">col3</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">#</span><span class="w"> </span><span class="n">query</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="err">纯属性条件出发查询</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">v</span><span class="p">:</span><span class="n">player</span><span class="w"> </span><span class="err">{</span><span class="w"> </span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;Tim Duncan&#39;</span><span class="w"> </span><span class="err">}</span><span class="p">)</span><span class="c1">--&gt;(v2:player) \
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">        </span><span class="k">RETURN</span><span class="w"> </span><span class="n">v2</span><span class="p">.</span><span class="n">player</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">Name</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
 </div>
-</div><p>更多的数据源，请参考文档和配置的例子。</p>
-<blockquote>
-<p>关于 Exchange 输出 SST 文件的实践，你可以参考文档和我的旧文 <a href="https://www.siwei.io/nebula-exchange-sst-2.x/" target="_blank" rel="noopener noreffer">Nebula Exchange SST 2.x实践指南</a>。</p>
-</blockquote>
-<h2 id="nebula-algorithm" class="headerLink">
-    <a href="#nebula-algorithm" class="header-mark"></a>4 Nebula Algorithm</h2><ul>
-<li>代码仓库： <a href="https://github.com/vesoft-inc/nebula-algorithm" target="_blank" rel="noopener noreffer">https://github.com/vesoft-inc/nebula-algorithm</a></li>
-<li>文档：https://docs.nebula-graph.com.cn/3.1.0/nebula-algorithm/</li>
-<li>JAR 包：https://repo1.maven.org/maven2/com/vesoft/nebula-algorithm/</li>
-<li>示例代码：<a href="example/src/main/scala/com/vesoft/nebula/algorithm" rel="">example/src/main/scala/com/vesoft/nebula/algorithm</a></li>
-</ul>
-<h3 id="通过-spark-submit-提交任务" class="headerLink">
-    <a href="#%e9%80%9a%e8%bf%87-spark-submit-%e6%8f%90%e4%ba%a4%e4%bb%bb%e5%8a%a1" class="header-mark"></a>4.1 通过 spark-submit 提交任务</h3><blockquote>
-<p>我在<a href="https://github.com/wey-gu/nebula-livejournal" target="_blank" rel="noopener noreffer">这个代码仓库</a>里给出了例子，今天我们借助 Nebula-UP 可以更方便体验它。</p>
-<p>参考前边<a href="#%e6%8b%89%e8%b5%b7%e7%8e%af%e5%a2%83" rel="">拉起环境</a>这一章节，先一键装好环境。</p>
-</blockquote>
-<p>在如上通过 Nebula-UP 的 Spark 模式部署了需要的依赖之后</p>
-<ul>
-<li>加载 <a href="https://snap.stanford.edu/data/soc-LiveJournal1.html" target="_blank" rel="noopener noreffer">LiveJournal</a> 数据集</li>
-</ul>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">~/.nebula-up/load-LiveJournal-dataset.sh
-</span></span></code></pre></td></tr></table>
-</div>
-</div><ul>
-<li>在 LiveJournal 数据集上执行一个 PageRank 算法，结果输出到 CSV 文件中</li>
-</ul>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">~/.nebula-up/nebula-algo-pagerank-example.sh
-</span></span></code></pre></td></tr></table>
-</div>
-</div><ul>
-<li>检查输出结果：</li>
-</ul>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span><span class="lnt">7
-</span><span class="lnt">8
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker <span class="nb">exec</span> -it spark_master_1 bash
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">head /output/part*000.csv
-</span></span><span class="line"><span class="cl">_id,pagerank
-</span></span><span class="line"><span class="cl">637100,0.9268620883822242
-</span></span><span class="line"><span class="cl">108150,1.1855749056722755
-</span></span><span class="line"><span class="cl">957460,0.923720299211093
-</span></span><span class="line"><span class="cl">257320,0.9967932799358413
-</span></span></code></pre></td></tr></table>
-</div>
-</div><h4 id="配置文件解读" class="headerLink">
-    <a href="#%e9%85%8d%e7%bd%ae%e6%96%87%e4%bb%b6%e8%a7%a3%e8%af%bb" class="header-mark"></a>4.1.1 配置文件解读</h4><p>完整文件在<a href="https://github.com/wey-gu/nebula-livejournal/blob/main/nebula-algorithm/algo-pagerank.conf" target="_blank" rel="noopener noreffer">这里</a>，这里，我们介绍一下主要的字段：</p>
-<ul>
-<li><code>.data</code> 指定了源是 Nebula，表示从集群获取图数据，输出<code>sink</code>是 <code>csv</code>，表示写到本地文件里。</li>
-</ul>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span><span class="lnt">7
-</span><span class="lnt">8
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">  data: {
-</span></span><span class="line"><span class="cl">    # data source. optional of nebula,csv,json
-</span></span><span class="line"><span class="cl">    source: nebula
-</span></span><span class="line"><span class="cl">    # data sink, means the algorithm result will be write into this sink. optional of nebula,csv,text
-</span></span><span class="line"><span class="cl">    sink: csv
-</span></span><span class="line"><span class="cl">    # if your algorithm needs weight
-</span></span><span class="line"><span class="cl">    hasWeight: false
-</span></span><span class="line"><span class="cl">  }
-</span></span></code></pre></td></tr></table>
-</div>
-</div><ul>
-<li><code>.nebula.read</code> 规定了读 Nebula Graph 集群的对应关系，这里是读取所有 edge type: <code>follow</code> 的边数据为一整张图</li>
-</ul>
+</div><p>上边这两个纯属性条件出发查询就是字面意思的”根据给定的属性条件获取点或者边本身“ ，反面的例子则是给定了点的 ID：</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -1348,26 +71,166 @@
 </span><span class="lnt">11
 </span><span class="lnt">12
 </span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">  nebula: {
-</span></span><span class="line"><span class="cl">    # algo&#39;s data source from Nebula. If data.source is nebula, then this nebula.read config can be valid.
-</span></span><span class="line"><span class="cl">    read: {
-</span></span><span class="line"><span class="cl">        # Nebula metad server address, multiple addresses are split by English comma
-</span></span><span class="line"><span class="cl">        metaAddress: &#34;metad0:9559&#34;
-</span></span><span class="line"><span class="cl">        # Nebula space
-</span></span><span class="line"><span class="cl">        space: livejournal
-</span></span><span class="line"><span class="cl">        # Nebula edge types, multiple labels means that data from multiple edges will union together
-</span></span><span class="line"><span class="cl">        labels: [&#34;follow&#34;]
-</span></span><span class="line"><span class="cl">        # Nebula edge property name for each edge type, this property will be as weight col for algorithm.
-</span></span><span class="line"><span class="cl">        # Make sure the weightCols are corresponding to labels.
-</span></span><span class="line"><span class="cl">        weightCols: []
-</span></span><span class="line"><span class="cl">    }
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="o">####</span><span class="w"> </span><span class="err">不基于索引的查询</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">#</span><span class="w"> </span><span class="n">query</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="err">从给定的点做的游走查询</span><span class="w"> </span><span class="n">vertex</span><span class="w"> </span><span class="n">VID</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;player100&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">GO</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="s2">&#34;player100&#34;</span><span class="w"> </span><span class="n">OVER</span><span class="w"> </span><span class="n">follow</span><span class="w"> </span><span class="n">REVERSELY</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">YIELD</span><span class="w"> </span><span class="n">src</span><span class="p">(</span><span class="n">edge</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">GO</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="err">$</span><span class="o">-</span><span class="p">.</span><span class="n">id</span><span class="w"> </span><span class="n">OVER</span><span class="w"> </span><span class="n">serve</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">WHERE</span><span class="w"> </span><span class="n">properties</span><span class="p">(</span><span class="err">$</span><span class="o">^</span><span class="p">).</span><span class="n">age</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">20</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">YIELD</span><span class="w"> </span><span class="n">properties</span><span class="p">(</span><span class="err">$</span><span class="o">^</span><span class="p">).</span><span class="n">name</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">FriendOf</span><span class="p">,</span><span class="w"> </span><span class="n">properties</span><span class="p">(</span><span class="err">$$</span><span class="p">).</span><span class="n">name</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">Team</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">#</span><span class="w"> </span><span class="n">query</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="err">从给定的点做的游走查询</span><span class="w"> </span><span class="n">vertex</span><span class="w"> </span><span class="n">VID</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;player101&#34;</span><span class="w"> </span><span class="err">或者</span><span class="w"> </span><span class="s2">&#34;player102&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">v</span><span class="p">:</span><span class="n">player</span><span class="w"> </span><span class="err">{</span><span class="w"> </span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;Tim Duncan&#39;</span><span class="w"> </span><span class="err">}</span><span class="p">)</span><span class="c1">--(v2) \
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">        </span><span class="k">WHERE</span><span class="w"> </span><span class="n">id</span><span class="p">(</span><span class="n">v2</span><span class="p">)</span><span class="w"> </span><span class="k">IN</span><span class="w"> </span><span class="p">[</span><span class="s2">&#34;player101&#34;</span><span class="p">,</span><span class="w"> </span><span class="s2">&#34;player102&#34;</span><span class="p">]</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">RETURN</span><span class="w"> </span><span class="n">v2</span><span class="p">.</span><span class="n">player</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">Name</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>我们仔细看前边的 <code>query 1</code> 和 <code>query 3</code>，尽管语句中条件都有针对 tag 为 player 的过滤： <code>{ name: 'Tim Duncan' }</code> ：</p>
+<ul>
+<li>
+<p><code>query 3</code>之中不需要索引，因为它可以：</p>
+<ul>
+<li>更直接的从已知的 <code>v2</code> 顶点： <code>[&quot;player101&quot;, &quot;player102&quot;]</code></li>
+<li>向外扩展、游走（GetNeighbors() 获得边的另一端的点，然后GetVertices() 得到下一跳的 <code>v</code>），根据 v.player.name 过滤掉不要的数据</li>
+</ul>
+</li>
+<li>
+<p><code>query 1</code> 则不同，它因为没有任何给定的顶点 ID：</p>
+<ul>
+<li>只能从属性条件入手，<code>{ name: 'Tim Duncan' }</code>，在按照 name 排序了的索引数据中先找到符合的点：IndexScan() 得到 <code>v</code></li>
+<li>然后再从 <code>v</code> 做 GetNeighbors() 获得边的另一端 的 <code>v2</code> ，在通过 GetVertices() 去获得下一跳 <code>v2</code> 中的数据</li>
+</ul>
+</li>
+</ul>
+<p>其实，这里的关键就是在于是查询是否存在给定的顶点 ID（Vertex ID），下边两个查询的执行计划里更清晰地比较了他们的区别：</p>
+<table>
+<thead>
+<tr>
+<th><code>query 1</code>, 需要基于索引，纯属性条件出发查询</th>
+<th><code>query 3</code>, 从已知 VID，不需要索引</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="为什么纯属性条件出发查询里必须要索引呢" class="headerLink">
+    <a href="#%e4%b8%ba%e4%bb%80%e4%b9%88%e7%ba%af%e5%b1%9e%e6%80%a7%e6%9d%a1%e4%bb%b6%e5%87%ba%e5%8f%91%e6%9f%a5%e8%af%a2%e9%87%8c%e5%bf%85%e9%a1%bb%e8%a6%81%e7%b4%a2%e5%bc%95%e5%91%a2" class="header-mark"></a>1.2 为什么纯属性条件出发查询里必须要索引呢？</h3><p>因为 Nebula Graph 在存储数据的时候，它的结构是面向分布式与关联关系设计的，类似表结构数据库中无索引的全扫描条件搜索实际上更加昂贵，所以设计上被有意禁止了。</p>
+<blockquote>
+<p>注: 如果不追求全部数据，只要采样一部分，3.0 里之后是支持不强制索引 LIMIT <n> 的情况的，如下查询（有 LIMIT）不需要索引：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl"># sample vertex
+</span></span><span class="line"><span class="cl">MATCH (v:team) RETURN v LIMIT 3
+</span></span><span class="line"><span class="cl"># or sample edge
+</span></span><span class="line"><span class="cl">MATCH ()-[e:follow]-&gt;() RETURN e LIMIT 3
 </span></span></code></pre></td></tr></table>
 </div>
-</div><ul>
-<li><code>.algorithm</code> 里配置了我们要调用的算法，和算法的配置</li>
+</div></blockquote>
+<h3 id="为什么只有纯属性条件出发查询" class="headerLink">
+    <a href="#%e4%b8%ba%e4%bb%80%e4%b9%88%e5%8f%aa%e6%9c%89%e7%ba%af%e5%b1%9e%e6%80%a7%e6%9d%a1%e4%bb%b6%e5%87%ba%e5%8f%91%e6%9f%a5%e8%af%a2" class="header-mark"></a>1.3 为什么只有纯属性条件出发查询</h3><p>我们比较一下正常的图查询 <strong>graph-queries</strong> 和纯属性条件出发查询 <strong>pure-prop-condition queries</strong>：</p>
+<ul>
+<li>graph-queries： 如 <code>query 2</code> 、 <code>query 3</code>是沿着边一路找到特定路径条件的扩展游走</li>
+<li>pure-prop-condition queries：如 <code>query 0</code> and <code>query 1</code>  是只通过一定属性条件（或者是无限制条件）找到满足的点、边</li>
 </ul>
+<p>而在 Nebula Graph 里，graph-queries 在扩展的时候，图的原始数据已经按照 VID（点和边都是）排序过了（或者说在数据里已经索引过了），这个排序带来连续存储（物理上临接）使得扩展游走本身就是优化、很快的。</p>
+<h3 id="总结索引是什么索引不是什么" class="headerLink">
+    <a href="#%e6%80%bb%e7%bb%93%e7%b4%a2%e5%bc%95%e6%98%af%e4%bb%80%e4%b9%88%e7%b4%a2%e5%bc%95%e4%b8%8d%e6%98%af%e4%bb%80%e4%b9%88" class="header-mark"></a>1.4 总结：索引是什么，索引不是什么？</h3><p>索引是什么？</p>
+<ul>
+<li>Nebula Graph 索引是为了从给定属性条件查点、边的一份属性数据的排序，它用写入的代价是的这种读查询模式成为可能。</li>
+</ul>
+<p>索引不是什么？</p>
+<ul>
+<li>Nebula Graph 索引不是用来加速一般图查询的：从一个点开始向外拓展的查询（即使是过滤属性条件的）不会依赖原生索引，因为 Nebula 数据自身的存储就是面向这种查询优化、排序的。</li>
+</ul>
+<h2 id="一些-nebula-graph-索引的设计细节" class="headerLink">
+    <a href="#%e4%b8%80%e4%ba%9b-nebula-graph-%e7%b4%a2%e5%bc%95%e7%9a%84%e8%ae%be%e8%ae%a1%e7%bb%86%e8%8a%82" class="header-mark"></a>2 一些 Nebula Graph 索引的设计细节</h2><p>为了更好理解索引的限制、代价、能力，咱们来解释更多他的细节</p>
+<ul>
+<li>
+<p>Nebula Graph 索引是在本地（不是分开、中心化）和点数据被一起存储、分片的。</p>
+</li>
+<li>
+<p>它只支持左匹配</p>
+<ul>
+<li>因为底层是 RocksDB Prefix Scan</li>
+</ul>
+</li>
+<li>
+<p>性能代价:</p>
+<ul>
+<li>写入时候的路径：不只是多一分数据，为了保证一致性，还有昂贵的读操作</li>
+<li>读路径：基于规则的优化选择索引，Fan Out 到所有 StorageD</li>
+</ul>
+</li>
+</ul>
+<p>这些信息也在我的<a href="https://www.siwei.io/sketch-notes/" target="_blank" rel="noopener noreffer">手绘图和视频</a>里可以看到：</p>
+<p></p>
+<blockquote>
+<p>因为左匹配的设计，在有更复杂的针对纯属性条件出发查询里涉及到通配、REGEXP这样的全文搜索情况，Nebula Graph 提供了全文索引的功能，它是利用 Raft Listener 去异步将数据写到外部 Elasticsearch 集群之中，并在查询的时候去查 ES 去做到的，见<a href="https://docs.nebula-graph.com.cn/3.0.0/4.deployment-and-installation/6.deploy-text-based-index/2.deploy-es/" target="_blank" rel="noopener noreffer">文档</a>。</p>
+</blockquote>
+<p>在这个手绘图中，我们还可以看出</p>
+<ul>
+<li>Write path
+<ul>
+<li>写入索引数据是同步操作的</li>
+</ul>
+</li>
+<li>Read path
+<ul>
+<li>这部分画了一个 RBO 的例子，查询里的规则假设 col2 相等匹配排在左边的情况下，性能优于 col1 的大小比较匹配，所以选择了第二个索引</li>
+<li>选好了索引之后，扫描索引的请求被 fan out 到存储节点上，这其中有些过滤条件比如 top n 是可以下推的</li>
+</ul>
+</li>
+</ul>
+<p>结论：</p>
+<ul>
+<li>因为写入的代价，只有必须用索引的时候采用，如果采样查询能满足读的要求，可以不创建索引而用 LIMIT <n>。</li>
+<li>索引有左匹配的限制
+<ul>
+<li>符合查询的顺序要仔细设计</li>
+<li>有时候需要使用全文索引 <a href="https://docs.nebula-graph.com.cn/3.0.0/4.deployment-and-installation/6.deploy-text-based-index/2.deploy-es/" target="_blank" rel="noopener noreffer">full-text index</a>。</li>
+</ul>
+</li>
+</ul>
+<h2 id="索引的使用" class="headerLink">
+    <a href="#%e7%b4%a2%e5%bc%95%e7%9a%84%e4%bd%bf%e7%94%a8" class="header-mark"></a>3 索引的使用</h2><p>具体要参考<a href="https://docs.nebula-graph.io/3.0.0/3.ngql-guide/14.native-index-statements/" target="_blank" rel="noopener noreffer">索引文档</a>一些要点是：</p>
+<ul>
+<li>
+<p>在 tag 或者 edge type 上针对想要被条件反查点边的属性创建索引</p>
+<ul>
+<li><code>CREATE INDEX</code></li>
+</ul>
+</li>
+<li>
+<p>创建索引之后的索引部分数据会同步写入，但是如果创建索引之前已经有的点边数据对应的索引是需要明确指定去创建的，这是一个异步的 job：</p>
+<ul>
+<li><code>REBUILD INDEX</code></li>
+</ul>
+</li>
+<li>
+<p>触发了异步的 <code>REBUILD INDEX</code> 之后，可以查询状态：</p>
+<ul>
+<li><code>SHOW INDEX STATUS</code></li>
+</ul>
+</li>
+<li>
+<p>利用到索引的查询可以是 LOOKUP，并且常常可以借助管道符在此之上做拓展查询（Graph Query）：</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
@@ -1375,34 +238,57 @@
 </span><span class="lnt">3
 </span><span class="lnt">4
 </span><span class="lnt">5
-</span><span class="lnt">6
-</span><span class="lnt">7
-</span><span class="lnt">8
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">  algorithm: {
-</span></span><span class="line"><span class="cl">    executeAlgo: pagerank
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    # PageRank parameter
-</span></span><span class="line"><span class="cl">    pagerank: {
-</span></span><span class="line"><span class="cl">        maxIter: 10
-</span></span><span class="line"><span class="cl">        resetProb: 0.15  # default 0.15
-</span></span><span class="line"><span class="cl">    }
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="n">LOOKUP</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">player</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">WHERE</span><span class="w"> </span><span class="n">player</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&#34;Kobe Bryant&#34;</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">YIELD</span><span class="w"> </span><span class="n">id</span><span class="p">(</span><span class="n">vertex</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">VertexID</span><span class="p">,</span><span class="w"> </span><span class="n">properties</span><span class="p">(</span><span class="n">vertex</span><span class="p">).</span><span class="n">name</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">|</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">GO</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="err">$</span><span class="o">-</span><span class="p">.</span><span class="n">VertexID</span><span class="w"> </span><span class="n">OVER</span><span class="w"> </span><span class="n">serve</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">YIELD</span><span class="w"> </span><span class="err">$</span><span class="o">-</span><span class="p">.</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">properties</span><span class="p">(</span><span class="n">edge</span><span class="p">).</span><span class="n">start_year</span><span class="p">,</span><span class="w"> </span><span class="n">properties</span><span class="p">(</span><span class="n">edge</span><span class="p">).</span><span class="n">end_year</span><span class="p">,</span><span class="w"> </span><span class="n">properties</span><span class="p">(</span><span class="err">$$</span><span class="p">).</span><span class="n">name</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+<li>
+<p>也可以是 MATCH ，这里边 <code>v</code> 是通过索引得到的，而 <code>v2</code> 则是在数据（非索引）部分拓展查询获得的。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">MATCH (v:player{name:&#34;Tim Duncan&#34;})--(v2:player) \
+</span></span><span class="line"><span class="cl">  RETURN v2.player.name AS Name;
 </span></span></code></pre></td></tr></table>
 </div>
-</div><h3 id="作为一个库在-spark-中调用-nebula-algoritm" class="headerLink">
-    <a href="#%e4%bd%9c%e4%b8%ba%e4%b8%80%e4%b8%aa%e5%ba%93%e5%9c%a8-spark-%e4%b8%ad%e8%b0%83%e7%94%a8-nebula-algoritm" class="header-mark"></a>4.2 作为一个库在 Spark 中调用 Nebula Algoritm</h3><p>请注意另一方面，我们可以将 Nebula Algoritm 作为一个库调用，它的好处在于：</p>
+</div></li>
+<li>
+<p>复合索引的能力与限制</p>
+<p>理解原生索引的匹配是左匹配能让我们知道对于超过一个属性的索引：复合索引，并且能帮助我们理解它的能力有限制，这里说几个结论：</p>
 <ul>
-<li>
-<p>对算法的输出格式有更多的控制/定制功能</p>
+<li>我们创建针对多个属性的复合索引是顺序有关的
+<ul>
+<li>比如，我们创建一个双属性复合索引 index_a: <code>(isRisky: bool, age: int)</code>，和 index_b: <code>(age: int, isRisky: bool)</code> 在根据 <code>WHERE n.user.isRisky == true AND n.user.age &gt; 18</code> 这个条件查询时候，index_a 因为左匹配一个相等的短字段，显然效率更高。</li>
+</ul>
 </li>
-<li>
-<p>可以对非数字 ID 的情况进行转换，见<a href="https://github.com/vesoft-inc/nebula-algorithm/blob/a82d7092d928a2f3abc45a727c24afb888ff8e4f/example/src/main/scala/com/vesoft/nebula/algorithm/PageRankExample.scala#L48" target="_blank" rel="noopener noreffer">这里</a></p>
+<li>只有复合左匹配的被复合索引的属性真子集的过滤条件才能被只支持
+<ul>
+<li>比如，index_a: <code>(isRisky: bool, age: int)</code>，和 index_b: <code>(age: int, isRisky: bool)</code> 在查询 <code>WHERE n.user.age &gt; 18</code> 这个语句的时候, 只有 index_b 复合最左匹配，能满足这个查询。</li>
+</ul>
+</li>
+<li>针对一些从属性作为查询的起点，找点、边的情况，原生索引是不能满足全文搜索的匹配场景的，这时候，我们应该考虑使用 Nebula 全文索引，它是 Nebula 社区支持的开箱即用的外置 Elastic Search，通过配置，创建了全文索引的数据会通过 Raft listener 异步更新到 Elastic 集群中，他的查询入口也是 <code>LOOKUP</code>，详细的信息请<a href="https://docs.nebula-graph.com.cn/3.0.1/4.deployment-and-installation/6.deploy-text-based-index/2.deploy-es/" target="_blank" rel="noopener noreffer">参考文档</a>。</li>
+</ul>
 </li>
 </ul>
-<p>这里我先不给出例子了，如果大家感兴趣可以给 Nebula-UP 提需求，我也会增加相应的例子。</p>
-<blockquote>
-<p>题图来源： <a href="https://unsplash.com/photos/KABfjuSOx74" target="_blank" rel="noopener noreffer">Sander</a></p>
-</blockquote>]]></description>
+<h2 id="回顾" class="headerLink">
+    <a href="#%e5%9b%9e%e9%a1%be" class="header-mark"></a>4 回顾</h2><ul>
+<li>Nebula Graph 索引在只提供属性条件情况下通过对属性的排序副本扫描查点、边</li>
+<li>Nebula Graph 索引<strong>不是</strong>用来图拓展查询的</li>
+<li>Nebula Graph 索引是左匹配，不是用来做模糊全文搜索的</li>
+<li>Nebula Graph 索引在写入时候有性能代价</li>
+<li>记得如果创建 Nebula Graph 索引之前已经有相应点边上的数据，要重建索引</li>
+</ul>
+<p>Happy Graphing!</p>
+<p>Feture image credit to <a href="https://unsplash.com/photos/ZiQkhI7417A" target="_blank" rel="noopener noreffer">Alina</a></p>
+]]></description>
 </item></channel>
 </rss>

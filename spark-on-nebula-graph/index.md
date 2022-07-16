@@ -99,13 +99,13 @@ curl -fsSL nebula-up.siwei.io/all-in-one.sh | bash -s -- v3 spark
 执行下面这一行，我们就可以进入到 Spark 环境：
 
 ```bash
-docker exec -it spark_master_1 bash
+docker exec -it sparkmaster bash
 ```
 
 如果我们想执行编译，可以在里边安装 `mvn`：
 
 ```bash
-docker exec -it spark_master_1 bash
+docker exec -it sparkmaster bash
 # in the container shell
 
 export MAVEN_VERSION=3.5.4
@@ -184,7 +184,7 @@ only showing top 2 rows
 cd ~/.nebula-up/nebula-up/spark
 git clone https://github.com/vesoft-inc/nebula-spark-connector.git
 
-docker exec -it spark_master_1 bash
+docker exec -it sparkmaster bash
 cd /root/nebula-spark-connector
 ```
 
@@ -407,7 +407,7 @@ player801,"Another Name",21
 - 咱们可以进到 Spark 环境里看看
 
 ```bash
-docker exec -it spark_master_1 bash
+docker exec -it sparkmaster bash
 cd /root
 ```
 
@@ -578,7 +578,7 @@ drwxrwxr-x    7 1000     1000          4096 Jun  6 03:27 nebula-spark-connector
 - 检查输出结果：
 
 ```bash
-docker exec -it spark_master_1 bash
+docker exec -it sparkmaster bash
 
 head /output/part*000.csv
 _id,pagerank
