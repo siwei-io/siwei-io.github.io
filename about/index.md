@@ -94,3 +94,9 @@
 echo c2l2dmVpCg== | base64 -d
 ```
 
+或者和我约一个 Zoom Call
+
+{{< calendly calendar="weygu" hideBranding=true type="inlineEmbed" >}}
+    Talk to me when needed :).
+{{< /calendly >}}
+

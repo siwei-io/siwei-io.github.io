@@ -71,3 +71,10 @@ I used to share my notes and thoughts on [note.siwei.info](https://note.siwei.in
 ## Contact
 
 You can DM me via [twitter](https://twitter.com/wey_gu), or [wey.gu@vesoft.com](mailto:wey.gu@vesoft.com).
+
+Book me a zoom call:
+
+{{< calendly calendar="weygu" hideBranding=true type="inlineEmbed" >}}
+    Talk to me when needed :).
+{{< /calendly >}}
+
