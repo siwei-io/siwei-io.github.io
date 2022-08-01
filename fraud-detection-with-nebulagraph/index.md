@@ -67,7 +67,7 @@ docker run --rm -ti \
 
 有了这样一个图谱，风控专家可以在可视化探索工具中按需探索实体之间的关系，绘制相应的风险模式：
 
-![](https://user-images.githubusercontent.com/1651790/182035519-beca4449-4726-4246-b701-f7bb01b61a41.png)
+![](./viz_graph_query.webp)
 
 在这个探索截图里，我们可以明显看到一个群控设备的风险模式，这个模式可以被交给图数据库开发者，抽象成可以被风控应用定期、实时查询的语句：
 
@@ -436,7 +436,7 @@ plt.show()
 
 可以看到最后画出来的结果：
 
-![](https://user-images.githubusercontent.com/1651790/182037603-9b6bf10f-c2d1-4c0b-98cf-9952f9379329.png)
+![](./lpa_spread_notation_matplot.webp)
 
 可以看到有一些蓝色标签被 Spread 开了，实际上我的这个例子的效果并不理想（因为这个例子李，绿色的才是重要的标签），不过我给的子图实在是太小了，也本不应该奢求有好的结果，只是为了个大家演示一下这个方法。
 
@@ -481,7 +481,7 @@ docker exec -it sparkmaster /spark/bin/spark-submit \
 ls -l /output
 ```
 
-之后，我们可以对这个 Lovain 的图特征做一些处理，并开始传统的模型训练了。
+之后，我们可以对这个 Louvain 的图特征做一些处理，并开始传统的模型训练了。
 
 ### 图神经网络的方法
 
@@ -1402,9 +1402,9 @@ GET SUBGRAPH WITH PROP FROM 2048 YIELD VERTICES AS nodes, EDGES AS relationships
 
 可以看到返回的结果其实还是很多的，不过对于 NebulaGraph 来说，这个子图结果返回是在 10 ms 左右获取的，这里我就不贴出来了，如果我们在 NebulaGraph Studio 或者 Explorer 中可以把结果渲染出来（可视化展示的 Query 可以去掉 `WITH PROP` ，可以给浏览器省点内存），结果就更容易让人脑理解了：
 
-![](https://user-images.githubusercontent.com/1651790/182024973-e92c8430-208c-4a0a-bf31-1b7a197d9241.png)
+![](./subgraph_console_view.webp)
 
-![](https://user-images.githubusercontent.com/1651790/182025007-634b0098-61a6-4c0c-b061-7f2f74b9755c.png)
+![](./subgraph_viz.webp)
 
 现在我们就来实现这一步的代码吧，它的输入是点的 id：`vertex_id`。输出是一个 `dgl_graph`，用来传给推理接口。
 
