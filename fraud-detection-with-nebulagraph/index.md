@@ -3,7 +3,7 @@
 
 
 
-> 本文是一个基于 NebulaGraph 上图算法、图数据库、机器学习、GNN 方法综述，除了基本方法思想的介绍之外，我还给大家弄了可以跑的 Playground。
+> 本文是一个基于 NebulaGraph 上图算法、图数据库、机器学习、GNN 的 Fraud Detection 方法综述，除了基本方法思想的介绍之外，我还给大家弄了可以跑的 Playground。
 
 > 值得一提的是，这还我第一次给大家介绍 Nebula-DGL 这个项目 😁。
 
