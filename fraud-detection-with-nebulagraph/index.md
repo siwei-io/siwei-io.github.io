@@ -696,8 +696,8 @@ nebula_config = {
                 ('graphd1', 9669),
                 ('graphd2', 9669)
             ],
-    "user": "root",
-    "password": "nebula",
+    "nebula_user": "root",
+    "nebula_password": "nebula",
 }
 
 # load feature_mapper from yaml file
@@ -1202,8 +1202,8 @@ nebula_config = {
                 ('graphd1', 9669),
                 ('graphd2', 9669)
             ],
-    "user": "root",
-    "password": "nebula",
+    "nebula_user": "root",
+    "nebula_password": "nebula",
 }
 
 with open('nebulagraph_yelp_dgl_mapper.yaml', 'r') as f:
