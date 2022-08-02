@@ -705,7 +705,10 @@ with open('nebulagraph_yelp_dgl_mapper.yaml', 'r') as f:
     feature_mapper = yaml.safe_load(f)
 
 nebula_loader = NebulaLoader(nebula_config, feature_mapper)
-dgl_graph = nebula_loader.load()
+g = nebula_loader.load()
+
+g = g.to('cpu')
+device = torch.device('cpu')
 ```
 
 ##### 模型训练
@@ -877,7 +880,7 @@ GraphSAGE 是针对同构图，且边无 feature 的算法，而我们当下的 
 
 我们除了选择用针对异构图的 Inductive Learning 方法之外，还可想办法把同构图转换成异构图。为了在转换中不丢失重要的边类型信息，我们可以把边类型变成数值。
 
-这里我给了一维的 edge feature，当然三维也是可以的。
+这里我给了一维的 edge feature，当然（3-1）二维也是可以的。
 
 ```python
 # shares_restaurant_in_one_month_with: 1, b"001"
@@ -1156,12 +1159,12 @@ def layerwise_infer(device, graph, nid, model, batch_size):
         label = graph.ndata['label'][nid].to(pred.device)
         return MF.accuracy(pred, label)
 
-def train(args, device, g, model, train_idx, val_idx):
+def train(device, g, model, train_idx, val_idx):
     # create sampler & dataloader
     sampler = NeighborSampler([10, 10, 10],  # fanout for [layer-0, layer-1, layer-2]
                               prefetch_node_feats=['feat'],
                               prefetch_labels=['label'])
-    use_uva = (args.mode == 'mixed')
+    use_uva = False
     train_dataloader = DataLoader(g, train_idx, sampler, device=device,
                                   batch_size=1024, shuffle=True,
                                   drop_last=False, num_workers=0,
@@ -1291,7 +1294,7 @@ model = SAGE(in_size, 256, out_size).to(device)
 
 # model training
 print('Training...')
-train(args, device, hg, model, X_train_idx, X_val_idx)
+train(device, hg, model, X_train_idx, X_val_idx)
 
 # test the model
 print('Testing...')
@@ -1327,7 +1330,7 @@ hg_train = hg.subgraph(torch.cat([X_train_idx, X_val_idx]))
 
 # model training
 print('Training...')
-train(args, device, hg_train, model, torch.arange(X_train_idx.shape[0]), torch.arange(X_train_idx.shape[0], hg_train.num_nodes()))
+train(device, hg_train, model, torch.arange(X_train_idx.shape[0]), torch.arange(X_train_idx.shape[0], hg_train.num_nodes()))
 
 # test the model
 print('Testing...')
@@ -1496,6 +1499,9 @@ dgl_graph.ndata['label'] = tensor(features[32])
 在开始推理之前，我们还需要把它转换成同构图，和前边完全一样：
 
 ```python
+import torch
+
+
 # to homogeneous graph
 features = []
 for i in range(32):
@@ -1573,7 +1579,7 @@ In [307]: def test_inference(device, graph, nid, model, batch_size):
 Test Accuracy 0.9688
 ```
 
-我会把端到到的项目代码开源到 GitHub 上，完成后会回来更新本文，增加代码仓库的地址，敬请期待！
+这个示例项目的代码在：[github.com/wey-gu/NebulaGraph-Fraud-Detection-GNN](https://github.com/wey-gu/NebulaGraph-Fraud-Detection-GNN) ，如有问题欢迎留言、ISSUE。
 
 ### 总结
 

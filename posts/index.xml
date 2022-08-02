@@ -1136,6 +1136,9 @@
 </span><span class="lnt">17
 </span><span class="lnt">18
 </span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">nebula_dgl</span> <span class="kn">import</span> <span class="n">NebulaLoader</span>
@@ -1156,7 +1159,10 @@
 </span></span><span class="line"><span class="cl">    <span class="n">feature_mapper</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="n">nebula_loader</span> <span class="o">=</span> <span class="n">NebulaLoader</span><span class="p">(</span><span class="n">nebula_config</span><span class="p">,</span> <span class="n">feature_mapper</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="n">dgl_graph</span> <span class="o">=</span> <span class="n">nebula_loader</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="n">g</span> <span class="o">=</span> <span class="n">nebula_loader</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">g</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;cpu&#39;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s1">&#39;cpu&#39;</span><span class="p">)</span>
 </span></span></code></pre></td></tr></table>
 </div>
 </div><h5 id="模型训练" class="headerLink">
@@ -1458,7 +1464,7 @@
 </div><p><strong>异构图转换为同构图</strong></p>
 <p>GraphSAGE 是针对同构图，且边无 feature 的算法，而我们当下的 Yelp 图谱是异构的：一类点、三类边。那么，如何才能用 GraphSAGE 去建模 Yelp 图谱呢？</p>
 <p>我们除了选择用针对异构图的 Inductive Learning 方法之外，还可想办法把同构图转换成异构图。为了在转换中不丢失重要的边类型信息，我们可以把边类型变成数值。</p>
-<p>这里我给了一维的 edge feature，当然三维也是可以的。</p>
+<p>这里我给了一维的 edge feature，当然（3-1）二维也是可以的。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
@@ -2000,12 +2006,12 @@
 </span></span><span class="line"><span class="cl">        <span class="n">label</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">ndata</span><span class="p">[</span><span class="s1">&#39;label&#39;</span><span class="p">][</span><span class="n">nid</span><span class="p">]</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">pred</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">MF</span><span class="o">.</span><span class="n">accuracy</span><span class="p">(</span><span class="n">pred</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">device</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">train_idx</span><span class="p">,</span> <span class="n">val_idx</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">train_idx</span><span class="p">,</span> <span class="n">val_idx</span><span class="p">):</span>
 </span></span><span class="line"><span class="cl">    <span class="c1"># create sampler &amp; dataloader</span>
 </span></span><span class="line"><span class="cl">    <span class="n">sampler</span> <span class="o">=</span> <span class="n">NeighborSampler</span><span class="p">([</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">],</span>  <span class="c1"># fanout for [layer-0, layer-1, layer-2]</span>
 </span></span><span class="line"><span class="cl">                              <span class="n">prefetch_node_feats</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;feat&#39;</span><span class="p">],</span>
 </span></span><span class="line"><span class="cl">                              <span class="n">prefetch_labels</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;label&#39;</span><span class="p">])</span>
-</span></span><span class="line"><span class="cl">    <span class="n">use_uva</span> <span class="o">=</span> <span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;mixed&#39;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">use_uva</span> <span class="o">=</span> <span class="kc">False</span>
 </span></span><span class="line"><span class="cl">    <span class="n">train_dataloader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="n">train_idx</span><span class="p">,</span> <span class="n">sampler</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">                                  <span class="n">batch_size</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
 </span></span><span class="line"><span class="cl">                                  <span class="n">drop_last</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
@@ -2238,7 +2244,7 @@
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="c1"># model training</span>
 </span></span><span class="line"><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Training...&#39;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="n">train</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">device</span><span class="p">,</span> <span class="n">hg</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">X_train_idx</span><span class="p">,</span> <span class="n">X_val_idx</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="n">train</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">hg</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">X_train_idx</span><span class="p">,</span> <span class="n">X_val_idx</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="c1"># test the model</span>
 </span></span><span class="line"><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Testing...&#39;</span><span class="p">)</span>
@@ -2302,7 +2308,7 @@
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="c1"># model training</span>
 </span></span><span class="line"><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Training...&#39;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="n">train</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">device</span><span class="p">,</span> <span class="n">hg_train</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">X_train_idx</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">X_train_idx</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">hg_train</span><span class="o">.</span><span class="n">num_nodes</span><span class="p">()))</span>
+</span></span><span class="line"><span class="cl"><span class="n">train</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">hg_train</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">X_train_idx</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">X_train_idx</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">hg_train</span><span class="o">.</span><span class="n">num_nodes</span><span class="p">()))</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="c1"># test the model</span>
 </span></span><span class="line"><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Testing...&#39;</span><span class="p">)</span>
@@ -2603,9 +2609,15 @@
 </span><span class="lnt">16
 </span><span class="lnt">17
 </span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="c1"># to homogeneous graph</span>
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">torch</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># to homogeneous graph</span>
 </span></span><span class="line"><span class="cl"><span class="n">features</span> <span class="o">=</span> <span class="p">[]</span>
 </span></span><span class="line"><span class="cl"><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">32</span><span class="p">):</span>
 </span></span><span class="line"><span class="cl">    <span class="n">features</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dgl_graph</span><span class="o">.</span><span class="n">ndata</span><span class="p">[</span><span class="sa">f</span><span class="s2">&#34;f</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">])</span>
@@ -2727,7 +2739,7 @@
 </span></span><span class="line"><span class="cl"><span class="n">Test</span> <span class="n">Accuracy</span> <span class="mf">0.9688</span>
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>我会把端到到的项目代码开源到 GitHub 上，完成后会回来更新本文，增加代码仓库的地址，敬请期待！</p>
+</div><p>这个示例项目的代码在：<a href="https://github.com/wey-gu/NebulaGraph-Fraud-Detection-GNN" target="_blank" rel="noopener noreffer">github.com/wey-gu/NebulaGraph-Fraud-Detection-GNN</a> ，如有问题欢迎留言、ISSUE。</p>
 <h3 id="总结" class="headerLink">
     <a href="#%e6%80%bb%e7%bb%93" class="header-mark"></a>1.6 总结</h3><p>总结起来，欺诈检测的方法有：</p>
 <ul>
