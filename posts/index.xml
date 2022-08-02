@@ -1167,132 +1167,13 @@
 </div>
 </div><h5 id="模型训练" class="headerLink">
     <a href="#%e6%a8%a1%e5%9e%8b%e8%ae%ad%e7%bb%83" class="header-mark"></a>1.5.1.3 模型训练</h5><p>这里，我用 <a href="https://cs.stanford.edu/people/jure/pubs/graphsage-nips17.pdf" target="_blank" rel="noopener noreffer">GraphSAGE</a> 算法的点分类（Node Classification）方法来举例，GraphSAGE 的原始版本是一个归纳学习（Inductive Learning）的算法，这里，归纳学习区别于它的反面： Transductive Learning ，可以把新的数据用在完全旧的图之上习得的模型，这样训练出来的模型可以进行线上增量数据的欺诈检测（而不是需要重新加载为全图训练才可以）。</p>
-<p>模型训练系统：</p>
+<p></p>
+<p>模型训练系统（左边）：</p>
 <ul>
 <li>输入：带有欺诈标注的历史交易图谱</li>
 <li>输出：一个 GraphSAGE 的 DGL 模型</li>
 </ul>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
-</span><span class="lnt">28
-</span><span class="lnt">29
-</span><span class="lnt">30
-</span><span class="lnt">31
-</span><span class="lnt">32
-</span><span class="lnt">33
-</span><span class="lnt">34
-</span><span class="lnt">35
-</span><span class="lnt">36
-</span><span class="lnt">37
-</span><span class="lnt">38
-</span><span class="lnt">39
-</span><span class="lnt">40
-</span><span class="lnt">41
-</span><span class="lnt">42
-</span><span class="lnt">43
-</span><span class="lnt">44
-</span><span class="lnt">45
-</span><span class="lnt">46
-</span><span class="lnt">47
-</span><span class="lnt">48
-</span><span class="lnt">49
-</span><span class="lnt">50
-</span><span class="lnt">51
-</span><span class="lnt">52
-</span><span class="lnt">53
-</span><span class="lnt">54
-</span><span class="lnt">55
-</span><span class="lnt">56
-</span><span class="lnt">57
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">                     ┌──────────────────────────────────────────────┐                     
-</span></span><span class="line"><span class="cl">                     │   ┌──────────────────────────────────────┐   │                     
-</span></span><span class="line"><span class="cl">                     │   │   Graph of Historical Transactions   │   │                     
-</span></span><span class="line"><span class="cl">                     │   └──────────────────────────────────────┘   │                     
-</span></span><span class="line"><span class="cl">                     │                      .─.              .      │                     
-</span></span><span class="line"><span class="cl">                     │                     (   )◀───────────( )     │                     
-</span></span><span class="line"><span class="cl">                     │                      `─&#39;              &#39;      │                     
-</span></span><span class="line"><span class="cl">                     │     .       .─.       ╲             ◁        │                     
-</span></span><span class="line"><span class="cl">                     │    ( )◀────(   )       ╲        .  ╱         │                     
-</span></span><span class="line"><span class="cl">                     │     &#39;       `─&#39;         ╲      ( )╱          │                     
-</span></span><span class="line"><span class="cl">                     │     ╲       ◀            ╲      &#39;            │                     
-</span></span><span class="line"><span class="cl">                     │      ╲  .  ╱              ◁                  │                     
-</span></span><span class="line"><span class="cl">                     │       ◀( )╱               .─.         .─.    │                     
-</span></span><span class="line"><span class="cl">                     │         &#39;                (   )◀──────(   )   │                     
-</span></span><span class="line"><span class="cl">                     │                           `─&#39;         `─&#39;    │                     
-</span></span><span class="line"><span class="cl">                     │                                              │                     
-</span></span><span class="line"><span class="cl">                     └──────────────────────────────────────────────┘                     
-</span></span><span class="line"><span class="cl">                                             ┃                                            
-</span></span><span class="line"><span class="cl">                                             ┃                                            
-</span></span><span class="line"><span class="cl">                                             ▼                                            
-</span></span><span class="line"><span class="cl">┌────────────────────────────────────────────────────────────────────────────────────────┐
-</span></span><span class="line"><span class="cl">│ ┌────┐           ┌ ─ ─ ─ ─ ─ ─ ─ ─               ┌ ─ ─ ─ ─ ─ ─ ─ ─                     │
-</span></span><span class="line"><span class="cl">│ │GNN │                            │                               │                    │
-</span></span><span class="line"><span class="cl">│ └────┘           │                               │                                     │
-</span></span><span class="line"><span class="cl">│                                   │                               │                    │
-</span></span><span class="line"><span class="cl">│                  │           ◀                   │           ◀                         │
-</span></span><span class="line"><span class="cl">│                      .   .  ╱.─.  │                  .   .  ╱.─.  │                    │
-</span></span><span class="line"><span class="cl">│                  │  ( )◀───╱(   )                │  ( )◀───╱(   )                      │
-</span></span><span class="line"><span class="cl">│ .       .─.          &#39;╱  &#39;   `─&#39;  │  ┌────────┐      &#39;╱  &#39;   `─&#39;  │        .       .─. │
-</span></span><span class="line"><span class="cl">│( )◀────(   )     │   .       .─.     │ ReLU  ╱│  │   .       .─.          ( )◀────(   )│
-</span></span><span class="line"><span class="cl">│ &#39;       `─&#39;         ( )◀────(   ) │  │      ╱ │     ( )◀────(   ) │        &#39;       `─&#39; │
-</span></span><span class="line"><span class="cl">│ ╲       ◀   ══▶  │   &#39;       `─&#39;     │     ╱  │  │   &#39;       `─&#39;   ... ══▶ ╲       ◀   │
-</span></span><span class="line"><span class="cl">│  ╲  .  ╱             ╲       ◀    │  │─────   │      ╲       ◀    │         ╲  .  ╱    │
-</span></span><span class="line"><span class="cl">│   ◀( )╱          │    ╲  .  ╱        └────────┘  │    ╲  .  ╱                ◀( )╱     │
-</span></span><span class="line"><span class="cl">│     &#39;                  ◀( )╱      │                    ◀( )╱      │            &#39;       │
-</span></span><span class="line"><span class="cl">│                  │       &#39;                       │       &#39;                             │
-</span></span><span class="line"><span class="cl">│                      .       .─.  │                  .       .─.  │                    │
-</span></span><span class="line"><span class="cl">│                  │  ( )◀────(   )                │  ( )◀────(   )                      │
-</span></span><span class="line"><span class="cl">│                      &#39;       `─&#39;  │                  &#39;       `─&#39;  │                    │
-</span></span><span class="line"><span class="cl">│                  │   ╲       ◀                   │   ╲       ◀                         │
-</span></span><span class="line"><span class="cl">│                       ╲  .  ╱     │                   ╲  .  ╱     │                    │
-</span></span><span class="line"><span class="cl">│                  │     ◀( )╱                     │     ◀( )╱                           │
-</span></span><span class="line"><span class="cl">│                          &#39;        │                      &#39;        │                    │
-</span></span><span class="line"><span class="cl">│                  └ ─ ─ ─ ─ ─ ─ ─ ─               └ ─ ─ ─ ─ ─ ─ ─ ─                     │
-</span></span><span class="line"><span class="cl">└────────────────────────────────────────────────────────────────────────────────────────┘
-</span></span><span class="line"><span class="cl">                                            ┃                                             
-</span></span><span class="line"><span class="cl">                                            ┃                                             
-</span></span><span class="line"><span class="cl">                                            ▼                                             
-</span></span><span class="line"><span class="cl">                          ┌──────────────────────────────────┐                            
-</span></span><span class="line"><span class="cl">                          │                 Λ                │                            
-</span></span><span class="line"><span class="cl">                      ┌───┴─┐  GNN Model   ╱ ╲            ┌──┴──┐                         
-</span></span><span class="line"><span class="cl">                      ├─────┤             ╱   ╲           ├─────┤                         
-</span></span><span class="line"><span class="cl">                      ├─────┼────────────▶    ───────────▶├─────┤                         
-</span></span><span class="line"><span class="cl">                      ├─────┤             ╲   ╱           ├─────┤                         
-</span></span><span class="line"><span class="cl">                      └───┬─┘              ╲ ╱            └──┬──┘                         
-</span></span><span class="line"><span class="cl">                          │                 V                │                            
-</span></span><span class="line"><span class="cl">                          └──────────────────────────────────┘                            
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>线上推理系统：</p>
+<p>线上推理系统（右边）：</p>
 <ul>
 <li>
 <p>模型：基于带有欺诈标注的历史交易图谱基于 GraphSAGE 训练</p>
@@ -1304,69 +1185,7 @@
 <p>输出：这笔交易是否涉嫌欺诈</p>
 </li>
 </ul>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
-</span><span class="lnt">28
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">      ┌─────────────────────┐                          ┌─────────────────┐      
-</span></span><span class="line"><span class="cl">      │                     │                          │                 │
-</span></span><span class="line"><span class="cl">─────▶│ Transaction Record  ├──────2. Fraud Risk ─────▶│  Inference API  │◀────┐
-</span></span><span class="line"><span class="cl">      │                     │◀────Prediction with ─────┤                 │     │
-</span></span><span class="line"><span class="cl">      │                     │        Sub Graph         │                 │     │
-</span></span><span class="line"><span class="cl">      └─────────────────────┘                          └─────────────────┘     │
-</span></span><span class="line"><span class="cl">           │           ▲                                        │              │
-</span></span><span class="line"><span class="cl">           │           │                                        │              │
-</span></span><span class="line"><span class="cl">       0. Insert   1. Get New                              3.req: Node         │
-</span></span><span class="line"><span class="cl">         Record    Record Sub                            Classification        │
-</span></span><span class="line"><span class="cl">           │         Graph                                      │              │
-</span></span><span class="line"><span class="cl">           ▼           │                                        │              │
-</span></span><span class="line"><span class="cl">┌──────────────────────┴─────────────────┐ ┌────────────────────┘      3.resp: │
-</span></span><span class="line"><span class="cl">│┌──────────────────────────────────────┐│ │                          Predicted│
-</span></span><span class="line"><span class="cl">││   Graph of Historical Transactions   ││ │                             Risk  │
-</span></span><span class="line"><span class="cl">│└──────────────────────────────────────┘│ │                                   │
-</span></span><span class="line"><span class="cl">│                   .─.              .   │ │                                   │
-</span></span><span class="line"><span class="cl">│                  (   )◀───────────( )  │ │                                   │
-</span></span><span class="line"><span class="cl">│                   `─&#39;              &#39;   │ │      ┌──────────────────────┐     │
-</span></span><span class="line"><span class="cl">│  .       .─.       ╲             ◁     │ │      │ GNN Model Λ          │     │
-</span></span><span class="line"><span class="cl">│ ( )◀────(   )       ╲           ╱      │ │  ┌───┴─┐        ╱ ╲      ┌──┴──┐  │
-</span></span><span class="line"><span class="cl">│  &#39;       `─&#39;         ╲       . ╱       │ │  ├─────┤       ╱   ╲     ├─────┤  │
-</span></span><span class="line"><span class="cl">│  ╲       ◀            ╲     ( )        │ └─▶├─────┼─────▶▕     ─────├─────┤──┘
-</span></span><span class="line"><span class="cl">│   ╲  .  ╱              ◁     &#39;         │    ├─────┤       ╲   ╱     ├─────┤   
-</span></span><span class="line"><span class="cl">│    ◀( )╱               .─.         .─. │    └───┬─┘        ╲ ╱      └──┬──┘   
-</span></span><span class="line"><span class="cl">│      &#39;                (   )◀──────(   )│        │           V          │      
-</span></span><span class="line"><span class="cl">│                        `─&#39;         `─&#39; │        └──────────────────────┘      
-</span></span><span class="line"><span class="cl">└────────────────────────────────────────┘                                      
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p><strong>分割数据集</strong></p>
+<p><strong>分割数据集</strong></p>
 <p>机器学习训练的过程需要在已经有的数据、信息中分割出用来训练、验证和测试的子集，他们可以是不相交的整体数据的真子集也可以彼此有重叠，在实际的情况中，有时候我们对数据的标注常常是不充分的，所以按照标注的比例去分割数据可能更有意义一些，下边的例子是我按照点上是否标注欺诈为标准去分割数据集。</p>
 <p>这里边有两个地方值得注意：</p>
 <ol>
