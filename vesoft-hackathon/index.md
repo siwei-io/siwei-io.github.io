@@ -1,6 +1,10 @@
 # Vesoft Hackathon 2022 流水账
 
 
+NebulaGraph 终于有 Fuzz 测试工具了，NebulaGraph 上跑向量搜索，基于 Kubesphere 的多集群 PaaS...
+
+<!--more-->
+
 上周五周六跑到 office 参加了第一次公司内部的黑客马拉松，非常开心，这里记录一下流水账。
 
 ## 组队报名
