@@ -4,9 +4,108 @@
         <link>https://siwei.io/</link>
         <description>Siwei(思为) builds things and believes in Open Source.</description>
         <generator>Hugo -- gohugo.io</generator><language>zh-CN</language><managingEditor>weyl.gu@gmail.com (Wey Gu)</managingEditor>
-            <webMaster>weyl.gu@gmail.com (Wey Gu)</webMaster><lastBuildDate>Mon, 01 Aug 2022 01:15:05 &#43;0800</lastBuildDate>
+            <webMaster>weyl.gu@gmail.com (Wey Gu)</webMaster><lastBuildDate>Mon, 08 Aug 2022 10:58:51 &#43;0800</lastBuildDate>
             <atom:link href="https://siwei.io/index.xml" rel="self" type="application/rss+xml" />
         <item>
+    <title>Vesoft Hackathon 2022 流水账</title>
+    <link>https://siwei.io/vesoft-hackathon/</link>
+    <pubDate>Mon, 08 Aug 2022 10:58:51 &#43;0800</pubDate><author>
+        <name>Wey Gu</name>
+    </author><guid>https://siwei.io/vesoft-hackathon/</guid>
+    <description><![CDATA[<div class="featured-image">
+                <img src="/featured-image.webp" referrerpolicy="no-referrer">
+            </div><p>上周五周六跑到 office 参加了第一次公司内部的黑客马拉松，非常开心，这里记录一下流水账。</p>
+<h2 id="组队报名" class="headerLink">
+    <a href="#%e7%bb%84%e9%98%9f%e6%8a%a5%e5%90%8d" class="header-mark"></a>1 组队报名</h2><p>组队，差不都一个月之前，大家开始自由组队，做出来不限任何形式的 NebulaGraph 和 Vesoft 上的项目、改进都可以。</p>
+<p>吴老师（NebulaGraph 团队第一位博士，CR PD Arch）找到我问要不要一起搞 GNN/DGL + NebulaGraph 的 PoC 参赛，我当然超级开心参加，而且刚好我在写 Fraud Detection 的文章，在自己的 todo list 上一直想要研究一下 NebulaGraph + DGL 要怎么做！</p>
+<p>吴老师还拉了：小狼（NebulaGraph Logo 和可视化工具的设计师），Pandasheep（NebulaGraph Storage Contributor、集群同步作者），HarrisChu（NebulaGraph Bench 作者、测试平台架构师）。</p>
+<p>至此，NebulaGraph-Deep 成团出道。</p>
+<h2 id="时间" class="headerLink">
+    <a href="#%e6%97%b6%e9%97%b4" class="header-mark"></a>2 时间</h2><ul>
+<li>周五晚上 6 点开始，到周六 12 点截止。</li>
+<li>周六下午 1 点开始做 Presentation。</li>
+</ul>
+<p>时间的安排上，只有一个晚上，不过我们团队基本上在开始前就写完了大部分实现，最后的晚上就是看最后怎么 demo 呈现，以及吃烧烤，聊天 :-D</p>
+<p>同一时间，还是公司开放日、嘉年华，很多以前的同事和现在的同事家人（小朋友）也来一起玩耍热闹，非常开心看到了我的入职 Metor，现在全职在家带娃的 Laura ！大家还记得她吧（尤其是开源之夏的同学们）？</p>
+<p></p>
+<h2 id="项目介绍" class="headerLink">
+    <a href="#%e9%a1%b9%e7%9b%ae%e4%bb%8b%e7%bb%8d" class="header-mark"></a>3 项目介绍</h2><p>这次有 7 个项目，我按照顺序会议一下：</p>
+<ul>
+<li>
+<p>🎖NebulaGraph 成就系统，由学院的同学们做的一整套带有成就徽章系统的 NebulaGraph 课程、教程服务，在这个基础之上延伸出好多可能性，很期待之后可以上线去考几个下来加到我的 LinkedIn Profile 里！</p>
+</li>
+<li>
+<p>🧠 NebulaGraph-Deep ，就是我们团队，这个 PoC 由三部分组成：</p>
+<ul>
+<li>Nebula-DGL，从 NebulaGraph 中读取数据为 DGL 的图对象，进行 GNN训练的连接器，适合批量训练。在此之上，做了一个 GNN 的 Fraud Detection 的端到端实时系统。
+<ul>
+<li><a href="https://github.com/wey-gu/nebula-dgl" target="_blank" rel="noopener noreffer">https://github.com/wey-gu/nebula-dgl</a></li>
+<li><a href="https://github.com/wey-gu/NebulaGraph-Fraud-Detection-GNN" target="_blank" rel="noopener noreffer">https://github.com/wey-gu/NebulaGraph-Fraud-Detection-GNN</a></li>
+</ul>
+</li>
+<li>Nebula-DGL Listener，一个 NebulaGraph 存储节点的 listener 进程，实时把数据写成 DGL 支持的 CSV 格式，适合批量以及追加（流式）训练。</li>
+<li>NebulaGraph Notebook Adapter，有了它，我们可以在 Jupyter Notebook 里实时 Query NebulaGraph，并且渲染为可交互的图，它是基于在 AWS 开源的 Graph Notebook 之上的工作，而且这个实现很聪明无需 Fork 上游，只需要在中间加了一个 proxy 去格式化返回的结果就好了。
+<ul>
+<li><a href="https://github.com/HarrisChu/nebula-opencypher-adapter" target="_blank" rel="noopener noreffer">https://github.com/HarrisChu/nebula-opencypher-adapter</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>📊 New Vesoft Portal ，云团队前端同学们搞的，把内部各种平台全都无缝接到一起，统一健全授权，接驳了包括内部的测试平台（NebulaGraph 内部好几个不同维度的自动测试平台，敬请期待后续社区会议这个专题的分享）、内部 NebulaGraph 集群的 Dashboard、CMS、WIKI、CMS 、license 管理等。</p>
+<ul>
+<li>其中最最有意思的是这个 PoC 项目里他们做了一个 WYSIWYG（所见即所得）的 No Code 接口，让市场、运营、人力资源的同学可以自服务按需创建活动页面，超级方便。</li>
+</ul>
+</li>
+<li>
+<p>☁️ NebulaGraph Cloud Platform，云团队同学们搞的，用 Kubesphere 做的自服务 NebulaGraph 内核加各种周边工具平台，更方便开发、测试同学 ad-hoc 创建 ephemeral（转瞬即逝） 的 NebulaGraph 集群，在这之前，大家都是以 Pet 的方式去申请 VM 或者 BM，资源的利用上比较浪费，有了这个平台，大家可以灵活践行 cattle 模式的 DevOps。</p>
+<ul>
+<li>哈哈公司的前 Kubesphere 同学看到这个项目超级兴奋，我懂</li>
+</ul>
+<blockquote>
+<p>注：pet vs cattle，就是宠物 vs 牲口是一个 DevOps 的概念：前者指的是分配长期运行的 VM，大家像是宠物一样给集群命名，一直挂在那里，而后者指的是不会被命名的牲口 VM、资源，用的时候牵过来，用完了残忍杀掉，不会给他起名字的理念。</p>
+</blockquote>
+</li>
+<li>
+<p>🤖 NebulaGraph Buzz Test，终于，文林同学给 NebulaGraph 带来了 Buzz Test 工具，这是我知道已经被很多人期待、询问的 missing tool 了，它可以按照一定配置和比例生成随机形式的 Query 然后实时发给给定的 NebulaGraph 集群，实践 Buzz Testing！👍🏻，欢迎大家都去它的 repo 收藏、尝鲜、贡献起来！</p>
+<ul>
+<li><a href="https://github.com/kikimo/gqlfuzzer" target="_blank" rel="noopener noreffer">https://github.com/kikimo/gqlfuzzer</a></li>
+</ul>
+</li>
+<li>
+<p>🌌 星璇 Merak，存储团队的同学们带来了 NebulaGraph 上进行向量检索，在 PoC 实现里，他们给出了 HNSW 的实现，他们把点的向量表示以 string 的方式存储、HNSW 中的 Layer 以边之中的 rank存储，最终可以在 NebulaGraph 里搜索向量表示所在空间相邻近的点，是不是超级超级酷？！</p>
+<ul>
+<li>好像介绍更多呀，不过 KNN 这方面一直是我的知识盲区，之前想学习下 milvus 也一直没能开始，惭愧，在有越来越多业务以实时图查询作为核心逻辑，把图库作为 Single Source of Truth 需求的背景下，图库上的向量搜索真的会超级方便图为主、KNN 需求为辅的用户，这个项目真的超酷，超有想象力。</li>
+</ul>
+</li>
+</ul>
+<h2 id="感想和之后的工作" class="headerLink">
+    <a href="#%e6%84%9f%e6%83%b3%e5%92%8c%e4%b9%8b%e5%90%8e%e7%9a%84%e5%b7%a5%e4%bd%9c" class="header-mark"></a>4 感想和之后的工作</h2><ul>
+<li>
+<p>作为远程/分布式团队，加上一直有新的同学加入，我其实一直有好多 vesoft 同学没见面过、没对上号，借着这次机会认识了大家特别特别开心；</p>
+</li>
+<li>
+<p>答辩的时候知道了一个和我们项目相关的惊喜，先保密一下，过一阵子揭晓，超级兴奋，另外答辩过程中了解到公司有一些同学对 GNN 有很多经验，以后可以多多请教啦；</p>
+</li>
+<li>
+<p>常常接着 Hackathon 这样一起快速 build things 真的很让人满足；</p>
+</li>
+<li>
+<p>之后打算慢慢打磨 <a href="https://github.com/wey-gu/nebula-dgl" target="_blank" rel="noopener noreffer">https://github.com/wey-gu/nebula-dgl</a> ，增加 exporter 的支持，这次为它设计的 yaml 格式的 API 自我感觉挺不错的，之后准备推广一下这个项目，看看大家用起来到底如何；</p>
+</li>
+<li>
+<p>我会写一篇单独文章介绍 <a href="https://github.com/wey-gu/NebulaGraph-Fraud-Detection-GNN" target="_blank" rel="noopener noreffer">https://github.com/wey-gu/NebulaGraph-Fraud-Detection-GNN</a> 这个端到端的 GNN + NebulaGraph 项目，不会前端的我每次再一次零知识写 vue3 + socketIO 经历了反正也是【再】从头学，不如用 vue3 吧，然后用过所有的 websocket/socketio vue3 封装出现了各种问题最后还是乖乖从头看 socketio 文档，用最基础的库从头看 composition api guide 去撸 🤦🏻‍♀️，不过有了这个基础应该可以很快给大家写出其他场景下的示例项目啦；</p>
+</li>
+<li>
+<p>感觉是时候弄一个 awesome-nebulagraph 的 markdown 项目区罗列各种好东西了，把大家这些散落在各地的宝藏集中整理一下；</p>
+</li>
+</ul>
+<h2 id="感谢" class="headerLink">
+    <a href="#%e6%84%9f%e8%b0%a2" class="header-mark"></a>5 感谢</h2><p>感谢 HR 小姐姐们的辛苦付出（这次大家好像都鸡贼提前弄好代码早就跑去睡觉，反而是小姐姐们忙到 3 点多）。</p>
+<p>期待下一次 Vesoft 或者 NebulaGraph 公开 Hackathon！</p>
+<p>Happy Graphing!</p>
+]]></description>
+</item><item>
     <title>基于 NebulaGraph 图数据库的欺诈检测方法与代码示例</title>
     <link>https://siwei.io/fraud-detection-with-nebulagraph/</link>
     <pubDate>Mon, 01 Aug 2022 01:15:05 &#43;0800</pubDate><author>
@@ -7026,899 +7125,6 @@
 <p>Happy Graphing!</p>
 <blockquote>
 <p>Picture Credit：<a href="https://unsplash.com/photos/0wIHsm2_1fc" target="_blank" rel="noopener noreffer">leunesmedia</a></p>
-</blockquote>]]></description>
-</item><item>
-    <title>从零到一：如何构建一个企业股权图谱系统？</title>
-    <link>https://siwei.io/corp-rel-graph/</link>
-    <pubDate>Wed, 24 Nov 2021 13:59:58 &#43;0800</pubDate><author>
-        <name>Wey Gu</name>
-    </author><guid>https://siwei.io/corp-rel-graph/</guid>
-    <description><![CDATA[<div class="featured-image">
-                <img src="/featured-image.webp" referrerpolicy="no-referrer">
-            </div><blockquote>
-<p>如何构建一个具有股权分析的图谱与线上系统呢？本文里，我将利用图数据库从零到一带你构建一个简易版的股权穿透图谱系统。</p>
-</blockquote>
-<p>我们知道无论是监管部门、企业还是个人，都有需求去针对一个企业、法人做一些背景调查，这些调查可以是法律诉讼、公开持股、企业任职等等多种多样的信息。这些背景信息可以辅助我们做商业上的重要决策，规避风险：比如根据公司的股权关系，了解是否存在利益冲突比如是否选择与一家公司进行商业往来。</p>
-<p>在满足这样的关系分析需求的时候，我们往往面临一些挑战，比如：</p>
-<ol>
-<li>如何将这些数据的关联关系体现在系统之中？使得它们可以被挖掘、利用</li>
-<li>多种异构数据、数据源之间的关系可能随着业务的发展引申出更多的变化，在结构数据库中，这意味着 Schema 变更</li>
-<li>分析系统需要尽可能实时获取需要的查询结果，这通常涉及到多跳关系查询</li>
-<li>领域专家能否快速灵活、可视化获取分享信息</li>
-</ol>
-<p>那么如何构建这样一个系统解决以上挑战呢？</p>
-<h2 id="数据存在哪里" class="headerLink">
-    <a href="#%e6%95%b0%e6%8d%ae%e5%ad%98%e5%9c%a8%e5%93%aa%e9%87%8c" class="header-mark"></a>1 数据存在哪里？</h2><blockquote>
-<p>前提：数据集准备，为了更好的给大家演示解决这个问题，我写了一个轮子能随机生成股权结构相关的数据，生成的数据的例子在<a href="https://github.com/wey-gu/nebula-shareholding-example/tree/main/data_sample" target="_blank" rel="noopener noreffer">这里</a>。</p>
-<p>这里，我们有<a href="https://github.com/wey-gu/nebula-shareholding-example/blob/main/data_sample/person.csv" target="_blank" rel="noopener noreffer">法人</a>、<a href="https://github.com/wey-gu/nebula-shareholding-example/blob/main/data_sample/corp.csv" target="_blank" rel="noopener noreffer">公司</a>的数据，更有<a href="https://github.com/wey-gu/nebula-shareholding-example/blob/main/data_sample/corp_rel.csv" target="_blank" rel="noopener noreffer">公司与子公司之间的关系</a>，<a href="https://github.com/wey-gu/nebula-shareholding-example/blob/main/data_sample/corp_share.csv" target="_blank" rel="noopener noreffer">公司持有公司股份</a>，<a href="https://github.com/wey-gu/nebula-shareholding-example/blob/main/data_sample/person_corp_role.csv" target="_blank" rel="noopener noreffer">法人任职公司</a>，<a href="https://github.com/wey-gu/nebula-shareholding-example/blob/main/data_sample/person_corp_share.csv" target="_blank" rel="noopener noreffer">法人持有公司股份</a>和<a href="https://github.com/wey-gu/nebula-shareholding-example/blob/main/data_sample/person_rel.csv" target="_blank" rel="noopener noreffer">法人之间亲密度</a>的关系数据。</p>
-</blockquote>
-<p>数据存在哪里？这是一个关键的问题，这里我们剧透一下，答案是：图数据库。然后我们再简单解释一下为什么这样一个股权图谱系统跑在图数据库上是更好的。</p>
-<p>在这样一个简单的数据模型之下，我们可以很直接的在关系型数据库中这么建模：</p>
-<p></p>
-<p>而这么建模的问题在于：这种逻辑关联的方式使得无论数据的关联关系查询表达、存储、还是引入新的关联关系都不是很高效。</p>
-<ul>
-<li><strong>查询表达不高效</strong>是因为关系型数据库是面向表结构设计的，这决定了关系查询要写嵌套的 JOIN。
-<ul>
-<li>这就是前边提到的<strong>挑战 1</strong>：能够表达，但是比较勉强，遇到稍微复杂的情况就变得很难。</li>
-</ul>
-</li>
-<li><strong>存储不高效</strong>是因为表结构被设计的模式是面向数据记录，而非数据之间的关系：我们虽然习惯了将数据中实体（比如法人）和实体关联（比如持有股权 <code>hold_sharing_relationship</code>）以另外一个表中的记录来表达、存储起来，这逻辑上完全行得通，但是到了多跳、大量需要请求数据关系跳转的情况下，这样跨表 JOIN 的代价就成为了瓶颈。
-<ul>
-<li>这就是前边提到的<strong>挑战 3</strong>：无法应对多条查询的性能需要。</li>
-</ul>
-</li>
-<li><strong>引入新的关联关系</strong>代价大，还是前边提到的，表结构下，用新的表来表达持有股权 <code>hold_sharing_relationship</code>这个关联关系是可行的，但是这非常不灵活、而且昂贵，它意味着我们在引入这个关系的时候限定了起点终点的类型，比如股权持有的关系可能是法人-&gt;公司，也可能是公司-&gt;公司，随着业务的演进，我们可能还需要引入政府-&gt;公司的新关系，而这些变化都需要做有不小代价的工作：改动 Schema。
-<ul>
-<li>这就是前边提到的<strong>挑战 2</strong>：无法应对业务上对数据关系上灵活多变的要求。</li>
-</ul>
-</li>
-</ul>
-<p>当一个通用系统无法满足不可忽视的具体需求的时候，一个新的系统就会诞生，这就是图数据库，针对这样的场景，图数据库很自然地特别针对关联关系场景去设计整个数据库：</p>
-<ul>
-<li>面向关联关系表达的语义。（挑战 1）
-<ul>
-<li>如下表，我列举了一个等价的一跳查询在表结构数据库与图数据库中，查询语句的区别。大家应该可以看出“找到所有持有和 p_100 共同持有公司股份的人”这样的查询表达可以在图数据库如何自然表达，这仅仅是一条查询的区别，如果是多跳的话，他们的复杂度区分还会更明显一些。</li>
-</ul>
-</li>
-</ul>
-<table>
-<thead>
-<tr>
-<th>表结构数据库</th>
-<th>图数据库（属性图）</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td></td>
-<td></td>
-</tr>
-</tbody>
-</table>
-<ul>
-<li>将关联关系存储为物理连接，从而使得跳转查询代价最小。（挑战 3、2）
-<ul>
-<li>图数据之中，从点拓展（找到一个或者多个关系的另一头）出去的代价是非常小的，这因为图数据库是一个专有的系统，得益于它主要关心“图”结构的设计，查找确定的实体（比如和一个法人 A ）所有关联（可能是任职、亲戚、持有、等等关系）其他所有实体（公司、法人）这个查找的代价是 O(1) 的，因为它们在图数据库的数据机构里是真的链接在一起的。</li>
-<li>大家可以从下表的定量参考数据一窥图数据库在这种查询下的优势，这种优势在多跳高并发情况下的区别是“能”与”不能“作为线上系统的区别，是“实时”与“离线”的区别。</li>
-<li>在面向关联关系的数据建模和数据结构之下，引入新的实体、关联关系的代价要小很多，还是前边提到的例子：
-在 Nebula Graph 图数据中引入一个新的“政府机构”类型的实体，并增加政府机构-&gt;公司的“持有股份”的关联关系相比于在非图模型的数据库中的代价小很多。</li>
-</ul>
-</li>
-</ul>
-<table>
-<thead>
-<tr>
-<th>表结构数据库</th>
-<th>图数据库（属性图）</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>4 跳查询时延 1544 秒</td>
-<td>4 跳查询时延 1.36 秒</td>
-</tr>
-</tbody>
-</table>
-<ul>
-<li>建模符合直觉；图数据库有面向数据连接的数据可视化能力（挑战 4）
-<ul>
-<li>大家在下表第二列中可以对比我们本文中进行的股权分析数据在两种数据库之中的建模的区别，尤其是在关心关联关系的场景下，我们可以感受到属性图的模型建立是很符合人类大脑直觉的，而这和大脑之中<a href="https://zh.wikipedia.org/zh/%E7%A5%9E%E7%B6%93%E5%85%83" target="_blank" rel="noopener noreffer">神经元</a>的结构可能也有一些关系。</li>
-<li>图数据库中内置的可视化工具提供了一般用户便捷理解数据关系的能力，也给领域专家用户提供了表达请求复杂数据关系的直观接口。</li>
-</ul>
-</li>
-</ul>
-<table>
-<thead>
-<tr>
-<th>表结构数据库</th>
-<th>图数据库（属性图）</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td></td>
-<td></td>
-</tr>
-</tbody>
-</table>
-<blockquote>
-<p>表结构数据库与图数据库的总体比较：</p>
-</blockquote>
-<!---
-```ngql
-GO FROM "p_100" OVER hold_share YIELD dst(edge) AS corp_with_share |\
-GO FROM $-.corp_with_share OVER hold_share REVERSELY YIELD properties(vertex).name;
-```
-
-```sql
-SELECT a.id, a.name, c.name
-FROM person a
-JOIN hold_share b ON a.id=b.person_id
-JOIN corp c ON c.id=b.corp_id
-WHERE c.name IN (SELECT c.name
-FROM person a
-JOIN hold_share b ON a.id=b.person_id
-JOIN corp c ON c.id=b.corp_id
-WHERE a.id = 'p_100')
-```
--->
-<table>
-<thead>
-<tr>
-<th></th>
-<th>表结构数据库</th>
-<th>图数据库（属性图）</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>查询</td>
-<td></td>
-<td></td>
-</tr>
-<tr>
-<td>建模</td>
-<td></td>
-<td></td>
-</tr>
-<tr>
-<td>性能</td>
-<td>4 跳查询时延 1544 秒</td>
-<td>4 跳查询时延 1.36 秒</td>
-</tr>
-</tbody>
-</table>
-<p>综上，在本教程里，我们将利用图数据库来进行数据存储。</p>
-<h2 id="图数据建模" class="headerLink">
-    <a href="#%e5%9b%be%e6%95%b0%e6%8d%ae%e5%bb%ba%e6%a8%a1" class="header-mark"></a>2 图数据建模</h2><p>前面在讨论数据存在哪里的时候，我们已经揭示了在图数据库中建模的方式：本质上，在这张图中，将会有两种实体：</p>
-<ul>
-<li>人</li>
-<li>公司</li>
-</ul>
-<p>四种关系：</p>
-<ul>
-<li><code>人</code> –<code>作为亲人</code>–&gt;<code>人</code></li>
-<li><code>人</code> –<code>作为角色</code>–&gt; <code>公司</code></li>
-<li><code>人</code> 或者 <code>公司</code> –<code>持有股份</code>–&gt; <code>公司</code></li>
-<li><code>公司</code> –<code>作为子机构</code>–&gt; <code>公司</code></li>
-</ul>
-<p>这里面，实体与关系本身都可以包含更多的信息，这些信息在图数据库里就是实体、关系自身的属性。如下图表示：</p>
-<ul>
-<li><code>人</code>的属性包括 <code>name</code>，<code>age</code></li>
-<li><code>公司</code>的属性包括 <code>name</code>，<code>location</code></li>
-<li><code>持有股份</code> 这个关系有属性 <code>share</code>(份额)</li>
-<li><code>任职</code>这个关系有属性 <code>role</code>，<code>level</code></li>
-</ul>
-<p></p>
-<h2 id="数据入库" class="headerLink">
-    <a href="#%e6%95%b0%e6%8d%ae%e5%85%a5%e5%ba%93" class="header-mark"></a>3 数据入库</h2><p>本教程中，我们使用的图数据库叫做 Nebula Graph（星云图数据库），它是一个以 Apache 2.0 许可证开源的分布式图数据库。</p>
-<blockquote>
-<p>Nebula Graph in Github: <a href="https://github.com/vesoft-inc/nebula" target="_blank" rel="noopener noreffer">https://github.com/vesoft-inc/nebula</a></p>
-</blockquote>
-<p>在向 Nebula Graph 导入数据的时候，关于如何选择工具，请参考<a href="https://docs.nebula-graph.com.cn/2.6.1/20.appendix/write-tools/" target="_blank" rel="noopener noreffer">这篇文档</a>和<a href="https://www.siwei.io/sketches/nebula-data-import-options/" target="_blank" rel="noopener noreffer">这个视频</a>。</p>
-<p>这里，由于数据格式是 csv 文件并且利用单机的客户端资源就足够了，我们可以选择使用 nebula-importer 来完成这个工作。</p>
-<blockquote>
-<p>提示：在导入数据之前，请先部署一个 Nebula Graph 集群，最简便的部署方式是使用 nebula-up 这个小工具，只需要一行命令就能在 Linux 机器上同时启动一个 Nebula Graph 核心和可视化图探索工具  <a href="https://docs.nebula-graph.com.cn/2.6.1/nebula-studio/about-studio/st-ug-what-is-graph-studio/" target="_blank" rel="noopener noreffer">Nebula Graph Studio</a>。如果你更愿意用 Docker 部署，请参考<a href="https://docs.nebula-graph.com.cn/2.6.1/4.deployment-and-installation/2.compile-and-install-nebula-graph/3.deploy-nebula-graph-with-docker-compose/" target="_blank" rel="noopener noreffer">这个文档</a>。</p>
-<p>本文假设我们使用 <a href="https://siwei.io/nebula-up/" target="_blank" rel="noopener noreffer">Nebula-UP</a> 来部署：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">curl -fsSL nebula-up.siwei.io/install.sh <span class="p">|</span> bash
-</span></span></code></pre></td></tr></table>
-</div>
-</div></blockquote>
-<p>这里的数据是<a href="https://github.com/wey-gu/nebula-shareholding-example" target="_blank" rel="noopener noreffer">生成器</a>生成的，你可以按需生成任意规模随机数据集，或者选择一份生成好了的数据在<a href="https://github.com/wey-gu/nebula-shareholding-example/tree/main/data_sample" target="_blank" rel="noopener noreffer">这里</a></p>
-<p>有了这些<a href="https://github.com/wey-gu/nebula-shareholding-example/tree/main/data_sample" target="_blank" rel="noopener noreffer">数据</a>，我们可以开始导入了。</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ pip install <span class="nv">Faker</span><span class="o">==</span>2.0.5 <span class="nv">pydbgen</span><span class="o">==</span>1.0.5
-</span></span><span class="line"><span class="cl">$ python3 data_generator.py
-</span></span><span class="line"><span class="cl">$ ls -l data
-</span></span><span class="line"><span class="cl">total <span class="m">1688</span>
-</span></span><span class="line"><span class="cl">-rw-r--r--  <span class="m">1</span> weyl  staff   <span class="m">23941</span> Jul <span class="m">14</span> 13:28 corp.csv
-</span></span><span class="line"><span class="cl">-rw-r--r--  <span class="m">1</span> weyl  staff    <span class="m">1277</span> Jul <span class="m">14</span> 13:26 corp_rel.csv
-</span></span><span class="line"><span class="cl">-rw-r--r--  <span class="m">1</span> weyl  staff    <span class="m">3048</span> Jul <span class="m">14</span> 13:26 corp_share.csv
-</span></span><span class="line"><span class="cl">-rw-r--r--  <span class="m">1</span> weyl  staff  <span class="m">211661</span> Jul <span class="m">14</span> 13:26 person.csv
-</span></span><span class="line"><span class="cl">-rw-r--r--  <span class="m">1</span> weyl  staff  <span class="m">179770</span> Jul <span class="m">14</span> 13:26 person_corp_role.csv
-</span></span><span class="line"><span class="cl">-rw-r--r--  <span class="m">1</span> weyl  staff  <span class="m">322965</span> Jul <span class="m">14</span> 13:26 person_corp_share.csv
-</span></span><span class="line"><span class="cl">-rw-r--r--  <span class="m">1</span> weyl  staff   <span class="m">17689</span> Jul <span class="m">14</span> 13:26 person_rel.csv
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>导入工具 <a href="https://github.com/vesoft-inc/nebula-importer" target="_blank" rel="noopener noreffer">nebula-importer</a> 是一个 golang 的二进制文件，使用方式就是将导入的 Nebula Graph 连接信息、数据源中字段的含义的信息写进 YAML 格式的配置文件里，然后通过命令行调用它。可以参考<a href="https://docs.nebula-graph.com.cn/2.6.1/nebula-importer/use-importer/" target="_blank" rel="noopener noreffer">文档</a>或者它的 GitHub 仓库里的例子。</p>
-<p>这里我已经写好了准备好了一份 nebula-importer 的配置文件，在数据生成器同一个 repo 之下的<a href="https://github.com/wey-gu/nebula-shareholding-example/blob/main/nebula-importer.yaml" target="_blank" rel="noopener noreffer">这里</a>。</p>
-<p>最后，只需要执行如下命令就可以开始数据导入了：</p>
-<blockquote>
-<p>注意，在写本文的时候，nebula 的新版本是 2.6.1，这里对应的 nebula-importer 是 v2.6.0，如果您出现导入错误可能是版本不匹配，可以相应调整下边命令中的版本号。</p>
-</blockquote>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span><span class="lnt">7
-</span><span class="lnt">8
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">git clone https://github.com/wey-gu/nebula-shareholding-example
-</span></span><span class="line"><span class="cl">cp -r data_sample /tmp/data
-</span></span><span class="line"><span class="cl">cp nebula-importer.yaml /tmp/data/
-</span></span><span class="line"><span class="cl">docker run --rm -ti <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    --network<span class="o">=</span>nebula-docker-compose_nebula-net <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    -v /tmp/data:/root <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    vesoft/nebula-importer:v2.6.0 <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    --config /root/nebula-importer.yaml
-</span></span></code></pre></td></tr></table>
-</div>
-</div><blockquote>
-<p>你知道吗？TL;DR</p>
-<p>实际上，这份 importer 的<a href="https://github.com/wey-gu/nebula-shareholding-example/blob/main/nebula-importer.yaml" target="_blank" rel="noopener noreffer">配置</a>里帮我们做了 Nebula Graph 之中的图建模的操作，它们的指令在下边，我们不需要手动去执行了。</p>
-</blockquote>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">CREATE</span><span class="w"> </span><span class="k">SPACE</span><span class="w"> </span><span class="k">IF</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">EXISTS</span><span class="w"> </span><span class="n">shareholding</span><span class="p">(</span><span class="n">partition_num</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="n">replica_factor</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">vid_type</span><span class="o">=</span><span class="n">FIXED_STRING</span><span class="p">(</span><span class="mi">10</span><span class="p">));</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">USE</span><span class="w"> </span><span class="n">shareholding</span><span class="p">;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">CREATE</span><span class="w"> </span><span class="n">TAG</span><span class="w"> </span><span class="n">person</span><span class="p">(</span><span class="n">name</span><span class="w"> </span><span class="n">string</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">CREATE</span><span class="w"> </span><span class="n">TAG</span><span class="w"> </span><span class="n">corp</span><span class="p">(</span><span class="n">name</span><span class="w"> </span><span class="n">string</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">CREATE</span><span class="w"> </span><span class="n">TAG</span><span class="w"> </span><span class="k">INDEX</span><span class="w"> </span><span class="n">person_name</span><span class="w"> </span><span class="k">on</span><span class="w"> </span><span class="n">person</span><span class="p">(</span><span class="n">name</span><span class="p">(</span><span class="mi">20</span><span class="p">));</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">CREATE</span><span class="w"> </span><span class="n">TAG</span><span class="w"> </span><span class="k">INDEX</span><span class="w"> </span><span class="n">corp_name</span><span class="w"> </span><span class="k">on</span><span class="w"> </span><span class="n">corp</span><span class="p">(</span><span class="n">name</span><span class="p">(</span><span class="mi">20</span><span class="p">));</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">CREATE</span><span class="w"> </span><span class="n">EDGE</span><span class="w"> </span><span class="n">role_as</span><span class="p">(</span><span class="k">role</span><span class="w"> </span><span class="n">string</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">CREATE</span><span class="w"> </span><span class="n">EDGE</span><span class="w"> </span><span class="n">is_branch_of</span><span class="p">();</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">CREATE</span><span class="w"> </span><span class="n">EDGE</span><span class="w"> </span><span class="n">hold_share</span><span class="p">(</span><span class="k">share</span><span class="w"> </span><span class="nb">float</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">CREATE</span><span class="w"> </span><span class="n">EDGE</span><span class="w"> </span><span class="n">reletive_with</span><span class="p">(</span><span class="n">degree</span><span class="w"> </span><span class="nb">int</span><span class="p">);</span><span class="w">
-</span></span></span></code></pre></td></tr></table>
-</div>
-</div><h2 id="图库中查询数据" class="headerLink">
-    <a href="#%e5%9b%be%e5%ba%93%e4%b8%ad%e6%9f%a5%e8%af%a2%e6%95%b0%e6%8d%ae" class="header-mark"></a>4 图库中查询数据</h2><blockquote>
-<p>Tips: 你知道吗，你也可以无需部署安装，通过 <a href="https://nebula-graph.com.cn/demo/" target="_blank" rel="noopener noreffer">Nebula-Playground</a> 之中，找到股权穿透来在线访问同一份数据集。</p>
-</blockquote>
-<p>我们可以借助  <a href="https://docs.nebula-graph.com.cn/2.6.1/nebula-studio/about-studio/st-ug-what-is-graph-studio/" target="_blank" rel="noopener noreffer">Nebula Graph Studio</a> 来访问数据，访问我们部署 Nebula-UP 的服务器地址的 7001 端口就可以了：</p>
-<p>假设服务器地址为 <code>192.168.8.127</code>，则有：</p>
-<ul>
-<li>Nebula Studio 地址：<code>192.168.8.127:7001</code></li>
-<li>Nebula Graph 地址：<code>192.168.8.127:9669</code></li>
-<li>默认用户名：<code>root</code></li>
-<li>默认密码：<code>nebula</code></li>
-</ul>
-<p>访问 Nebula Studio：</p>
-<p></p>
-<p>选择图空间: Shareholding</p>
-<p></p>
-<p>之后，我们就可以在里边探索比如一个公司的三跳以内的股权穿透，具体的操作可以参考：<a href="https://nebula-graph.com.cn/demo/shared-holding/" target="_blank" rel="noopener noreffer">股权穿透在线 Playground 的介绍</a>：</p>
-<p></p>
-<h2 id="构建一个图谱系统" class="headerLink">
-    <a href="#%e6%9e%84%e5%bb%ba%e4%b8%80%e4%b8%aa%e5%9b%be%e8%b0%b1%e7%b3%bb%e7%bb%9f" class="header-mark"></a>5 构建一个图谱系统</h2><blockquote>
-<p>这部分的代码开源在 GitHub 上：</p>
-<p><a href="https://github.com/wey-gu/nebula-corp-rel-search" target="_blank" rel="noopener noreffer">https://github.com/wey-gu/nebula-corp-rel-search</a></p>
-<p>本项目的 Demo 也在 PyCon China 2021 上的演讲中有过展示：<a href="https://www.bilibili.com/video/BV12u411o7Y6" target="_blank" rel="noopener noreffer">视频地址</a></p>
-</blockquote>
-<p>在此基础之上，我们可以构建一个提供给终端用户来使用的股权查询系统了，我们已经有了图数据库作为这个图谱的存储引擎，理论上，如果业务允许，我们可以直接使用或者封装 Nebula Graph Studio 来提供服务，这完全是可行也是合规的，不过，有一些情况下，我们需要自己去实现界面、或者我们需要封装出一个 API 给上游（多端）提供图谱查询的功能。</p>
-<p>为此，我为大家写了一个简单的实例项目，提供这样的服务，他的架构也很直接：</p>
-<ul>
-<li>前端接受用户要查询的穿透法人、公司，按需发请求给后端，并用 D3.js 将返回结果渲染为关系图</li>
-<li>后端接受前端的 API 请求，将请求转换为 Graph DB 的查询，并返回前端期待的结果</li>
-</ul>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">  ┌───────────────┬───────────────┐
-</span></span><span class="line"><span class="cl">  │               │  Frontend     │
-</span></span><span class="line"><span class="cl">  │               │               │
-</span></span><span class="line"><span class="cl">  │    ┌──────────▼──────────┐    │
-</span></span><span class="line"><span class="cl">  │    │ Vue.JS              │    │
-</span></span><span class="line"><span class="cl">  │    │ D3.JS               │    │
-</span></span><span class="line"><span class="cl">  │    └──────────┬──────────┘    │
-</span></span><span class="line"><span class="cl">  │               │  Backend      │
-</span></span><span class="line"><span class="cl">  │    ┌──────────┴──────────┐    │
-</span></span><span class="line"><span class="cl">  │    │ Flask               │    │
-</span></span><span class="line"><span class="cl">  │    │ Nebula-Python       │    │
-</span></span><span class="line"><span class="cl">  │    └──────────┬──────────┘    │
-</span></span><span class="line"><span class="cl">  │               │  Graph Query  │
-</span></span><span class="line"><span class="cl">  │    ┌──────────▼──────────┐    │
-</span></span><span class="line"><span class="cl">  │    │ Graph Database      │    │
-</span></span><span class="line"><span class="cl">  │    └─────────────────────┘    │
-</span></span><span class="line"><span class="cl">  │                               │
-</span></span><span class="line"><span class="cl">  └───────────────────────────────┘
-</span></span></code></pre></td></tr></table>
-</div>
-</div><h3 id="后端服务--图数据库" class="headerLink">
-    <a href="#%e5%90%8e%e7%ab%af%e6%9c%8d%e5%8a%a1--%e5%9b%be%e6%95%b0%e6%8d%ae%e5%ba%93" class="header-mark"></a>5.1 后端服务&ndash;&gt;图数据库</h3><blockquote>
-<p>详细的数据格式分析大家可以参考<a href="https://github.com/wey-gu/nebula-corp-rel-search#data-from-backend-side" target="_blank" rel="noopener noreffer">这里</a></p>
-</blockquote>
-<h4 id="查询语句" class="headerLink">
-    <a href="#%e6%9f%a5%e8%af%a2%e8%af%ad%e5%8f%a5" class="header-mark"></a>5.1.1 查询语句</h4><p>我们假设用户请求的实体是 <code>c_132</code> ，那么请求 1 到 3 步的关系穿透的语法是：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">MATCH p=(v)-[e:hold_share|:is_branch_of|:reletive_with|:role_as*1..3]-(v2) \
-</span></span><span class="line"><span class="cl">WHERE id(v) IN [&#34;c_132&#34;] RETURN p LIMIT 100
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>这里边 <code>()</code>包裹的是图之中的点，而<code>[]</code> 包裹的则是点之间的关系：边，所以：</p>
-<p><code>(v)-[e:hold_share|:is_branch_of|:reletive_with|:role_as*1..3]-(v2)</code> 之中的：</p>
-<p><code>(v)-[xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx]-(v2)</code>应该比较好理解，意思是从 <code>v</code> 到<code>v2</code> 做拓展。</p>
-<p>现在我们介绍中间<code>[]</code>包裹的部分，这里，它的语义是：经由四种类型的边（<code>:</code>之后的是边的类型，<code>|</code>代表或者）通过可变的跳数：<code>*1..3</code> （一跳到三跳）。</p>
-<p>所以，简单来说整理看开，我们的拓展的路径是：从点 <code>v</code> 开始，经由四种关系一到三跳拓展到点<code>v2</code>，返回整个拓展路径 <code>p</code>，限制 100 个路径结果，其中 <code>v</code> 是 <code>c_132</code>。</p>
-<h4 id="nebula-python-client-sdk" class="headerLink">
-    <a href="#nebula-python-client-sdk" class="header-mark"></a>5.1.2 Nebula Python Client/ SDK</h4><p>我们已经知道了查询语句的语法，那么就只需要在后端程序里根据请求、通过图数据库的客户端来发出查询请求，并处理返回结构就好了。在今天的例子中，我选择使用 Python 来实现后端的逻辑，所以我用了 Nebula-python 这个库，它是 Nebula 的 Python Client。</p>
-<blockquote>
-<p>你知道么？截至到现在，Nebula 在 GitHub 上有 Java，GO，Python，C++，Spark，Flink，Rust（未GA），NodeJS（未GA） 的客户端支持，更多的语言的客户端也会慢慢被发布哦。</p>
-</blockquote>
-<p>下边是一个 Python Client 执行一个查询并返回结果的例子，值得注意的是，在我实现这个代码的时候，Nebula Python 尚未支持返回 JSON （通过<code>session.execute_json()</code>）结果，如果你要实现自己的代码，我非常推荐试试 JSON 哈，就可以不用从对象中一点点取数据了，不过借助 iPython/IDLE 这种 <code>REPL</code>，快速了解返回对象的结构也没有那么麻烦。</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="err">$</span> <span class="n">python3</span> <span class="o">-</span><span class="n">m</span> <span class="n">pip</span> <span class="n">install</span> <span class="n">nebula2</span><span class="o">-</span><span class="n">python</span><span class="o">==</span><span class="mf">2.5.0</span> <span class="c1"># 注意这里我引用旧的记录，它是 2.5.0，</span>
-</span></span><span class="line"><span class="cl"><span class="err">$</span> <span class="n">ipython</span>
-</span></span><span class="line"><span class="cl"><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="kn">from</span> <span class="nn">nebula2.gclient.net</span> <span class="kn">import</span> <span class="n">ConnectionPool</span>
-</span></span><span class="line"><span class="cl"><span class="n">In</span> <span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="kn">from</span> <span class="nn">nebula2.Config</span> <span class="kn">import</span> <span class="n">Config</span>
-</span></span><span class="line"><span class="cl"><span class="n">In</span> <span class="p">[</span><span class="mi">3</span><span class="p">]:</span> <span class="n">config</span> <span class="o">=</span> <span class="n">Config</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">   <span class="o">...</span><span class="p">:</span> <span class="n">config</span><span class="o">.</span><span class="n">max_connection_pool_size</span> <span class="o">=</span> <span class="mi">10</span>
-</span></span><span class="line"><span class="cl">   <span class="o">...</span><span class="p">:</span> <span class="c1"># init connection pool</span>
-</span></span><span class="line"><span class="cl">   <span class="o">...</span><span class="p">:</span> <span class="n">connection_pool</span> <span class="o">=</span> <span class="n">ConnectionPool</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">   <span class="o">...</span><span class="p">:</span> <span class="c1"># if the given servers are ok, return true, else return false</span>
-</span></span><span class="line"><span class="cl">   <span class="o">...</span><span class="p">:</span> <span class="n">ok</span> <span class="o">=</span> <span class="n">connection_pool</span><span class="o">.</span><span class="n">init</span><span class="p">([(</span><span class="s1">&#39;192.168.8.137&#39;</span><span class="p">,</span> <span class="mi">9669</span><span class="p">)],</span> <span class="n">config</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">   <span class="o">...</span><span class="p">:</span> <span class="n">session</span> <span class="o">=</span> <span class="n">connection_pool</span><span class="o">.</span><span class="n">get_session</span><span class="p">(</span><span class="s1">&#39;root&#39;</span><span class="p">,</span> <span class="s1">&#39;nebula&#39;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="p">[</span><span class="mi">2021</span><span class="o">-</span><span class="mi">10</span><span class="o">-</span><span class="mi">13</span> <span class="mi">13</span><span class="p">:</span><span class="mi">44</span><span class="p">:</span><span class="mi">24</span><span class="p">,</span><span class="mi">242</span><span class="p">]:</span><span class="n">Get</span> <span class="n">connection</span> <span class="n">to</span> <span class="p">(</span><span class="s1">&#39;192.168.8.137&#39;</span><span class="p">,</span> <span class="mi">9669</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">In</span> <span class="p">[</span><span class="mi">4</span><span class="p">]:</span> <span class="n">resp</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&#34;use shareholding&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="n">In</span> <span class="p">[</span><span class="mi">5</span><span class="p">]:</span> <span class="n">query</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;
-</span></span></span><span class="line"><span class="cl"><span class="s1">   ...: MATCH p=(v)-[e:hold_share|:is_branch_of|:reletive_with|:role_as*1..3]-(v2) </span><span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span><span class="s1">   ...: WHERE id(v) IN [&#34;c_132&#34;] RETURN p LIMIT 100
-</span></span></span><span class="line"><span class="cl"><span class="s1">   ...: &#39;&#39;&#39;</span>
-</span></span><span class="line"><span class="cl"><span class="n">In</span> <span class="p">[</span><span class="mi">6</span><span class="p">]:</span> <span class="n">resp</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">)</span> <span class="c1"># Note: after nebula graph 2.6.0, we could use execute_json as well</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">In</span> <span class="p">[</span><span class="mi">7</span><span class="p">]:</span> <span class="n">resp</span><span class="o">.</span><span class="n">col_size</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl"><span class="n">Out</span><span class="p">[</span><span class="mi">7</span><span class="p">]:</span> <span class="mi">1</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">In</span> <span class="p">[</span><span class="mi">9</span><span class="p">]:</span> <span class="n">resp</span><span class="o">.</span><span class="n">row_size</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl"><span class="n">Out</span><span class="p">[</span><span class="mi">10</span><span class="p">]:</span> <span class="mi">100</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>我们往下分析看看，我们知道这个请求本质上结果是路径，它有一个 <code>.nodes()</code> 方法和 <code>.relationships()</code>方法来获得路径上的点和边：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span><span class="lnt">7
-</span><span class="lnt">8
-</span><span class="lnt">9
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">In</span> <span class="p">[</span><span class="mi">11</span><span class="p">]:</span> <span class="n">p</span><span class="o">=</span><span class="n">resp</span><span class="o">.</span><span class="n">row_values</span><span class="p">(</span><span class="mi">22</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">as_path</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">In</span> <span class="p">[</span><span class="mi">12</span><span class="p">]:</span> <span class="n">p</span><span class="o">.</span><span class="n">nodes</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl"><span class="n">Out</span><span class="p">[</span><span class="mi">12</span><span class="p">]:</span>
-</span></span><span class="line"><span class="cl"><span class="p">[(</span><span class="s2">&#34;c_132&#34;</span> <span class="p">:</span><span class="n">corp</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="s2">&#34;Chambers LLC&#34;</span><span class="p">}),</span>
-</span></span><span class="line"><span class="cl"> <span class="p">(</span><span class="s2">&#34;p_4000&#34;</span> <span class="p">:</span><span class="n">person</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="s2">&#34;Colton Bailey&#34;</span><span class="p">})]</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">In</span> <span class="p">[</span><span class="mi">13</span><span class="p">]:</span> <span class="n">p</span><span class="o">.</span><span class="n">relationships</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl"><span class="n">Out</span><span class="p">[</span><span class="mi">13</span><span class="p">]:</span> <span class="p">[(</span><span class="s2">&#34;p_4000&#34;</span><span class="p">)</span><span class="o">-</span><span class="p">[:</span><span class="n">role_as</span><span class="o">@</span><span class="mi">0</span><span class="p">{</span><span class="n">role</span><span class="p">:</span> <span class="s2">&#34;Editorial assistant&#34;</span><span class="p">}]</span><span class="o">-&gt;</span><span class="p">(</span><span class="s2">&#34;c_132&#34;</span><span class="p">)]</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>对于边来说有这些方法 <code>.edge_name()</code>, <code>.properties()</code>, <code>.start_vertex_id()</code>, <code>.end_vertex_id()</code>，这里 edge_name 是获得边的类型。</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">In</span> <span class="p">[</span><span class="mi">14</span><span class="p">]:</span> <span class="n">rel</span><span class="o">=</span><span class="n">p</span><span class="o">.</span><span class="n">relationships</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">In</span> <span class="p">[</span><span class="mi">15</span><span class="p">]:</span> <span class="n">rel</span>
-</span></span><span class="line"><span class="cl"><span class="n">Out</span><span class="p">[</span><span class="mi">15</span><span class="p">]:</span> <span class="p">(</span><span class="s2">&#34;p_4000&#34;</span><span class="p">)</span><span class="o">-</span><span class="p">[:</span><span class="n">role_as</span><span class="o">@</span><span class="mi">0</span><span class="p">{</span><span class="n">role</span><span class="p">:</span> <span class="s2">&#34;Editorial assistant&#34;</span><span class="p">}]</span><span class="o">-&gt;</span><span class="p">(</span><span class="s2">&#34;c_132&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">In</span> <span class="p">[</span><span class="mi">16</span><span class="p">]:</span> <span class="n">rel</span><span class="o">.</span><span class="n">edge_name</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl"><span class="n">Out</span><span class="p">[</span><span class="mi">16</span><span class="p">]:</span> <span class="s1">&#39;role_as&#39;</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">In</span> <span class="p">[</span><span class="mi">17</span><span class="p">]:</span> <span class="n">rel</span><span class="o">.</span><span class="n">properties</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl"><span class="n">Out</span><span class="p">[</span><span class="mi">17</span><span class="p">]:</span> <span class="p">{</span><span class="s1">&#39;role&#39;</span><span class="p">:</span> <span class="s2">&#34;Editorial assistant&#34;</span><span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">In</span> <span class="p">[</span><span class="mi">18</span><span class="p">]:</span> <span class="n">rel</span><span class="o">.</span><span class="n">start_vertex_id</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl"><span class="n">Out</span><span class="p">[</span><span class="mi">18</span><span class="p">]:</span> <span class="s2">&#34;p_4000&#34;</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">In</span> <span class="p">[</span><span class="mi">19</span><span class="p">]:</span> <span class="n">rel</span><span class="o">.</span><span class="n">end_vertex_id</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl"><span class="n">Out</span><span class="p">[</span><span class="mi">19</span><span class="p">]:</span> <span class="s2">&#34;c_132&#34;</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>对于点来说，可以用到这些方法 <code>.tags()</code>, <code>properties</code>, <code>get_id()</code>，这里边 tags 是获得点的类型，它在 Nebula 里叫标签<code>tag</code>。</p>
-<p>这些概念可以在<a href="https://docs.nebula-graph.com.cn/2.6.1/1.introduction/2.data-model/" target="_blank" rel="noopener noreffer">文档里</a>获得更详细的解释。</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">In</span> <span class="p">[</span><span class="mi">20</span><span class="p">]:</span> <span class="n">node</span><span class="o">=</span><span class="n">p</span><span class="o">.</span><span class="n">nodes</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">In</span> <span class="p">[</span><span class="mi">21</span><span class="p">]:</span> <span class="n">node</span><span class="o">.</span><span class="n">tags</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl"><span class="n">Out</span><span class="p">[</span><span class="mi">21</span><span class="p">]:</span> <span class="p">[</span><span class="s1">&#39;corp&#39;</span><span class="p">]</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">In</span> <span class="p">[</span><span class="mi">22</span><span class="p">]:</span> <span class="n">node</span><span class="o">.</span><span class="n">properties</span><span class="p">(</span><span class="s1">&#39;corp&#39;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="n">Out</span><span class="p">[</span><span class="mi">22</span><span class="p">]:</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s2">&#34;Chambers LLC&#34;</span><span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">In</span> <span class="p">[</span><span class="mi">23</span><span class="p">]:</span> <span class="n">node</span><span class="o">.</span><span class="n">get_id</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl"><span class="n">Out</span><span class="p">[</span><span class="mi">23</span><span class="p">]:</span> <span class="s2">&#34;c_132&#34;</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><h3 id="前端渲染点边为图" class="headerLink">
-    <a href="#%e5%89%8d%e7%ab%af%e6%b8%b2%e6%9f%93%e7%82%b9%e8%be%b9%e4%b8%ba%e5%9b%be" class="header-mark"></a>5.2 前端渲染点边为图</h3><blockquote>
-<p>详细的分析大家也可以参考<a href="https://github.com/wey-gu/nebula-corp-rel-search#data-visualization" target="_blank" rel="noopener noreffer">这里</a></p>
-</blockquote>
-<p>为了方便实现，我们采用了 Vue.js 和 <a href="https://github.com/ChenCyl/vue-network-d3" target="_blank" rel="noopener noreffer">vue-network-d3</a>（D3 的 Vue Binding）。</p>
-<p>通过 vue-network-d3 的抽象，能看出来喂给他这样的数据，就可以把点边信息渲染成很好看的图</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">nodes</span><span class="p">:</span> <span class="p">[</span>
-</span></span><span class="line"><span class="cl">        <span class="p">{</span><span class="s2">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;c_132&#34;</span><span class="p">,</span> <span class="s2">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;Chambers LLC&#34;</span><span class="p">,</span> <span class="s2">&#34;tag&#34;</span><span class="p">:</span> <span class="s2">&#34;corp&#34;</span><span class="p">},</span>
-</span></span><span class="line"><span class="cl">        <span class="p">{</span><span class="s2">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;p_4000&#34;</span><span class="p">,</span> <span class="s2">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;Colton Bailey&#34;</span><span class="p">,</span> <span class="s2">&#34;tag&#34;</span><span class="p">:</span> <span class="s2">&#34;person&#34;</span><span class="p">}],</span>
-</span></span><span class="line"><span class="cl"><span class="n">relationships</span><span class="p">:</span> <span class="p">[</span>
-</span></span><span class="line"><span class="cl">        <span class="p">{</span><span class="s2">&#34;source&#34;</span><span class="p">:</span> <span class="s2">&#34;p_4000&#34;</span><span class="p">,</span> <span class="s2">&#34;target&#34;</span><span class="p">:</span> <span class="s2">&#34;c_132&#34;</span><span class="p">,</span> <span class="s2">&#34;properties&#34;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&#34;role&#34;</span><span class="p">:</span> <span class="s2">&#34;Editorial assistant&#34;</span> <span class="p">},</span> <span class="s2">&#34;edge&#34;</span><span class="p">:</span> <span class="s2">&#34;role_as&#34;</span><span class="p">}]</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p></p>
-<h3 id="前端--后端" class="headerLink">
-    <a href="#%e5%89%8d%e7%ab%af--%e5%90%8e%e7%ab%af" class="header-mark"></a>5.3 前端&lt;&ndash;后端</h3><blockquote>
-<p>详细信息可以参考<a href="https://github.com/wey-gu/nebula-corp-rel-search#the-data-construction-in-back-end" target="_blank" rel="noopener noreffer">这里</a></p>
-</blockquote>
-<p>我们从 D3 的初步研究上可以知道，后端只需要返回如下的 JSON 格式数据就好了</p>
-<p>Nodes:</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="p">[{</span><span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;c_132&#34;</span><span class="p">,</span> <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;Chambers LLC&#34;</span><span class="p">,</span> <span class="nt">&#34;tag&#34;</span><span class="p">:</span> <span class="s2">&#34;corp&#34;</span><span class="p">},</span>
-</span></span><span class="line"><span class="cl"> <span class="p">{</span><span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;p_4000&#34;</span><span class="p">,</span> <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;Colton Bailey&#34;</span><span class="p">,</span> <span class="nt">&#34;tag&#34;</span><span class="p">:</span> <span class="s2">&#34;person&#34;</span><span class="p">}]</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>Relationships:</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="p">[{</span><span class="nt">&#34;source&#34;</span><span class="p">:</span> <span class="s2">&#34;p_4000&#34;</span><span class="p">,</span> <span class="nt">&#34;target&#34;</span><span class="p">:</span> <span class="s2">&#34;c_132&#34;</span><span class="p">,</span> <span class="nt">&#34;properties&#34;</span><span class="p">:</span> <span class="p">{</span> <span class="nt">&#34;role&#34;</span><span class="p">:</span> <span class="s2">&#34;Editorial assistant&#34;</span> <span class="p">},</span> <span class="nt">&#34;edge&#34;</span><span class="p">:</span> <span class="s2">&#34;role_as&#34;</span><span class="p">},</span>
-</span></span><span class="line"><span class="cl"> <span class="p">{</span><span class="nt">&#34;source&#34;</span><span class="p">:</span> <span class="s2">&#34;p_1039&#34;</span><span class="p">,</span> <span class="nt">&#34;target&#34;</span><span class="p">:</span> <span class="s2">&#34;c_132&#34;</span><span class="p">,</span> <span class="nt">&#34;properties&#34;</span><span class="p">:</span> <span class="p">{</span> <span class="nt">&#34;share&#34;</span><span class="p">:</span> <span class="s2">&#34;3.0&#34;</span> <span class="p">},</span> <span class="nt">&#34;edge&#34;</span><span class="p">:</span> <span class="s2">&#34;hold_share&#34;</span><span class="p">}]</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>于是，，结合前边我们用 iPython 分析 Python 返回结果看，这个逻辑大概是：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">make_graph_response</span><span class="p">(</span><span class="n">resp</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">    <span class="n">nodes</span><span class="p">,</span> <span class="n">relationships</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(),</span> <span class="nb">list</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="n">row_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">resp</span><span class="o">.</span><span class="n">row_size</span><span class="p">()):</span>
-</span></span><span class="line"><span class="cl">        <span class="n">path</span> <span class="o">=</span> <span class="n">resp</span><span class="o">.</span><span class="n">row_values</span><span class="p">(</span><span class="n">row_index</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">as_path</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">        <span class="n">_nodes</span> <span class="o">=</span> <span class="p">[</span>
-</span></span><span class="line"><span class="cl">            <span class="p">{</span>
-</span></span><span class="line"><span class="cl">                <span class="s2">&#34;id&#34;</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">get_id</span><span class="p">(),</span> <span class="s2">&#34;tag&#34;</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">tags</span><span class="p">()[</span><span class="mi">0</span><span class="p">],</span>
-</span></span><span class="line"><span class="cl">                <span class="s2">&#34;name&#34;</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">properties</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">tags</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;name&#34;</span><span class="p">,</span> <span class="s2">&#34;&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">                <span class="p">}</span>
-</span></span><span class="line"><span class="cl">                <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">path</span><span class="o">.</span><span class="n">nodes</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">        <span class="p">]</span>
-</span></span><span class="line"><span class="cl">        <span class="n">nodes</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">_nodes</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">        <span class="n">_relationships</span> <span class="o">=</span> <span class="p">[</span>
-</span></span><span class="line"><span class="cl">            <span class="p">{</span>
-</span></span><span class="line"><span class="cl">                <span class="s2">&#34;source&#34;</span><span class="p">:</span> <span class="n">rel</span><span class="o">.</span><span class="n">start_vertex_id</span><span class="p">(),</span>
-</span></span><span class="line"><span class="cl">                <span class="s2">&#34;target&#34;</span><span class="p">:</span> <span class="n">rel</span><span class="o">.</span><span class="n">end_vertex_id</span><span class="p">(),</span>
-</span></span><span class="line"><span class="cl">                <span class="s2">&#34;properties&#34;</span><span class="p">:</span> <span class="n">rel</span><span class="o">.</span><span class="n">properties</span><span class="p">(),</span>
-</span></span><span class="line"><span class="cl">                <span class="s2">&#34;edge&#34;</span><span class="p">:</span> <span class="n">rel</span><span class="o">.</span><span class="n">edge_name</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">                <span class="p">}</span>
-</span></span><span class="line"><span class="cl">                <span class="k">for</span> <span class="n">rel</span> <span class="ow">in</span> <span class="n">path</span><span class="o">.</span><span class="n">relationships</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">        <span class="p">]</span>
-</span></span><span class="line"><span class="cl">        <span class="n">relationships</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">_relationships</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="p">{</span><span class="s2">&#34;nodes&#34;</span><span class="p">:</span> <span class="n">nodes</span><span class="p">,</span> <span class="s2">&#34;relationships&#34;</span><span class="p">:</span> <span class="n">relationships</span><span class="p">}</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>前端到后端的通信是 HTTP ，所以我们可以借助 Flask，把这个函数封装成一个 RESTful API：</p>
-<p>前端程序通过 HTTP POST 到 <code>/api</code></p>
-<blockquote>
-<p>参考<a href="https://github.com/wey-gu/nebula-corp-rel-search#the-flask-app" target="_blank" rel="noopener noreffer">这里</a></p>
-</blockquote>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
-</span><span class="lnt">28
-</span><span class="lnt">29
-</span><span class="lnt">30
-</span><span class="lnt">31
-</span><span class="lnt">32
-</span><span class="lnt">33
-</span><span class="lnt">34
-</span><span class="lnt">35
-</span><span class="lnt">36
-</span><span class="lnt">37
-</span><span class="lnt">38
-</span><span class="lnt">39
-</span><span class="lnt">40
-</span><span class="lnt">41
-</span><span class="lnt">42
-</span><span class="lnt">43
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Flask</span><span class="p">,</span> <span class="n">jsonify</span><span class="p">,</span> <span class="n">request</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">app</span> <span class="o">=</span> <span class="n">Flask</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s2">&#34;/&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">root</span><span class="p">():</span>
-</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="s2">&#34;Hey There?&#34;</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s2">&#34;/api&#34;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s2">&#34;POST&#34;</span><span class="p">])</span>
-</span></span><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">api</span><span class="p">():</span>
-</span></span><span class="line"><span class="cl">    <span class="n">request_data</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">get_json</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">    <span class="n">entity</span> <span class="o">=</span> <span class="n">request_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;entity&#34;</span><span class="p">,</span> <span class="s2">&#34;&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="n">entity</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">        <span class="n">resp</span> <span class="o">=</span> <span class="n">query_shareholding</span><span class="p">(</span><span class="n">entity</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">        <span class="n">data</span> <span class="o">=</span> <span class="n">make_graph_response</span><span class="p">(</span><span class="n">resp</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="k">else</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">        <span class="n">data</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span> <span class="c1"># tbd</span>
-</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">jsonify</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">parse_nebula_graphd_endpoint</span><span class="p">():</span>
-</span></span><span class="line"><span class="cl">    <span class="n">ng_endpoints_str</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">        <span class="s1">&#39;NG_ENDPOINTS&#39;</span><span class="p">,</span> <span class="s1">&#39;127.0.0.1:9669,&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&#34;,&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="n">ng_endpoints</span> <span class="o">=</span> <span class="p">[]</span>
-</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="n">endpoint</span> <span class="ow">in</span> <span class="n">ng_endpoints_str</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="n">endpoint</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">            <span class="n">parts</span> <span class="o">=</span> <span class="n">endpoint</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&#34;:&#34;</span><span class="p">)</span>  <span class="c1"># we dont consider IPv6 now</span>
-</span></span><span class="line"><span class="cl">            <span class="n">ng_endpoints</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">int</span><span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="mi">1</span><span class="p">])))</span>
-</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">ng_endpoints</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">query_shareholding</span><span class="p">(</span><span class="n">entity</span><span class="p">):</span>
-</span></span><span class="line"><span class="cl">    <span class="n">query_string</span> <span class="o">=</span> <span class="p">(</span>
-</span></span><span class="line"><span class="cl">        <span class="sa">f</span><span class="s2">&#34;USE shareholding; &#34;</span>
-</span></span><span class="line"><span class="cl">        <span class="sa">f</span><span class="s2">&#34;MATCH p=(v)-[e:hold_share|:is_branch_of|:reletive_with|:role_as*1..3]-(v2) &#34;</span>
-</span></span><span class="line"><span class="cl">        <span class="sa">f</span><span class="s2">&#34;WHERE id(v) IN [&#39;</span><span class="si">{</span> <span class="n">entity</span> <span class="si">}</span><span class="s2">&#39;] RETURN p LIMIT 100&#34;</span>
-</span></span><span class="line"><span class="cl">    <span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="n">session</span> <span class="o">=</span> <span class="n">connection_pool</span><span class="o">.</span><span class="n">get_session</span><span class="p">(</span><span class="s1">&#39;root&#39;</span><span class="p">,</span> <span class="s1">&#39;nebula&#39;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="n">resp</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query_string</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">resp</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>这个请求的结果则是前边前端期待的 JSON，像这样：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
-</span><span class="lnt">28
-</span><span class="lnt">29
-</span><span class="lnt">30
-</span><span class="lnt">31
-</span><span class="lnt">32
-</span><span class="lnt">33
-</span><span class="lnt">34
-</span><span class="lnt">35
-</span><span class="lnt">36
-</span><span class="lnt">37
-</span><span class="lnt">38
-</span><span class="lnt">39
-</span><span class="lnt">40
-</span><span class="lnt">41
-</span><span class="lnt">42
-</span><span class="lnt">43
-</span><span class="lnt">44
-</span><span class="lnt">45
-</span><span class="lnt">46
-</span><span class="lnt">47
-</span><span class="lnt">48
-</span><span class="lnt">49
-</span><span class="lnt">50
-</span><span class="lnt">51
-</span><span class="lnt">52
-</span><span class="lnt">53
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">curl --header <span class="s2">&#34;Content-Type: application/json&#34;</span> <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>     --request POST <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>     --data <span class="s1">&#39;{&#34;entity&#34;: &#34;c_132&#34;}&#39;</span> <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>     http://192.168.10.14:5000/api <span class="p">|</span> jq
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="o">{</span>
-</span></span><span class="line"><span class="cl">  <span class="s2">&#34;nodes&#34;</span>: <span class="o">[</span>
-</span></span><span class="line"><span class="cl">    <span class="o">{</span>
-</span></span><span class="line"><span class="cl">      <span class="s2">&#34;id&#34;</span>: <span class="s2">&#34;c_132&#34;</span>,
-</span></span><span class="line"><span class="cl">      <span class="s2">&#34;name&#34;</span>: <span class="s2">&#34;\&#34;Chambers LLC\&#34;&#34;</span>,
-</span></span><span class="line"><span class="cl">      <span class="s2">&#34;tag&#34;</span>: <span class="s2">&#34;corp&#34;</span>
-</span></span><span class="line"><span class="cl">    <span class="o">}</span>,
-</span></span><span class="line"><span class="cl">    <span class="o">{</span>
-</span></span><span class="line"><span class="cl">      <span class="s2">&#34;id&#34;</span>: <span class="s2">&#34;c_245&#34;</span>,
-</span></span><span class="line"><span class="cl">      <span class="s2">&#34;name&#34;</span>: <span class="s2">&#34;\&#34;Thompson-King\&#34;&#34;</span>,
-</span></span><span class="line"><span class="cl">      <span class="s2">&#34;tag&#34;</span>: <span class="s2">&#34;corp&#34;</span>
-</span></span><span class="line"><span class="cl">    <span class="o">}</span>,
-</span></span><span class="line"><span class="cl">    <span class="o">{</span>
-</span></span><span class="line"><span class="cl">      <span class="s2">&#34;id&#34;</span>: <span class="s2">&#34;c_132&#34;</span>,
-</span></span><span class="line"><span class="cl">      <span class="s2">&#34;name&#34;</span>: <span class="s2">&#34;\&#34;Chambers LLC\&#34;&#34;</span>,
-</span></span><span class="line"><span class="cl">      <span class="s2">&#34;tag&#34;</span>: <span class="s2">&#34;corp&#34;</span>
-</span></span><span class="line"><span class="cl">    <span class="o">}</span>,
-</span></span><span class="line"><span class="cl">...
-</span></span><span class="line"><span class="cl">    <span class="o">}</span>
-</span></span><span class="line"><span class="cl">  <span class="o">]</span>,
-</span></span><span class="line"><span class="cl">  <span class="s2">&#34;relationships&#34;</span>: <span class="o">[</span>
-</span></span><span class="line"><span class="cl">    <span class="o">{</span>
-</span></span><span class="line"><span class="cl">      <span class="s2">&#34;edge&#34;</span>: <span class="s2">&#34;hold_share&#34;</span>,
-</span></span><span class="line"><span class="cl">      <span class="s2">&#34;properties&#34;</span>: <span class="s2">&#34;{&#39;share&#39;: 0.0}&#34;</span>,
-</span></span><span class="line"><span class="cl">      <span class="s2">&#34;source&#34;</span>: <span class="s2">&#34;c_245&#34;</span>,
-</span></span><span class="line"><span class="cl">      <span class="s2">&#34;target&#34;</span>: <span class="s2">&#34;c_132&#34;</span>
-</span></span><span class="line"><span class="cl">    <span class="o">{</span>
-</span></span><span class="line"><span class="cl">      <span class="s2">&#34;edge&#34;</span>: <span class="s2">&#34;hold_share&#34;</span>,
-</span></span><span class="line"><span class="cl">      <span class="s2">&#34;properties&#34;</span>: <span class="s2">&#34;{&#39;share&#39;: 9.0}&#34;</span>,
-</span></span><span class="line"><span class="cl">      <span class="s2">&#34;source&#34;</span>: <span class="s2">&#34;p_1767&#34;</span>,
-</span></span><span class="line"><span class="cl">      <span class="s2">&#34;target&#34;</span>: <span class="s2">&#34;c_132&#34;</span>
-</span></span><span class="line"><span class="cl">    <span class="o">}</span>,
-</span></span><span class="line"><span class="cl">    <span class="o">{</span>
-</span></span><span class="line"><span class="cl">      <span class="s2">&#34;edge&#34;</span>: <span class="s2">&#34;hold_share&#34;</span>,
-</span></span><span class="line"><span class="cl">      <span class="s2">&#34;properties&#34;</span>: <span class="s2">&#34;{&#39;share&#39;: 11.0}&#34;</span>,
-</span></span><span class="line"><span class="cl">      <span class="s2">&#34;source&#34;</span>: <span class="s2">&#34;p_1997&#34;</span>,
-</span></span><span class="line"><span class="cl">      <span class="s2">&#34;target&#34;</span>: <span class="s2">&#34;c_132&#34;</span>
-</span></span><span class="line"><span class="cl">    <span class="o">}</span>,
-</span></span><span class="line"><span class="cl">...
-</span></span><span class="line"><span class="cl">    <span class="o">}</span>,
-</span></span><span class="line"><span class="cl">    <span class="o">{</span>
-</span></span><span class="line"><span class="cl">      <span class="s2">&#34;edge&#34;</span>: <span class="s2">&#34;reletive_with&#34;</span>,
-</span></span><span class="line"><span class="cl">      <span class="s2">&#34;properties&#34;</span>: <span class="s2">&#34;{&#39;degree&#39;: 51}&#34;</span>,
-</span></span><span class="line"><span class="cl">      <span class="s2">&#34;source&#34;</span>: <span class="s2">&#34;p_7283&#34;</span>,
-</span></span><span class="line"><span class="cl">      <span class="s2">&#34;target&#34;</span>: <span class="s2">&#34;p_4723&#34;</span>
-</span></span><span class="line"><span class="cl">    <span class="o">}</span>
-</span></span><span class="line"><span class="cl">  <span class="o">]</span>
-</span></span><span class="line"><span class="cl"><span class="o">}</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><h3 id="放到一起" class="headerLink">
-    <a href="#%e6%94%be%e5%88%b0%e4%b8%80%e8%b5%b7" class="header-mark"></a>5.4 放到一起</h3><p>项目的代码都在 GitHub 上，最后其实只有一两百行的代码，把所有东西拼起来之后的代码是：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span><span class="lnt">7
-</span><span class="lnt">8
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">├── README.md         <span class="c1"># You could find Design Logs here</span>
-</span></span><span class="line"><span class="cl">├── corp-rel-backend
-</span></span><span class="line"><span class="cl">│   └── app.py        <span class="c1"># Flask App to handle Requst and calls GDB</span>
-</span></span><span class="line"><span class="cl">├── corp-rel-frontend
-</span></span><span class="line"><span class="cl">│   └── src
-</span></span><span class="line"><span class="cl">│       ├── App.vue
-</span></span><span class="line"><span class="cl">│       └── main.js   <span class="c1"># Vue App to call Flask App and Renders Graph</span>
-</span></span><span class="line"><span class="cl">└── requirements.txt
-</span></span></code></pre></td></tr></table>
-</div>
-</div><h3 id="最终效果" class="headerLink">
-    <a href="#%e6%9c%80%e7%bb%88%e6%95%88%e6%9e%9c" class="header-mark"></a>5.5 最终效果</h3><p>我们做出来了一个简陋但是足够具有参考性的小系统，它接受一个用户输入的实体的 ID，再回车之后：</p>
-<ul>
-<li>前端程序把请求发给后端</li>
-<li>后端拼接 Nebula Graph 的查询语句，通过 Nebula Python 客户端请求 Nebula Graph</li>
-<li>Nebula Graph 接受请求做出穿透查询，返回结构给后端</li>
-<li>后端将结果构建成前端 D3 接受的格式，传给前端</li>
-<li>前端接收到图结构的数据，渲染股权穿透的数据如下：</li>
-</ul>
-<video width="800" controls>
-  <source src="./demo.mov" type="video/mp4"> 
-</video>
-<h2 id="总结" class="headerLink">
-    <a href="#%e6%80%bb%e7%bb%93" class="header-mark"></a>6 总结</h2><p>现在，我们知道得益于图数据库的设计，在它上边构建一个方便的股权分析系统非常自然、高效，我们或者利用图数据库的图探索可视化能力、或者自己搭建，可以为用户提供非常高效、直观的多跳股权穿透分析。</p>
-<p>如果你想了解更多关于分布式图数据库的知识，欢迎关注 Nebula Graph 这个开源项目，它已经被国内很多团队、公司认可选为图时代数据技术存储层的利器，大家可以访问<a href="https://nebula-graph.com.cn/cases" target="_blank" rel="noopener noreffer">这里</a>，或者<a href="https://nebula-graph.com.cn/posts/" target="_blank" rel="noopener noreffer">这里</a>，了解更多相关的分享和文章。</p>
-<p>未来，我会给大家分享更多图数据库相关的文章、视频和开源示例项目思路分享和教程，欢迎大家关注我的网站: siwei.io。</p>
-<blockquote>
-<p>题图版权：<a href="https://unsplash.com/photos/oyXis2kALVg" target="_blank" rel="noopener noreffer">fabioha</a></p>
 </blockquote>]]></description>
 </item></channel>
 </rss>
