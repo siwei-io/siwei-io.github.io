@@ -53,7 +53,7 @@ NebulaGraph 终于有 Fuzz 测试工具了，NebulaGraph 上跑向量搜索，�
 
   > 注：pet vs cattle，就是宠物 vs 牲口是一个 DevOps 的概念：前者指的是分配长期运行的 VM，大家像是宠物一样给集群命名，一直挂在那里，而后者指的是不会被命名的牲口 VM、资源，用的时候牵过来，用完了残忍杀掉，不会给他起名字的理念。
 
-- 🤖 NebulaGraph Buzz Test，终于，文林同学给 NebulaGraph 带来了 Buzz Test 工具，这是我知道已经被很多人期待、询问的 missing tool 了，它可以按照一定配置和比例生成随机形式的 Query 然后实时发给给定的 NebulaGraph 集群，实践 Buzz Testing！👍🏻，欢迎大家都去它的 repo 收藏、尝鲜、贡献起来！
+- 🤖 NebulaGraph Fuzz Test，终于，文林同学给 NebulaGraph 带来了 Fuzz Test 工具，这是我知道已经被很多人期待、询问的 missing tool 了，它可以按照一定配置和比例生成随机形式的 Query 然后实时发给给定的 NebulaGraph 集群，实践 Buzz Testing！👍🏻，欢迎大家都去它的 repo 收藏、尝鲜、贡献起来！
 
   - https://github.com/kikimo/gqlfuzzer
 
