@@ -30,13 +30,13 @@ NebulaGraph 终于有 Fuzz 测试工具了，NebulaGraph 上跑向量搜索，�
 
 ## 项目介绍
 
-这次有 6 个项目，我按照顺序会议一下：
+这次有 6 个项目，我按照顺序回忆一下：
 
 - 🎖NebulaGraph 成就系统，由学院的同学们做的一整套带有成就徽章系统的 NebulaGraph 课程、教程服务，在这个基础之上延伸出好多可能性，很期待之后可以上线去考几个下来加到我的 LinkedIn Profile 里！
 
 - 🧠 NebulaGraph-Deep ，就是我们团队，这个 PoC 由三部分组成：
 
-  - Nebula-DGL，从 NebulaGraph 中读取数据为 DGL 的图对象，进行 GNN训练的连接器，适合批量训练。在此之上，做了一个 GNN 的 Fraud Detection 的端到端实时系统。
+  - Nebula-DGL，从 NebulaGraph 中读取数据为 DGL 的图对象，进行 GNN 训练的连接器，适合批量训练。在此之上，做了一个 GNN 的 Fraud Detection 的端到端实时系统。
     - https://github.com/wey-gu/nebula-dgl
     - https://github.com/wey-gu/NebulaGraph-Fraud-Detection-GNN
   - Nebula-DGL Listener，一个 NebulaGraph 存储节点的 listener 进程，实时把数据写成 DGL 支持的 CSV 格式，适合批量以及追加（流式）训练。
@@ -47,9 +47,9 @@ NebulaGraph 终于有 Fuzz 测试工具了，NebulaGraph 上跑向量搜索，�
 
   - 其中最最有意思的是这个 PoC 项目里他们做了一个 WYSIWYG（所见即所得）的 No Code 接口，让市场、运营、人力资源的同学可以自服务按需创建活动页面，超级方便。
 
-- ☁️ NebulaGraph Cloud Platform，云团队同学们搞的，用 Kubesphere 做的自服务 NebulaGraph 内核加各种周边工具平台，更方便开发、测试同学 ad-hoc 创建 ephemeral（转瞬即逝） 的 NebulaGraph 集群，在这之前，大家都是以 Pet 的方式去申请 VM 或者 BM，资源的利用上比较浪费，有了这个平台，大家可以灵活践行 cattle 模式的 DevOps。 
+- ☁️ NebulaGraph Cloud Platform，云团队同学们搞的，用 Kubesphere 做的自服务 NebulaGraph 内核加各种周边工具平台，更方便开发、测试同学 ad-hoc 创建 ephemeral（转瞬即逝） 的 NebulaGraph 集群，在这之前，大家都是以 Pet 的方式去申请 VM 或者 BM，资源的利用上比较浪费，有了这个平台，大家可以灵活践行 cattle 模式的 DevOps。他们还或 Mock 或替代实现了几大公有云的资源接口，方便 NebulaGraph Cloud 的本地测试开发。
 
-  - 哈哈公司的前 Kubesphere 同学看到这个项目超级兴奋，我懂
+  - 哈哈公司的前 Kubesphere 同学看到这个项目超级兴奋，我懂~
 
   > 注：pet vs cattle，就是宠物 vs 牲口是一个 DevOps 的概念：前者指的是分配长期运行的 VM，大家像是宠物一样给集群命名，一直挂在那里，而后者指的是不会被命名的牲口 VM、资源，用的时候牵过来，用完了残忍杀掉，不会给他起名字的理念。
 
@@ -57,9 +57,9 @@ NebulaGraph 终于有 Fuzz 测试工具了，NebulaGraph 上跑向量搜索，�
 
   - https://github.com/kikimo/gqlfuzzer
 
-- 🌌 星璇 Merak，存储团队的同学们带来了 NebulaGraph 上进行向量检索，在 PoC 实现里，他们给出了 HNSW 的实现，他们把点的向量表示以 string 的方式存储、HNSW 中的 Layer 以边之中的 rank存储，最终可以在 NebulaGraph 里搜索向量表示所在空间相邻近的点，是不是超级超级酷？！
+- 🌌 星璇 Merak，存储团队的同学们带来了 NebulaGraph 上进行向量检索，在 PoC 里，他们给出了 HNSW 的实现，把点的向量表示以 string 的方式存储、HNSW 中的 Layer 以边之中的 rank 存储，最终可以在 NebulaGraph 里搜索向量表示所在空间相邻近的点，是不是超级超级酷？！
 
-  - 好像介绍更多呀，不过 KNN 这方面一直是我的知识盲区，之前想学习下 milvus 也一直没能开始，惭愧，在有越来越多业务以实时图查询作为核心逻辑，把图库作为 Single Source of Truth 需求的背景下，图库上的向量搜索真的会超级方便图为主、KNN 需求为辅的用户，这个项目真的超酷，超有想象力。
+  - 好想介绍更多呀，不过 KNN 这方面一直是我的知识盲区，之前想学习下 Milvus 也一直没能开始，惭愧，在有越来越多业务以实时图查询作为核心逻辑，把图库作为 Single Source of Truth 需求的背景下，图库上的向量搜索真的会超级方便图为主、KNN 需求为辅的用户，这个项目真的超酷，超有想象力。
 
 ## 感想和之后的工作
 
