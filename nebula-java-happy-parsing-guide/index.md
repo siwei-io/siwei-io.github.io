@@ -5,6 +5,8 @@
 
 <!--more-->
 
+> 更新: 2022-Aug-10, adapted to nebulagraph 3.x
+
 ## 关键步骤：几行准备一个干净的交互式 Nebula Java REPL 环境
 
 多亏了 [Java-REPL](https://github.com/albertlatacz/java-repl/) 我们可以很方便地（像 iPython 那样）去实时交互地调试、分析 Nebula Java 客户端，我们用它的 Docker 镜像可以很干净的去搞定：
@@ -12,27 +14,27 @@
 ```bash
 docker pull albertlatacz/java-repl
 docker run --rm -it \
-    --network=nebula-docker-compose_nebula-net \
+    --network=nebula-net \
     -v ~:/root \
     albertlatacz/java-repl \
     bash
 apt update -y && apt install ca-certificates -y
-wget https://dlcdn.apache.org/maven/maven-3/3.8.4/binaries/apache-maven-3.8.4-bin.tar.gz --no-check-certificate
+wget https://dlcdn.apache.org/maven/maven-3/3.8.6/binaries/apache-maven-3.8.6-bin.tar.gz --no-check-certificate
 
-tar xzvf apache-maven-3.8.4-bin.tar.gz
+tar xzvf apache-maven-3.8.6-bin.tar.gz
 
-wget https://github.com/vesoft-inc/nebula-java/archive/refs/tags/v2.6.1.tar.gz
-tar xzvf v2.6.1.tar.gz
-cd nebula-java-2.6.1/
-../apache-maven-3.8.4/bin/mvn dependency:copy-dependencies
-../apache-maven-3.8.4/bin/mvn -B package -Dmaven.test.skip=true
+wget https://github.com/vesoft-inc/nebula-java/archive/refs/tags/v3.0.0.tar.gz
+tar xzvf v3.0.0.tar.gz
+cd nebula-java-3.0.0/
+../apache-maven-3.8.6/bin/mvn dependency:copy-dependencies
+../apache-maven-3.8.6/bin/mvn -B package -Dmaven.test.skip=true
 
 java -jar ../javarepl/javarepl.jar
 ```
 这时候，在执行完 `java -jar ../javarepl/javarepl.jar` 之后，我们就进入了交互式的 Java Shell（REPL），我们可以无需做编译，执行，print 这样的慢反馈来调试和研究我们的代码了，是不是很方便？
 
 ```java
-root@a2e26ba62bb6:/javarepl/nebula-java-2.6.1# java -jar ../javarepl/javarepl.jar
+root@a2e26ba62bb6:/javarepl/nebula-java-3.0.0# java -jar ../javarepl/javarepl.jar
 
 Welcome to JavaREPL version 428 (Java HotSpot(TM) 64-Bit Server VM, Java 1.8.0_111)
 Type expression to evaluate, :help for more options or press tab to auto-complete.
@@ -45,12 +47,12 @@ java>
 首先我们在 `java>` 提示符下，这些来把必须的类路径和导入：
 
 ```java
-:cp /javarepl/nebula-java-2.6.1/client/target/client-2.6.1.jar
-:cp /javarepl/nebula-java-2.6.1/client/target/dependency/fastjson-1.2.78.jar
-:cp /javarepl/nebula-java-2.6.1/client/target/dependency/slf4j-api-1.7.25.jar
-:cp /javarepl/nebula-java-2.6.1/client/target/dependency/slf4j-log4j12-1.7.25.jar
-:cp /javarepl/nebula-java-2.6.1/client/target/dependency/commons-pool2-2.2.jar
-:cp /javarepl/nebula-java-2.6.1/client/target/dependency/log4j-1.2.17.jar
+:cp /javarepl/nebula-java-3.0.0/client/target/client-3.0.0.jar
+:cp /javarepl/nebula-java-3.0.0/client/target/dependency/fastjson-1.2.78.jar
+:cp /javarepl/nebula-java-3.0.0/client/target/dependency/slf4j-api-1.7.25.jar
+:cp /javarepl/nebula-java-3.0.0/client/target/dependency/slf4j-log4j12-1.7.25.jar
+:cp /javarepl/nebula-java-3.0.0/client/target/dependency/commons-pool2-2.2.jar
+:cp /javarepl/nebula-java-3.0.0/client/target/dependency/log4j-1.2.17.jar
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;

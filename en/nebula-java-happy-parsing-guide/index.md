@@ -7,6 +7,8 @@
 
 <!--more-->
 
+> updated: 2022-Aug-10, adapted to nebulagraph 3.x
+
 ## Prepare for the Java REPL
 
 Thanks to https://github.com/albertlatacz/java-repl/ we could play with/debug this in an interactive way, and all we need is to leverage its docker image to have all the envrioment in a clean and quick way:
@@ -14,20 +16,20 @@ Thanks to https://github.com/albertlatacz/java-repl/ we could play with/debug th
 ```bash
 docker pull albertlatacz/java-repl
 docker run --rm -it \
-    --network=nebula-docker-compose_nebula-net \
+    --network=nebula-net \
     -v ~:/root \
     albertlatacz/java-repl \
     bash
 apt update -y && apt install ca-certificates -y
-wget https://dlcdn.apache.org/maven/maven-3/3.8.4/binaries/apache-maven-3.8.4-bin.tar.gz --no-check-certificate
+wget https://dlcdn.apache.org/maven/maven-3/3.8.6/binaries/apache-maven-3.8.6-bin.tar.gz --no-check-certificate
 
-tar xzvf apache-maven-3.8.4-bin.tar.gz
+tar xzvf apache-maven-3.8.6-bin.tar.gz
 
-wget https://github.com/vesoft-inc/nebula-java/archive/refs/tags/v2.6.1.tar.gz
-tar xzvf v2.6.1.tar.gz
-cd nebula-java-2.6.1/
-../apache-maven-3.8.4/bin/mvn dependency:copy-dependencies
-../apache-maven-3.8.4/bin/mvn -B package -Dmaven.test.skip=true
+wget https://github.com/vesoft-inc/nebula-java/archive/refs/tags/v3.0.0.tar.gz
+tar xzvf v3.0.0.tar.gz
+cd nebula-java-3.0.0/
+../apache-maven-3.8.6/bin/mvn dependency:copy-dependencies
+../apache-maven-3.8.6/bin/mvn -B package -Dmaven.test.skip=true
 
 java -jar ../javarepl/javarepl.jar
 ```
@@ -36,7 +38,7 @@ Now, after executing `java -jar ../javarepl/javarepl.jar` we are in a Java Shell
 
 Like this:
 ```java
-root@a2e26ba62bb6:/javarepl/nebula-java-2.6.1# java -jar ../javarepl/javarepl.jar
+root@a2e26ba62bb6:/javarepl/nebula-java-3.0.0# java -jar ../javarepl/javarepl.jar
 
 Welcome to JavaREPL version 428 (Java HotSpot(TM) 64-Bit Server VM, Java 1.8.0_111)
 Type expression to evaluate, :help for more options or press tab to auto-complete.
@@ -50,12 +52,12 @@ java>
 Now we are in the java REPL, let's introduce all the class path needed and do the imports in one go:
 
 ```java
-:cp /javarepl/nebula-java-2.6.1/client/target/client-2.6.1.jar
-:cp /javarepl/nebula-java-2.6.1/client/target/dependency/fastjson-1.2.78.jar
-:cp /javarepl/nebula-java-2.6.1/client/target/dependency/slf4j-api-1.7.25.jar
-:cp /javarepl/nebula-java-2.6.1/client/target/dependency/slf4j-log4j12-1.7.25.jar
-:cp /javarepl/nebula-java-2.6.1/client/target/dependency/commons-pool2-2.2.jar
-:cp /javarepl/nebula-java-2.6.1/client/target/dependency/log4j-1.2.17.jar
+:cp /javarepl/nebula-java-3.0.0/client/target/client-3.0.0.jar
+:cp /javarepl/nebula-java-3.0.0/client/target/dependency/fastjson-1.2.78.jar
+:cp /javarepl/nebula-java-3.0.0/client/target/dependency/slf4j-api-1.7.25.jar
+:cp /javarepl/nebula-java-3.0.0/client/target/dependency/slf4j-log4j12-1.7.25.jar
+:cp /javarepl/nebula-java-3.0.0/client/target/dependency/commons-pool2-2.2.jar
+:cp /javarepl/nebula-java-3.0.0/client/target/dependency/log4j-1.2.17.jar
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;

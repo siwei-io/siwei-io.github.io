@@ -10,7 +10,7 @@
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://siwei.io/nebula-java-happy-parsing-guide/" /><meta property="og:image" content="https://siwei.io/nebula-java-happy-parsing-guide/featured-image.png"/><meta property="article:section" content="posts" />
 <meta property="article:published_time" content="2021-11-25T19:47:53+08:00" />
-<meta property="article:modified_time" content="2021-12-14T16:24:40+08:00" /><meta property="og:site_name" content="siwei.io" />
+<meta property="article:modified_time" content="2022-08-12T09:15:40+08:00" /><meta property="og:site_name" content="siwei.io" />
 
 <meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:image" content="https://siwei.io/nebula-java-happy-parsing-guide/featured-image.png"/>
@@ -36,8 +36,8 @@
         "mainEntityOfPage": {
             "@type": "WebPage",
             "@id": "https:\/\/siwei.io\/nebula-java-happy-parsing-guide\/"
-        },"image": ["https:\/\/siwei.io\/images\/site-feature-image.webp"],"genre": "posts","keywords": "Nebula Graph, 图数据库, java","wordcount":  2313 ,
-        "url": "https:\/\/siwei.io\/nebula-java-happy-parsing-guide\/","datePublished": "2021-11-25T19:47:53+08:00","dateModified": "2021-12-14T16:24:40+08:00","publisher": {
+        },"image": ["https:\/\/siwei.io\/images\/site-feature-image.webp"],"genre": "posts","keywords": "Nebula Graph, 图数据库, java","wordcount":  2321 ,
+        "url": "https:\/\/siwei.io\/nebula-java-happy-parsing-guide\/","datePublished": "2021-11-25T19:47:53+08:00","dateModified": "2022-08-12T09:15:40+08:00","publisher": {
             "@type": "Organization",
             "name": "Wey Gu","logo": "https:\/\/siwei.io\/images\/site-feature-image.webp"},"author": {
                 "@type": "Person",
@@ -145,7 +145,7 @@
             <div class="post-meta-line">
                 <span class="post-author"><i class="author fas fa-user-circle fa-fw"></i><a href="https://siwei.io" title="Author" target="_blank" rel="noopener noreffer author" class="author">Wey Gu</a>
                 </span>&nbsp;<span class="post-category">收录于 </span>&nbsp;<span class="post-category">类别 <a href="/categories/nebula-graph/"><i class="far fa-folder fa-fw"></i>Nebula Graph</a></span></div>
-            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime="2021-11-25">2021-11-25</time>&nbsp;<i class="far fa-edit fa-fw"></i>&nbsp;<time datetime="2021-12-14">2021-12-14</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;约 2313 字&nbsp;
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime="2021-11-25">2021-11-25</time>&nbsp;<i class="far fa-edit fa-fw"></i>&nbsp;<time datetime="2022-08-12">2022-08-12</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;约 2321 字&nbsp;
                 <i class="far fa-clock fa-fw"></i>&nbsp;预计阅读 5 分钟&nbsp;</div>
         </div><div class="featured-image"><img
         class="lazyload"
@@ -168,6 +168,9 @@
 </nav></div>
             </div><div class="content" id="content"><blockquote>
 <p>如何快速、即时、符合直觉地去处理 Nebula Java Client 中的数据解析？读这一篇就够了。</p>
+</blockquote>
+<blockquote>
+<p>更新: 2022-Aug-10, adapted to nebulagraph 3.x</p>
 </blockquote>
 <h2 id="关键步骤几行准备一个干净的交互式-nebula-java-repl-环境" class="headerLink">
     <a href="#%e5%85%b3%e9%94%ae%e6%ad%a5%e9%aa%a4%e5%87%a0%e8%a1%8c%e5%87%86%e5%a4%87%e4%b8%80%e4%b8%aa%e5%b9%b2%e5%87%80%e7%9a%84%e4%ba%a4%e4%ba%92%e5%bc%8f-nebula-java-repl-%e7%8e%af%e5%a2%83" class="header-mark"></a>1 关键步骤：几行准备一个干净的交互式 Nebula Java REPL 环境</h2><p>多亏了 <a href="https://github.com/albertlatacz/java-repl/" target="_blank" rel="noopener noreffer">Java-REPL</a> 我们可以很方便地（像 iPython 那样）去实时交互地调试、分析 Nebula Java 客户端，我们用它的 Docker 镜像可以很干净的去搞定：</p>
@@ -195,20 +198,20 @@
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker pull albertlatacz/java-repl
 </span></span><span class="line"><span class="cl">docker run --rm -it <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    --network<span class="o">=</span>nebula-docker-compose_nebula-net <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    --network<span class="o">=</span>nebula-net <span class="se">\
 </span></span></span><span class="line"><span class="cl"><span class="se"></span>    -v ~:/root <span class="se">\
 </span></span></span><span class="line"><span class="cl"><span class="se"></span>    albertlatacz/java-repl <span class="se">\
 </span></span></span><span class="line"><span class="cl"><span class="se"></span>    bash
 </span></span><span class="line"><span class="cl">apt update -y <span class="o">&amp;&amp;</span> apt install ca-certificates -y
-</span></span><span class="line"><span class="cl">wget https://dlcdn.apache.org/maven/maven-3/3.8.4/binaries/apache-maven-3.8.4-bin.tar.gz --no-check-certificate
+</span></span><span class="line"><span class="cl">wget https://dlcdn.apache.org/maven/maven-3/3.8.6/binaries/apache-maven-3.8.6-bin.tar.gz --no-check-certificate
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">tar xzvf apache-maven-3.8.4-bin.tar.gz
+</span></span><span class="line"><span class="cl">tar xzvf apache-maven-3.8.6-bin.tar.gz
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">wget https://github.com/vesoft-inc/nebula-java/archive/refs/tags/v2.6.1.tar.gz
-</span></span><span class="line"><span class="cl">tar xzvf v2.6.1.tar.gz
-</span></span><span class="line"><span class="cl"><span class="nb">cd</span> nebula-java-2.6.1/
-</span></span><span class="line"><span class="cl">../apache-maven-3.8.4/bin/mvn dependency:copy-dependencies
-</span></span><span class="line"><span class="cl">../apache-maven-3.8.4/bin/mvn -B package -Dmaven.test.skip<span class="o">=</span><span class="nb">true</span>
+</span></span><span class="line"><span class="cl">wget https://github.com/vesoft-inc/nebula-java/archive/refs/tags/v3.0.0.tar.gz
+</span></span><span class="line"><span class="cl">tar xzvf v3.0.0.tar.gz
+</span></span><span class="line"><span class="cl"><span class="nb">cd</span> nebula-java-3.0.0/
+</span></span><span class="line"><span class="cl">../apache-maven-3.8.6/bin/mvn dependency:copy-dependencies
+</span></span><span class="line"><span class="cl">../apache-maven-3.8.6/bin/mvn -B package -Dmaven.test.skip<span class="o">=</span><span class="nb">true</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">java -jar ../javarepl/javarepl.jar
 </span></span></code></pre></td></tr></table>
@@ -227,7 +230,7 @@
 </span><span class="lnt">9
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">root</span><span class="nd">@a2e26ba62bb6</span><span class="o">:/</span><span class="n">javarepl</span><span class="o">/</span><span class="n">nebula</span><span class="o">-</span><span class="n">java</span><span class="o">-</span><span class="n">2</span><span class="o">.</span><span class="na">6</span><span class="o">.</span><span class="na">1</span><span class="err">#</span> <span class="n">java</span> <span class="o">-</span><span class="n">jar</span> <span class="o">../</span><span class="n">javarepl</span><span class="o">/</span><span class="n">javarepl</span><span class="o">.</span><span class="na">jar</span>
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">root</span><span class="nd">@a2e26ba62bb6</span><span class="o">:/</span><span class="n">javarepl</span><span class="o">/</span><span class="n">nebula</span><span class="o">-</span><span class="n">java</span><span class="o">-</span><span class="n">3</span><span class="o">.</span><span class="na">0</span><span class="o">.</span><span class="na">0</span><span class="err">#</span> <span class="n">java</span> <span class="o">-</span><span class="n">jar</span> <span class="o">../</span><span class="n">javarepl</span><span class="o">/</span><span class="n">javarepl</span><span class="o">.</span><span class="na">jar</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="n">Welcome</span> <span class="n">to</span> <span class="n">JavaREPL</span> <span class="n">version</span> <span class="nf">428</span> <span class="o">(</span><span class="n">Java</span> <span class="nf">HotSpot</span><span class="o">(</span><span class="n">TM</span><span class="o">)</span> <span class="n">64</span><span class="o">-</span><span class="n">Bit</span> <span class="n">Server</span> <span class="n">VM</span><span class="o">,</span> <span class="n">Java</span> <span class="n">1</span><span class="o">.</span><span class="na">8</span><span class="o">.</span><span class="na">0_111</span><span class="o">)</span>
 </span></span><span class="line"><span class="cl"><span class="n">Type</span> <span class="n">expression</span> <span class="n">to</span> <span class="n">evaluate</span><span class="o">,</span> <span class="o">:</span><span class="n">help</span> <span class="k">for</span> <span class="n">more</span> <span class="n">options</span> <span class="n">or</span> <span class="n">press</span> <span class="n">tab</span> <span class="n">to</span> <span class="n">auto</span><span class="o">-</span><span class="n">complete</span><span class="o">.</span>
@@ -268,12 +271,12 @@
 </span><span class="lnt">25
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="o">:</span><span class="n">cp</span> <span class="o">/</span><span class="n">javarepl</span><span class="o">/</span><span class="n">nebula</span><span class="o">-</span><span class="n">java</span><span class="o">-</span><span class="n">2</span><span class="o">.</span><span class="na">6</span><span class="o">.</span><span class="na">1</span><span class="o">/</span><span class="n">client</span><span class="o">/</span><span class="n">target</span><span class="o">/</span><span class="n">client</span><span class="o">-</span><span class="n">2</span><span class="o">.</span><span class="na">6</span><span class="o">.</span><span class="na">1</span><span class="o">.</span><span class="na">jar</span>
-</span></span><span class="line"><span class="cl"><span class="o">:</span><span class="n">cp</span> <span class="o">/</span><span class="n">javarepl</span><span class="o">/</span><span class="n">nebula</span><span class="o">-</span><span class="n">java</span><span class="o">-</span><span class="n">2</span><span class="o">.</span><span class="na">6</span><span class="o">.</span><span class="na">1</span><span class="o">/</span><span class="n">client</span><span class="o">/</span><span class="n">target</span><span class="o">/</span><span class="n">dependency</span><span class="o">/</span><span class="n">fastjson</span><span class="o">-</span><span class="n">1</span><span class="o">.</span><span class="na">2</span><span class="o">.</span><span class="na">78</span><span class="o">.</span><span class="na">jar</span>
-</span></span><span class="line"><span class="cl"><span class="o">:</span><span class="n">cp</span> <span class="o">/</span><span class="n">javarepl</span><span class="o">/</span><span class="n">nebula</span><span class="o">-</span><span class="n">java</span><span class="o">-</span><span class="n">2</span><span class="o">.</span><span class="na">6</span><span class="o">.</span><span class="na">1</span><span class="o">/</span><span class="n">client</span><span class="o">/</span><span class="n">target</span><span class="o">/</span><span class="n">dependency</span><span class="o">/</span><span class="n">slf4j</span><span class="o">-</span><span class="n">api</span><span class="o">-</span><span class="n">1</span><span class="o">.</span><span class="na">7</span><span class="o">.</span><span class="na">25</span><span class="o">.</span><span class="na">jar</span>
-</span></span><span class="line"><span class="cl"><span class="o">:</span><span class="n">cp</span> <span class="o">/</span><span class="n">javarepl</span><span class="o">/</span><span class="n">nebula</span><span class="o">-</span><span class="n">java</span><span class="o">-</span><span class="n">2</span><span class="o">.</span><span class="na">6</span><span class="o">.</span><span class="na">1</span><span class="o">/</span><span class="n">client</span><span class="o">/</span><span class="n">target</span><span class="o">/</span><span class="n">dependency</span><span class="o">/</span><span class="n">slf4j</span><span class="o">-</span><span class="n">log4j12</span><span class="o">-</span><span class="n">1</span><span class="o">.</span><span class="na">7</span><span class="o">.</span><span class="na">25</span><span class="o">.</span><span class="na">jar</span>
-</span></span><span class="line"><span class="cl"><span class="o">:</span><span class="n">cp</span> <span class="o">/</span><span class="n">javarepl</span><span class="o">/</span><span class="n">nebula</span><span class="o">-</span><span class="n">java</span><span class="o">-</span><span class="n">2</span><span class="o">.</span><span class="na">6</span><span class="o">.</span><span class="na">1</span><span class="o">/</span><span class="n">client</span><span class="o">/</span><span class="n">target</span><span class="o">/</span><span class="n">dependency</span><span class="o">/</span><span class="n">commons</span><span class="o">-</span><span class="n">pool2</span><span class="o">-</span><span class="n">2</span><span class="o">.</span><span class="na">2</span><span class="o">.</span><span class="na">jar</span>
-</span></span><span class="line"><span class="cl"><span class="o">:</span><span class="n">cp</span> <span class="o">/</span><span class="n">javarepl</span><span class="o">/</span><span class="n">nebula</span><span class="o">-</span><span class="n">java</span><span class="o">-</span><span class="n">2</span><span class="o">.</span><span class="na">6</span><span class="o">.</span><span class="na">1</span><span class="o">/</span><span class="n">client</span><span class="o">/</span><span class="n">target</span><span class="o">/</span><span class="n">dependency</span><span class="o">/</span><span class="n">log4j</span><span class="o">-</span><span class="n">1</span><span class="o">.</span><span class="na">2</span><span class="o">.</span><span class="na">17</span><span class="o">.</span><span class="na">jar</span>
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="o">:</span><span class="n">cp</span> <span class="o">/</span><span class="n">javarepl</span><span class="o">/</span><span class="n">nebula</span><span class="o">-</span><span class="n">java</span><span class="o">-</span><span class="n">3</span><span class="o">.</span><span class="na">0</span><span class="o">.</span><span class="na">0</span><span class="o">/</span><span class="n">client</span><span class="o">/</span><span class="n">target</span><span class="o">/</span><span class="n">client</span><span class="o">-</span><span class="n">3</span><span class="o">.</span><span class="na">0</span><span class="o">.</span><span class="na">0</span><span class="o">.</span><span class="na">jar</span>
+</span></span><span class="line"><span class="cl"><span class="o">:</span><span class="n">cp</span> <span class="o">/</span><span class="n">javarepl</span><span class="o">/</span><span class="n">nebula</span><span class="o">-</span><span class="n">java</span><span class="o">-</span><span class="n">3</span><span class="o">.</span><span class="na">0</span><span class="o">.</span><span class="na">0</span><span class="o">/</span><span class="n">client</span><span class="o">/</span><span class="n">target</span><span class="o">/</span><span class="n">dependency</span><span class="o">/</span><span class="n">fastjson</span><span class="o">-</span><span class="n">1</span><span class="o">.</span><span class="na">2</span><span class="o">.</span><span class="na">78</span><span class="o">.</span><span class="na">jar</span>
+</span></span><span class="line"><span class="cl"><span class="o">:</span><span class="n">cp</span> <span class="o">/</span><span class="n">javarepl</span><span class="o">/</span><span class="n">nebula</span><span class="o">-</span><span class="n">java</span><span class="o">-</span><span class="n">3</span><span class="o">.</span><span class="na">0</span><span class="o">.</span><span class="na">0</span><span class="o">/</span><span class="n">client</span><span class="o">/</span><span class="n">target</span><span class="o">/</span><span class="n">dependency</span><span class="o">/</span><span class="n">slf4j</span><span class="o">-</span><span class="n">api</span><span class="o">-</span><span class="n">1</span><span class="o">.</span><span class="na">7</span><span class="o">.</span><span class="na">25</span><span class="o">.</span><span class="na">jar</span>
+</span></span><span class="line"><span class="cl"><span class="o">:</span><span class="n">cp</span> <span class="o">/</span><span class="n">javarepl</span><span class="o">/</span><span class="n">nebula</span><span class="o">-</span><span class="n">java</span><span class="o">-</span><span class="n">3</span><span class="o">.</span><span class="na">0</span><span class="o">.</span><span class="na">0</span><span class="o">/</span><span class="n">client</span><span class="o">/</span><span class="n">target</span><span class="o">/</span><span class="n">dependency</span><span class="o">/</span><span class="n">slf4j</span><span class="o">-</span><span class="n">log4j12</span><span class="o">-</span><span class="n">1</span><span class="o">.</span><span class="na">7</span><span class="o">.</span><span class="na">25</span><span class="o">.</span><span class="na">jar</span>
+</span></span><span class="line"><span class="cl"><span class="o">:</span><span class="n">cp</span> <span class="o">/</span><span class="n">javarepl</span><span class="o">/</span><span class="n">nebula</span><span class="o">-</span><span class="n">java</span><span class="o">-</span><span class="n">3</span><span class="o">.</span><span class="na">0</span><span class="o">.</span><span class="na">0</span><span class="o">/</span><span class="n">client</span><span class="o">/</span><span class="n">target</span><span class="o">/</span><span class="n">dependency</span><span class="o">/</span><span class="n">commons</span><span class="o">-</span><span class="n">pool2</span><span class="o">-</span><span class="n">2</span><span class="o">.</span><span class="na">2</span><span class="o">.</span><span class="na">jar</span>
+</span></span><span class="line"><span class="cl"><span class="o">:</span><span class="n">cp</span> <span class="o">/</span><span class="n">javarepl</span><span class="o">/</span><span class="n">nebula</span><span class="o">-</span><span class="n">java</span><span class="o">-</span><span class="n">3</span><span class="o">.</span><span class="na">0</span><span class="o">.</span><span class="na">0</span><span class="o">/</span><span class="n">client</span><span class="o">/</span><span class="n">target</span><span class="o">/</span><span class="n">dependency</span><span class="o">/</span><span class="n">log4j</span><span class="o">-</span><span class="n">1</span><span class="o">.</span><span class="na">2</span><span class="o">.</span><span class="na">17</span><span class="o">.</span><span class="na">jar</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">com.alibaba.fastjson.JSON</span><span class="o">;</span>
 </span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">com.alibaba.fastjson.JSONObject</span><span class="o">;</span>
@@ -711,12 +714,101 @@
 <p>Picture Credit：<a href="https://unsplash.com/photos/0wIHsm2_1fc" target="_blank" rel="noopener noreffer">leunesmedia</a></p>
 </blockquote></div>
 
-        <div class="post-footer" id="post-footer">
+        
+
+
+<h2>相关内容</h2>
+<div class="related-container">
+    <div class="related-item-container">
+            <div class="related-image">
+                <a href="/vesoft-hackathon/"><img
+        class="lazyload"
+        data-src="/vesoft-hackathon/featured-image.webp"
+        data-srcset="/vesoft-hackathon/featured-image.webp, /vesoft-hackathon/featured-image.webp 1.5x, /vesoft-hackathon/featured-image.webp 2x"
+        data-sizes="auto"
+        alt="/vesoft-hackathon/featured-image.webp"
+        title="如何快速、即时、符合直觉地去处理 Nebula Java Client 中的数据解析？" height="200" width="400"></a>
+            </div><h2 class="related-title">
+                <a href="/vesoft-hackathon/">Vesoft Hackathon 2022 流水账</a>
+            </h2>
+            <a class="related-link" href="/vesoft-hackathon/">
+                阅读全文
+            </a>
+        </div>
+    <div class="related-item-container">
+            <div class="related-image">
+                <a href="/fraud-detection-with-nebulagraph/"><img
+        class="lazyload"
+        data-src="/fraud-detection-with-nebulagraph/featured-image.webp"
+        data-srcset="/fraud-detection-with-nebulagraph/featured-image.webp, /fraud-detection-with-nebulagraph/featured-image.webp 1.5x, /fraud-detection-with-nebulagraph/featured-image.webp 2x"
+        data-sizes="auto"
+        alt="/fraud-detection-with-nebulagraph/featured-image.webp"
+        title="如何快速、即时、符合直觉地去处理 Nebula Java Client 中的数据解析？" height="200" width="400"></a>
+            </div><h2 class="related-title">
+                <a href="/fraud-detection-with-nebulagraph/">基于 NebulaGraph 图数据库的欺诈检测方法与代码示例</a>
+            </h2>
+            <a class="related-link" href="/fraud-detection-with-nebulagraph/">
+                阅读全文
+            </a>
+        </div>
+    <div class="related-item-container">
+            <div class="related-image">
+                <a href="/spark-on-nebula-graph/"><img
+        class="lazyload"
+        data-src="/spark-on-nebula-graph/featured-image.webp"
+        data-srcset="/spark-on-nebula-graph/featured-image.webp, /spark-on-nebula-graph/featured-image.webp 1.5x, /spark-on-nebula-graph/featured-image.webp 2x"
+        data-sizes="auto"
+        alt="/spark-on-nebula-graph/featured-image.webp"
+        title="如何快速、即时、符合直觉地去处理 Nebula Java Client 中的数据解析？" height="200" width="400"></a>
+            </div><h2 class="related-title">
+                <a href="/spark-on-nebula-graph/">一文了解 Nebula Graph 上的 Spark 项目</a>
+            </h2>
+            <a class="related-link" href="/spark-on-nebula-graph/">
+                阅读全文
+            </a>
+        </div>
+    <div class="related-item-container">
+            <div class="related-image">
+                <a href="/nebula-graph-on-pi/"><img
+        class="lazyload"
+        data-src="/nebula-graph-on-pi/featured-image.webp"
+        data-srcset="/nebula-graph-on-pi/featured-image.webp, /nebula-graph-on-pi/featured-image.webp 1.5x, /nebula-graph-on-pi/featured-image.webp 2x"
+        data-sizes="auto"
+        alt="/nebula-graph-on-pi/featured-image.webp"
+        title="如何快速、即时、符合直觉地去处理 Nebula Java Client 中的数据解析？" height="200" width="400"></a>
+            </div><h2 class="related-title">
+                <a href="/nebula-graph-on-pi/">Nebula Graph on Pi</a>
+            </h2>
+            <a class="related-link" href="/nebula-graph-on-pi/">
+                阅读全文
+            </a>
+        </div>
+    <div class="related-item-container">
+            <div class="related-image">
+                <a href="/resolve-wordle/"><img
+        class="lazyload"
+        data-src="/resolve-wordle/featured-image.webp"
+        data-srcset="/resolve-wordle/featured-image.webp, /resolve-wordle/featured-image.webp 1.5x, /resolve-wordle/featured-image.webp 2x"
+        data-sizes="auto"
+        alt="/resolve-wordle/featured-image.webp"
+        title="如何快速、即时、符合直觉地去处理 Nebula Java Client 中的数据解析？" height="200" width="400"></a>
+            </div><h2 class="related-title">
+                <a href="/resolve-wordle/">图数据库体操：用 Nebula Graph 搭成语图谱解汉兜</a>
+            </h2>
+            <a class="related-link" href="/resolve-wordle/">
+                阅读全文
+            </a>
+        </div>
+    
+
+</div>
+
+<div class="post-footer" id="post-footer">
     <div class="post-info">
         <div class="post-info-line">
             <div class="post-info-mod">
-                <span>更新于 2021-12-14&nbsp;<a class="git-hash" href="github.com/siwei-io/siwei-io.github.io/commit/682ee0e1c7a9c7b75c389ccc202062991c9c2723" target="_blank" title="commit by wey-gu(1651790&#43;wey-gu@users.noreply.github.com) 682ee0e1c7a9c7b75c389ccc202062991c9c2723: py docker storage client guide" rel="noopener noreferrer">
-                                    <i class="fas fa-hashtag fa-fw"></i>682ee0e</a></span>
+                <span>更新于 2022-08-12&nbsp;<a class="git-hash" href="github.com/siwei-io/siwei-io.github.io/commit/575cce7d6821bd35188455bb20eefbba9d5b9deb" target="_blank" title="commit by wey-gu(1651790&#43;wey-gu@users.noreply.github.com) 575cce7d6821bd35188455bb20eefbba9d5b9deb: fixed java guide to 3.x" rel="noopener noreferrer">
+                                    <i class="fas fa-hashtag fa-fw"></i>575cce7</a></span>
             </div>
             <div class="post-info-license"></div>
         </div>
