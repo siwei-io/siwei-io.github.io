@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noodp" />
+    <title class="pjax-title">nGQL 简明教程 - siwei.io</title><meta name="Description" content="NebulaGraph 教程：一文入门图查询语句：nGQL。本文旨在让新手快速了解 nGQL，掌握方向，之后可以脚踩在地上借助文档写出任何心中的 NebulaGraph 图查询。"><meta property="og:title" content="nGQL 简明教程" />
+<meta property="og:description" content="NebulaGraph 教程：一文入门图查询语句：nGQL。本文旨在让新手快速了解 nGQL，掌握方向，之后可以脚踩在地上借助文档写出任何心中的 NebulaGraph 图查询。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://siwei.io/ngql-tutorial/" /><meta property="og:image" content="https://siwei.io/ngql-tutorial/featured-image-raw.webp"/><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2022-08-15T00:24:28+08:00" />
+<meta property="article:modified_time" content="2022-08-15T00:39:21+08:00" /><meta property="og:site_name" content="siwei.io" />
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://siwei.io/ngql-tutorial/featured-image-raw.webp"/>
+<meta name="twitter:title" content="nGQL 简明教程"/>
+<meta name="twitter:description" content="NebulaGraph 教程：一文入门图查询语句：nGQL。本文旨在让新手快速了解 nGQL，掌握方向，之后可以脚踩在地上借助文档写出任何心中的 NebulaGraph 图查询。"/>
+<meta name="application-name" content="siwei.io">
+<meta name="apple-mobile-web-app-title" content="siwei.io">
+
+<meta name="theme-color" content="#f8f8f8"><meta name="msapplication-TileColor" content="#da532c"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="manifest" href="/site.webmanifest"><link rel="canonical" href="https://siwei.io/ngql-tutorial/" /><link rel="prev" href="https://siwei.io/identity-resolution/" /><link rel="stylesheet" href="/lib/normalize/normalize.min.css"><link rel="stylesheet" href="/css/style.min.css"><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/fontawesome-free/all.min.css">
+        <noscript><link rel="stylesheet" href="/lib/fontawesome-free/all.min.css"></noscript><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/animate/animate.min.css">
+        <noscript><link rel="stylesheet" href="/lib/animate/animate.min.css"></noscript>
+    
+    
+    
+    <meta name="baidu-site-verification" content="code-4R67zl7SwH" /><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "nGQL 简明教程",
+        "inLanguage": "zh-CN",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "https:\/\/siwei.io\/ngql-tutorial\/"
+        },"image": ["https:\/\/siwei.io\/images\/site-feature-image.webp"],"genre": "posts","keywords": "Nebula Graph, nGQL, OpenCypher","wordcount":  2937 ,
+        "url": "https:\/\/siwei.io\/ngql-tutorial\/","datePublished": "2022-08-15T00:24:28+08:00","dateModified": "2022-08-15T00:39:21+08:00","publisher": {
+            "@type": "Organization",
+            "name": "Wey Gu","logo": "https:\/\/siwei.io\/images\/site-feature-image.webp"},"author": {
+                "@type": "Person",
+                "name": "Wey Gu"
+            },"description": "NebulaGraph 教程：一文入门图查询语句：nGQL。本文旨在让新手快速了解 nGQL，掌握方向，之后可以脚踩在地上借助文档写出任何心中的 NebulaGraph 图查询。"
+    }
+    </script></head>
+
+<body header-desktop="fixed" header-mobile="auto"><script type="text/javascript">
+        function setTheme(theme) {document.body.setAttribute('theme', theme); document.documentElement.style.setProperty('color-scheme', theme === 'light' ? 'light' : 'dark');}
+        function saveTheme(theme) {window.localStorage && localStorage.setItem('theme', theme);}
+        function getMeta(metaName) {const metas = document.getElementsByTagName('meta'); for (let i = 0; i < metas.length; i++) if (metas[i].getAttribute('name') === metaName) return metas[i]; return '';}
+        if (window.localStorage && localStorage.getItem('theme')) {let theme = localStorage.getItem('theme');theme === 'light' || theme === 'dark' || theme === 'black' ? setTheme(theme) : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light')); } else { if ('auto' === 'light' || 'auto' === 'dark' || 'auto' === 'black') setTheme('auto'), saveTheme('auto'); else saveTheme('auto'), window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light');}
+        let metaColors = {'light': '#f8f8f8','dark': '#252627','black': '#000000'}
+        getMeta('theme-color').content = metaColors[document.body.getAttribute('theme')];
+    </script>
+    <div id="back-to-top"></div>
+    <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/" title="siwei.io"><span class="header-title-pre"><i class="fas fa-code-branch"></i></span>siwei.io</a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="/about/"> 关于 </a><a class="menu-item" href="/projects/"> 项目 </a><a class="menu-item" href="/sketch-notes/"> 手绘 </a><a class="menu-item" href="/posts/"> 博客 </a><a class="menu-item" href="/talk/"> 演讲 </a><a class="menu-item" href="/cources/"> 课程 </a><a class="menu-item" href="https://vesoft.com/cn/careers/" rel="noopener noreffer" target="_blank"> 招聘 </a><a class="menu-item" href="/about/#%E8%81%94%E7%B3%BB%E6%88%91"> 联系 </a><a class="menu-item" href="/path/"> 学习路径 </a><span class="menu-item delimiter"></span><a href="#" onclick="return false;" class="menu-item language" title="选择语言">🌏 Chinese<i class="fas fa-chevron-right fa-fw"></i>
+                        <select class="language-select" title="Select Language" id="language-select-desktop" onchange="location = this.value;"><option value="/ngql-tutorial/" selected>🌏 Chinese</option></select>
+                    </a><span class="menu-item search" id="search-desktop">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-desktop">
+                        <a href="#" onclick="return false;" class="search-button search-toggle" id="search-toggle-desktop" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="#" onclick="return false;" class="search-button search-clear" id="search-clear-desktop" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-desktop">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </span><a href="#" onclick="return false;" class="menu-item theme-select" title="切换主题">
+                    <i class="fas fa-adjust fa-fw"></i>
+                    <select class="color-theme-select" id="theme-select-desktop" title="切换主题">
+                        <option value="light">浅色</option>
+                        <option value="dark">深色</option>
+                        <option value="black">黑色</option>
+                        <option value="auto">跟随系统</option>
+                    </select>
+                </a></div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="/" title="siwei.io"><span class="header-title-pre"><i class="fas fa-code-branch"></i></span>siwei.io</a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><div class="search-wrapper">
+                    <div class="search mobile" id="search-mobile">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-mobile">
+                        <a href="#" onclick="return false;" class="search-button search-toggle" id="search-toggle-mobile" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="#" onclick="return false;" class="search-button search-clear" id="search-clear-mobile" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-mobile">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </div>
+                    <a href="#" onclick="return false;" class="search-cancel" id="search-cancel-mobile">
+                        取消
+                    </a>
+                </div><a class="menu-item" href="/about/" title="">关于</a><a class="menu-item" href="/projects/" title="">项目</a><a class="menu-item" href="/sketch-notes/" title="">手绘</a><a class="menu-item" href="/posts/" title="">博客</a><a class="menu-item" href="/talk/" title="">演讲</a><a class="menu-item" href="/cources/" title="">课程</a><a class="menu-item" href="https://vesoft.com/cn/careers/" title="" rel="noopener noreffer" target="_blank">招聘</a><a class="menu-item" href="/about/#%E8%81%94%E7%B3%BB%E6%88%91" title="">联系</a><a class="menu-item" href="/path/" title="">学习路径</a><a href="#" onclick="return false;" class="menu-item theme-select" title="切换主题">
+                <i class="fas fa-adjust fa-fw"></i>
+                <select class="color-theme-select" id="theme-select-mobile" title="切换主题">
+                    <option value="light">浅色</option>
+                    <option value="dark">深色</option>
+                    <option value="black">黑色</option>
+                    <option value="auto">跟随系统</option>
+                </select>
+            </a><a href="#" onclick="return false;" class="menu-item" title="选择语言">🌏 Chinese<i class="fas fa-chevron-right fa-fw"></i>
+                    <select class="language-select" title="Select Language" onchange="location = this.value;"><option value="/ngql-tutorial/" selected>🌏 Chinese</option></select>
+                </a></div>
+    </div>
+</header>
+<div class="search-dropdown desktop">
+    <div id="search-dropdown-desktop"></div>
+</div>
+<div class="search-dropdown mobile">
+    <div id="search-dropdown-mobile"></div>
+</div>
+<main class="main">
+            <div class="container"><div class="toc" id="toc-auto">
+        <h2 class="toc-title">目录</h2>
+        <div class="toc-content always-active" id="toc-content-auto"><nav id="TableOfContents">
+  <ol>
+    <li><a href="#视频">视频</a></li>
+    <li><a href="#开始之前">开始之前</a>
+      <ol>
+        <li><a href="#教程目标">教程目标</a></li>
+        <li><a href="#ngql-是什么">nGQL 是什么</a></li>
+        <li><a href="#手绘-cheatsheet">手绘 Cheatsheet</a></li>
+      </ol>
+    </li>
+    <li><a href="#nebulagraph-独有-dql">NebulaGraph 独有 DQL</a>
+      <ol>
+        <li><a href="#图拓展-go">图拓展 GO</a></li>
+        <li><a href="#lookup-基于索引反查-id">LOOKUP 基于索引反查 ID</a>
+          <ol>
+            <li>
+              <ol>
+                <li>
+                  <ol>
+                    <li><a href="#为什么-lookup-需要索引">为什么 <code>LOOKUP</code> 需要索引？</a></li>
+                  </ol>
+                </li>
+              </ol>
+            </li>
+          </ol>
+        </li>
+        <li><a href="#fetch-prop-获取属性">FETCH PROP 获取属性</a></li>
+        <li><a href="#路径查找-find-path">路径查找 FIND PATH</a></li>
+        <li><a href="#单点子图-get-subgraph">单点子图 GET SUBGRAPH</a></li>
+        <li><a href="#利用管道和属性引用符">利用管道和属性引用符</a></li>
+        <li><a href="#nebulagraph-opencypher-dql">NebulaGraph OpenCypher DQL</a></li>
+      </ol>
+    </li>
+  </ol>
+</nav></div>
+    </div><script>document.getElementsByTagName("main")[0].setAttribute("pageStyle", "normal")</script><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC", "true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">nGQL 简明教程</h1><div class="post-meta">
+            <div class="post-meta-line">
+                <span class="post-author"><i class="author fas fa-user-circle fa-fw"></i><a href="https://siwei.io" title="Author" target="_blank" rel="noopener noreffer author" class="author">Wey Gu</a>
+                </span>&nbsp;<span class="post-category">收录于 </span>&nbsp;<span class="post-category">类别 <a href="/categories/nebula-graph/"><i class="far fa-folder fa-fw"></i>Nebula Graph</a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime="2022-08-15">2022-08-15</time>&nbsp;<i class="far fa-edit fa-fw"></i>&nbsp;<time datetime="2022-08-15">2022-08-15</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;约 2937 字&nbsp;
+                <i class="far fa-clock fa-fw"></i>&nbsp;预计阅读 6 分钟&nbsp;</div>
+        </div><div class="featured-image"><img
+        class="lazyload"
+        data-src="/ngql-tutorial/featured-image.webp"
+        data-srcset="/ngql-tutorial/featured-image.webp, /ngql-tutorial/featured-image.webp 1.5x, /ngql-tutorial/featured-image.webp 2x"
+        data-sizes="auto"
+        alt="/ngql-tutorial/featured-image.webp"
+        title="NebulaGraph 教程：一文入门图查询语句：nGQL。本文旨在让新手快速了解 nGQL，掌握方向，之后可以脚踩在地上借助文档写出任何心中的 NebulaGraph 图查询。" height="884" width="1740"></div><div class="details toc" id="toc-static"  kept="">
+                <div class="details-summary toc-title">
+                    <span>目录</span>
+                    <span><i class="details-icon fas fa-angle-right"></i></span>
+                </div>
+                <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ol>
+    <li><a href="#视频">视频</a></li>
+    <li><a href="#开始之前">开始之前</a>
+      <ol>
+        <li><a href="#教程目标">教程目标</a></li>
+        <li><a href="#ngql-是什么">nGQL 是什么</a></li>
+        <li><a href="#手绘-cheatsheet">手绘 Cheatsheet</a></li>
+      </ol>
+    </li>
+    <li><a href="#nebulagraph-独有-dql">NebulaGraph 独有 DQL</a>
+      <ol>
+        <li><a href="#图拓展-go">图拓展 GO</a></li>
+        <li><a href="#lookup-基于索引反查-id">LOOKUP 基于索引反查 ID</a>
+          <ol>
+            <li>
+              <ol>
+                <li>
+                  <ol>
+                    <li><a href="#为什么-lookup-需要索引">为什么 <code>LOOKUP</code> 需要索引？</a></li>
+                  </ol>
+                </li>
+              </ol>
+            </li>
+          </ol>
+        </li>
+        <li><a href="#fetch-prop-获取属性">FETCH PROP 获取属性</a></li>
+        <li><a href="#路径查找-find-path">路径查找 FIND PATH</a></li>
+        <li><a href="#单点子图-get-subgraph">单点子图 GET SUBGRAPH</a></li>
+        <li><a href="#利用管道和属性引用符">利用管道和属性引用符</a></li>
+        <li><a href="#nebulagraph-opencypher-dql">NebulaGraph OpenCypher DQL</a></li>
+      </ol>
+    </li>
+  </ol>
+</nav></div>
+            </div><div class="content" id="content"><blockquote>
+<p>本文旨在让新手快速了解 nGQL，掌握方向，之后可以脚踩在地上借助文档写出任何心中的 NebulaGraph 图查询。</p>
+</blockquote>
+<blockquote>
+<p>本文配套视频教程还在录制中，敬请期待。</p>
+</blockquote>
+<h2 id="视频" class="headerLink">
+    <a href="#%e8%a7%86%e9%a2%91" class="header-mark"></a>1 视频</h2><p>TBD</p>
+<h2 id="开始之前" class="headerLink">
+    <a href="#%e5%bc%80%e5%a7%8b%e4%b9%8b%e5%89%8d" class="header-mark"></a>2 开始之前</h2><p>本文假设你已经在文档看过<a href="https://docs.nebula-graph.com.cn/3.2.0/2.quick-start/1.quick-start-workflow/" target="_blank" rel="noopener noreffer">快速入门流程</a>，部署、连接过 NebulaGraph，并且看过了<a href="https://docs.nebula-graph.com.cn/3.2.0/2.quick-start/4.nebula-graph-crud/" target="_blank" rel="noopener noreffer">常用命令</a>。如果您还没看过这两个文档，强烈建议先快速过一遍。</p>
+<h3 id="教程目标" class="headerLink">
+    <a href="#%e6%95%99%e7%a8%8b%e7%9b%ae%e6%a0%87" class="header-mark"></a>2.1 教程目标</h3><p>本教程目的在于让新手大概知道了 NebulaGraph 的查询语句后，解决“不知道什么样的查询应该用什么语句”的问题。</p>
+<h3 id="ngql-是什么" class="headerLink">
+    <a href="#ngql-%e6%98%af%e4%bb%80%e4%b9%88" class="header-mark"></a>2.2 nGQL 是什么</h3><p>我们先强调一下概念：nGQL 是 NebulaGraph Graph Query Language 的缩写，它表示 NebulaGraph 的查询语言，而 nGQL 的语句可以不严谨地分为这几部分：</p>
+<ul>
+<li>NebulaGraph 独有 DQL 查询语句（Data Query Language）</li>
+<li>NebulaGraph OpenCypher DQL</li>
+<li>NebulaGraph DML 写语句（Data Mutation Language）</li>
+<li>NebulaGraph DDL Schema 语句（Data Defination Language)</li>
+<li>NebulaGraph Admin Queries 管理语句</li>
+</ul>
+<p>这里，作为简明教程一把梭，我们只关注前两个部分，后边的内容会在 Part 2 中介绍。</p>
+<h3 id="手绘-cheatsheet" class="headerLink">
+    <a href="#%e6%89%8b%e7%bb%98-cheatsheet" class="header-mark"></a>2.3 手绘 Cheatsheet</h3><blockquote>
+<p>大家可以报错这份单页手绘，一次了解所有 nGQL 的用法。</p>
+</blockquote>
+<p>TBD</p>
+<h2 id="nebulagraph-独有-dql" class="headerLink">
+    <a href="#nebulagraph-%e7%8b%ac%e6%9c%89-dql" class="header-mark"></a>3 NebulaGraph 独有 DQL</h2><p>NebulaGraph 的独有读查询语句的设计非常简介，对初学者非常友好，结合了管道的概念，做到了只涉及了几个关键词就可以描述大多数图查询模式。</p>
+<p>用一句话描述来说，nGQL 的独有 DQL 一共分成四类语句：</p>
+<ul>
+<li>图拓展：<code>GO</code></li>
+<li>索引反查：<code>LOOKUP</code></li>
+<li>取属性：<code>FETCH PROP</code></li>
+<li>路径与子图：<code>FIND PATH</code> 与 <code>GET SUBGRAPH</code></li>
+</ul>
+<p>和几个特别的元素</p>
+<ul>
+<li>
+<p>管道：<code>|</code></p>
+</li>
+<li>
+<p>引用属性: <code>$</code> 开头的几个符号，用来描述一些特定的上下文</p>
+</li>
+</ul>
+<h3 id="图拓展-go" class="headerLink">
+    <a href="#%e5%9b%be%e6%8b%93%e5%b1%95-go" class="header-mark"></a>3.1 图拓展 GO</h3><p><code>GO</code> 的语义非常直观：从<strong>给定的起点</strong>，向外拓展，按需<strong>返回终点</strong>、起点的信息。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="o">#</span><span class="w"> </span><span class="err">图拓展</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">GO</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="n">Steps</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="s2">&#34;player102&#34;</span><span class="w"> </span><span class="n">OVER</span><span class="w"> </span><span class="n">follow</span><span class="w"> </span><span class="n">YIELD</span><span class="w"> </span><span class="n">dst</span><span class="p">(</span><span class="n">edge</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">   </span><span class="err">───┬───</span><span class="w">      </span><span class="err">───┬───────</span><span class="w">      </span><span class="err">─┬────</span><span class="w">       </span><span class="err">──┬──────</span><span class="w"> 
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="err">│</span><span class="w">            </span><span class="err">│</span><span class="w">              </span><span class="err">│</span><span class="w">   </span><span class="err">┌─────────┘</span><span class="w">       
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="err">│</span><span class="w">            </span><span class="err">│</span><span class="w">              </span><span class="err">│</span><span class="w">   </span><span class="err">│</span><span class="w">                 
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="err">│</span><span class="w">            </span><span class="err">│</span><span class="w">              </span><span class="err">│</span><span class="w">   </span><span class="err">└──</span><span class="w"> </span><span class="err">返回最后一跳边的终点</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="err">│</span><span class="w">            </span><span class="err">│</span><span class="w">              </span><span class="err">│</span><span class="w">                     
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="err">│</span><span class="w">            </span><span class="err">│</span><span class="w">              </span><span class="err">└──────</span><span class="w"> </span><span class="err">从</span><span class="w"> </span><span class="n">follow</span><span class="w"> </span><span class="err">这个边</span><span class="p">[</span><span class="err">出方向</span><span class="p">]</span><span class="err">探索</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="err">│</span><span class="w">            </span><span class="err">│</span><span class="w">                                    
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="err">│</span><span class="w">            </span><span class="err">└─────────────────────</span><span class="w"> </span><span class="err">起点是</span><span class="w"> </span><span class="s2">&#34;player102&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="err">│</span><span class="w">                                                 
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="err">└──────────────────────────────────</span><span class="w"> </span><span class="err">探索</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="err">步</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>参考 <a href="https://docs.nebula-graph.com.cn/3.2.0/3.ngql-guide/7.general-query-statements/3.go/" target="_blank" rel="noopener noreffer">GO 语句文档</a>，了解如何：</p>
+<ul>
+<li>指定反方向拓展、双向拓展</li>
+<li>指定可变跳数拓展</li>
+<li>基于所有类型边拓展</li>
+<li>返回其他信息</li>
+</ul>
+</blockquote>
+<h3 id="lookup-基于索引反查-id" class="headerLink">
+    <a href="#lookup-%e5%9f%ba%e4%ba%8e%e7%b4%a2%e5%bc%95%e5%8f%8d%e6%9f%a5-id" class="header-mark"></a>3.2 LOOKUP 基于索引反查 ID</h3><p>和 <code>GO</code> 为从已知的点出发相反，<code>LOOKUP</code> 是一个类似于 SQL 里 <code>SELECT</code> 语义的关键字，它实际的作用也类似与关系型数据库中的扫表。</p>
+<p><code>LOOKUP</code> 需要手动明确建立相应 TAG、边类型上索引才能允许相应的查询。</p>
+<h6 id="为什么-lookup-需要索引" class="headerLink">
+    <a href="#%e4%b8%ba%e4%bb%80%e4%b9%88-lookup-%e9%9c%80%e8%a6%81%e7%b4%a2%e5%bc%95" class="header-mark"></a>3.2.0.0.1 为什么 <code>LOOKUP</code> 需要索引？</h6><p>因为 NebulaGraph 中的数据默认是按照邻接表的形式存储，在分布式设计中，扫描一个类型的点、边是非常昂贵的，所以它被默认禁止了。而创建相应的索引类似于增加了类似于表结构数据库的排序数据，可以用来做类似于 <code>SELECT</code> 的查询。</p>
+<p>创建索引的代价是什么（增加写入负担）？索引会加速读么（不会，它是提供了 LOOKUP 的可能性，原生图的查询不需要索引加速）？等等更详细的问题请参阅我之前的<a href="https://www.siwei.io/nebula-index-explained/" target="_blank" rel="noopener noreffer">索引详解文章</a>。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="o">#</span><span class="w"> </span><span class="err">索引反查</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">LOOKUP</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">player</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">player</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&#34;Tony Parker&#34;</span><span class="w"> </span><span class="n">YIELD</span><span class="w"> </span><span class="n">id</span><span class="p">(</span><span class="n">vertex</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="err">──┬───</span><span class="w">  </span><span class="err">──────┬──────────────────────────</span><span class="w">  </span><span class="err">──┬──────</span><span class="w">       
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="err">│</span><span class="w">           </span><span class="err">│</span><span class="w">          </span><span class="err">┌───────────────────┘</span><span class="w">             
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="err">│</span><span class="w">           </span><span class="err">│</span><span class="w">          </span><span class="err">│</span><span class="w">                                 
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="err">│</span><span class="w">           </span><span class="err">│</span><span class="w">          </span><span class="err">└────────────</span><span class="w"> </span><span class="err">返回查到点的</span><span class="w"> </span><span class="n">VID</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="err">│</span><span class="w">           </span><span class="err">│</span><span class="w">                                            
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="err">│</span><span class="w">           </span><span class="err">└───────────────────────</span><span class="w"> </span><span class="err">过滤条件是属性</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="err">的值</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="err">│</span><span class="w">                                                        
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="err">└───────────────────────────────────</span><span class="w"> </span><span class="err">根据点的类别</span><span class="o">/</span><span class="n">TAG</span><span class="w"> </span><span class="n">player</span><span class="w"> </span><span class="err">查询</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>进一步参考 <a href="https://docs.nebula-graph.com.cn/3.2.0/3.ngql-guide/7.general-query-statements/5.lookup/" target="_blank" rel="noopener noreffer">LOOKUP 语句文档</a>，了解如何：</p>
+<ul>
+<li>返回属性</li>
+<li>根据边的类型查询边</li>
+<li>了解 LOOKUP 查询的前提、<a href="https://docs.nebula-graph.com.cn/3.2.0/3.ngql-guide/14.native-index-statements/" target="_blank" rel="noopener noreffer">索引</a>，<a href="https://www.siwei.io/nebula-index-explained/" target="_blank" rel="noopener noreffer">索引详解</a></li>
+</ul>
+</blockquote>
+<h3 id="fetch-prop-获取属性" class="headerLink">
+    <a href="#fetch-prop-%e8%8e%b7%e5%8f%96%e5%b1%9e%e6%80%a7" class="header-mark"></a>3.3 FETCH PROP 获取属性</h3><p>如字面意思，如果我们知道一个点、边的 ID，想要获取它上边的属性，这时候我们要用 <code>FETCH PROP</code> 而非 <code>LOOKUP</code>。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="o">#</span><span class="w"> </span><span class="err">取属性</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">FETCH</span><span class="w"> </span><span class="n">PROP</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">player</span><span class="w"> </span><span class="s2">&#34;player100&#34;</span><span class="w"> </span><span class="n">YIELD</span><span class="w"> </span><span class="n">properties</span><span class="p">(</span><span class="n">vertex</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">              </span><span class="err">──┬───</span><span class="w">  </span><span class="err">────┬─────</span><span class="w">       </span><span class="err">─────────┬────────</span><span class="w"> 
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="err">│</span><span class="w">         </span><span class="err">│</span><span class="w">         </span><span class="err">┌───────────┘</span><span class="w">         
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="err">│</span><span class="w">         </span><span class="err">│</span><span class="w">         </span><span class="err">│</span><span class="w">                     
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="err">│</span><span class="w">         </span><span class="err">│</span><span class="w">         </span><span class="err">└───────</span><span class="w"> </span><span class="err">返回点的</span><span class="w"> </span><span class="n">player</span><span class="w"> </span><span class="n">TAG</span><span class="w"> </span><span class="err">下所有属性</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="err">│</span><span class="w">         </span><span class="err">│</span><span class="w">                               
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="err">│</span><span class="w">         </span><span class="err">└─────────────────</span><span class="w"> </span><span class="err">从</span><span class="w"> </span><span class="s2">&#34;player100&#34;</span><span class="w"> </span><span class="err">这个点获取</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="err">│</span><span class="w">                                         
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="err">└───────────────────────────</span><span class="w"> </span><span class="err">获取</span><span class="w"> </span><span class="n">player</span><span class="w"> </span><span class="err">这个</span><span class="w"> </span><span class="n">TAG</span><span class="w"> </span><span class="err">下的属性</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>进一步参考 <a href="https://docs.nebula-graph.com.cn/3.2.0/3.ngql-guide/7.general-query-statements/4.fetch/" target="_blank" rel="noopener noreffer">FETCH PROP 语句文档</a>，了解如何：</p>
+<ul>
+<li>返回某一个属性</li>
+<li>获取给定边的属性</li>
+</ul>
+</blockquote>
+<h3 id="路径查找-find-path" class="headerLink">
+    <a href="#%e8%b7%af%e5%be%84%e6%9f%a5%e6%89%be-find-path" class="header-mark"></a>3.4 路径查找 FIND PATH</h3><p>如果我们从给定的起点、终点中，找到之间的所有路径，一定要用 <code>FIND PATH</code></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="o">#</span><span class="w"> </span><span class="err">起点终点间路径</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">FIND</span><span class="w"> </span><span class="n">SHORTEST</span><span class="w"> </span><span class="n">PATH</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="s2">&#34;player102&#34;</span><span class="w"> </span><span class="k">TO</span><span class="w"> </span><span class="s2">&#34;team204&#34;</span><span class="w"> </span><span class="n">OVER</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="err">\</span><span class="w">   
+</span></span></span><span class="line"><span class="cl"><span class="w">     </span><span class="err">──┬─────</span><span class="w">            </span><span class="err">───────────┬───────────</span><span class="w"> </span><span class="err">───┬───</span><span class="w">    
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">YIELD</span><span class="err">│</span><span class="n">path</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">p</span><span class="p">;</span><span class="w"> </span><span class="err">┌────────────────┘</span><span class="w">               </span><span class="err">│</span><span class="w">       
+</span></span></span><span class="line"><span class="cl"><span class="w">       </span><span class="err">│────┬────</span><span class="w">  </span><span class="err">│</span><span class="w">     </span><span class="err">┌──────────────────────────┘</span><span class="w">       
+</span></span></span><span class="line"><span class="cl"><span class="w">       </span><span class="err">│</span><span class="w">    </span><span class="err">│</span><span class="w">      </span><span class="err">│</span><span class="w">     </span><span class="err">│</span><span class="w">                                  
+</span></span></span><span class="line"><span class="cl"><span class="w">       </span><span class="err">│</span><span class="w">    </span><span class="err">│</span><span class="w">      </span><span class="err">│</span><span class="w">     </span><span class="err">└─────────</span><span class="w"> </span><span class="err">经由所有类型的边出向探索</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">       </span><span class="err">│</span><span class="w">    </span><span class="err">│</span><span class="w">      </span><span class="err">│</span><span class="w">                                        
+</span></span></span><span class="line"><span class="cl"><span class="w">       </span><span class="err">│</span><span class="w">    </span><span class="err">│</span><span class="w">      </span><span class="err">└───────────────</span><span class="w"> </span><span class="err">从给定的起点、终点</span><span class="w"> </span><span class="n">VID</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">       </span><span class="err">│</span><span class="w">    </span><span class="err">│</span><span class="w">                                               
+</span></span></span><span class="line"><span class="cl"><span class="w">       </span><span class="err">│</span><span class="w">    </span><span class="err">└──────────────────────</span><span class="w"> </span><span class="err">返回路径为</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="err">列</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">       </span><span class="err">│</span><span class="w">                                                    
+</span></span></span><span class="line"><span class="cl"><span class="w">       </span><span class="err">└───────────────────────────</span><span class="w"> </span><span class="err">查找最短路径</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>进一步参考 <a href="https://docs.nebula-graph.com.cn/3.2.0/3.ngql-guide/16.subgraph-and-path/2.find-path/" target="_blank" rel="noopener noreffer">FIND PATH 语句文档</a>，了解如何：</p>
+<ul>
+<li>返回路径中的属性</li>
+<li>设定拓展方向</li>
+</ul>
+</blockquote>
+<h3 id="单点子图-get-subgraph" class="headerLink">
+    <a href="#%e5%8d%95%e7%82%b9%e5%ad%90%e5%9b%be-get-subgraph" class="header-mark"></a>3.5 单点子图 GET SUBGRAPH</h3><p>和路径查找类似，但是我们只给定一个起点和拓展部署，用 <code>GET SUBGRAPH</code> 可以帮我们获取同样的 BFS 出去的子图</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="o">#</span><span class="w"> </span><span class="err">单点</span><span class="w"> </span><span class="n">BFS</span><span class="w"> </span><span class="err">子图</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">GET</span><span class="w"> </span><span class="n">SUBGRAPH</span><span class="w"> </span><span class="mi">5</span><span class="w"> </span><span class="n">STEPS</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="s2">&#34;player101&#34;</span><span class="w"> </span><span class="err">\</span><span class="w">           
+</span></span></span><span class="line"><span class="cl"><span class="w">             </span><span class="err">───┬───</span><span class="w"> </span><span class="err">─────┬──────────</span><span class="w">             
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">YIELD</span><span class="w"> </span><span class="n">VERTICES</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">nodes</span><span class="p">,</span><span class="w"> </span><span class="n">EDGES</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">relationships</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="err">────┬───┼─────────┼───────────────────────</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">   </span><span class="err">┌────────┘</span><span class="w">                                     
+</span></span></span><span class="line"><span class="cl"><span class="w">   </span><span class="err">│</span><span class="w">            </span><span class="err">│</span><span class="w">         </span><span class="err">└───────</span><span class="w"> </span><span class="err">从</span><span class="w"> </span><span class="s2">&#34;player101&#34;</span><span class="w"> </span><span class="err">开始触发</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">   </span><span class="err">│</span><span class="w">                                              
+</span></span></span><span class="line"><span class="cl"><span class="w">   </span><span class="err">│</span><span class="w">            </span><span class="err">└─────────────────</span><span class="w"> </span><span class="err">获取</span><span class="w"> </span><span class="mi">5</span><span class="w"> </span><span class="err">步的探索</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">   </span><span class="err">│</span><span class="w">                                              
+</span></span></span><span class="line"><span class="cl"><span class="w">   </span><span class="err">└──────────────────────────────</span><span class="w"> </span><span class="err">返回所有的点、边</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>进一步参考 <a href="https://docs.nebula-graph.com.cn/3.2.0/3.ngql-guide/16.subgraph-and-path/1.get-subgraph/" target="_blank" rel="noopener noreffer">GET SUBGRAPH 语句文档</a>，了解如何：</p>
+<ul>
+<li>返回带有属性的点、边</li>
+<li>设定拓展方向</li>
+</ul>
+</blockquote>
+<h3 id="利用管道和属性引用符" class="headerLink">
+    <a href="#%e5%88%a9%e7%94%a8%e7%ae%a1%e9%81%93%e5%92%8c%e5%b1%9e%e6%80%a7%e5%bc%95%e7%94%a8%e7%ac%a6" class="header-mark"></a>3.6 利用管道和属性引用符</h3><p>NebulaGraph 的管道设计和 Unix-Shell 的设计很像，可以将简单的几种语句结合起来，有强大的表达力。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="o">#</span><span class="w"> </span><span class="err">使用通道</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">GO</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="s2">&#34;player100&#34;</span><span class="w"> </span><span class="n">OVER</span><span class="w"> </span><span class="n">follow</span><span class="w"> </span><span class="n">YIELD</span><span class="w"> </span><span class="n">dst</span><span class="p">(</span><span class="n">edge</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">did</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="err">\</span><span class="w">  
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="err">─────┬────────────────────────────────────────────</span><span class="w"> </span><span class="err">─┬─</span><span class="w">   
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">GO</span><span class="w"> </span><span class="k">FROM</span><span class="err">│$</span><span class="o">-</span><span class="p">.</span><span class="n">did</span><span class="w"> </span><span class="n">OVER</span><span class="w"> </span><span class="n">follow</span><span class="w"> </span><span class="n">YIELD</span><span class="w"> </span><span class="n">dst</span><span class="p">(</span><span class="n">edge</span><span class="p">);</span><span class="w">           </span><span class="err">│</span><span class="w">    
+</span></span></span><span class="line"><span class="cl"><span class="w">         </span><span class="err">│────┬──</span><span class="w">     </span><span class="err">┌─────────────────────────────────┘</span><span class="w">    
+</span></span></span><span class="line"><span class="cl"><span class="w">         </span><span class="err">│</span><span class="w">    </span><span class="err">│</span><span class="w">       </span><span class="err">│</span><span class="w">                                      
+</span></span></span><span class="line"><span class="cl"><span class="w">         </span><span class="err">│</span><span class="w">    </span><span class="err">│</span><span class="w">       </span><span class="err">└────────</span><span class="w"> </span><span class="err">管道将左边的</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="err">输出作为右边语句输入</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">         </span><span class="err">│</span><span class="w">    </span><span class="err">│</span><span class="w">                                              
+</span></span></span><span class="line"><span class="cl"><span class="w">         </span><span class="err">│</span><span class="w">    </span><span class="err">└────────────────</span><span class="w"> </span><span class="err">从管道左边的</span><span class="w"> </span><span class="n">did</span><span class="w"> </span><span class="err">属性开始探索</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">         </span><span class="err">│</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">         </span><span class="err">└─────────────────────</span><span class="w"> </span><span class="err">第一个查询语句</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>进一步参考 <a href="https://docs.nebula-graph.com.cn/3.2.0/3.ngql-guide/5.operators/5.property-reference/" target="_blank" rel="noopener noreffer">引用属性文档</a>、<a href="https://docs.nebula-graph.com.cn/3.2.0/3.ngql-guide/5.operators/4.pipe/" target="_blank" rel="noopener noreffer">管道文档</a>了解：</p>
+<ul>
+<li>更多属性引用定义</li>
+<li>更多例子</li>
+<li>结合 LOOKUP, GO, FETCH 的语句</li>
+</ul>
+</blockquote>
+<p>除了以上的集中表达之外，NebulaGraph 独有查询语句还有聚合的表达参考 <a href="https://docs.nebula-graph.com.cn/3.2.0/3.ngql-guide/8.clauses-and-options/group-by/" target="_blank" rel="noopener noreffer">GROUP-BY</a>，另外在文档里还有一个 <a href="https://docs.nebula-graph.com.cn/3.2.0/2.quick-start/6.cheatsheet-for-ngql-command/" target="_blank" rel="noopener noreffer">Cheatsheet</a> 供大家查询一些复杂一点查询的例子。</p>
+<h3 id="nebulagraph-opencypher-dql" class="headerLink">
+    <a href="#nebulagraph-opencypher-dql" class="header-mark"></a>3.7 NebulaGraph OpenCypher DQL</h3><p>从 2.0 起，OpenCypher 的 <code>MATCH</code> 语句也被 NebulaGraph 原生支持了，虽然这里是一个方言（有一些细节差异）。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">MATCH &lt;pattern&gt; [&lt;clause_1&gt;]  RETURN &lt;output&gt;  [&lt;clause_2&gt;];
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>MATCH 的基本表达是以 <code>(v:tag_a)</code> 包裹的点 <code>--&gt;</code> 或者 <code>&lt;-[:edge_type_1]-</code> 表达的边组成的模式，与 <code>RETURN</code> 表达的输出。</p>
+<p>如果您从 Cypher 的查询语句入门图数据库，可以从下边几个例子了解到几个 NebulaGraph 里的细节差异：</p>
+<ul>
+<li>增加了 <code>WHERE id(v) == &quot;foo&quot;</code> 的表达</li>
+<li><code>==</code> 表达相等判断而不是 <code>=</code></li>
+<li>点的属性表达需要填写 TAG，例如 <code>v3.player.name</code> 而不是 <code>v3.name</code></li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">MATCH (v:player{name:&#34;Tim Duncan&#34;})--&gt;(v2)&lt;--(v3) \
+</span></span><span class="line"><span class="cl">    RETURN v3.player.name AS Name;
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">MATCH (v:player) \
+</span></span><span class="line"><span class="cl">    WHERE not (v)--() \
+</span></span><span class="line"><span class="cl">    RETURN v;
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">MATCH (v:player)--(v2) \
+</span></span><span class="line"><span class="cl">    WHERE id(v2) IN [&#34;player101&#34;, &#34;player102&#34;] \
+</span></span><span class="line"><span class="cl">    RETURN v;
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">MATCH (m)-[]-&gt;(n) WHERE id(m)==&#34;player100&#34; \
+</span></span><span class="line"><span class="cl">OPTIONAL MATCH (n)-[]-&gt;(l) WHERE id(n)==&#34;player125&#34; \
+</span></span><span class="line"><span class="cl">    RETURN id(m),id(n),id(l);
+</span></span></code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>进一步参考 <a href="https://docs.nebula-graph.com.cn/3.2.0/3.ngql-guide/7.general-query-statements/2.match/" target="_blank" rel="noopener noreffer">MATCH 文档</a>了解：</p>
+</blockquote>
+<ul>
+<li>更多例子</li>
+<li>可变跳数的 MATCH 表达</li>
+<li>多 MATCH</li>
+<li>OPTIONAL MATCH</li>
+</ul>
+<blockquote>
+<p>题图版权：DALL·E Open-AI，<a href="./featured-image-raw.webp" rel="">原图</a></p>
+<p>Featured image was generated with key words: learning spells of the nebula magic, with DALL·E Open-AI.</p>
+</blockquote></div>
+
+        
+
+
+<h2>相关内容</h2>
+<div class="related-container">
+    <div class="related-item-container">
+            <div class="related-image">
+                <a href="/identity-resolution/"><img
+        class="lazyload"
+        data-src="/identity-resolution/featured-image.webp"
+        data-srcset="/identity-resolution/featured-image.webp, /identity-resolution/featured-image.webp 1.5x, /identity-resolution/featured-image.webp 2x"
+        data-sizes="auto"
+        alt="/identity-resolution/featured-image.webp"
+        title="NebulaGraph 教程：一文入门图查询语句：nGQL。本文旨在让新手快速了解 nGQL，掌握方向，之后可以脚踩在地上借助文档写出任何心中的 NebulaGraph 图查询。" height="200" width="400"></a>
+            </div><h2 class="related-title">
+                <a href="/identity-resolution/">基于 NebulaGraph 图数据库的 ID Resolution 方法与代码示例</a>
+            </h2>
+        </div>
+    <div class="related-item-container">
+            <div class="related-image">
+                <a href="/vesoft-hackathon/"><img
+        class="lazyload"
+        data-src="/vesoft-hackathon/featured-image.webp"
+        data-srcset="/vesoft-hackathon/featured-image.webp, /vesoft-hackathon/featured-image.webp 1.5x, /vesoft-hackathon/featured-image.webp 2x"
+        data-sizes="auto"
+        alt="/vesoft-hackathon/featured-image.webp"
+        title="NebulaGraph 教程：一文入门图查询语句：nGQL。本文旨在让新手快速了解 nGQL，掌握方向，之后可以脚踩在地上借助文档写出任何心中的 NebulaGraph 图查询。" height="200" width="400"></a>
+            </div><h2 class="related-title">
+                <a href="/vesoft-hackathon/">Vesoft Hackathon 2022 流水账</a>
+            </h2>
+        </div>
+    <div class="related-item-container">
+            <div class="related-image">
+                <a href="/fraud-detection-with-nebulagraph/"><img
+        class="lazyload"
+        data-src="/fraud-detection-with-nebulagraph/featured-image.webp"
+        data-srcset="/fraud-detection-with-nebulagraph/featured-image.webp, /fraud-detection-with-nebulagraph/featured-image.webp 1.5x, /fraud-detection-with-nebulagraph/featured-image.webp 2x"
+        data-sizes="auto"
+        alt="/fraud-detection-with-nebulagraph/featured-image.webp"
+        title="NebulaGraph 教程：一文入门图查询语句：nGQL。本文旨在让新手快速了解 nGQL，掌握方向，之后可以脚踩在地上借助文档写出任何心中的 NebulaGraph 图查询。" height="200" width="400"></a>
+            </div><h2 class="related-title">
+                <a href="/fraud-detection-with-nebulagraph/">基于 NebulaGraph 图数据库的欺诈检测方法与代码示例</a>
+            </h2>
+        </div>
+    <div class="related-item-container">
+            <div class="related-image">
+                <a href="/spark-on-nebula-graph/"><img
+        class="lazyload"
+        data-src="/spark-on-nebula-graph/featured-image.webp"
+        data-srcset="/spark-on-nebula-graph/featured-image.webp, /spark-on-nebula-graph/featured-image.webp 1.5x, /spark-on-nebula-graph/featured-image.webp 2x"
+        data-sizes="auto"
+        alt="/spark-on-nebula-graph/featured-image.webp"
+        title="NebulaGraph 教程：一文入门图查询语句：nGQL。本文旨在让新手快速了解 nGQL，掌握方向，之后可以脚踩在地上借助文档写出任何心中的 NebulaGraph 图查询。" height="200" width="400"></a>
+            </div><h2 class="related-title">
+                <a href="/spark-on-nebula-graph/">一文了解 Nebula Graph 上的 Spark 项目</a>
+            </h2>
+        </div>
+    <div class="related-item-container">
+            <div class="related-image">
+                <a href="/nebula-graph-on-pi/"><img
+        class="lazyload"
+        data-src="/nebula-graph-on-pi/featured-image.webp"
+        data-srcset="/nebula-graph-on-pi/featured-image.webp, /nebula-graph-on-pi/featured-image.webp 1.5x, /nebula-graph-on-pi/featured-image.webp 2x"
+        data-sizes="auto"
+        alt="/nebula-graph-on-pi/featured-image.webp"
+        title="NebulaGraph 教程：一文入门图查询语句：nGQL。本文旨在让新手快速了解 nGQL，掌握方向，之后可以脚踩在地上借助文档写出任何心中的 NebulaGraph 图查询。" height="200" width="400"></a>
+            </div><h2 class="related-title">
+                <a href="/nebula-graph-on-pi/">Nebula Graph on Pi</a>
+            </h2>
+        </div>
+    
+
+</div>
+
+<div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>更新于 2022-08-15&nbsp;<a class="git-hash" href="github.com/siwei-io/siwei-io.github.io/commit/8028bbf6bbab4c76bd8825e08f3511b78618ed69" target="_blank" title="commit by wey-gu(1651790&#43;wey-gu@users.noreply.github.com) 8028bbf6bbab4c76bd8825e08f3511b78618ed69: ngtl tutor and ID resolution" rel="noopener noreferrer">
+                                    <i class="fas fa-hashtag fa-fw"></i>8028bbf</a></span>
+            </div>
+            <div class="post-info-license"></div>
+        </div>
+        <div class="post-info-line">
+            <div class="post-info-md"><span><a class="link-to-mardown" href=/ngql-tutorial/index.md target="_blank" rel="noopener noreferrer">阅读原始文档</a>
+                    </span></div>
+            <div class="post-info-share">
+                <span><a href="#" onclick="return false;" title="分享到 Twitter" data-sharer="twitter" data-url="https://siwei.io/ngql-tutorial/" data-title="nGQL 简明教程" data-via="wey_gu" data-hashtags="Nebula Graph,nGQL,OpenCypher"><i class="fab fa-twitter fa-fw"></i></a><a href="#" onclick="return false;" title="分享到 Facebook" data-sharer="facebook" data-url="https://siwei.io/ngql-tutorial/" data-hashtag="Nebula Graph"><i class="fab fa-facebook-square fa-fw"></i></a><a href="#" onclick="return false;" title="分享到 WhatsApp" data-sharer="whatsapp" data-url="https://siwei.io/ngql-tutorial/" data-title="nGQL 简明教程" data-web><i class="fab fa-whatsapp fa-fw"></i></a><a href="#" onclick="return false;" title="分享到 Line" data-sharer="line" data-url="https://siwei.io/ngql-tutorial/" data-title="nGQL 简明教程"><i data-svg-src="/lib/simple-icons/icons/line.min.svg"></i></a><a href="#" onclick="return false;" title="分享到 微博" data-sharer="weibo" data-url="https://siwei.io/ngql-tutorial/" data-title="nGQL 简明教程" data-image="featured-image.webp" data-ralateuid="siweigu"><i class="fab fa-weibo fa-fw"></i></a><a href="#" onclick="return false;" title="分享到 Myspace" data-sharer="myspace" data-url="https://siwei.io/ngql-tutorial/" data-title="nGQL 简明教程" data-description="NebulaGraph 教程：一文入门图查询语句：nGQL。本文旨在让新手快速了解 nGQL，掌握方向，之后可以脚踩在地上借助文档写出任何心中的 NebulaGraph 图查询。"><i data-svg-src="/lib/simple-icons/icons/myspace.min.svg"></i></a><a href="#" onclick="return false;" title="分享到 Blogger" data-sharer="blogger" data-url="https://siwei.io/ngql-tutorial/" data-title="nGQL 简明教程" data-description="NebulaGraph 教程：一文入门图查询语句：nGQL。本文旨在让新手快速了解 nGQL，掌握方向，之后可以脚踩在地上借助文档写出任何心中的 NebulaGraph 图查询。"><i class="fab fa-blogger fa-fw"></i></a><a href="#" onclick="return false;" title="分享到 Evernote" data-sharer="evernote" data-url="https://siwei.io/ngql-tutorial/" data-title="nGQL 简明教程"><i class="fab fa-evernote fa-fw"></i></a></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section class="post-tags"><i class="fas fa-tags fa-fw"></i>&nbsp;<a href="/tags/nebula-graph/">Nebula Graph</a>,&nbsp;<a href="/tags/ngql/">nGQL</a>,&nbsp;<a href="/tags/opencypher/">OpenCypher</a></section>
+        <section>
+            <span><a href="javascript:void(0);" onclick="window.history.back();">返回</a></span>&nbsp;|&nbsp;<span><a href="/">主页</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/identity-resolution/" class="prev" rel="prev" title="基于 NebulaGraph 图数据库的 ID Resolution 方法与代码示例"><i class="fas fa-angle-left fa-fw"></i>基于 NebulaGraph 图数据库的 ID Resolution 方法与代码示例</a></div>
+</div>
+<div id="comments"><div id="giscus"></div><noscript>
+                Please enable JavaScript to view the comments powered by <a href="https://giscus.app/">giscus</a>.
+            </noscript></div></article></div>
+        </main><footer class="footer">
+        <div class="footer-container"><div class="footer-line">
+                    由 <a href="https://gohugo.io/" target="_blank" rel="noopener noreffer" title="Hugo 0.101.0">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreffer" title="DoIt 0.2.13"><i class="far fa-edit fa-fw"></i> DoIt</a>
+                </div><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2018 - 2022</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="https://siwei.io" target="_blank" rel="noopener noreferrer">Wey Gu</a></span>&nbsp;|&nbsp;<span class="license"><a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">CC BY-NC 4.0</a></span></div>
+            <div class="footer-line"></div>
+            <div class="footer-line">
+            </div>
+        </div><script>
+                    if('serviceWorker' in navigator) {
+                        navigator.serviceWorker
+                            .register('/sw.min.js', { scope: '/' })
+                            .then(function(registration) {
+                            });
+                
+                        navigator.serviceWorker
+                            .ready
+                            .then(function(registration) {
+                            });
+                    }
+                </script></footer></div>
+
+    <div id="fixed-buttons"><a href="#back-to-top" id="back-to-top-button" class="fixed-button" title="回到顶部">
+            <i class="fas fa-arrow-up fa-fw"></i>
+        </a><a href="#" id="view-comments" class="fixed-button" title="查看评论">
+            <i class="fas fa-comment fa-fw"></i>
+        </a>
+    </div><div class="assets"><script type="text/javascript" src="/lib/autocomplete/autocomplete.min.js"></script><script type="text/javascript" src="/lib/fuse/fuse.min.js"></script><script type="text/javascript" src="/lib/lazysizes/lazysizes.min.js"></script><script type="text/javascript" src="/lib/tablesort/tablesort.min.js"></script><script type="text/javascript" src="/lib/topbar/topbar.min.js"></script><script type="text/javascript" src="/lib/pjax/pjax.min.js"></script><script type="text/javascript" src="/js/theme.min.js" defer></script><script type="text/javascript">
+            window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());
+            gtag('config', 'UA-659952-4', { 'anonymize_ip': true });
+        </script><script type="text/javascript" src="https://www.googletagmanager.com/gtag/js?id=UA-659952-4" async></script></div>
+
+<div class="pjax-assets"><script type="text/javascript">window.config={"code":{"copyTitle":"复制到剪贴板","maxShownLines":10},"comment":{"giscus":{"darkTheme":"dark","dataCategory":"Comments","dataCategoryId":"DIC_kwDOFhiy8c4CQeuu","dataEmitMetadata":"1","dataInputPosition":"bottom","dataLang":"en","dataMapping":"title","dataReactionsEnabled":"1","dataRepo":"siwei-io/siwei-io.github.io","dataRepoId":"MDEwOlJlcG9zaXRvcnkzNzA3MTc0MjU=","dataStrict":"1","lightTheme":"light"}},"math":{"delimiters":[{"display":true,"left":"$$","right":"$$"},{"display":true,"left":"\\[","right":"\\]"},{"display":false,"left":"$","right":"$"},{"display":false,"left":"\\(","right":"\\)"}],"strict":false},"search":{"distance":100,"findAllMatches":true,"fuseIndexURL":"/index.json","highlightTag":"em","ignoreFieldNorm":false,"ignoreLocation":false,"isCaseSensitive":false,"location":0,"maxResultLength":10,"minMatchCharLength":2,"noResultsFound":"没有找到结果","snippetLength":50,"threshold":0.3,"type":"fuse","useExtendedSearch":false},"sharerjs":true,"table":{"sort":true}};</script><script type="text/javascript" src="/js/giscus.min.js" defer></script><script type="text/javascript" src="/lib/clipboard/clipboard.min.js"></script><script type="text/javascript" src="/lib/sharer/sharer.min.js"></script><script type="text/javascript" src="/lib/katex/katex.min.js" defer></script><script type="text/javascript" src="/lib/katex/auto-render.min.js" defer></script><script type="text/javascript" src="/lib/katex/copy-tex.min.js" defer></script><script type="text/javascript" src="/lib/katex/mhchem.min.js" defer></script><script type="text/javascript" src="/js/katex.min.js" defer></script><link rel="stylesheet" href="/lib/katex/katex.min.css"><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/katex/copy-tex.min.css">
+        <noscript><link rel="stylesheet" href="/lib/katex/copy-tex.min.css"></noscript></div>
+</body>
+
+</html>

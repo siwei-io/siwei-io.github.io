@@ -4,9 +4,550 @@
         <link>https://siwei.io/</link>
         <description>Siwei(思为) builds things and believes in Open Source.</description>
         <generator>Hugo -- gohugo.io</generator><language>zh-CN</language><managingEditor>weyl.gu@gmail.com (Wey Gu)</managingEditor>
-            <webMaster>weyl.gu@gmail.com (Wey Gu)</webMaster><lastBuildDate>Mon, 08 Aug 2022 10:58:51 &#43;0800</lastBuildDate>
+            <webMaster>weyl.gu@gmail.com (Wey Gu)</webMaster><lastBuildDate>Mon, 15 Aug 2022 00:24:28 &#43;0800</lastBuildDate>
             <atom:link href="https://siwei.io/index.xml" rel="self" type="application/rss+xml" />
         <item>
+    <title>nGQL 简明教程</title>
+    <link>https://siwei.io/ngql-tutorial/</link>
+    <pubDate>Mon, 15 Aug 2022 00:24:28 &#43;0800</pubDate><author>
+        <name>Wey Gu</name>
+    </author><guid>https://siwei.io/ngql-tutorial/</guid>
+    <description><![CDATA[<div class="featured-image">
+                <img src="/ngql-tutorial/featured-image.webp" referrerpolicy="no-referrer">
+            </div><blockquote>
+<p>本文旨在让新手快速了解 nGQL，掌握方向，之后可以脚踩在地上借助文档写出任何心中的 NebulaGraph 图查询。</p>
+</blockquote>
+<blockquote>
+<p>本文配套视频教程还在录制中，敬请期待。</p>
+</blockquote>
+<h2 id="视频" class="headerLink">
+    <a href="#%e8%a7%86%e9%a2%91" class="header-mark"></a>1 视频</h2><p>TBD</p>
+<h2 id="开始之前" class="headerLink">
+    <a href="#%e5%bc%80%e5%a7%8b%e4%b9%8b%e5%89%8d" class="header-mark"></a>2 开始之前</h2><p>本文假设你已经在文档看过<a href="https://docs.nebula-graph.com.cn/3.2.0/2.quick-start/1.quick-start-workflow/" target="_blank" rel="noopener noreffer">快速入门流程</a>，部署、连接过 NebulaGraph，并且看过了<a href="https://docs.nebula-graph.com.cn/3.2.0/2.quick-start/4.nebula-graph-crud/" target="_blank" rel="noopener noreffer">常用命令</a>。如果您还没看过这两个文档，强烈建议先快速过一遍。</p>
+<h3 id="教程目标" class="headerLink">
+    <a href="#%e6%95%99%e7%a8%8b%e7%9b%ae%e6%a0%87" class="header-mark"></a>2.1 教程目标</h3><p>本教程目的在于让新手大概知道了 NebulaGraph 的查询语句后，解决“不知道什么样的查询应该用什么语句”的问题。</p>
+<h3 id="ngql-是什么" class="headerLink">
+    <a href="#ngql-%e6%98%af%e4%bb%80%e4%b9%88" class="header-mark"></a>2.2 nGQL 是什么</h3><p>我们先强调一下概念：nGQL 是 NebulaGraph Graph Query Language 的缩写，它表示 NebulaGraph 的查询语言，而 nGQL 的语句可以不严谨地分为这几部分：</p>
+<ul>
+<li>NebulaGraph 独有 DQL 查询语句（Data Query Language）</li>
+<li>NebulaGraph OpenCypher DQL</li>
+<li>NebulaGraph DML 写语句（Data Mutation Language）</li>
+<li>NebulaGraph DDL Schema 语句（Data Defination Language)</li>
+<li>NebulaGraph Admin Queries 管理语句</li>
+</ul>
+<p>这里，作为简明教程一把梭，我们只关注前两个部分，后边的内容会在 Part 2 中介绍。</p>
+<h3 id="手绘-cheatsheet" class="headerLink">
+    <a href="#%e6%89%8b%e7%bb%98-cheatsheet" class="header-mark"></a>2.3 手绘 Cheatsheet</h3><blockquote>
+<p>大家可以报错这份单页手绘，一次了解所有 nGQL 的用法。</p>
+</blockquote>
+<p>TBD</p>
+<h2 id="nebulagraph-独有-dql" class="headerLink">
+    <a href="#nebulagraph-%e7%8b%ac%e6%9c%89-dql" class="header-mark"></a>3 NebulaGraph 独有 DQL</h2><p>NebulaGraph 的独有读查询语句的设计非常简介，对初学者非常友好，结合了管道的概念，做到了只涉及了几个关键词就可以描述大多数图查询模式。</p>
+<p>用一句话描述来说，nGQL 的独有 DQL 一共分成四类语句：</p>
+<ul>
+<li>图拓展：<code>GO</code></li>
+<li>索引反查：<code>LOOKUP</code></li>
+<li>取属性：<code>FETCH PROP</code></li>
+<li>路径与子图：<code>FIND PATH</code> 与 <code>GET SUBGRAPH</code></li>
+</ul>
+<p>和几个特别的元素</p>
+<ul>
+<li>
+<p>管道：<code>|</code></p>
+</li>
+<li>
+<p>引用属性: <code>$</code> 开头的几个符号，用来描述一些特定的上下文</p>
+</li>
+</ul>
+<h3 id="图拓展-go" class="headerLink">
+    <a href="#%e5%9b%be%e6%8b%93%e5%b1%95-go" class="header-mark"></a>3.1 图拓展 GO</h3><p><code>GO</code> 的语义非常直观：从<strong>给定的起点</strong>，向外拓展，按需<strong>返回终点</strong>、起点的信息。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="o">#</span><span class="w"> </span><span class="err">图拓展</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">GO</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="n">Steps</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="s2">&#34;player102&#34;</span><span class="w"> </span><span class="n">OVER</span><span class="w"> </span><span class="n">follow</span><span class="w"> </span><span class="n">YIELD</span><span class="w"> </span><span class="n">dst</span><span class="p">(</span><span class="n">edge</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">   </span><span class="err">───┬───</span><span class="w">      </span><span class="err">───┬───────</span><span class="w">      </span><span class="err">─┬────</span><span class="w">       </span><span class="err">──┬──────</span><span class="w"> 
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="err">│</span><span class="w">            </span><span class="err">│</span><span class="w">              </span><span class="err">│</span><span class="w">   </span><span class="err">┌─────────┘</span><span class="w">       
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="err">│</span><span class="w">            </span><span class="err">│</span><span class="w">              </span><span class="err">│</span><span class="w">   </span><span class="err">│</span><span class="w">                 
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="err">│</span><span class="w">            </span><span class="err">│</span><span class="w">              </span><span class="err">│</span><span class="w">   </span><span class="err">└──</span><span class="w"> </span><span class="err">返回最后一跳边的终点</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="err">│</span><span class="w">            </span><span class="err">│</span><span class="w">              </span><span class="err">│</span><span class="w">                     
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="err">│</span><span class="w">            </span><span class="err">│</span><span class="w">              </span><span class="err">└──────</span><span class="w"> </span><span class="err">从</span><span class="w"> </span><span class="n">follow</span><span class="w"> </span><span class="err">这个边</span><span class="p">[</span><span class="err">出方向</span><span class="p">]</span><span class="err">探索</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="err">│</span><span class="w">            </span><span class="err">│</span><span class="w">                                    
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="err">│</span><span class="w">            </span><span class="err">└─────────────────────</span><span class="w"> </span><span class="err">起点是</span><span class="w"> </span><span class="s2">&#34;player102&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="err">│</span><span class="w">                                                 
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="err">└──────────────────────────────────</span><span class="w"> </span><span class="err">探索</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="err">步</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>参考 <a href="https://docs.nebula-graph.com.cn/3.2.0/3.ngql-guide/7.general-query-statements/3.go/" target="_blank" rel="noopener noreffer">GO 语句文档</a>，了解如何：</p>
+<ul>
+<li>指定反方向拓展、双向拓展</li>
+<li>指定可变跳数拓展</li>
+<li>基于所有类型边拓展</li>
+<li>返回其他信息</li>
+</ul>
+</blockquote>
+<h3 id="lookup-基于索引反查-id" class="headerLink">
+    <a href="#lookup-%e5%9f%ba%e4%ba%8e%e7%b4%a2%e5%bc%95%e5%8f%8d%e6%9f%a5-id" class="header-mark"></a>3.2 LOOKUP 基于索引反查 ID</h3><p>和 <code>GO</code> 为从已知的点出发相反，<code>LOOKUP</code> 是一个类似于 SQL 里 <code>SELECT</code> 语义的关键字，它实际的作用也类似与关系型数据库中的扫表。</p>
+<p><code>LOOKUP</code> 需要手动明确建立相应 TAG、边类型上索引才能允许相应的查询。</p>
+<h6 id="为什么-lookup-需要索引" class="headerLink">
+    <a href="#%e4%b8%ba%e4%bb%80%e4%b9%88-lookup-%e9%9c%80%e8%a6%81%e7%b4%a2%e5%bc%95" class="header-mark"></a>3.2.0.0.1 为什么 <code>LOOKUP</code> 需要索引？</h6><p>因为 NebulaGraph 中的数据默认是按照邻接表的形式存储，在分布式设计中，扫描一个类型的点、边是非常昂贵的，所以它被默认禁止了。而创建相应的索引类似于增加了类似于表结构数据库的排序数据，可以用来做类似于 <code>SELECT</code> 的查询。</p>
+<p>创建索引的代价是什么（增加写入负担）？索引会加速读么（不会，它是提供了 LOOKUP 的可能性，原生图的查询不需要索引加速）？等等更详细的问题请参阅我之前的<a href="https://www.siwei.io/nebula-index-explained/" target="_blank" rel="noopener noreffer">索引详解文章</a>。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="o">#</span><span class="w"> </span><span class="err">索引反查</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">LOOKUP</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">player</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">player</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&#34;Tony Parker&#34;</span><span class="w"> </span><span class="n">YIELD</span><span class="w"> </span><span class="n">id</span><span class="p">(</span><span class="n">vertex</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="err">──┬───</span><span class="w">  </span><span class="err">──────┬──────────────────────────</span><span class="w">  </span><span class="err">──┬──────</span><span class="w">       
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="err">│</span><span class="w">           </span><span class="err">│</span><span class="w">          </span><span class="err">┌───────────────────┘</span><span class="w">             
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="err">│</span><span class="w">           </span><span class="err">│</span><span class="w">          </span><span class="err">│</span><span class="w">                                 
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="err">│</span><span class="w">           </span><span class="err">│</span><span class="w">          </span><span class="err">└────────────</span><span class="w"> </span><span class="err">返回查到点的</span><span class="w"> </span><span class="n">VID</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="err">│</span><span class="w">           </span><span class="err">│</span><span class="w">                                            
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="err">│</span><span class="w">           </span><span class="err">└───────────────────────</span><span class="w"> </span><span class="err">过滤条件是属性</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="err">的值</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="err">│</span><span class="w">                                                        
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="err">└───────────────────────────────────</span><span class="w"> </span><span class="err">根据点的类别</span><span class="o">/</span><span class="n">TAG</span><span class="w"> </span><span class="n">player</span><span class="w"> </span><span class="err">查询</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>进一步参考 <a href="https://docs.nebula-graph.com.cn/3.2.0/3.ngql-guide/7.general-query-statements/5.lookup/" target="_blank" rel="noopener noreffer">LOOKUP 语句文档</a>，了解如何：</p>
+<ul>
+<li>返回属性</li>
+<li>根据边的类型查询边</li>
+<li>了解 LOOKUP 查询的前提、<a href="https://docs.nebula-graph.com.cn/3.2.0/3.ngql-guide/14.native-index-statements/" target="_blank" rel="noopener noreffer">索引</a>，<a href="https://www.siwei.io/nebula-index-explained/" target="_blank" rel="noopener noreffer">索引详解</a></li>
+</ul>
+</blockquote>
+<h3 id="fetch-prop-获取属性" class="headerLink">
+    <a href="#fetch-prop-%e8%8e%b7%e5%8f%96%e5%b1%9e%e6%80%a7" class="header-mark"></a>3.3 FETCH PROP 获取属性</h3><p>如字面意思，如果我们知道一个点、边的 ID，想要获取它上边的属性，这时候我们要用 <code>FETCH PROP</code> 而非 <code>LOOKUP</code>。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="o">#</span><span class="w"> </span><span class="err">取属性</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">FETCH</span><span class="w"> </span><span class="n">PROP</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">player</span><span class="w"> </span><span class="s2">&#34;player100&#34;</span><span class="w"> </span><span class="n">YIELD</span><span class="w"> </span><span class="n">properties</span><span class="p">(</span><span class="n">vertex</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">              </span><span class="err">──┬───</span><span class="w">  </span><span class="err">────┬─────</span><span class="w">       </span><span class="err">─────────┬────────</span><span class="w"> 
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="err">│</span><span class="w">         </span><span class="err">│</span><span class="w">         </span><span class="err">┌───────────┘</span><span class="w">         
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="err">│</span><span class="w">         </span><span class="err">│</span><span class="w">         </span><span class="err">│</span><span class="w">                     
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="err">│</span><span class="w">         </span><span class="err">│</span><span class="w">         </span><span class="err">└───────</span><span class="w"> </span><span class="err">返回点的</span><span class="w"> </span><span class="n">player</span><span class="w"> </span><span class="n">TAG</span><span class="w"> </span><span class="err">下所有属性</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="err">│</span><span class="w">         </span><span class="err">│</span><span class="w">                               
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="err">│</span><span class="w">         </span><span class="err">└─────────────────</span><span class="w"> </span><span class="err">从</span><span class="w"> </span><span class="s2">&#34;player100&#34;</span><span class="w"> </span><span class="err">这个点获取</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="err">│</span><span class="w">                                         
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="err">└───────────────────────────</span><span class="w"> </span><span class="err">获取</span><span class="w"> </span><span class="n">player</span><span class="w"> </span><span class="err">这个</span><span class="w"> </span><span class="n">TAG</span><span class="w"> </span><span class="err">下的属性</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>进一步参考 <a href="https://docs.nebula-graph.com.cn/3.2.0/3.ngql-guide/7.general-query-statements/4.fetch/" target="_blank" rel="noopener noreffer">FETCH PROP 语句文档</a>，了解如何：</p>
+<ul>
+<li>返回某一个属性</li>
+<li>获取给定边的属性</li>
+</ul>
+</blockquote>
+<h3 id="路径查找-find-path" class="headerLink">
+    <a href="#%e8%b7%af%e5%be%84%e6%9f%a5%e6%89%be-find-path" class="header-mark"></a>3.4 路径查找 FIND PATH</h3><p>如果我们从给定的起点、终点中，找到之间的所有路径，一定要用 <code>FIND PATH</code></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="o">#</span><span class="w"> </span><span class="err">起点终点间路径</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">FIND</span><span class="w"> </span><span class="n">SHORTEST</span><span class="w"> </span><span class="n">PATH</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="s2">&#34;player102&#34;</span><span class="w"> </span><span class="k">TO</span><span class="w"> </span><span class="s2">&#34;team204&#34;</span><span class="w"> </span><span class="n">OVER</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="err">\</span><span class="w">   
+</span></span></span><span class="line"><span class="cl"><span class="w">     </span><span class="err">──┬─────</span><span class="w">            </span><span class="err">───────────┬───────────</span><span class="w"> </span><span class="err">───┬───</span><span class="w">    
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">YIELD</span><span class="err">│</span><span class="n">path</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">p</span><span class="p">;</span><span class="w"> </span><span class="err">┌────────────────┘</span><span class="w">               </span><span class="err">│</span><span class="w">       
+</span></span></span><span class="line"><span class="cl"><span class="w">       </span><span class="err">│────┬────</span><span class="w">  </span><span class="err">│</span><span class="w">     </span><span class="err">┌──────────────────────────┘</span><span class="w">       
+</span></span></span><span class="line"><span class="cl"><span class="w">       </span><span class="err">│</span><span class="w">    </span><span class="err">│</span><span class="w">      </span><span class="err">│</span><span class="w">     </span><span class="err">│</span><span class="w">                                  
+</span></span></span><span class="line"><span class="cl"><span class="w">       </span><span class="err">│</span><span class="w">    </span><span class="err">│</span><span class="w">      </span><span class="err">│</span><span class="w">     </span><span class="err">└─────────</span><span class="w"> </span><span class="err">经由所有类型的边出向探索</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">       </span><span class="err">│</span><span class="w">    </span><span class="err">│</span><span class="w">      </span><span class="err">│</span><span class="w">                                        
+</span></span></span><span class="line"><span class="cl"><span class="w">       </span><span class="err">│</span><span class="w">    </span><span class="err">│</span><span class="w">      </span><span class="err">└───────────────</span><span class="w"> </span><span class="err">从给定的起点、终点</span><span class="w"> </span><span class="n">VID</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">       </span><span class="err">│</span><span class="w">    </span><span class="err">│</span><span class="w">                                               
+</span></span></span><span class="line"><span class="cl"><span class="w">       </span><span class="err">│</span><span class="w">    </span><span class="err">└──────────────────────</span><span class="w"> </span><span class="err">返回路径为</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="err">列</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">       </span><span class="err">│</span><span class="w">                                                    
+</span></span></span><span class="line"><span class="cl"><span class="w">       </span><span class="err">└───────────────────────────</span><span class="w"> </span><span class="err">查找最短路径</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>进一步参考 <a href="https://docs.nebula-graph.com.cn/3.2.0/3.ngql-guide/16.subgraph-and-path/2.find-path/" target="_blank" rel="noopener noreffer">FIND PATH 语句文档</a>，了解如何：</p>
+<ul>
+<li>返回路径中的属性</li>
+<li>设定拓展方向</li>
+</ul>
+</blockquote>
+<h3 id="单点子图-get-subgraph" class="headerLink">
+    <a href="#%e5%8d%95%e7%82%b9%e5%ad%90%e5%9b%be-get-subgraph" class="header-mark"></a>3.5 单点子图 GET SUBGRAPH</h3><p>和路径查找类似，但是我们只给定一个起点和拓展部署，用 <code>GET SUBGRAPH</code> 可以帮我们获取同样的 BFS 出去的子图</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="o">#</span><span class="w"> </span><span class="err">单点</span><span class="w"> </span><span class="n">BFS</span><span class="w"> </span><span class="err">子图</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">GET</span><span class="w"> </span><span class="n">SUBGRAPH</span><span class="w"> </span><span class="mi">5</span><span class="w"> </span><span class="n">STEPS</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="s2">&#34;player101&#34;</span><span class="w"> </span><span class="err">\</span><span class="w">           
+</span></span></span><span class="line"><span class="cl"><span class="w">             </span><span class="err">───┬───</span><span class="w"> </span><span class="err">─────┬──────────</span><span class="w">             
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">YIELD</span><span class="w"> </span><span class="n">VERTICES</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">nodes</span><span class="p">,</span><span class="w"> </span><span class="n">EDGES</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">relationships</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="err">────┬───┼─────────┼───────────────────────</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">   </span><span class="err">┌────────┘</span><span class="w">                                     
+</span></span></span><span class="line"><span class="cl"><span class="w">   </span><span class="err">│</span><span class="w">            </span><span class="err">│</span><span class="w">         </span><span class="err">└───────</span><span class="w"> </span><span class="err">从</span><span class="w"> </span><span class="s2">&#34;player101&#34;</span><span class="w"> </span><span class="err">开始触发</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">   </span><span class="err">│</span><span class="w">                                              
+</span></span></span><span class="line"><span class="cl"><span class="w">   </span><span class="err">│</span><span class="w">            </span><span class="err">└─────────────────</span><span class="w"> </span><span class="err">获取</span><span class="w"> </span><span class="mi">5</span><span class="w"> </span><span class="err">步的探索</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">   </span><span class="err">│</span><span class="w">                                              
+</span></span></span><span class="line"><span class="cl"><span class="w">   </span><span class="err">└──────────────────────────────</span><span class="w"> </span><span class="err">返回所有的点、边</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>进一步参考 <a href="https://docs.nebula-graph.com.cn/3.2.0/3.ngql-guide/16.subgraph-and-path/1.get-subgraph/" target="_blank" rel="noopener noreffer">GET SUBGRAPH 语句文档</a>，了解如何：</p>
+<ul>
+<li>返回带有属性的点、边</li>
+<li>设定拓展方向</li>
+</ul>
+</blockquote>
+<h3 id="利用管道和属性引用符" class="headerLink">
+    <a href="#%e5%88%a9%e7%94%a8%e7%ae%a1%e9%81%93%e5%92%8c%e5%b1%9e%e6%80%a7%e5%bc%95%e7%94%a8%e7%ac%a6" class="header-mark"></a>3.6 利用管道和属性引用符</h3><p>NebulaGraph 的管道设计和 Unix-Shell 的设计很像，可以将简单的几种语句结合起来，有强大的表达力。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="o">#</span><span class="w"> </span><span class="err">使用通道</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">GO</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="s2">&#34;player100&#34;</span><span class="w"> </span><span class="n">OVER</span><span class="w"> </span><span class="n">follow</span><span class="w"> </span><span class="n">YIELD</span><span class="w"> </span><span class="n">dst</span><span class="p">(</span><span class="n">edge</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">did</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="err">\</span><span class="w">  
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="err">─────┬────────────────────────────────────────────</span><span class="w"> </span><span class="err">─┬─</span><span class="w">   
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">GO</span><span class="w"> </span><span class="k">FROM</span><span class="err">│$</span><span class="o">-</span><span class="p">.</span><span class="n">did</span><span class="w"> </span><span class="n">OVER</span><span class="w"> </span><span class="n">follow</span><span class="w"> </span><span class="n">YIELD</span><span class="w"> </span><span class="n">dst</span><span class="p">(</span><span class="n">edge</span><span class="p">);</span><span class="w">           </span><span class="err">│</span><span class="w">    
+</span></span></span><span class="line"><span class="cl"><span class="w">         </span><span class="err">│────┬──</span><span class="w">     </span><span class="err">┌─────────────────────────────────┘</span><span class="w">    
+</span></span></span><span class="line"><span class="cl"><span class="w">         </span><span class="err">│</span><span class="w">    </span><span class="err">│</span><span class="w">       </span><span class="err">│</span><span class="w">                                      
+</span></span></span><span class="line"><span class="cl"><span class="w">         </span><span class="err">│</span><span class="w">    </span><span class="err">│</span><span class="w">       </span><span class="err">└────────</span><span class="w"> </span><span class="err">管道将左边的</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="err">输出作为右边语句输入</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">         </span><span class="err">│</span><span class="w">    </span><span class="err">│</span><span class="w">                                              
+</span></span></span><span class="line"><span class="cl"><span class="w">         </span><span class="err">│</span><span class="w">    </span><span class="err">└────────────────</span><span class="w"> </span><span class="err">从管道左边的</span><span class="w"> </span><span class="n">did</span><span class="w"> </span><span class="err">属性开始探索</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">         </span><span class="err">│</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">         </span><span class="err">└─────────────────────</span><span class="w"> </span><span class="err">第一个查询语句</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>进一步参考 <a href="https://docs.nebula-graph.com.cn/3.2.0/3.ngql-guide/5.operators/5.property-reference/" target="_blank" rel="noopener noreffer">引用属性文档</a>、<a href="https://docs.nebula-graph.com.cn/3.2.0/3.ngql-guide/5.operators/4.pipe/" target="_blank" rel="noopener noreffer">管道文档</a>了解：</p>
+<ul>
+<li>更多属性引用定义</li>
+<li>更多例子</li>
+<li>结合 LOOKUP, GO, FETCH 的语句</li>
+</ul>
+</blockquote>
+<p>除了以上的集中表达之外，NebulaGraph 独有查询语句还有聚合的表达参考 <a href="https://docs.nebula-graph.com.cn/3.2.0/3.ngql-guide/8.clauses-and-options/group-by/" target="_blank" rel="noopener noreffer">GROUP-BY</a>，另外在文档里还有一个 <a href="https://docs.nebula-graph.com.cn/3.2.0/2.quick-start/6.cheatsheet-for-ngql-command/" target="_blank" rel="noopener noreffer">Cheatsheet</a> 供大家查询一些复杂一点查询的例子。</p>
+<h3 id="nebulagraph-opencypher-dql" class="headerLink">
+    <a href="#nebulagraph-opencypher-dql" class="header-mark"></a>3.7 NebulaGraph OpenCypher DQL</h3><p>从 2.0 起，OpenCypher 的 <code>MATCH</code> 语句也被 NebulaGraph 原生支持了，虽然这里是一个方言（有一些细节差异）。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">MATCH &lt;pattern&gt; [&lt;clause_1&gt;]  RETURN &lt;output&gt;  [&lt;clause_2&gt;];
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>MATCH 的基本表达是以 <code>(v:tag_a)</code> 包裹的点 <code>--&gt;</code> 或者 <code>&lt;-[:edge_type_1]-</code> 表达的边组成的模式，与 <code>RETURN</code> 表达的输出。</p>
+<p>如果您从 Cypher 的查询语句入门图数据库，可以从下边几个例子了解到几个 NebulaGraph 里的细节差异：</p>
+<ul>
+<li>增加了 <code>WHERE id(v) == &quot;foo&quot;</code> 的表达</li>
+<li><code>==</code> 表达相等判断而不是 <code>=</code></li>
+<li>点的属性表达需要填写 TAG，例如 <code>v3.player.name</code> 而不是 <code>v3.name</code></li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">MATCH (v:player{name:&#34;Tim Duncan&#34;})--&gt;(v2)&lt;--(v3) \
+</span></span><span class="line"><span class="cl">    RETURN v3.player.name AS Name;
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">MATCH (v:player) \
+</span></span><span class="line"><span class="cl">    WHERE not (v)--() \
+</span></span><span class="line"><span class="cl">    RETURN v;
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">MATCH (v:player)--(v2) \
+</span></span><span class="line"><span class="cl">    WHERE id(v2) IN [&#34;player101&#34;, &#34;player102&#34;] \
+</span></span><span class="line"><span class="cl">    RETURN v;
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">MATCH (m)-[]-&gt;(n) WHERE id(m)==&#34;player100&#34; \
+</span></span><span class="line"><span class="cl">OPTIONAL MATCH (n)-[]-&gt;(l) WHERE id(n)==&#34;player125&#34; \
+</span></span><span class="line"><span class="cl">    RETURN id(m),id(n),id(l);
+</span></span></code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>进一步参考 <a href="https://docs.nebula-graph.com.cn/3.2.0/3.ngql-guide/7.general-query-statements/2.match/" target="_blank" rel="noopener noreffer">MATCH 文档</a>了解：</p>
+</blockquote>
+<ul>
+<li>更多例子</li>
+<li>可变跳数的 MATCH 表达</li>
+<li>多 MATCH</li>
+<li>OPTIONAL MATCH</li>
+</ul>
+<blockquote>
+<p>题图版权：DALL·E Open-AI，<a href="./featured-image-raw.webp" rel="">原图</a></p>
+<p>Featured image was generated with key words: learning spells of the nebula magic, with DALL·E Open-AI.</p>
+</blockquote>]]></description>
+</item><item>
+    <title>基于 NebulaGraph 图数据库的 ID Resolution 方法与代码示例</title>
+    <link>https://siwei.io/identity-resolution/</link>
+    <pubDate>Sun, 14 Aug 2022 18:18:16 &#43;0800</pubDate><author>
+        <name>Wey Gu</name>
+    </author><guid>https://siwei.io/identity-resolution/</guid>
+    <description><![CDATA[<div class="featured-image">
+                <img src="/identity-resolution/featured-image.webp" referrerpolicy="no-referrer">
+            </div><blockquote>
+<p>本文是一个基于 NebulaGraph 上的图算法、图数据库、图神经网络的 ID-Mapping 方法综述，除了基本方法思想的介绍之外，我还给大家弄了可以跑的 Playground。</p>
+</blockquote>
+<blockquote>
+<p>本文还在撰写中，TBD 的章节还请见谅。</p>
+</blockquote>
+<h2 id="基于图数据库的用户-id-识别方法" class="headerLink">
+    <a href="#%e5%9f%ba%e4%ba%8e%e5%9b%be%e6%95%b0%e6%8d%ae%e5%ba%93%e7%9a%84%e7%94%a8%e6%88%b7-id-%e8%af%86%e5%88%ab%e6%96%b9%e6%b3%95" class="header-mark"></a>1 基于图数据库的用户 ID 识别方法</h2><p>用户 ID 识别，是一个很常见的图技术应用场景，在不同的语境下它可能还被叫做 Entity Correlation（实体关联）、Entity Linking（实体链接）、ID Mapping（身份映射）等等。ID 识别在大体上做的事情就识别出相同用户在同一个系统或者不同系统中的不同账号。</p>
+<p>由于 ID 识别天然地是一个关联关系问题，也是一个典型的图、图数据库应用场景。</p>
+<h3 id="建立图谱" class="headerLink">
+    <a href="#%e5%bb%ba%e7%ab%8b%e5%9b%be%e8%b0%b1" class="header-mark"></a>1.1 建立图谱</h3><p>我们从一个最简单、直接的图谱开始，如下边的图结构示意显示，我们定义了点：</p>
+<ul>
+<li>User</li>
+<li>Phone</li>
+<li>Email</li>
+<li>Device</li>
+<li>IP</li>
+<li>Address</li>
+</ul>
+<p>在他们之间有很自然的边：</p>
+<ul>
+<li>used_device</li>
+<li>logged_in_from</li>
+<li>has_phone</li>
+<li>has_address</li>
+</ul>
+<p></p>
+<blockquote>
+<p>注，这份数据是开源的，地址在 <a href="https://github.com/wey-gu/identity-correlation-datagen" target="_blank" rel="noopener noreffer">https://github.com/wey-gu/identity-correlation-datagen</a></p>
+</blockquote>
+<h3 id="根据确定规则获取-id-mapping" class="headerLink">
+    <a href="#%e6%a0%b9%e6%8d%ae%e7%a1%ae%e5%ae%9a%e8%a7%84%e5%88%99%e8%8e%b7%e5%8f%96-id-mapping" class="header-mark"></a>1.2 根据确定规则获取 ID Mapping</h3><p>最简单、直接的方法，在特定的场景下也可能是有用的，试想像 email、IP 地址、上网设备这些有严格结构的数据，在它们成为图谱中的点的时候，简单的相等关系就足以找出这样对应关系，比如：</p>
+<ul>
+<li>拥有相同的 email</li>
+<li>使用过相同的 IP 地址</li>
+<li>使用过相同的设备</li>
+</ul>
+<p>在前边的图谱、图数据库中，拥有相同的 email 可以直接表达为如下的图模式（Graph Pattern）。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">(:user)-[:has_email]-&gt;(:email)&lt;-[:has_email]-[:user]
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>下图为顶点： user 与边：has_email 的一个图的可视化结果，可以看到这其中有两个三个点相连的串正是符合拥有相同 email 的模式的点。</p>
+<blockquote>
+<p>注</p>
+<ul>
+<li>这个结果的数据源在 <a href="https://github.com/wey-gu/identity-correlation-datagen/tree/main/sample/hand_crafted" target="_blank" rel="noopener noreffer">https://github.com/wey-gu/identity-correlation-datagen/tree/main/sample/hand_crafted</a></li>
+<li>如果通过线上访问本文，你可以鼠标悬停（获取点上的属性）和框选放大每一个点和子图哦。</li>
+</ul>
+</blockquote>
+<iframe src="https://datapane.com/reports/v7JN2E7/user-shared-email/embed/" width="100%" height="540px" style="border: none;">IFrame not supported</iframe>
+<p>显然，在构建 ID Mapping 系统的过程中，我们就是通过在图数据库中直接查询，可视化渲染结果来看到等效的洞察，这个查询可以写成：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">MATCH p=(:user)-[:has_email]-&gt;(:email)&lt;-[:has_email]-[:user]
+</span></span><span class="line"><span class="cl">RETURN p limit 10
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>在这个数据上的结果则是：</p>
+<p></p>
+<p>然而，在更多真实世界中，这样的模式匹配往往不能解决更多稍微复杂一点的情形：</p>
+<p>比如从上边的图中我们可以看到这两个匹配了的映射中，<code>holly@welch.org</code> 关联下的两个用户的姓名是不同的，而 <code>veronica.j@yahoo.com</code> 关联下的两个用户姓名是完全相同的。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">user_2,holly@welch.org,Holly Pollard,1990-10-19,1 Amanda Freeway Lisaland  NJ 94933,600-192-2985x041
+</span></span><span class="line"><span class="cl">user_21,holly@welch.org,Holly,0000-10-19,1 Amanda Freeway Lisaland  NJ 94933,(600)-192-2985
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>再比如 <code>Sharon91@gmail.com</code> 和 <code>Sharon91+001@gmail.com</code> ，这两个人的姓名不同，但是手机和地址也是不同的。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">user_17,Sharon91@gmail.com,Sharon Mccoy,1958-09-01,1 Southport Street Apt. 098 Westport  KY 85907,(814)898-9079x898
+</span></span><span class="line"><span class="cl">user_18,Sharon91+001@gmail.com,Kathryn Miller,1958-09-01,1 Southport Street Apt. 098 Westport  KY 85907,(814)898-9079x898
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>比较庆幸的是我们只需要增加类似于“拥有相同邮箱”的其他条件就可以把这行庆幸考虑进来了，而随之而来的问题是：</p>
+<ul>
+<li>不是所有的数据都存在某一个确定条件的相等（图谱中的直接关联关系），如何处理这样的关系？</li>
+</ul>
+<p>比如：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">user_5,4kelly@yahoo.com,April Kelly,1967-12-01,Schmidt Key Lake Charles AL 36174,410.138.1816x98702
+</span></span><span class="line"><span class="cl">user_23,4kelly@yahoo.com,Kelly April,2010-01-01,Schmidt Key Lake Charles AL 13617,410-138-1816
+</span></span></code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>如何表现 <code>Sharon91@gmail.com</code> 与 <code>Sharon91+001@gmail.com</code> 的相似性？</li>
+<li>如何将多种匹配规则的信息都纳入关联系统？</li>
+</ul>
+<h3 id="基于复合条件量化方法" class="headerLink">
+    <a href="#%e5%9f%ba%e4%ba%8e%e5%a4%8d%e5%90%88%e6%9d%a1%e4%bb%b6%e9%87%8f%e5%8c%96%e6%96%b9%e6%b3%95" class="header-mark"></a>1.3 基于复合条件量化方法</h3><p>在前边，我们提到了集中确定规则无法处理的问题，其实，它们都可以归结为这两点。</p>
+<ol>
+<li>需要多因素（规则）进行综合考虑与判定</li>
+<li>需要对非确定条件（属性）进行处理，挖掘隐含相等、相似的关联关系（边）</li>
+</ol>
+<p>对于 1. ，很自然我们可以想到对多种关联条件进行评分（score），按照多种条件的重要程度进行加权，给出认定为关联的总分的阈值。</p>
+<p>有了多因素评分的机制，我们只需要考虑如何在确定的多因素基础之上，增加对不确定因素的处理，从而解决 2.的情况。这里，非确定的条件可能是：</p>
+<p>a. 表现结构化数据的相似性：<code>Sharon91@gmail.com</code> 与 <code>Sharon91+001@gmail.com</code></p>
+<p>b. 表现非结构化数据的相似性：</p>
+<ul>
+<li><code>Schmidt Key Lake Charles AL 36174</code> 与 <code>Schmidt Key Lake Charles AL 13617</code></li>
+<li><code>600-192-2985x041</code> 与<code>(600)-192-2985</code></li>
+</ul>
+<p>对于 a. 的结构化数据中的相似性，有两个思路是可以考虑的：</p>
+<ul>
+<li>直接进行两个值的相似度
+<ul>
+<li>直接判定子字符串</li>
+<li>运算 Jaccard index 等类似的相似度</li>
+</ul>
+</li>
+<li>拆分为更细粒的多个属性
+<ul>
+<li>将 email <code>foo+num@bar.com</code> 拆分成三个子属性 email.id: <code>foo</code>, email.alias: <code>num</code>, email.domain: <code>bar.com</code>
+<ul>
+<li>然后就可以设计详细的确定性规则：email.id 相等、甚至再在此基础上应用其他非确定规则</li>
+<li>有时候，比如对于 email.domain 字段，我们还知道 gmail.com 和 googlemail.com 是等价的，这里的处理也是可以考虑的（像是<code>user_19,brettglenn@googlemail.com</code> 与 <code>user_8,brettglenn@gmail.com</code>，但从邮箱判断背后就是同一个持有者)</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>而对于 b. 的非结构属性相似性距离，处理方式可以根据具体的 domain knowledge 千差万别：</p>
+<ul>
+<li>像 <code>Schmidt Key Lake Charles AL 36174</code> 与 <code>Schmidt Key Lake Charles AL 13617</code> 的地址信息，除了可以用值的相似度之外，还可以把它转换成地理类型的属性，比如一个经纬度组成的点，从而计算两个点之间的地理距离，根据给定的距离值来打分。</li>
+</ul>
+<blockquote>
+<p>注，你知道吗？NebulaGraph 图数据库中原生支持地理类型的属性与索引，可以直接创建 Point 类型的地理属性，并计算两个 Point 之间的距离。</p>
+</blockquote>
+<ul>
+<li>而像 <code>600-192-2985x041</code> 与<code>(600)-192-2985</code> 这种字符串形式的电话号码，则可以统一转化为<code>&lt;国家码&gt;+&lt;区域码&gt;+&lt;本地号码&gt;+&lt;分机号&gt;</code>这样的结构化数据，进一步按照结构化数据的方式处理</li>
+</ul>
+<h4 id="基于复合条件量化方法实操" class="headerLink">
+    <a href="#%e5%9f%ba%e4%ba%8e%e5%a4%8d%e5%90%88%e6%9d%a1%e4%bb%b6%e9%87%8f%e5%8c%96%e6%96%b9%e6%b3%95%e5%ae%9e%e6%93%8d" class="header-mark"></a>1.3.1 基于复合条件量化方法实操</h4><p>TBD</p>
+<h4 id="利用-active-learning-的方法交互式学习评分权重" class="headerLink">
+    <a href="#%e5%88%a9%e7%94%a8-active-learning-%e7%9a%84%e6%96%b9%e6%b3%95%e4%ba%a4%e4%ba%92%e5%bc%8f%e5%ad%a6%e4%b9%a0%e8%af%84%e5%88%86%e6%9d%83%e9%87%8d" class="header-mark"></a>1.3.2 利用 Active Learning 的方法交互式学习评分权重</h4><p>TBD</p>
+<h3 id="基于图算法的方法" class="headerLink">
+    <a href="#%e5%9f%ba%e4%ba%8e%e5%9b%be%e7%ae%97%e6%b3%95%e7%9a%84%e6%96%b9%e6%b3%95" class="header-mark"></a>1.4 基于图算法的方法</h3><p>前边的方法中我们直接利用了用户的各项属性、行为事件中产生的关系，并利用各种属性、值相似度的方法建立了基于概率或者带有评分的关联关系。而在通过其他方法增加了新的边之后的图上，我们也可以利用图算法的方法来映射潜在的相同用户 ID。</p>
+<h4 id="图相似性算法" class="headerLink">
+    <a href="#%e5%9b%be%e7%9b%b8%e4%bc%bc%e6%80%a7%e7%ae%97%e6%b3%95" class="header-mark"></a>1.4.1 图相似性算法</h4><p>利用节点相似性图算法，比如 Jaccard、余弦相似度等，我们可以或者利用图库之上的图计算平台全量计算相似度，也可以用图查询语句实现全图或者给点之间的相似度，最后给相似度一定的阈值来帮助建立新的（考虑了涉及边的）映射关系。</p>
+<blockquote>
+<p>注，这里的 Jaccard index 和我们前边提到的比较两个字符串的方法本质是一样的，不过我们现在提及的是应用在图上的点之间存在相连点作为算法中的“交集”的实现。</p>
+</blockquote>
+<h4 id="社区发现算法" class="headerLink">
+    <a href="#%e7%a4%be%e5%8c%ba%e5%8f%91%e7%8e%b0%e7%ae%97%e6%b3%95" class="header-mark"></a>1.4.2 社区发现算法</h4><p>自然地，还可以用社区发现的算法全图找出给定的基于边之下的社区划分，调试算法，使得目标划分社区内部点为估计的相同用户。</p>
+<h4 id="基于图算法方法实操" class="headerLink">
+    <a href="#%e5%9f%ba%e4%ba%8e%e5%9b%be%e7%ae%97%e6%b3%95%e6%96%b9%e6%b3%95%e5%ae%9e%e6%93%8d" class="header-mark"></a>1.4.3 基于图算法方法实操</h4><p>TBD</p>
+<h5 id="基于图查询的-jaccard-实现" class="headerLink">
+    <a href="#%e5%9f%ba%e4%ba%8e%e5%9b%be%e6%9f%a5%e8%af%a2%e7%9a%84-jaccard-%e5%ae%9e%e7%8e%b0" class="header-mark"></a>1.4.3.1 基于图查询的 Jaccard 实现</h5><p>TBD</p>
+<h5 id="基于图计算平台的-jaccard-实操" class="headerLink">
+    <a href="#%e5%9f%ba%e4%ba%8e%e5%9b%be%e8%ae%a1%e7%ae%97%e5%b9%b3%e5%8f%b0%e7%9a%84-jaccard-%e5%ae%9e%e6%93%8d" class="header-mark"></a>1.4.3.2 基于图计算平台的 Jaccard 实操</h5><p>TBD</p>
+<h5 id="基于图社区发现算法的实操" class="headerLink">
+    <a href="#%e5%9f%ba%e4%ba%8e%e5%9b%be%e7%a4%be%e5%8c%ba%e5%8f%91%e7%8e%b0%e7%ae%97%e6%b3%95%e7%9a%84%e5%ae%9e%e6%93%8d" class="header-mark"></a>1.4.3.3 基于图社区发现算法的实操</h5><p>TBD</p>
+<h3 id="基于图神经网络的方法" class="headerLink">
+    <a href="#%e5%9f%ba%e4%ba%8e%e5%9b%be%e7%a5%9e%e7%bb%8f%e7%bd%91%e7%bb%9c%e7%9a%84%e6%96%b9%e6%b3%95" class="header-mark"></a>1.5 基于图神经网络的方法</h3><p>我们注意到，在我们讲以上不同的方法相结合的时候，都是把前导方法的结果作为图上的边，进而作为后边的方法的输入，实际上相同用户 ID 的识别本质上就是在图上去预测用户之间链接、边。</p>
+<p>而在 GNN 的方法中，除了我们在欺诈检测中利用到的节点分类（属性预测）之外，链接预测（Link Prediction）是另一个常见的算法目标和应用场景。我们自然也可以用 GNN 的方法，结合 1. 非 GNN 方法获得的和 2. 已经有的人为标注的链接，学习、预测图上的 ID 映射。</p>
+<p>值得注意的是，GNN 的方法只能利用数字型的 feature、属性，我们没办法把非数字型的属性像在分类情况里那样枚举为数值，相反，我们在真正的 GNN 之前，可以用其他的图方法去建立基于打分、或者相似度的边建立。这时候，这些前边的方法成为了 GNN 链路预测的特征工程。</p>
+<h4 id="基于-gnn-的实操" class="headerLink">
+    <a href="#%e5%9f%ba%e4%ba%8e-gnn-%e7%9a%84%e5%ae%9e%e6%93%8d" class="header-mark"></a>1.5.1 基于 GNN 的实操</h4><p>TBD</p>
+<blockquote>
+<p>Feature image credit by <a href="https://unsplash.com/photos/2fn_pxLMS9g" target="_blank" rel="noopener noreffer">Cosmin Serbin</a></p>
+</blockquote>]]></description>
+</item><item>
     <title>Vesoft Hackathon 2022 流水账</title>
     <link>https://siwei.io/vesoft-hackathon/</link>
     <pubDate>Mon, 08 Aug 2022 10:58:51 &#43;0800</pubDate><author>
@@ -6324,810 +6865,5 @@
     <a href="#graph-database" class="header-mark"></a>7.3 Graph Database</h3><ul>
 <li><a href="https://github.com/vesoft-inc/nebula/" target="_blank" rel="noopener noreffer">Nebula Graph</a> 高性能、云原生的开源分布式图数据库</li>
 </ul>]]></description>
-</item><item>
-    <title>快速搭建调试 Nebula Graph Python Storage 客户端的环境</title>
-    <link>https://siwei.io/nebula-python-storage-docker-guide/</link>
-    <pubDate>Fri, 10 Dec 2021 16:03:07 &#43;0800</pubDate><author>
-        <name>Wey Gu</name>
-    </author><guid>https://siwei.io/nebula-python-storage-docker-guide/</guid>
-    <description><![CDATA[<div class="featured-image">
-                <img src="/nebula-python-storage-docker-guide/featured-image.webp" referrerpolicy="no-referrer">
-            </div><blockquote>
-<p>Python Storage Client 连不上第一次安装的 Nebula Graph？ Docker 部署情况下使用 Python Storage Client 指南</p>
-</blockquote>
-<h2 id="前置条件" class="headerLink">
-    <a href="#%e5%89%8d%e7%bd%ae%e6%9d%a1%e4%bb%b6" class="header-mark"></a>1 前置条件</h2><blockquote>
-<p>注意：一个重要的前置条件是我们真的需要 Storage Client，如果我们只需要在 Python Client 里通过 nGQL 来请求数据，那么 GraphClient 才是你需要的，可以跳过本文。</p>
-</blockquote>
-<p>对于刚接触 Nebula 的同学，部署集群最快速的方式是用 Docker Compose，安装部署可以参考文档：<a href="https://docs.nebula-graph.com.cn/2.6.1/4.deployment-and-installation/2.compile-and-install-nebula-graph/3.deploy-nebula-graph-with-docker-compose/" target="_blank" rel="noopener noreffer">deploy-nebula-graph-with-docker-compose</a>。</p>
-<p>在 <code>docker compose up -d</code> 之后，我们的 nebula 集群就起来了，我们可以用 <code>docker ps</code> 看看运行着的容器：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">❯ docker ps --format <span class="s2">&#34;table {{.Names}}\t{{.Ports}}&#34;</span>
-</span></span><span class="line"><span class="cl">NAMES                               PORTS
-</span></span><span class="line"><span class="cl">nebula-docker-compose-graphd1-1     0.0.0.0:61852-&gt;9669/tcp, 0.0.0.0:61850-&gt;19669/tcp, 0.0.0.0:61851-&gt;19670/tcp
-</span></span><span class="line"><span class="cl">nebula-docker-compose-graphd-1      0.0.0.0:9669-&gt;9669/tcp, 0.0.0.0:61858-&gt;19669/tcp, 0.0.0.0:61859-&gt;19670/tcp
-</span></span><span class="line"><span class="cl">nebula-docker-compose-graphd2-1     0.0.0.0:61855-&gt;9669/tcp, 0.0.0.0:61853-&gt;19669/tcp, 0.0.0.0:61854-&gt;19670/tcp
-</span></span><span class="line"><span class="cl">nebula-docker-compose-storaged2-1   9777-9778/tcp, 9780/tcp, 0.0.0.0:61868-&gt;9779/tcp, 0.0.0.0:61869-&gt;19779/tcp, 0.0.0.0:61870-&gt;19780/tcp
-</span></span><span class="line"><span class="cl">nebula-docker-compose-storaged1-1   9777-9778/tcp, 9780/tcp, 0.0.0.0:61865-&gt;9779/tcp, 0.0.0.0:61866-&gt;19779/tcp, 0.0.0.0:61864-&gt;19780/tcp
-</span></span><span class="line"><span class="cl">nebula-docker-compose-storaged0-1   9777-9778/tcp, 9780/tcp, 0.0.0.0:61845-&gt;9779/tcp, 0.0.0.0:61843-&gt;19779/tcp, 0.0.0.0:61844-&gt;19780/tcp
-</span></span><span class="line"><span class="cl">nebula-docker-compose-metad1-1      9560/tcp, 0.0.0.0:61705-&gt;9559/tcp, 0.0.0.0:61706-&gt;19559/tcp, 0.0.0.0:61707-&gt;19560/tcp
-</span></span><span class="line"><span class="cl">nebula-docker-compose-metad2-1      9560/tcp, 0.0.0.0:61699-&gt;9559/tcp, 0.0.0.0:61700-&gt;19559/tcp, 0.0.0.0:61701-&gt;19560/tcp
-</span></span><span class="line"><span class="cl">nebula-docker-compose-metad0-1      9560/tcp, 0.0.0.0:61704-&gt;9559/tcp, 0.0.0.0:61702-&gt;19559/tcp, 0.0.0.0:61703-&gt;19560/tcp
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>这里边有三种容器 ：</p>
-<ul>
-<li><code>GrpahD</code>，查询引擎，也是我们用户进行登录、连接、发 Query 请求直接访问的唯一一种服务、接口。</li>
-<li><code>MetaD</code>，元数据服务，它一般不会暴露给外部，只有 GraphD 、StorageD 会直接访问它。</li>
-<li><code>StorageD</code>，存储引擎，它一般不会暴露给外部，只有 GraphD、StorageD 会直接访问它。</li>
-</ul>
-<p>我们可以从 Stuido Console，或者 Nebula Console （连接到 GraphD 之后）里通过 <code>SHOW HOSTS &lt;Type&gt;</code>，来获取每种服务的信息，其中第一列的信息就是他们的 IP 或者 Host，下边的例子是 Docker Compose 默认配置下的情况。</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
-</span><span class="lnt">28
-</span><span class="lnt">29
-</span><span class="lnt">30
-</span><span class="lnt">31
-</span><span class="lnt">32
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-sh" data-lang="sh"><span class="line"><span class="cl"><span class="o">(</span>root@nebula<span class="o">)</span> <span class="o">[(</span>none<span class="o">)]</span>&gt; SHOW HOSTS GRAPH
-</span></span><span class="line"><span class="cl">+-----------+------+----------+---------+--------------+---------+
-</span></span><span class="line"><span class="cl"><span class="p">|</span> Host      <span class="p">|</span> Port <span class="p">|</span> Status   <span class="p">|</span> Role    <span class="p">|</span> Git Info Sha <span class="p">|</span> Version <span class="p">|</span>
-</span></span><span class="line"><span class="cl">+-----------+------+----------+---------+--------------+---------+
-</span></span><span class="line"><span class="cl"><span class="p">|</span> <span class="s2">&#34;graphd&#34;</span>  <span class="p">|</span> <span class="m">9669</span> <span class="p">|</span> <span class="s2">&#34;ONLINE&#34;</span> <span class="p">|</span> <span class="s2">&#34;GRAPH&#34;</span> <span class="p">|</span> <span class="s2">&#34;3ba41bd&#34;</span>    <span class="p">|</span> <span class="s2">&#34;2.6.0&#34;</span> <span class="p">|</span>
-</span></span><span class="line"><span class="cl">+-----------+------+----------+---------+--------------+---------+
-</span></span><span class="line"><span class="cl"><span class="p">|</span> <span class="s2">&#34;graphd1&#34;</span> <span class="p">|</span> <span class="m">9669</span> <span class="p">|</span> <span class="s2">&#34;ONLINE&#34;</span> <span class="p">|</span> <span class="s2">&#34;GRAPH&#34;</span> <span class="p">|</span> <span class="s2">&#34;3ba41bd&#34;</span>    <span class="p">|</span> <span class="s2">&#34;2.6.0&#34;</span> <span class="p">|</span>
-</span></span><span class="line"><span class="cl">+-----------+------+----------+---------+--------------+---------+
-</span></span><span class="line"><span class="cl"><span class="p">|</span> <span class="s2">&#34;graphd2&#34;</span> <span class="p">|</span> <span class="m">9669</span> <span class="p">|</span> <span class="s2">&#34;ONLINE&#34;</span> <span class="p">|</span> <span class="s2">&#34;GRAPH&#34;</span> <span class="p">|</span> <span class="s2">&#34;3ba41bd&#34;</span>    <span class="p">|</span> <span class="s2">&#34;2.6.0&#34;</span> <span class="p">|</span>
-</span></span><span class="line"><span class="cl">+-----------+------+----------+---------+--------------+---------+
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="o">(</span>root@nebula<span class="o">)</span> <span class="o">[(</span>none<span class="o">)]</span>&gt; SHOW HOSTS META
-</span></span><span class="line"><span class="cl">+----------+------+----------+--------+--------------+---------+
-</span></span><span class="line"><span class="cl"><span class="p">|</span> Host     <span class="p">|</span> Port <span class="p">|</span> Status   <span class="p">|</span> Role   <span class="p">|</span> Git Info Sha <span class="p">|</span> Version <span class="p">|</span>
-</span></span><span class="line"><span class="cl">+----------+------+----------+--------+--------------+---------+
-</span></span><span class="line"><span class="cl"><span class="p">|</span> <span class="s2">&#34;metad1&#34;</span> <span class="p">|</span> <span class="m">9559</span> <span class="p">|</span> <span class="s2">&#34;ONLINE&#34;</span> <span class="p">|</span> <span class="s2">&#34;META&#34;</span> <span class="p">|</span> <span class="s2">&#34;3ba41bd&#34;</span>    <span class="p">|</span> <span class="s2">&#34;2.6.0&#34;</span> <span class="p">|</span>
-</span></span><span class="line"><span class="cl">+----------+------+----------+--------+--------------+---------+
-</span></span><span class="line"><span class="cl"><span class="p">|</span> <span class="s2">&#34;metad0&#34;</span> <span class="p">|</span> <span class="m">9559</span> <span class="p">|</span> <span class="s2">&#34;ONLINE&#34;</span> <span class="p">|</span> <span class="s2">&#34;META&#34;</span> <span class="p">|</span> <span class="s2">&#34;3ba41bd&#34;</span>    <span class="p">|</span> <span class="s2">&#34;2.6.0&#34;</span> <span class="p">|</span>
-</span></span><span class="line"><span class="cl">+----------+------+----------+--------+--------------+---------+
-</span></span><span class="line"><span class="cl"><span class="p">|</span> <span class="s2">&#34;metad2&#34;</span> <span class="p">|</span> <span class="m">9559</span> <span class="p">|</span> <span class="s2">&#34;ONLINE&#34;</span> <span class="p">|</span> <span class="s2">&#34;META&#34;</span> <span class="p">|</span> <span class="s2">&#34;3ba41bd&#34;</span>    <span class="p">|</span> <span class="s2">&#34;2.6.0&#34;</span> <span class="p">|</span>
-</span></span><span class="line"><span class="cl">+----------+------+----------+--------+--------------+---------+
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="o">(</span>root@nebula<span class="o">)</span> <span class="o">[(</span>none<span class="o">)]</span>&gt; SHOW HOSTS STORAGE
-</span></span><span class="line"><span class="cl">+-------------+------+----------+-----------+--------------+---------+
-</span></span><span class="line"><span class="cl"><span class="p">|</span> Host        <span class="p">|</span> Port <span class="p">|</span> Status   <span class="p">|</span> Role      <span class="p">|</span> Git Info Sha <span class="p">|</span> Version <span class="p">|</span>
-</span></span><span class="line"><span class="cl">+-------------+------+----------+-----------+--------------+---------+
-</span></span><span class="line"><span class="cl"><span class="p">|</span> <span class="s2">&#34;storaged0&#34;</span> <span class="p">|</span> <span class="m">9779</span> <span class="p">|</span> <span class="s2">&#34;ONLINE&#34;</span> <span class="p">|</span> <span class="s2">&#34;STORAGE&#34;</span> <span class="p">|</span> <span class="s2">&#34;3ba41bd&#34;</span>    <span class="p">|</span> <span class="s2">&#34;2.6.0&#34;</span> <span class="p">|</span>
-</span></span><span class="line"><span class="cl">+-------------+------+----------+-----------+--------------+---------+
-</span></span><span class="line"><span class="cl"><span class="p">|</span> <span class="s2">&#34;storaged1&#34;</span> <span class="p">|</span> <span class="m">9779</span> <span class="p">|</span> <span class="s2">&#34;ONLINE&#34;</span> <span class="p">|</span> <span class="s2">&#34;STORAGE&#34;</span> <span class="p">|</span> <span class="s2">&#34;3ba41bd&#34;</span>    <span class="p">|</span> <span class="s2">&#34;2.6.0&#34;</span> <span class="p">|</span>
-</span></span><span class="line"><span class="cl">+-------------+------+----------+-----------+--------------+---------+
-</span></span><span class="line"><span class="cl"><span class="p">|</span> <span class="s2">&#34;storaged2&#34;</span> <span class="p">|</span> <span class="m">9779</span> <span class="p">|</span> <span class="s2">&#34;ONLINE&#34;</span> <span class="p">|</span> <span class="s2">&#34;STORAGE&#34;</span> <span class="p">|</span> <span class="s2">&#34;3ba41bd&#34;</span>    <span class="p">|</span> <span class="s2">&#34;2.6.0&#34;</span> <span class="p">|</span>
-</span></span><span class="line"><span class="cl">+-------------+------+----------+-----------+--------------+---------+
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>在默认的 <a href="https://github.com/vesoft-inc/nebula-docker-compose" target="_blank" rel="noopener noreffer">nebula-docker-compose</a> 的配置下各个服务为<code>graphd</code>, <code>metad1</code>, <code>storaged0</code> 这种域名的 Host 格式，这其实是假设了我们使用 Docker 启动的服务一般是作为单机测试之用，除了其中的 <code>graphd</code>之外，其他的服务都没有指定固定的外部映射端口（见前边的 <code>docker ps</code>  的结果里，它暴露在<code>0.0.0.0:9669</code>)。</p>
-<p>这意味着，如果客户端不是运行在本机，访问其他服务的端口都是动态的，这会让很多第一次想用 Python Storage Client 连接服务的同学卡住。</p>
-<p>所以我这里给大家分享一个快速用 Python 去调试 Storage Client 的方法：</p>
-<blockquote>
-<p>本质上我们可以通过修改 Compose 的配置文件、通过其他部署或者配置的方式安装 Nebula 来保证 Python Client 能够访问 Storage/Meta 服务，这里只是给出一个无需修改配置的方法：让 Python 运行环境处在 Docker Compose 的 Nebula Cluster 同一个容器网络。</p>
-</blockquote>
-<h3 id="第一步把-python-容器" class="headerLink">
-    <a href="#%e7%ac%ac%e4%b8%80%e6%ad%a5%e6%8a%8a-python-%e5%ae%b9%e5%99%a8" class="header-mark"></a>1.1 第一步，把 Python 容器</h3><p>在 <code>nebula-docker-compose_nebula-net</code> 这个容器网络启动一个 Jupyter 的容器。</p>
-<blockquote>
-<p>这里采用了 <a href="https://github.com/jupyter/docker-stacks" target="_blank" rel="noopener noreffer">https://github.com/jupyter/docker-stacks</a> 维护的 Docker Image。</p>
-</blockquote>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker run <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    -p 8888:8888 <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    --network nebula-docker-compose_nebula-net <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    jupyter/scipy-notebook:33add21fab64
-</span></span></code></pre></td></tr></table>
-</div>
-</div><blockquote>
-<p>可以看到容器了，并且在监听端口：8888。</p>
-</blockquote>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="o">[</span>I 07:06:31.060 NotebookApp<span class="o">]</span> Jupyter Notebook 6.3.0 is running at:
-</span></span><span class="line"><span class="cl"><span class="o">[</span>I 07:06:31.060 NotebookApp<span class="o">]</span> http://e170a5eb4858:8888/?token<span class="o">=</span>5beafb26fc6995b081c611d5d2cc96d557897b74bfdaac53
-</span></span><span class="line"><span class="cl"><span class="o">[</span>I 07:06:31.060 NotebookApp<span class="o">]</span> or http://127.0.0.1:8888/?token<span class="o">=</span>5beafb26fc6995b081c611d5d2cc96d557897b74bfdaac53
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>这时候我们可在浏览器打开 http://127.0.0.1:8888/?token=5beafb26fc6995b081c611d5d2cc96d557897b74bfdaac53.</p>
-<p>在里边新建一个 Notebook。</p>
-<h3 id="第二步安装-nebula-python-sdk" class="headerLink">
-    <a href="#%e7%ac%ac%e4%ba%8c%e6%ad%a5%e5%ae%89%e8%a3%85-nebula-python-sdk" class="header-mark"></a>1.2 第二步，安装 Nebula Python SDK</h3><p>我们只需要在 Jupyter 里执行</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="err">!</span><span class="n">pip</span> <span class="n">install</span> <span class="n">nebula2</span><span class="o">-</span><span class="n">python</span><span class="o">==</span><span class="mf">2.6.0</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>就可以了，具体的版本要根据 Nebula Python 的 README 里的<a href="https://github.com/vesoft-inc/nebula-python#how-to-choose-nebula-python" target="_blank" rel="noopener noreffer">版本对应</a>关系来给定。</p>
-<h3 id="第三步实例化-metacache-和-graphstorageclient" class="headerLink">
-    <a href="#%e7%ac%ac%e4%b8%89%e6%ad%a5%e5%ae%9e%e4%be%8b%e5%8c%96-metacache-%e5%92%8c-graphstorageclient" class="header-mark"></a>1.3 第三步，实例化 MetaCache 和 GraphStorageClient</h3><div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">nebula2.mclient</span> <span class="kn">import</span> <span class="n">MetaCache</span><span class="p">,</span> <span class="n">HostAddr</span>
-</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">nebula2.sclient.GraphStorageClient</span> <span class="kn">import</span> <span class="n">GraphStorageClient</span>
-</span></span><span class="line"><span class="cl"><span class="c1"># Docker Compose 下默认 meta 的地址是 metad1 metad0 metad2</span>
-</span></span><span class="line"><span class="cl"><span class="n">meta_cache</span> <span class="o">=</span> <span class="n">MetaCache</span><span class="p">([(</span><span class="s1">&#39;metad1&#39;</span><span class="p">,</span><span class="mi">9559</span><span class="p">),(</span><span class="s1">&#39;metad0&#39;</span><span class="p">,</span><span class="mi">9559</span><span class="p">),(</span><span class="s1">&#39;metad2&#39;</span><span class="p">,</span><span class="mi">9559</span><span class="p">)])</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">graph_storage_client</span> <span class="o">=</span> <span class="n">GraphStorageClient</span><span class="p">(</span><span class="n">meta_cache</span><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><h3 id="第四步扫数据" class="headerLink">
-    <a href="#%e7%ac%ac%e5%9b%9b%e6%ad%a5%e6%89%ab%e6%95%b0%e6%8d%ae" class="header-mark"></a>1.4 第四步，扫数据</h3><ul>
-<li>按空间、点类型扫点</li>
-</ul>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span><span class="lnt">7
-</span><span class="lnt">8
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">resp</span> <span class="o">=</span> <span class="n">graph_storage_client</span><span class="o">.</span><span class="n">scan_vertex</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">        <span class="n">space_name</span><span class="o">=</span><span class="s1">&#39;basketballplayer&#39;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">        <span class="n">tag_name</span><span class="o">=</span><span class="s1">&#39;player&#39;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="k">while</span> <span class="n">resp</span><span class="o">.</span><span class="n">has_next</span><span class="p">():</span>
-</span></span><span class="line"><span class="cl">    <span class="n">result</span> <span class="o">=</span> <span class="n">resp</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="n">vertex_data</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="n">vertex_data</span><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><ul>
-<li>按空间、边类型扫边</li>
-</ul>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span><span class="lnt">7
-</span><span class="lnt">8
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">resp</span> <span class="o">=</span> <span class="n">graph_storage_client</span><span class="o">.</span><span class="n">scan_edge</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="n">space_name</span><span class="o">=</span><span class="s1">&#39;basketballplayer&#39;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="n">edge_name</span><span class="o">=</span><span class="s1">&#39;follow&#39;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="k">while</span> <span class="n">resp</span><span class="o">.</span><span class="n">has_next</span><span class="p">():</span>
-</span></span><span class="line"><span class="cl">    <span class="n">result</span> <span class="o">=</span> <span class="n">resp</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="n">edge_data</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="n">edge_data</span><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>Jupyter 的过程我也记录在<a href="https://siwei.io/nebula-python-storage-docker-guide/Storage_Client_Example.ipynb" target="_blank" rel="noopener noreffer">这个 notebook</a> 里方便大家参考。</p>
-<p>Happy Graphing!</p>
-<blockquote>
-<p>Picture Credit：<a href="https://unsplash.com/photos/AMXFr97d00c" target="_blank" rel="noopener noreffer">Borderpolar Photographer</a></p>
-</blockquote>]]></description>
-</item><item>
-    <title>Nebula Graph 的 Java 数据解析实践与指导</title>
-    <link>https://siwei.io/nebula-java-happy-parsing-guide/</link>
-    <pubDate>Thu, 25 Nov 2021 19:47:53 &#43;0800</pubDate><author>
-        <name>Wey Gu</name>
-    </author><guid>https://siwei.io/nebula-java-happy-parsing-guide/</guid>
-    <description><![CDATA[<div class="featured-image">
-                <img src="/nebula-java-happy-parsing-guide/featured-image.webp" referrerpolicy="no-referrer">
-            </div><blockquote>
-<p>如何快速、即时、符合直觉地去处理 Nebula Java Client 中的数据解析？读这一篇就够了。</p>
-</blockquote>
-<blockquote>
-<p>更新: 2022-Aug-10, adapted to nebulagraph 3.x</p>
-</blockquote>
-<h2 id="关键步骤几行准备一个干净的交互式-nebula-java-repl-环境" class="headerLink">
-    <a href="#%e5%85%b3%e9%94%ae%e6%ad%a5%e9%aa%a4%e5%87%a0%e8%a1%8c%e5%87%86%e5%a4%87%e4%b8%80%e4%b8%aa%e5%b9%b2%e5%87%80%e7%9a%84%e4%ba%a4%e4%ba%92%e5%bc%8f-nebula-java-repl-%e7%8e%af%e5%a2%83" class="header-mark"></a>1 关键步骤：几行准备一个干净的交互式 Nebula Java REPL 环境</h2><p>多亏了 <a href="https://github.com/albertlatacz/java-repl/" target="_blank" rel="noopener noreffer">Java-REPL</a> 我们可以很方便地（像 iPython 那样）去实时交互地调试、分析 Nebula Java 客户端，我们用它的 Docker 镜像可以很干净的去搞定：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker pull albertlatacz/java-repl
-</span></span><span class="line"><span class="cl">docker run --rm -it <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    --network<span class="o">=</span>nebula-net <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    -v ~:/root <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    albertlatacz/java-repl <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    bash
-</span></span><span class="line"><span class="cl">apt update -y <span class="o">&amp;&amp;</span> apt install ca-certificates -y
-</span></span><span class="line"><span class="cl">wget https://dlcdn.apache.org/maven/maven-3/3.8.6/binaries/apache-maven-3.8.6-bin.tar.gz --no-check-certificate
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">tar xzvf apache-maven-3.8.6-bin.tar.gz
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">wget https://github.com/vesoft-inc/nebula-java/archive/refs/tags/v3.0.0.tar.gz
-</span></span><span class="line"><span class="cl">tar xzvf v3.0.0.tar.gz
-</span></span><span class="line"><span class="cl"><span class="nb">cd</span> nebula-java-3.0.0/
-</span></span><span class="line"><span class="cl">../apache-maven-3.8.6/bin/mvn dependency:copy-dependencies
-</span></span><span class="line"><span class="cl">../apache-maven-3.8.6/bin/mvn -B package -Dmaven.test.skip<span class="o">=</span><span class="nb">true</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">java -jar ../javarepl/javarepl.jar
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>这时候，在执行完 <code>java -jar ../javarepl/javarepl.jar</code> 之后，我们就进入了交互式的 Java Shell（REPL），我们可以无需做编译，执行，print 这样的慢反馈来调试和研究我们的代码了，是不是很方便？</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span><span class="lnt">7
-</span><span class="lnt">8
-</span><span class="lnt">9
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">root</span><span class="nd">@a2e26ba62bb6</span><span class="o">:/</span><span class="n">javarepl</span><span class="o">/</span><span class="n">nebula</span><span class="o">-</span><span class="n">java</span><span class="o">-</span><span class="n">3</span><span class="o">.</span><span class="na">0</span><span class="o">.</span><span class="na">0</span><span class="err">#</span> <span class="n">java</span> <span class="o">-</span><span class="n">jar</span> <span class="o">../</span><span class="n">javarepl</span><span class="o">/</span><span class="n">javarepl</span><span class="o">.</span><span class="na">jar</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">Welcome</span> <span class="n">to</span> <span class="n">JavaREPL</span> <span class="n">version</span> <span class="nf">428</span> <span class="o">(</span><span class="n">Java</span> <span class="nf">HotSpot</span><span class="o">(</span><span class="n">TM</span><span class="o">)</span> <span class="n">64</span><span class="o">-</span><span class="n">Bit</span> <span class="n">Server</span> <span class="n">VM</span><span class="o">,</span> <span class="n">Java</span> <span class="n">1</span><span class="o">.</span><span class="na">8</span><span class="o">.</span><span class="na">0_111</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl"><span class="n">Type</span> <span class="n">expression</span> <span class="n">to</span> <span class="n">evaluate</span><span class="o">,</span> <span class="o">:</span><span class="n">help</span> <span class="k">for</span> <span class="n">more</span> <span class="n">options</span> <span class="n">or</span> <span class="n">press</span> <span class="n">tab</span> <span class="n">to</span> <span class="n">auto</span><span class="o">-</span><span class="n">complete</span><span class="o">.</span>
-</span></span><span class="line"><span class="cl"><span class="n">Connected</span> <span class="n">to</span> <span class="n">local</span> <span class="n">instance</span> <span class="n">at</span> <span class="n">http</span><span class="o">:</span><span class="c1">//localhost:43707
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
-</span></span><span class="line"><span class="cl"><span class="n">java</span><span class="o">&gt;</span> <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&#34;Hello, World!&#34;</span><span class="o">);</span>
-</span></span><span class="line"><span class="cl"><span class="n">Hello</span><span class="o">,</span> <span class="n">World</span><span class="o">!</span>
-</span></span><span class="line"><span class="cl"><span class="n">java</span><span class="o">&gt;</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>首先我们在 <code>java&gt;</code> 提示符下，这些来把必须的类路径和导入：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="o">:</span><span class="n">cp</span> <span class="o">/</span><span class="n">javarepl</span><span class="o">/</span><span class="n">nebula</span><span class="o">-</span><span class="n">java</span><span class="o">-</span><span class="n">3</span><span class="o">.</span><span class="na">0</span><span class="o">.</span><span class="na">0</span><span class="o">/</span><span class="n">client</span><span class="o">/</span><span class="n">target</span><span class="o">/</span><span class="n">client</span><span class="o">-</span><span class="n">3</span><span class="o">.</span><span class="na">0</span><span class="o">.</span><span class="na">0</span><span class="o">.</span><span class="na">jar</span>
-</span></span><span class="line"><span class="cl"><span class="o">:</span><span class="n">cp</span> <span class="o">/</span><span class="n">javarepl</span><span class="o">/</span><span class="n">nebula</span><span class="o">-</span><span class="n">java</span><span class="o">-</span><span class="n">3</span><span class="o">.</span><span class="na">0</span><span class="o">.</span><span class="na">0</span><span class="o">/</span><span class="n">client</span><span class="o">/</span><span class="n">target</span><span class="o">/</span><span class="n">dependency</span><span class="o">/</span><span class="n">fastjson</span><span class="o">-</span><span class="n">1</span><span class="o">.</span><span class="na">2</span><span class="o">.</span><span class="na">78</span><span class="o">.</span><span class="na">jar</span>
-</span></span><span class="line"><span class="cl"><span class="o">:</span><span class="n">cp</span> <span class="o">/</span><span class="n">javarepl</span><span class="o">/</span><span class="n">nebula</span><span class="o">-</span><span class="n">java</span><span class="o">-</span><span class="n">3</span><span class="o">.</span><span class="na">0</span><span class="o">.</span><span class="na">0</span><span class="o">/</span><span class="n">client</span><span class="o">/</span><span class="n">target</span><span class="o">/</span><span class="n">dependency</span><span class="o">/</span><span class="n">slf4j</span><span class="o">-</span><span class="n">api</span><span class="o">-</span><span class="n">1</span><span class="o">.</span><span class="na">7</span><span class="o">.</span><span class="na">25</span><span class="o">.</span><span class="na">jar</span>
-</span></span><span class="line"><span class="cl"><span class="o">:</span><span class="n">cp</span> <span class="o">/</span><span class="n">javarepl</span><span class="o">/</span><span class="n">nebula</span><span class="o">-</span><span class="n">java</span><span class="o">-</span><span class="n">3</span><span class="o">.</span><span class="na">0</span><span class="o">.</span><span class="na">0</span><span class="o">/</span><span class="n">client</span><span class="o">/</span><span class="n">target</span><span class="o">/</span><span class="n">dependency</span><span class="o">/</span><span class="n">slf4j</span><span class="o">-</span><span class="n">log4j12</span><span class="o">-</span><span class="n">1</span><span class="o">.</span><span class="na">7</span><span class="o">.</span><span class="na">25</span><span class="o">.</span><span class="na">jar</span>
-</span></span><span class="line"><span class="cl"><span class="o">:</span><span class="n">cp</span> <span class="o">/</span><span class="n">javarepl</span><span class="o">/</span><span class="n">nebula</span><span class="o">-</span><span class="n">java</span><span class="o">-</span><span class="n">3</span><span class="o">.</span><span class="na">0</span><span class="o">.</span><span class="na">0</span><span class="o">/</span><span class="n">client</span><span class="o">/</span><span class="n">target</span><span class="o">/</span><span class="n">dependency</span><span class="o">/</span><span class="n">commons</span><span class="o">-</span><span class="n">pool2</span><span class="o">-</span><span class="n">2</span><span class="o">.</span><span class="na">2</span><span class="o">.</span><span class="na">jar</span>
-</span></span><span class="line"><span class="cl"><span class="o">:</span><span class="n">cp</span> <span class="o">/</span><span class="n">javarepl</span><span class="o">/</span><span class="n">nebula</span><span class="o">-</span><span class="n">java</span><span class="o">-</span><span class="n">3</span><span class="o">.</span><span class="na">0</span><span class="o">.</span><span class="na">0</span><span class="o">/</span><span class="n">client</span><span class="o">/</span><span class="n">target</span><span class="o">/</span><span class="n">dependency</span><span class="o">/</span><span class="n">log4j</span><span class="o">-</span><span class="n">1</span><span class="o">.</span><span class="na">2</span><span class="o">.</span><span class="na">17</span><span class="o">.</span><span class="na">jar</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">com.alibaba.fastjson.JSON</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">com.alibaba.fastjson.JSONObject</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">com.vesoft.nebula.ErrorCode</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">com.vesoft.nebula.client.graph.NebulaPoolConfig</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">com.vesoft.nebula.client.graph.data.CASignedSSLParam</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">com.vesoft.nebula.client.graph.data.HostAddress</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">com.vesoft.nebula.client.graph.data.ResultSet</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">com.vesoft.nebula.client.graph.data.SelfSignedSSLParam</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">com.vesoft.nebula.client.graph.data.ValueWrapper</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">com.vesoft.nebula.client.graph.net.NebulaPool</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">com.vesoft.nebula.client.graph.net.Session</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">java.io.UnsupportedEncodingException</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">java.util.Arrays</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">java.util.List</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">java.util.concurrent.TimeUnit</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">org.slf4j.Logger</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">org.slf4j.LoggerFactory</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">java.lang.reflect.*</span><span class="o">;</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>我们可以从这 Java 环境连接到 Nebula Graph 里，下边的例子里我用了自己的 GraphD 的 IP 和端口作为例子：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">NebulaPoolConfig</span> <span class="n">nebulaPoolConfig</span> <span class="o">=</span> <span class="k">new</span> <span class="n">NebulaPoolConfig</span><span class="o">();</span>
-</span></span><span class="line"><span class="cl"><span class="n">nebulaPoolConfig</span><span class="o">.</span><span class="na">setMaxConnSize</span><span class="o">(</span><span class="n">10</span><span class="o">);</span>
-</span></span><span class="line"><span class="cl"><span class="n">List</span><span class="o">&lt;</span><span class="n">HostAddress</span><span class="o">&gt;</span> <span class="n">addresses</span> <span class="o">=</span> <span class="n">Arrays</span><span class="o">.</span><span class="na">asList</span><span class="o">(</span><span class="k">new</span> <span class="n">HostAddress</span><span class="o">(</span><span class="s">&#34;192.168.8.127&#34;</span><span class="o">,</span> <span class="n">9669</span><span class="o">));</span>
-</span></span><span class="line"><span class="cl"><span class="n">NebulaPool</span> <span class="n">pool</span> <span class="o">=</span> <span class="k">new</span> <span class="n">NebulaPool</span><span class="o">();</span>
-</span></span><span class="line"><span class="cl"><span class="n">pool</span><span class="o">.</span><span class="na">init</span><span class="o">(</span><span class="n">addresses</span><span class="o">,</span> <span class="n">nebulaPoolConfig</span><span class="o">);</span>
-</span></span><span class="line"><span class="cl"><span class="n">Session</span> <span class="n">session</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="na">getSession</span><span class="o">(</span><span class="s">&#34;root&#34;</span><span class="o">,</span> <span class="s">&#34;nebula&#34;</span><span class="o">,</span> <span class="kc">false</span><span class="o">);</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><h2 id="通过调用-execute-方法获得不太容易懂的-resultset-对象" class="headerLink">
-    <a href="#%e9%80%9a%e8%bf%87%e8%b0%83%e7%94%a8-execute-%e6%96%b9%e6%b3%95%e8%8e%b7%e5%be%97%e4%b8%8d%e5%a4%aa%e5%ae%b9%e6%98%93%e6%87%82%e7%9a%84-resultset-%e5%af%b9%e8%b1%a1" class="header-mark"></a>2 通过调用 <code>execute</code> 方法获得不太容易懂的 ResultSet 对象</h2><p>刚接触这里的大家一定对这个 ResultSet 对象有些愁，借助我们的环境，咱们来十分钟把它搞通吧，这里我们执行一个简单的返回 Vertex 顶点的结果看看：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">ResultSet</span> <span class="n">resp</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="na">execute</span><span class="o">(</span><span class="s">&#34;USE basketballplayer;MATCH (n:player) WHERE n.name==\&#34;Tim Duncan\&#34; RETURN n&#34;</span><span class="o">);</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>这里我们可以参考 ResultSet 的代码：</p>
-<blockquote>
-<p>Reference: <a href="https://github.dev/vesoft-inc/nebula-java/blob/master/client/src/main/java/com/vesoft/nebula/client/graph/data/ResultSet.java" target="_blank" rel="noopener noreffer">client/graph/data/ResultSet.java</a></p>
-</blockquote>
-<p>好吧，其实可以先不看，跟着我的教程往下走吧，我们知道结果都是二维的表，ResultSet 提供了常见的针对行、列的一些方法，通常，我们是获取每一行，然后解析它，而关键的问题是每一个值要怎么处理，对吧。</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">java</span><span class="o">&gt;</span> <span class="n">resp</span><span class="o">.</span><span class="na">isSucceeded</span><span class="o">()</span>
-</span></span><span class="line"><span class="cl"><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">Boolean</span> <span class="n">res9</span> <span class="o">=</span> <span class="kc">true</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">java</span><span class="o">&gt;</span> <span class="n">resp</span><span class="o">.</span><span class="na">rowsSize</span><span class="o">()</span>
-</span></span><span class="line"><span class="cl"><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">Integer</span> <span class="n">res16</span> <span class="o">=</span> <span class="n">1</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">java</span><span class="o">&gt;</span> <span class="n">rows</span> <span class="o">=</span> <span class="n">resp</span><span class="o">.</span><span class="na">getRows</span><span class="o">()</span>
-</span></span><span class="line"><span class="cl"><span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">ArrayList</span> <span class="n">rows</span> <span class="o">=</span> <span class="o">[</span><span class="n">Row</span> <span class="o">(</span>
-</span></span><span class="line"><span class="cl">  <span class="n">values</span> <span class="o">:</span> <span class="o">[</span>
-</span></span><span class="line"><span class="cl">    <span class="o">&lt;</span><span class="n">Value</span> <span class="n">vVal</span><span class="o">:</span><span class="n">Vertex</span> <span class="o">(</span>
-</span></span><span class="line"><span class="cl">        <span class="n">vid</span> <span class="o">:</span> <span class="o">&lt;</span><span class="n">Value</span> <span class="n">sVal</span><span class="o">:</span><span class="n">70</span> <span class="n">6c</span> <span class="n">61</span> <span class="n">79</span> <span class="n">65</span> <span class="n">72</span> <span class="n">31</span> <span class="n">30</span> <span class="n">30</span><span class="o">&gt;,</span>
-</span></span><span class="line"><span class="cl">        <span class="n">tags</span> <span class="o">:</span> <span class="o">[</span>
-</span></span><span class="line"><span class="cl">          <span class="n">Tag</span> <span class="o">(</span>
-</span></span><span class="line"><span class="cl">              <span class="n">name</span> <span class="o">:</span> <span class="n">70</span> <span class="n">6C</span> <span class="n">61</span> <span class="n">79</span> <span class="n">65</span> <span class="n">72</span><span class="o">,</span>
-</span></span><span class="line"><span class="cl">              <span class="n">props</span> <span class="o">:</span> <span class="o">{</span>
-</span></span><span class="line"><span class="cl">                <span class="o">[</span><span class="n">B</span><span class="nd">@5264a468</span> <span class="o">:</span> <span class="o">&lt;</span><span class="n">Value</span> <span class="n">iVal</span><span class="o">:</span><span class="n">42</span><span class="o">&gt;</span>
-</span></span><span class="line"><span class="cl">                <span class="o">[</span><span class="n">B</span><span class="nd">@496b8e10</span> <span class="o">:</span> <span class="o">&lt;</span><span class="n">Value</span> <span class="n">sVal</span><span class="o">:</span><span class="n">54</span> <span class="n">69</span> <span class="n">6d</span> <span class="n">20</span> <span class="n">44</span> <span class="n">75</span> <span class="n">6e</span> <span class="n">63</span> <span class="n">61</span> <span class="n">6e</span><span class="o">&gt;</span>
-</span></span><span class="line"><span class="cl">              <span class="o">}</span>
-</span></span><span class="line"><span class="cl">            <span class="o">)</span>
-</span></span><span class="line"><span class="cl">        <span class="o">]</span>
-</span></span><span class="line"><span class="cl">      <span class="o">)&gt;</span>
-</span></span><span class="line"><span class="cl">  <span class="o">]</span>
-</span></span><span class="line"><span class="cl"><span class="o">)]</span>
-</span></span><span class="line"><span class="cl">    
-</span></span><span class="line"><span class="cl"><span class="n">java</span><span class="o">&gt;</span> <span class="n">row0</span> <span class="o">=</span> <span class="n">resp</span><span class="o">.</span><span class="na">rowValues</span><span class="o">(</span><span class="n">0</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl"><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">Iterable</span><span class="o">&lt;</span><span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ValueWrapper</span><span class="o">&gt;</span> <span class="n">res10</span> <span class="o">=</span> <span class="n">ColumnName</span><span class="o">:</span> <span class="o">[</span><span class="n">n</span><span class="o">],</span> <span class="n">Values</span><span class="o">:</span> <span class="o">[(</span><span class="s">&#34;player100&#34;</span> <span class="o">:</span><span class="n">player</span> <span class="o">{</span><span class="n">name</span><span class="o">:</span> <span class="s">&#34;Tim Duncan&#34;</span><span class="o">,</span> <span class="n">age</span><span class="o">:</span> <span class="n">42</span><span class="o">})]</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>我们其实回到这次的 query ，其实是返回一个 vertex：顶点：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span><span class="lnt">7
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">(root@nebula) [basketballplayer]&gt; match (n:player) WHERE n.name == &#34;Tim Duncan&#34; return n
-</span></span><span class="line"><span class="cl">+----------------------------------------------------+
-</span></span><span class="line"><span class="cl">| n                                                  |
-</span></span><span class="line"><span class="cl">+----------------------------------------------------+
-</span></span><span class="line"><span class="cl">| (&#34;player100&#34; :player{age: 42, name: &#34;Tim Duncan&#34;}) |
-</span></span><span class="line"><span class="cl">+----------------------------------------------------+
-</span></span><span class="line"><span class="cl">Got 1 rows (time spent 2116/44373 us)
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>通过上边的几个方法，我们其实能够获得这个顶点的值：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">v</span> <span class="o">=</span> <span class="n">Class</span><span class="o">.</span><span class="na">forName</span><span class="o">(</span><span class="s">&#34;com.vesoft.nebula.Value&#34;</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl"><span class="n">v</span><span class="o">.</span><span class="na">getDeclaredMethods</span><span class="o">()</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>然而，我们可以看出来这个 <code>com.vesoft.nebula.Value</code> 的值的类提供的方法特别特别原始，这也是让大家犯愁的原因，在这个教程里最重要的一个带走的经验（除了利用 REPL之外）就是：除非必要，不要去取这个原始的类，我们应该去取得 <code>ValueWrapper</code> 封装之后的值！！！</p>
-<blockquote>
-<p>注意：其实我们有更轻松地方法，就是用 executeJson 直接获得 JSON string，别担心，会在后边提到，不过这个方法要 2.6 之后才支持。</p>
-</blockquote>
-<p>那么问题来了，如何使用 <code>ValueWrapper</code> 封装呢？其实答案已经在上边了，大家可以回去看看，resp.rowValues(0) 的类型正是 ValueWrapper 的可迭代对象！</p>
-<p>所以，正确打开方式是迭它！迭它！迭它！其实这个就是代码库里的 GraphClientExample 的一部分例子了，我们把它迭代取出来，放到 <code>wrappedValueList</code> 里慢慢把玩：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
-</span><span class="lnt">28
-</span><span class="lnt">29
-</span><span class="lnt">30
-</span><span class="lnt">31
-</span><span class="lnt">32
-</span><span class="lnt">33
-</span><span class="lnt">34
-</span><span class="lnt">35
-</span><span class="lnt">36
-</span><span class="lnt">37
-</span><span class="lnt">38
-</span><span class="lnt">39
-</span><span class="lnt">40
-</span><span class="lnt">41
-</span><span class="lnt">42
-</span><span class="lnt">43
-</span><span class="lnt">44
-</span><span class="lnt">45
-</span><span class="lnt">46
-</span><span class="lnt">47
-</span><span class="lnt">48
-</span><span class="lnt">49
-</span><span class="lnt">50
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">java.util.ArrayList</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">java.util.List</span><span class="o">;</span>
-</span></span><span class="line"><span class="cl"><span class="n">List</span><span class="o">&lt;</span><span class="n">ValueWrapper</span><span class="o">&gt;</span> <span class="n">wrappedValueList</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">&lt;&gt;();</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="n">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">resp</span><span class="o">.</span><span class="na">rowsSize</span><span class="o">();</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
-</span></span><span class="line"><span class="cl">    <span class="n">ResultSet</span><span class="o">.</span><span class="na">Record</span> <span class="n">record</span> <span class="o">=</span> <span class="n">resp</span><span class="o">.</span><span class="na">rowValues</span><span class="o">(</span><span class="n">i</span><span class="o">);</span>
-</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="o">(</span><span class="n">ValueWrapper</span> <span class="n">value</span> <span class="o">:</span> <span class="n">record</span><span class="o">.</span><span class="na">values</span><span class="o">())</span> <span class="o">{</span>
-</span></span><span class="line"><span class="cl">        <span class="n">wrappedValueList</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">value</span><span class="o">);</span>
-</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="o">(</span><span class="n">value</span><span class="o">.</span><span class="na">isLong</span><span class="o">())</span> <span class="o">{</span>
-</span></span><span class="line"><span class="cl">            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">printf</span><span class="o">(</span><span class="s">&#34;%15s |&#34;</span><span class="o">,</span> <span class="n">value</span><span class="o">.</span><span class="na">asLong</span><span class="o">());</span>
-</span></span><span class="line"><span class="cl">        <span class="o">}</span>
-</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="o">(</span><span class="n">value</span><span class="o">.</span><span class="na">isBoolean</span><span class="o">())</span> <span class="o">{</span>
-</span></span><span class="line"><span class="cl">            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">printf</span><span class="o">(</span><span class="s">&#34;%15s |&#34;</span><span class="o">,</span> <span class="n">value</span><span class="o">.</span><span class="na">asBoolean</span><span class="o">());</span>
-</span></span><span class="line"><span class="cl">        <span class="o">}</span>
-</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="o">(</span><span class="n">value</span><span class="o">.</span><span class="na">isDouble</span><span class="o">())</span> <span class="o">{</span>
-</span></span><span class="line"><span class="cl">            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">printf</span><span class="o">(</span><span class="s">&#34;%15s |&#34;</span><span class="o">,</span> <span class="n">value</span><span class="o">.</span><span class="na">asDouble</span><span class="o">());</span>
-</span></span><span class="line"><span class="cl">        <span class="o">}</span>
-</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="o">(</span><span class="n">value</span><span class="o">.</span><span class="na">isString</span><span class="o">())</span> <span class="o">{</span>
-</span></span><span class="line"><span class="cl">            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">printf</span><span class="o">(</span><span class="s">&#34;%15s |&#34;</span><span class="o">,</span> <span class="n">value</span><span class="o">.</span><span class="na">asString</span><span class="o">());</span>
-</span></span><span class="line"><span class="cl">        <span class="o">}</span>
-</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="o">(</span><span class="n">value</span><span class="o">.</span><span class="na">isTime</span><span class="o">())</span> <span class="o">{</span>
-</span></span><span class="line"><span class="cl">            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">printf</span><span class="o">(</span><span class="s">&#34;%15s |&#34;</span><span class="o">,</span> <span class="n">value</span><span class="o">.</span><span class="na">asTime</span><span class="o">());</span>
-</span></span><span class="line"><span class="cl">        <span class="o">}</span>
-</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="o">(</span><span class="n">value</span><span class="o">.</span><span class="na">isDate</span><span class="o">())</span> <span class="o">{</span>
-</span></span><span class="line"><span class="cl">            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">printf</span><span class="o">(</span><span class="s">&#34;%15s |&#34;</span><span class="o">,</span> <span class="n">value</span><span class="o">.</span><span class="na">asDate</span><span class="o">());</span>
-</span></span><span class="line"><span class="cl">        <span class="o">}</span>
-</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="o">(</span><span class="n">value</span><span class="o">.</span><span class="na">isDateTime</span><span class="o">())</span> <span class="o">{</span>
-</span></span><span class="line"><span class="cl">            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">printf</span><span class="o">(</span><span class="s">&#34;%15s |&#34;</span><span class="o">,</span> <span class="n">value</span><span class="o">.</span><span class="na">asDateTime</span><span class="o">());</span>
-</span></span><span class="line"><span class="cl">        <span class="o">}</span>
-</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="o">(</span><span class="n">value</span><span class="o">.</span><span class="na">isVertex</span><span class="o">())</span> <span class="o">{</span>
-</span></span><span class="line"><span class="cl">            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">printf</span><span class="o">(</span><span class="s">&#34;%15s |&#34;</span><span class="o">,</span> <span class="n">value</span><span class="o">.</span><span class="na">asNode</span><span class="o">());</span>
-</span></span><span class="line"><span class="cl">        <span class="o">}</span>
-</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="o">(</span><span class="n">value</span><span class="o">.</span><span class="na">isEdge</span><span class="o">())</span> <span class="o">{</span>
-</span></span><span class="line"><span class="cl">            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">printf</span><span class="o">(</span><span class="s">&#34;%15s |&#34;</span><span class="o">,</span> <span class="n">value</span><span class="o">.</span><span class="na">asRelationship</span><span class="o">());</span>
-</span></span><span class="line"><span class="cl">        <span class="o">}</span>
-</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="o">(</span><span class="n">value</span><span class="o">.</span><span class="na">isPath</span><span class="o">())</span> <span class="o">{</span>
-</span></span><span class="line"><span class="cl">            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">printf</span><span class="o">(</span><span class="s">&#34;%15s |&#34;</span><span class="o">,</span> <span class="n">value</span><span class="o">.</span><span class="na">asPath</span><span class="o">());</span>
-</span></span><span class="line"><span class="cl">        <span class="o">}</span>
-</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="o">(</span><span class="n">value</span><span class="o">.</span><span class="na">isList</span><span class="o">())</span> <span class="o">{</span>
-</span></span><span class="line"><span class="cl">            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">printf</span><span class="o">(</span><span class="s">&#34;%15s |&#34;</span><span class="o">,</span> <span class="n">value</span><span class="o">.</span><span class="na">asList</span><span class="o">());</span>
-</span></span><span class="line"><span class="cl">        <span class="o">}</span>
-</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="o">(</span><span class="n">value</span><span class="o">.</span><span class="na">isSet</span><span class="o">())</span> <span class="o">{</span>
-</span></span><span class="line"><span class="cl">            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">printf</span><span class="o">(</span><span class="s">&#34;%15s |&#34;</span><span class="o">,</span> <span class="n">value</span><span class="o">.</span><span class="na">asSet</span><span class="o">());</span>
-</span></span><span class="line"><span class="cl">        <span class="o">}</span>
-</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="o">(</span><span class="n">value</span><span class="o">.</span><span class="na">isMap</span><span class="o">())</span> <span class="o">{</span>
-</span></span><span class="line"><span class="cl">            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">printf</span><span class="o">(</span><span class="s">&#34;%15s |&#34;</span><span class="o">,</span> <span class="n">value</span><span class="o">.</span><span class="na">asMap</span><span class="o">());</span>
-</span></span><span class="line"><span class="cl">        <span class="o">}</span>
-</span></span><span class="line"><span class="cl">    <span class="o">}</span>
-</span></span><span class="line"><span class="cl">    <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">();</span>
-</span></span><span class="line"><span class="cl"><span class="o">}</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>上边这些很丑的 if 就是关键了，我们知道 query 的返回值可能是多种类型的，他们分为：</p>
-<ul>
-<li>图语义的：点、边、路径</li>
-<li>数据类型：String，日期，列表，集合 等等等</li>
-</ul>
-<p>这里的关键是，我们要使用 <code>ValueWrapper</code> 为我们准备好的 <code>asXxx</code> 方法，如果这个值是一个顶点，么这个 Xxx 就是 Node，同理如果是边的话，这个 Xxx 就是 Relationship。</p>
-<p>所以，我给大家看看咱们这个返回点结果的情况下的 <code>asNode()</code> 方法：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">java</span><span class="o">&gt;</span> <span class="n">v</span> <span class="o">=</span> <span class="n">wrappedValueList</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">0</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl"><span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ValueWrapper</span> <span class="n">v</span> <span class="o">=</span> <span class="o">(</span><span class="s">&#34;player100&#34;</span> <span class="o">:</span><span class="n">player</span> <span class="o">{</span><span class="n">name</span><span class="o">:</span> <span class="s">&#34;Tim Duncan&#34;</span><span class="o">,</span> <span class="n">age</span><span class="o">:</span> <span class="n">42</span><span class="o">})</span>
-</span></span><span class="line"><span class="cl"><span class="n">java</span><span class="o">&gt;</span> <span class="n">v</span><span class="o">.</span><span class="na">asNode</span><span class="o">()</span>
-</span></span><span class="line"><span class="cl"><span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">Node</span> <span class="n">res16</span> <span class="o">=</span> <span class="o">(</span><span class="s">&#34;player100&#34;</span> <span class="o">:</span><span class="n">player</span> <span class="o">{</span><span class="n">name</span><span class="o">:</span> <span class="s">&#34;Tim Duncan&#34;</span><span class="o">,</span> <span class="n">age</span><span class="o">:</span> <span class="n">42</span><span class="o">})</span>
-</span></span><span class="line"><span class="cl"><span class="n">java</span><span class="o">&gt;</span> <span class="n">node</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="na">asNode</span><span class="o">()</span>
-</span></span><span class="line"><span class="cl"><span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">Node</span> <span class="n">node</span> <span class="o">=</span> <span class="o">(</span><span class="s">&#34;player100&#34;</span> <span class="o">:</span><span class="n">player</span> <span class="o">{</span><span class="n">name</span><span class="o">:</span> <span class="s">&#34;Tim Duncan&#34;</span><span class="o">,</span> <span class="n">age</span><span class="o">:</span> <span class="n">42</span><span class="o">})</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>顺便说一下，借助于 Java 的 reflection ，我们可以在这个交互程序里做类似于 Python 里 <code>dir()</code> 的事情，实时地去获取一个类支持的方法，像这样，省去了查代码。</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">java</span><span class="o">&gt;</span> <span class="n">rClass</span><span class="o">=</span><span class="n">Class</span><span class="o">.</span><span class="na">forName</span><span class="o">(</span><span class="s">&#34;com.vesoft.nebula.client.graph.data.ResultSet&#34;</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl"><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">Class</span> <span class="n">r</span> <span class="o">=</span> <span class="kd">class</span> <span class="nc">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet</span>
-</span></span><span class="line"><span class="cl"><span class="n">java</span><span class="o">&gt;</span> <span class="n">rClass</span><span class="o">.</span><span class="na">getDeclaredMethods</span><span class="o">()</span>
-</span></span><span class="line"><span class="cl"><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">reflect</span><span class="o">.</span><span class="na">Method</span><span class="o">[]</span> <span class="n">res20</span> <span class="o">=</span> <span class="o">[</span><span class="kd">public</span> <span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">List</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet</span><span class="o">.</span><span class="na">getColumnNames</span><span class="o">(),</span> <span class="kd">public</span> <span class="kt">int</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet</span><span class="o">.</span><span class="na">rowsSize</span><span class="o">(),</span> <span class="kd">public</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet$Record</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet</span><span class="o">.</span><span class="na">rowValues</span><span class="o">(</span><span class="kt">int</span><span class="o">),</span> <span class="kd">public</span> <span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">List</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet</span><span class="o">.</span><span class="na">colValues</span><span class="o">(</span><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span><span class="o">),</span> <span class="kd">public</span> <span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet</span><span class="o">.</span><span class="na">getErrorMessage</span><span class="o">(),</span> <span class="kd">public</span> <span class="kt">boolean</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet</span><span class="o">.</span><span class="na">isSucceeded</span><span class="o">(),</span> <span class="kd">public</span> <span class="kt">int</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet</span><span class="o">.</span><span class="na">getErrorCode</span><span class="o">(),</span> <span class="kd">public</span> <span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet</span><span class="o">.</span><span class="na">getSpaceName</span><span class="o">(),</span> <span class="kd">public</span> <span class="kt">int</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet</span><span class="o">.</span><span class="na">getLatency</span><span class="o">(),</span> <span class="kd">public</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">PlanDescription</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet</span><span class="o">.</span><span class="na">getPlanDesc</span><span class="o">(),</span> <span class="kd">public</span> <span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">List</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet</span><span class="o">.</span><span class="na">getRows</span><span class="o">(),</span> <span class="kd">public</span> <span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet</span><span class="o">.</span><span class="na">getComment</span><span class="o">(),</span> <span class="kd">public</span> <span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet</span><span class="o">.</span><span class="na">toString</span><span class="o">(),</span> <span class="kd">public</span> <span class="kt">boolean</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet</span><span class="o">.</span><span class="na">isEmpty</span><span class="o">(),</span> <span class="kd">public</span> <span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">List</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ResultSet</span><span class="o">.</span><span class="na">keys</span><span class="o">()]</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>这样：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">java</span><span class="o">&gt;</span> <span class="n">nodeClass</span><span class="o">=</span><span class="n">Class</span><span class="o">.</span><span class="na">forName</span><span class="o">(</span><span class="s">&#34;com.vesoft.nebula.client.graph.data.Node&#34;</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl"><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">Class</span> <span class="n">nodeClass</span> <span class="o">=</span> <span class="kd">class</span> <span class="nc">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">Node</span>
-</span></span><span class="line"><span class="cl"><span class="n">java</span><span class="o">&gt;</span> <span class="n">nodeClass</span><span class="o">.</span><span class="na">getDeclaredMethods</span><span class="o">()</span>
-</span></span><span class="line"><span class="cl"><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">reflect</span><span class="o">.</span><span class="na">Method</span><span class="o">[]</span> <span class="n">res20</span> <span class="o">=</span> <span class="o">[</span><span class="kd">public</span> <span class="kt">boolean</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">Node</span><span class="o">.</span><span class="na">hasTagName</span><span class="o">(</span><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span><span class="o">),</span> <span class="kd">public</span> <span class="kt">boolean</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">Node</span><span class="o">.</span><span class="na">hasLabel</span><span class="o">(</span><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span><span class="o">),</span> <span class="kd">public</span> <span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">List</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">Node</span><span class="o">.</span><span class="na">tagNames</span><span class="o">(),</span> <span class="kd">public</span> <span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">HashMap</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">Node</span><span class="o">.</span><span class="na">properties</span><span class="o">(</span><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">java</span><span class="o">.</span><span class="na">io</span><span class="o">.</span><span class="na">UnsupportedEncodingException</span><span class="o">,</span> <span class="kd">public</span> <span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">List</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">Node</span><span class="o">.</span><span class="na">labels</span><span class="o">(),</span> <span class="kd">public</span> <span class="kt">boolean</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">Node</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">Object</span><span class="o">),</span> <span class="kd">public</span> <span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">Node</span><span class="o">.</span><span class="na">toString</span><span class="o">(),</span> <span class="kd">public</span> <span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">List</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">Node</span><span class="o">.</span><span class="na">values</span><span class="o">(</span><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span><span class="o">),</span> <span class="kd">public</span> <span class="kt">int</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">Node</span><span class="o">.</span><span class="na">hashCode</span><span class="o">(),</span> <span class="kd">public</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">ValueWrapper</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">Node</span><span class="o">.</span><span class="na">getId</span><span class="o">(),</span> <span class="kd">public</span> <span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">List</span> <span class="n">com</span><span class="o">.</span><span class="na">vesoft</span><span class="o">.</span><span class="na">nebula</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">graph</span><span class="o">.</span><span class="na">data</span><span class="o">.</span><span class="na">Node</span><span class="o">.</span><span class="na">keys</span><span class="o">(</span><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">java</span><span class="o">.</span><span class="na">io</span><span class="o">.</span><span class="na">UnsupportedEncodingException</span><span class="o">]</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>看到这里，大家应该看到了这个封装了的 ValueWrapper 的好处了吧？它提供了方便的符合直觉的方法，对于 Node 类型来说，它提供了 <code>tagNames()</code>, <code>properties()</code>, <code>labels()</code> 等等非常好用的方法：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span><span class="lnt">7
-</span><span class="lnt">8
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">java</span><span class="o">&gt;</span> <span class="n">node</span><span class="o">.</span><span class="na">properties</span><span class="o">(</span><span class="s">&#34;player&#34;</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl"><span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">HashMap</span> <span class="n">res11</span> <span class="o">=</span> <span class="o">{</span><span class="n">name</span><span class="o">=</span><span class="s">&#34;Tim Duncan&#34;</span><span class="o">,</span> <span class="n">age</span><span class="o">=</span><span class="n">42</span><span class="o">}</span>
-</span></span><span class="line"><span class="cl"><span class="n">java</span><span class="o">&gt;</span> <span class="n">node</span><span class="o">.</span><span class="na">tagNames</span><span class="o">()</span>
-</span></span><span class="line"><span class="cl"><span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">ArrayList</span> <span class="n">res12</span> <span class="o">=</span> <span class="o">[</span><span class="n">player</span><span class="o">]</span>
-</span></span><span class="line"><span class="cl"><span class="n">java</span><span class="o">&gt;</span> <span class="n">node</span><span class="o">.</span><span class="na">labels</span><span class="o">()</span>
-</span></span><span class="line"><span class="cl"><span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">ArrayList</span> <span class="n">res13</span> <span class="o">=</span> <span class="o">[</span><span class="n">player</span><span class="o">]</span>
-</span></span><span class="line"><span class="cl"><span class="n">java</span><span class="o">&gt;</span> <span class="n">node</span><span class="o">.</span><span class="na">values</span><span class="o">(</span><span class="s">&#34;player&#34;</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl"><span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">ArrayList</span> <span class="n">res14</span> <span class="o">=</span> <span class="o">[</span><span class="n">42</span><span class="o">,</span> <span class="s">&#34;Tim Duncan&#34;</span><span class="o">]</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>我们这里只展示了顶点数据类型的处理、解析方式（<code>RETURN n</code>），像其他的数据类型比如边（edge）路径（path）或者地理数据、时间数据，用这种方式（看有什么方法，再交互地去试试方法怎么用）也是一样的，对吧？</p>
-<h2 id="直接返回-json-的-executejson-方法" class="headerLink">
-    <a href="#%e7%9b%b4%e6%8e%a5%e8%bf%94%e5%9b%9e-json-%e7%9a%84-executejson-%e6%96%b9%e6%b3%95" class="header-mark"></a>3 直接返回 JSON 的 <code>executeJson</code> 方法</h2><p>最后，好消息是，从 2.6 开始，nebula 可以直接返回 JSON 的 String 了，我们上边的纠结也都不是必要的了：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
-</span><span class="lnt">28
-</span><span class="lnt">29
-</span><span class="lnt">30
-</span><span class="lnt">31
-</span><span class="lnt">32
-</span><span class="lnt">33
-</span><span class="lnt">34
-</span><span class="lnt">35
-</span><span class="lnt">36
-</span><span class="lnt">37
-</span><span class="lnt">38
-</span><span class="lnt">39
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">java</span><span class="o">&gt;</span> <span class="n">String</span> <span class="n">resp_json</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="na">executeJson</span><span class="o">(</span><span class="s">&#34;USE basketballplayer;MATCH (n:player) WHERE n.name==\&#34;Tim Duncan\&#34; RETURN n&#34;</span><span class="o">);</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span> <span class="n">resp_json</span> <span class="o">=</span> <span class="s">&#34;
-</span></span></span><span class="line"><span class="cl"><span class="s">{
-</span></span></span><span class="line"><span class="cl"><span class="s">   &#34;</span><span class="n">errors</span><span class="s">&#34;:[
-</span></span></span><span class="line"><span class="cl"><span class="s">      {
-</span></span></span><span class="line"><span class="cl"><span class="s">         &#34;</span><span class="n">code</span><span class="s">&#34;:0
-</span></span></span><span class="line"><span class="cl"><span class="s">      }
-</span></span></span><span class="line"><span class="cl"><span class="s">   ],
-</span></span></span><span class="line"><span class="cl"><span class="s">   &#34;</span><span class="n">results</span><span class="s">&#34;:[
-</span></span></span><span class="line"><span class="cl"><span class="s">      {
-</span></span></span><span class="line"><span class="cl"><span class="s">         &#34;</span><span class="n">spaceName</span><span class="s">&#34;:&#34;</span><span class="n">basketballplayer</span><span class="s">&#34;,
-</span></span></span><span class="line"><span class="cl"><span class="s">         &#34;</span><span class="n">data</span><span class="s">&#34;:[
-</span></span></span><span class="line"><span class="cl"><span class="s">            {
-</span></span></span><span class="line"><span class="cl"><span class="s">               &#34;</span><span class="n">meta</span><span class="s">&#34;:[
-</span></span></span><span class="line"><span class="cl"><span class="s">                  {
-</span></span></span><span class="line"><span class="cl"><span class="s">                     &#34;</span><span class="n">type</span><span class="s">&#34;:&#34;</span><span class="n">vertex</span><span class="s">&#34;,
-</span></span></span><span class="line"><span class="cl"><span class="s">                     &#34;</span><span class="n">id</span><span class="s">&#34;:&#34;</span><span class="n">player100</span><span class="s">&#34;
-</span></span></span><span class="line"><span class="cl"><span class="s">                  }
-</span></span></span><span class="line"><span class="cl"><span class="s">               ],
-</span></span></span><span class="line"><span class="cl"><span class="s">               &#34;</span><span class="n">row</span><span class="s">&#34;:[
-</span></span></span><span class="line"><span class="cl"><span class="s">                  {
-</span></span></span><span class="line"><span class="cl"><span class="s">                     &#34;</span><span class="n">player</span><span class="o">.</span><span class="na">age</span><span class="s">&#34;:42,
-</span></span></span><span class="line"><span class="cl"><span class="s">                     &#34;</span><span class="n">player</span><span class="o">.</span><span class="na">name</span><span class="s">&#34;:&#34;</span><span class="n">Tim</span> <span class="n">Duncan</span><span class="s">&#34;
-</span></span></span><span class="line"><span class="cl"><span class="s">                  }
-</span></span></span><span class="line"><span class="cl"><span class="s">               ]
-</span></span></span><span class="line"><span class="cl"><span class="s">            }
-</span></span></span><span class="line"><span class="cl"><span class="s">         ],
-</span></span></span><span class="line"><span class="cl"><span class="s">         &#34;</span><span class="n">columns</span><span class="s">&#34;:[
-</span></span></span><span class="line"><span class="cl"><span class="s">            &#34;</span><span class="n">n</span><span class="s">&#34;
-</span></span></span><span class="line"><span class="cl"><span class="s">         ],
-</span></span></span><span class="line"><span class="cl"><span class="s">         &#34;</span><span class="n">errors</span><span class="s">&#34;:{
-</span></span></span><span class="line"><span class="cl"><span class="s">            &#34;</span><span class="n">code</span><span class="s">&#34;:0
-</span></span></span><span class="line"><span class="cl"><span class="s">         },
-</span></span></span><span class="line"><span class="cl"><span class="s">         &#34;</span><span class="n">latencyInUs</span><span class="s">&#34;:4761
-</span></span></span><span class="line"><span class="cl"><span class="s">      }
-</span></span></span><span class="line"><span class="cl"><span class="s">   ]
-</span></span></span><span class="line"><span class="cl"><span class="s">}
-</span></span></span><span class="line"><span class="cl"><span class="s">&#34;</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>我相信大家肯定比我更擅长处理 JSON 的结果了哈~~</p>
-<h2 id="结论" class="headerLink">
-    <a href="#%e7%bb%93%e8%ae%ba" class="header-mark"></a>4 结论</h2><ul>
-<li>如果我们有条件（2.6以后）用 JSON，情况会很容易，可能大家不太需要本文的方法（不过有交互环境还是很方便吧？）</li>
-<li>如果我们不得不和 resultSet 打交道，记得用 ValueWrapper ，因为我们可以用 asNode()，asRelationship() 和 asPath() ，封装之后的值比原始的值可爱太多了！
-<ul>
-<li>通过 REPL 工具，结合 Java 的 reflection 加上 源代码本身，分析数据的处理将变得异常顺滑</li>
-</ul>
-</li>
-</ul>
-<p>Happy Graphing!</p>
-<blockquote>
-<p>Picture Credit：<a href="https://unsplash.com/photos/0wIHsm2_1fc" target="_blank" rel="noopener noreffer">leunesmedia</a></p>
-</blockquote>]]></description>
 </item></channel>
 </rss>
