@@ -26,16 +26,18 @@ TBD
 - NebulaGraph 独有 DQL 查询语句（Data Query Language）
 - NebulaGraph OpenCypher DQL
 - NebulaGraph DML 写语句（Data Mutation Language）
-- NebulaGraph DDL Schema 语句（Data Defination Language)
+- NebulaGraph DDL Schema 语句（Data Definition Language)
 - NebulaGraph Admin Queries 管理语句
 
 这里，作为简明教程一把梭，我们只关注前两个部分，后边的内容会在 Part 2 中介绍。
 
-### 手绘 Cheatsheet
+### nGQL 速查表 Cheatsheet
 
-> 大家可以报错这份单页手绘，一次了解所有 nGQL 的用法。
+> 大家可以报错这份单页速查表，一次了解所有 nGQL 的用法。
+>
+> [原始文件链接](./ngql-cheatsheet-cn.png)
 
-TBD
+![ngql-cheatsheet](ngql-cheatsheet-cn.webp)
 
 ## NebulaGraph 独有 DQL
 
@@ -60,7 +62,7 @@ NebulaGraph 的独有读查询语句的设计非常简介，对初学者非常�
 
 ```sql
 # 图拓展
-GO 3 Steps FROM "player102" OVER follow YIELD dst(edge);
+GO 3 STEPS FROM "player102" OVER follow YIELD dst(edge);
    ───┬───      ───┬───────      ─┬────       ──┬────── 
       │            │              │   ┌─────────┘       
       │            │              │   │                 
@@ -208,7 +210,7 @@ GO FROM "player100" OVER follow YIELD dst(edge) AS did  | \
 从 2.0 起，OpenCypher 的 `MATCH` 语句也被 NebulaGraph 原生支持了，虽然这里是一个方言（有一些细节差异）。
 
 ```cypher
-MATCH <pattern> [<clause_1>]  RETURN <output>  [<clause_2>];
+MATCH <pattern> [<clause_1>] RETURN <output>  [<clause_2>];
 ```
 
 MATCH 的基本表达是以 `(v:tag_a)` 包裹的点 `-->` 或者 `<-[:edge_type_1]-` 表达的边组成的模式，与 `RETURN` 表达的输出。
@@ -224,7 +226,7 @@ MATCH (v:player{name:"Tim Duncan"})-->(v2)<--(v3) \
     RETURN v3.player.name AS Name;
 
 MATCH (v:player) \
-    WHERE not (v)--() \
+    WHERE NOT (v)--() \
     RETURN v;
 
 MATCH (v:player)--(v2) \
@@ -233,7 +235,7 @@ MATCH (v:player)--(v2) \
 
 MATCH (m)-[]->(n) WHERE id(m)=="player100" \
 OPTIONAL MATCH (n)-[]->(l) WHERE id(n)=="player125" \
-    RETURN id(m),id(n),id(l);
+    RETURN id(m), id(n), id(l);
 ```
 
 > 进一步参考 [MATCH 文档](https://docs.nebula-graph.com.cn/3.2.0/3.ngql-guide/7.general-query-statements/2.match/)了解：

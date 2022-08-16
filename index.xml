@@ -32,15 +32,16 @@
 <li>NebulaGraph 独有 DQL 查询语句（Data Query Language）</li>
 <li>NebulaGraph OpenCypher DQL</li>
 <li>NebulaGraph DML 写语句（Data Mutation Language）</li>
-<li>NebulaGraph DDL Schema 语句（Data Defination Language)</li>
+<li>NebulaGraph DDL Schema 语句（Data Definition Language)</li>
 <li>NebulaGraph Admin Queries 管理语句</li>
 </ul>
 <p>这里，作为简明教程一把梭，我们只关注前两个部分，后边的内容会在 Part 2 中介绍。</p>
-<h3 id="手绘-cheatsheet" class="headerLink">
-    <a href="#%e6%89%8b%e7%bb%98-cheatsheet" class="header-mark"></a>2.3 手绘 Cheatsheet</h3><blockquote>
-<p>大家可以报错这份单页手绘，一次了解所有 nGQL 的用法。</p>
+<h3 id="ngql-速查表-cheatsheet" class="headerLink">
+    <a href="#ngql-%e9%80%9f%e6%9f%a5%e8%a1%a8-cheatsheet" class="header-mark"></a>2.3 nGQL 速查表 Cheatsheet</h3><blockquote>
+<p>大家可以报错这份单页速查表，一次了解所有 nGQL 的用法。</p>
+<p><a href="./ngql-cheatsheet-cn.png" rel="">原始文件链接</a></p>
 </blockquote>
-<p>TBD</p>
+<p></p>
 <h2 id="nebulagraph-独有-dql" class="headerLink">
     <a href="#nebulagraph-%e7%8b%ac%e6%9c%89-dql" class="header-mark"></a>3 NebulaGraph 独有 DQL</h2><p>NebulaGraph 的独有读查询语句的设计非常简介，对初学者非常友好，结合了管道的概念，做到了只涉及了几个关键词就可以描述大多数图查询模式。</p>
 <p>用一句话描述来说，nGQL 的独有 DQL 一共分成四类语句：</p>
@@ -78,7 +79,7 @@
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="o">#</span><span class="w"> </span><span class="err">图拓展</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">GO</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="n">Steps</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="s2">&#34;player102&#34;</span><span class="w"> </span><span class="n">OVER</span><span class="w"> </span><span class="n">follow</span><span class="w"> </span><span class="n">YIELD</span><span class="w"> </span><span class="n">dst</span><span class="p">(</span><span class="n">edge</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">GO</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="n">STEPS</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="s2">&#34;player102&#34;</span><span class="w"> </span><span class="n">OVER</span><span class="w"> </span><span class="n">follow</span><span class="w"> </span><span class="n">YIELD</span><span class="w"> </span><span class="n">dst</span><span class="p">(</span><span class="n">edge</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">   </span><span class="err">───┬───</span><span class="w">      </span><span class="err">───┬───────</span><span class="w">      </span><span class="err">─┬────</span><span class="w">       </span><span class="err">──┬──────</span><span class="w"> 
 </span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="err">│</span><span class="w">            </span><span class="err">│</span><span class="w">              </span><span class="err">│</span><span class="w">   </span><span class="err">┌─────────┘</span><span class="w">       
 </span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="err">│</span><span class="w">            </span><span class="err">│</span><span class="w">              </span><span class="err">│</span><span class="w">   </span><span class="err">│</span><span class="w">                 
@@ -299,7 +300,7 @@
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">MATCH &lt;pattern&gt; [&lt;clause_1&gt;]  RETURN &lt;output&gt;  [&lt;clause_2&gt;];
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">MATCH &lt;pattern&gt; [&lt;clause_1&gt;] RETURN &lt;output&gt;  [&lt;clause_2&gt;];
 </span></span></code></pre></td></tr></table>
 </div>
 </div><p>MATCH 的基本表达是以 <code>(v:tag_a)</code> 包裹的点 <code>--&gt;</code> 或者 <code>&lt;-[:edge_type_1]-</code> 表达的边组成的模式，与 <code>RETURN</code> 表达的输出。</p>
@@ -331,7 +332,7 @@
 </span></span><span class="line"><span class="cl">    RETURN v3.player.name AS Name;
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">MATCH (v:player) \
-</span></span><span class="line"><span class="cl">    WHERE not (v)--() \
+</span></span><span class="line"><span class="cl">    WHERE NOT (v)--() \
 </span></span><span class="line"><span class="cl">    RETURN v;
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">MATCH (v:player)--(v2) \
@@ -340,7 +341,7 @@
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">MATCH (m)-[]-&gt;(n) WHERE id(m)==&#34;player100&#34; \
 </span></span><span class="line"><span class="cl">OPTIONAL MATCH (n)-[]-&gt;(l) WHERE id(n)==&#34;player125&#34; \
-</span></span><span class="line"><span class="cl">    RETURN id(m),id(n),id(l);
+</span></span><span class="line"><span class="cl">    RETURN id(m), id(n), id(l);
 </span></span></code></pre></td></tr></table>
 </div>
 </div><blockquote>
