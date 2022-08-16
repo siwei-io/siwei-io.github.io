@@ -9,7 +9,9 @@
 
 ## 视频
 
-TBD
+本教程的视频版在[这里](https://bilibili.com/video/BV1PT411P7w8)。
+
+{{< bilibili BV1PT411P7w8 >}}
 
 ## 开始之前
 
