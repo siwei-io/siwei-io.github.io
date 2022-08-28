@@ -238,13 +238,14 @@
 <h2 id="什么是汉兜" class="headerLink">
     <a href="#%e4%bb%80%e4%b9%88%e6%98%af%e6%b1%89%e5%85%9c" class="header-mark"></a>1 什么是汉兜？</h2><p>汉兜（https://handle.antfu.me）是由 Vue/Vite 核心团队的 Antfu 的又一个非常酷的作品，一个非常精致的汉字版的 Wordle，他是是一个每日挑战的填字游戏的中文成语版。</p>
 <p>每天，汉兜会发起一个猜成语挑战，人们要在十次内才对它才能获胜，每一步之后都会收到相应的文字、声母、韵母、声调的匹配情况的提示，其中：绿色表示这个因素存在并且位置匹配、橘色表示这个元素存在但是位置不对，详细的规则可见如下的网页截图：</p>
-<p><img
-        class="lazyload"
-        data-src="handle-intro.webp"
-        data-srcset="/resolve-wordle/handle-intro.webp, handle-intro.webp 1.5x, /resolve-wordle/handle-intro.webp 2x"
-        data-sizes="auto"
-        alt="/resolve-wordle/handle-intro.webp"
-        title="/resolve-wordle/handle-intro.webp"></p>
+<p><a class="lightgallery" href="/resolve-wordle/handle-intro.webp" title="/resolve-wordle/handle-intro.webp" data-thumbnail="/resolve-wordle/handle-intro.webp">
+        <img
+            class="lazyload"
+            data-src="handle-intro.webp"
+            data-srcset="/resolve-wordle/handle-intro.webp, handle-intro.webp 1.5x, /resolve-wordle/handle-intro.webp 2x"
+            data-sizes="auto"
+            alt="/resolve-wordle/handle-intro.webp">
+    </a></p>
 <p>汉兜的乐趣就我们在于在有限的尝试过程中，在大脑中搜寻可能的答案，不断去逼近真理，任何试图作弊、讨巧去泄漏结果的行为都是很无趣、倒胃口的（比如从开源的汉兜代码里窃取信息），这个过程就像在做大脑的体操。</p>
 <p>说到大脑的成语词汇量体操，我突然想到，为什么我们不能在大脑之外造一个汉语成语知识图谱，然后基于这个图谱去做图数据库查询语法体操呢？</p>
 <h2 id="构造解决汉兜的成语知识图谱" class="headerLink">
@@ -267,22 +268,24 @@
 </ul>
 <p>成语-[包含]-&gt;汉字，每个汉字-[读作]-&gt;读音。</p>
 <p>其次，因为解谜过程中涉及到了声母、韵母以及声调的条件，考虑到图谱本身的量级非常小（千级别），而且字的读音是一对多的关系，我把读音和声母（包涵声母-initial和韵母-final）也作为实体，他们之间的关系则是顺理成章了：</p>
-<p><img
-        class="lazyload"
-        data-src="./schema_v0.webp"
-        data-srcset="./schema_v0.webp, ./schema_v0.webp 1.5x, ./schema_v0.webp 2x"
-        data-sizes="auto"
-        alt="./schema_v0.webp"
-        title="schema_v0"></p>
+<p><a class="lightgallery" href="./schema_v0.webp" title="schema_v0" data-thumbnail="./schema_v0.webp">
+        <img
+            class="lazyload"
+            data-src="./schema_v0.webp"
+            data-srcset="./schema_v0.webp, ./schema_v0.webp 1.5x, ./schema_v0.webp 2x"
+            data-sizes="auto"
+            alt="./schema_v0.webp">
+    </a></p>
 <h5 id="最终的版本" class="headerLink">
     <a href="#%e6%9c%80%e7%bb%88%e7%9a%84%e7%89%88%e6%9c%ac" class="header-mark"></a>2.3.1.2 最终的版本</h5><p>然而，我在后边基于图谱进行查询的时候发现最初的建模会使得(成语)&ndash;&gt;(字)&ndash;&gt;(读音)查询过程中丢失了这个字特定的读法的条件，所以我最终的建模是：</p>
-<p><img
-        class="lazyload"
-        data-src="./schema_v1.webp"
-        data-srcset="./schema_v1.webp, ./schema_v1.webp 1.5x, ./schema_v1.webp 2x"
-        data-sizes="auto"
-        alt="./schema_v1.webp"
-        title="schema_v1"></p>
+<p><a class="lightgallery" href="./schema_v1.webp" title="schema_v1" data-thumbnail="./schema_v1.webp">
+        <img
+            class="lazyload"
+            data-src="./schema_v1.webp"
+            data-srcset="./schema_v1.webp, ./schema_v1.webp 1.5x, ./schema_v1.webp 2x"
+            data-sizes="auto"
+            alt="./schema_v1.webp">
+    </a></p>
 <p>这样，纯文字的条件只涉及了<code>(成语)--&gt;(字)</code> 这一跳，而读音、声母、声调的条件则是另一条关系路径，既没有最初版本条件的冗余，又可以在一个路径模式匹配里带上两种条件（后边的例子里会涉及这样的表达）。</p>
 <h4 id="构建成语知识图谱" class="headerLink">
     <a href="#%e6%9e%84%e5%bb%ba%e6%88%90%e8%af%ad%e7%9f%a5%e8%af%86%e5%9b%be%e8%b0%b1" class="header-mark"></a>2.3.2 构建成语知识图谱</h4><p>有了建模、这么简单的图谱的构建就剩下了数据的收集、清洗和入库。</p>
@@ -310,13 +313,14 @@
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>然后我们把它填到汉兜之中，获得第一次尝试的提示条件：</p>
-<p><img
-        class="lazyload"
-        data-src="initial_word.webp"
-        data-srcset="/resolve-wordle/initial_word.webp, initial_word.webp 1.5x, /resolve-wordle/initial_word.webp 2x"
-        data-sizes="auto"
-        alt="/resolve-wordle/initial_word.webp"
-        title="/resolve-wordle/initial_word.webp"></p>
+<p><a class="lightgallery" href="/resolve-wordle/initial_word.webp" title="/resolve-wordle/initial_word.webp" data-thumbnail="/resolve-wordle/initial_word.webp">
+        <img
+            class="lazyload"
+            data-src="initial_word.webp"
+            data-srcset="/resolve-wordle/initial_word.webp, initial_word.webp 1.5x, /resolve-wordle/initial_word.webp 2x"
+            data-sizes="auto"
+            alt="/resolve-wordle/initial_word.webp">
+    </a></p>
 <p>我们运气不错，得到了三个位置上的条件！</p>
 <ul>
 <li>有一个非第一个位置的字，拼音是 4 声，韵母是 ai，但不是爱（爱）</li>
@@ -381,13 +385,14 @@
 </span></span></code></pre></td></tr></table>
 </div>
 </div><p>看起来 <code>惊世骇俗</code> 比较主流，试试！</p>
-<p><img
-        class="lazyload"
-        data-src="./D59.webp"
-        data-srcset="./D59.webp, ./D59.webp 1.5x, ./D59.webp 2x"
-        data-sizes="auto"
-        alt="./D59.webp"
-        title="汉兜 D59"></p>
+<p><a class="lightgallery" href="./D59.webp" title="汉兜 D59" data-thumbnail="./D59.webp">
+        <img
+            class="lazyload"
+            data-src="./D59.webp"
+            data-srcset="./D59.webp, ./D59.webp 1.5x, ./D59.webp 2x"
+            data-sizes="auto"
+            alt="./D59.webp">
+    </a></p>
 <p>我们很幸运，借助于成语<del>作弊</del>知识图谱，居然一次就找到了答案，当然这实际上得益于第一次随机选取的词带来的限制条件的个数，不过在大部分情况下，两次尝试获得最终答案的可能性还是非常大的！</p>
 <blockquote>
 <p>注，这中间很长的253分钟是因为我在查询中发现之前代码里构造的图谱有点 bug，是“披枷带锁”这个词引起的读音图谱的错误数据，还好后来被修复了。</p>
@@ -495,13 +500,14 @@
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>在可视化工具的 Console 控制台里执行上边的语句之后，选择导入图探索，就可以看到</p>
-<p><img
-        class="lazyload"
-        data-src="studio.webp"
-        data-srcset="/resolve-wordle/studio.webp, studio.webp 1.5x, /resolve-wordle/studio.webp 2x"
-        data-sizes="auto"
-        alt="/resolve-wordle/studio.webp"
-        title="/resolve-wordle/studio.webp"></p>
+<p><a class="lightgallery" href="/resolve-wordle/studio.webp" title="/resolve-wordle/studio.webp" data-thumbnail="/resolve-wordle/studio.webp">
+        <img
+            class="lazyload"
+            data-src="studio.webp"
+            data-srcset="/resolve-wordle/studio.webp, studio.webp 1.5x, /resolve-wordle/studio.webp 2x"
+            data-sizes="auto"
+            alt="/resolve-wordle/studio.webp">
+    </a></p>
 <h2 id="下一步" class="headerLink">
     <a href="#%e4%b8%8b%e4%b8%80%e6%ad%a5" class="header-mark"></a>5 下一步</h2><p>如果大家是从本文第一次了解到 Nebula Graph 图数据库，那么大家可以下一步从 <a href="https://github.com/vesoft-inc/nebula" target="_blank" rel="noopener noreffer">Nebula Graph</a> 项目和 Nebula Graph 社区的官方 Bilibili 站点 👉🏻 <a href="https://space.bilibili.com/472621355" target="_blank" rel="noopener noreffer">https://space.bilibili.com/472621355</a> 了解更多有意思的入门知识。</p>
 <p>另外，<a href="https://nebula-graph.com.cn/demo/" target="_blank" rel="noopener noreffer">这里</a>是 Nebula Graph 的官方线上试玩环境，大家可以照着<a href="https://docs.nebula-graph.com.cn/" target="_blank" rel="noopener noreffer">文档</a>，利用试玩环境尝鲜。</p>
