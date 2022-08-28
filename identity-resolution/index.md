@@ -178,7 +178,7 @@ INSERT EDGE `has_email` () VALUES
 
 INSERT EDGE `used_device` (`time`) VALUES
     "user_2"->"device_0":(timestamp("2021-03-01T08:00:00")),
-    "user_20"->"device_0":(timestamp("2021-03-01T08:01:00")),
+    "user_21"->"device_0":(timestamp("2021-03-01T08:01:00")),
     "user_18"->"device_1":(timestamp("2021-03-01T08:02:00")),
     "user_17"->"device_1":(timestamp("2021-03-01T08:03:00")),
     "user_22"->"device_2":(timestamp("2021-03-01T08:04:00")),
@@ -188,7 +188,7 @@ INSERT EDGE `used_device` (`time`) VALUES
 
 INSERT EDGE `logged_in_from` (`time`) VALUES
     "user_2"->"202.123.513.12":(timestamp("2021-03-01T08:00:00")),
-    "user_20"->"202.41.23.11":(timestamp("2021-03-01T08:01:00")),
+    "user_21"->"202.41.23.11":(timestamp("2021-03-01T08:01:00")),
     "user_18"->"143.1.23.4":(timestamp("2021-03-01T08:02:00")),
     "user_17"->"143.1.23.12":(timestamp("2021-03-01T08:03:00")),
     "user_22"->"153.42.2.8":(timestamp("2021-03-01T08:04:00")),
@@ -781,8 +781,41 @@ MATCH (v_end:user)-[:used_device|logged_in_from|has_email_with_handle|has_addres
 WITH  v_start, id(v_end) AS v_end, intersection_size, set_a, COLLECT(id(shared_components)) AS set_b
 WITH v_start, v_end, toFloat(intersection_size) AS intersection_size, toSet(set_a + set_b) AS A_U_B
 RETURN v_start, v_end, intersection_size/size(A_U_B) AS jaccard_index
-ORDER BY jaccard_index
+ORDER BY jaccard_index DESC
 ```
+
+我们可以看到结果里：
+
+```sql
++-----------+-----------+---------------------+
+| v_start   | v_end     | jaccard_index       |
++-----------+-----------+---------------------+
+| "user_8"  | "user_19" | 1.0                 |
+| "user_19" | "user_8"  | 1.0                 |
+| "user_20" | "user_3"  | 0.6666666666666666  |
+| "user_3"  | "user_20" | 0.6666666666666666  |
+| "user_21" | "user_2"  | 0.6                 |
+| "user_18" | "user_17" | 0.6                 |
+| "user_17" | "user_18" | 0.6                 |
+| "user_2"  | "user_21" | 0.6                 |
+| "user_22" | "user_9"  | 0.5                 |
+| "user_9"  | "user_22" | 0.5                 |
+| "user_23" | "user_5"  | 0.2                 |
+| "user_5"  | "user_23" | 0.2                 |
+| "user_21" | "user_20" | 0.16666666666666666 |
+| "user_20" | "user_21" | 0.16666666666666666 |
++-----------+-----------+---------------------+
+```
+
+user_8 与 user_19 的系数是最大的的，让我们看看他们之间的连接？
+
+```sql
+FIND ALL PATH FROM "user_8" TO "user_19" OVER * BIDIRECT YIELD path AS p;
+```
+
+果然，他们之间的相似度很大：
+
+![](https://user-images.githubusercontent.com/1651790/187080900-48994824-811f-492b-a43c-e8d781331ffa.png)
 
 
 
