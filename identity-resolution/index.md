@@ -51,33 +51,38 @@
 
 #### 写入 NebulaGraph
 
+> 利用 Nebula Up，一行部署 NebulaGraph
+>
+> 地址：https://github.com/wey-gu/nebula-up/
+>
+> ```bash
+> curl -fsSL nebula-up.siwei.io/install.sh | bash
+> ```
+
 图建模的 Schema 对应的 NebulaGraph DDL 是：
 
 ```sql
 # 创建一个叫做 entity_resolution 的图空间
 CREATE SPACE entity_resolution (vid_type=FIXED_STRING(30));
+USE entity_resolution;
 
 # 创建点的类型 TAG
 
-CREATE TAG `user` (`name` string NOT NULL, `email` string NOT NULL, `phone_num` string NOT NULL, `birthday` date NOT NULL, `address` string NOT NULL)
+CREATE TAG `user` (`name` string NOT NULL, `email` string NOT NULL, `phone_num` string NOT NULL, `birthday` date NOT NULL, `address` string NOT NULL);
 
-CREATE TAG `address` (`address` string NOT NULL)
-CREATE TAG `device` (`uuid` string NOT NULL)
-CREATE TAG `email` ()
-CREATE TAG `ip` ()
-CREATE TAG `phone` ()
+CREATE TAG `address` (`address` string NOT NULL);
+CREATE TAG `device` (`uuid` string NOT NULL);
+CREATE TAG `email` ();
+CREATE TAG `ip` ();
+CREATE TAG `phone` ();
 
 # 创建边的类型 Edge Type
 
-CREATE EDGE `used_device` (`time` timestamp NOT NULL)
-CREATE EDGE `logged_in_from` (`time` timestamp NOT NULL)
-CREATE EDGE `has_phone` ()
-CREATE EDGE `has_address` ()
-CREATE EDGE `has_email` ()
-
-# 创建 TAG `user` `name` 索引
-
-CREATE TAG INDEX user_name_index ON `user`(`name`);
+CREATE EDGE `used_device` (`time` timestamp NOT NULL);
+CREATE EDGE `logged_in_from` (`time` timestamp NOT NULL);
+CREATE EDGE `has_phone` ();
+CREATE EDGE `has_address` ();
+CREATE EDGE `has_email` ();
 ```
 
 对于写入数据的 DML，这里只给出 `user` ，`email` 类型点、`has_email` 类型边的例子
@@ -139,16 +144,14 @@ INSERT VERTEX `ip` () VALUES
     "143.1.23.4":(),
     "143.1.23.12":(),
     "153.42.2.8":(),
-    "153.42.2.8":(),
-    "153.42.2.8":(),
-    "9.1.4.1":()
+    "9.1.4.1":();
 
 INSERT VERTEX `device`(`uuid`) VALUES
     "device_0":("2a8e791d-0183-4df2-aa36-5ac82151be93"),
     "device_1":("f9be6a11-f74b-45f5-a9ea-bb3af5a868a2"),
     "device_2":("ae083379-91f5-4cd3-b2b3-273960979dab"),
     "device_3":("c0981d43-1e59-4cd5-a1e1-e88cd9e792a5"),
-    "device_4":("e730dd8a-fcd3-47b4-be4a-0190610e6f02")
+    "device_4":("e730dd8a-fcd3-47b4-be4a-0190610e6f02");
 
 
 INSERT EDGE `has_email` () VALUES
@@ -184,7 +187,7 @@ INSERT EDGE `used_device` (`time`) VALUES
     "user_22"->"device_2":(timestamp("2021-03-01T08:04:00")),
     "user_9"->"device_3":(timestamp("2021-03-01T08:05:00")),
     "user_9"->"device_2":(timestamp("2021-03-01T08:06:00")),
-    "user_23"->"device_4":(timestamp("2021-03-01T08:07:00"))
+    "user_23"->"device_4":(timestamp("2021-03-01T08:07:00"));
 
 INSERT EDGE `logged_in_from` (`time`) VALUES
     "user_2"->"202.123.513.12":(timestamp("2021-03-01T08:00:00")),
@@ -194,7 +197,7 @@ INSERT EDGE `logged_in_from` (`time`) VALUES
     "user_22"->"153.42.2.8":(timestamp("2021-03-01T08:04:00")),
     "user_9"->"153.42.2.8":(timestamp("2021-03-01T08:05:00")),
     "user_9"->"153.42.2.8":(timestamp("2021-03-01T08:06:00")),
-    "user_23"->"9.1.4.1":(timestamp("2021-03-01T08:07:00"))
+    "user_23"->"9.1.4.1":(timestamp("2021-03-01T08:07:00"));
 ```
 
 
@@ -342,11 +345,11 @@ b. 表现非结构化数据的相似性：
 
 ```sql
 # 新的点类型
-CREATE TAG `email_handle` ()
+CREATE TAG `email_handle` ();
 
 # 新的边类型
-CREATE EDGE `has_email_with_handle` (`email_domain` string NOT NULL)
-CREATE EDGE `with_handle` (`email_domain` string NOT NULL)
+CREATE EDGE `has_email_with_handle` (`email_domain` string NOT NULL);
+CREATE EDGE `with_handle` (`email_domain` string NOT NULL);
 ```
 
 对应新的点、边的 DML 语句：
@@ -498,7 +501,7 @@ INSERT EDGE `has_address` () VALUES
     "user_20"->"addr_18":(),
     "user_21"->"addr_15":(),
     "user_22"->"addr_16":(),
-    "user_23"->"addr_17":()
+    "user_23"->"addr_17":();
 
 # 插入点，geo_point 是地址的经纬度
 INSERT VERTEX `address` (`address`, `geo_point`) VALUES
@@ -520,7 +523,7 @@ INSERT VERTEX `address` (`address`, `geo_point`) VALUES
     "addr_15":("1 Amanda Freeway Lisaland  NJ 94933", ST_Point(27,28)),
     "addr_16":("2 Klein HI 05775", ST_Point(9,10)),
     "addr_17":("Schmidt Key Lake Charles AL 13617", ST_Point(13.12, -87.60)),
-    "addr_18":("Rodriguez Track East Connorfort  NC 63144", ST_Point(29,30))
+    "addr_18":("Rodriguez Track East Connorfort  NC 63144", ST_Point(29,30));
 
 ```
 
@@ -686,9 +689,9 @@ TBD
 
 ```sql
 # DDL
-CREATE EDGE `shared_similar_email` ()
-CREATE EDGE `shared_similar_location` ()
-CREATE EDGE `shared_name` ()
+CREATE EDGE `shared_similar_email` ();
+CREATE EDGE `shared_similar_location` ();
+CREATE EDGE `shared_name` ();
 # DML
 
 INSERT EDGE `shared_similar_email` () VALUES
@@ -703,11 +706,11 @@ INSERT EDGE `shared_similar_email` () VALUES
     "user_17"->"user_18":(),
     "user_19"->"user_8" :(),
     "user_8" ->"user_19":(),
-    "user_23"->"user_5" :()
+    "user_23"->"user_5" :();
 
 INSERT EDGE `shared_name` () VALUES
     "user_9" ->"user_22":(),
-    "user_22"->"user_9" :()
+    "user_22"->"user_9" :();
 
 INSERT EDGE `shared_similar_location` () VALUES
     "user_5" ->"user_23":(),
@@ -721,7 +724,7 @@ INSERT EDGE `shared_similar_location` () VALUES
     "user_17"->"user_18":(),
     "user_19"->"user_8" :(),
     "user_8" ->"user_19":(),
-    "user_23"->"user_5" :()
+    "user_23"->"user_5" :();
 ```
 
 #### 2. 创建复合评分之后的边
@@ -743,7 +746,13 @@ ORDER BY score DESC
 然后根据返回结果建立新的边：
 
 ```sql
+# DDL
 CREATE EDGE `is_similar_to` (score int NOT NULL);
+
+# DML
+INSERT EDGE `is_similar_to` (`score`) VALUES
+    "user_22" ->"user_9":(3),
+    "user_9" ->"user_22":(3);
 ```
 
 ### 基于图算法的方法
@@ -752,7 +761,7 @@ CREATE EDGE `is_similar_to` (score int NOT NULL);
 
 #### 图相似性算法
 
-利用节点相似性图算法，比如 Jaccard、余弦相似度等，我们可以或者 a. 利用图库之上的图计算平台全量计算相似度，或者 b. 用图查询语句实现全图/给定的点之间的相似度，最后给相似度一定的阈值来帮助建立新的（考虑了涉及边的）映射关系。
+利用节点相似性图算法，比如 Jaccard Index、余弦相似度等，我们可以或者 a. 利用图库之上的图计算平台全量计算相似度，或者 b. 用图查询语句实现全图/给定的点之间的相似度，最后给相似度一定的阈值来帮助建立新的（考虑了涉及边的）映射关系。
 
 > 注，这里的 Jaccard index 和我们前边提到的比较两个字符串的方法本质是一样的，不过我们现在提及的是应用在图上的点之间存在相连点作为算法中的“交集”的实现。
 
@@ -760,9 +769,7 @@ CREATE EDGE `is_similar_to` (score int NOT NULL);
 
 自然地，还可以用社区发现的算法全图找出给定的基于边之下的社区划分，调试算法，使得目标划分社区内部点为估计的相同用户。
 
-#### 基于图算法方法实操
-
-
+#### 基于图算法的方法
 
 ##### 基于图查询的 Jaccard 实现
 
@@ -819,29 +826,280 @@ FIND ALL PATH FROM "user_8" TO "user_19" OVER * BIDIRECT YIELD path AS p;
 
 
 
-##### 基于图计算平台的 Jaccard 实操
+##### 基于 NebulaGraph Algorithm 图计算平台的 Jaccard 方法
 
-基于 Spark 的全图 Jaccard 运算
+###### 前面方法的局限
 
-TBD with NebulaGraph Algorithm
+利用图数据库查询计算 Jaccard 系数的方法有两方面局限。
 
-##### 基于图社区发现算法的实操
+首先，为了防止两两运算，我们假设了所有值得被运算的点之间已经存在某种确定链接（对应 MATCH 第一行），虽然这样的假设在大部分情况下是可以粗略被接受的，但是它是一种压缩和妥协。
 
-基于 Spark 的全图 Louvian
+其次，在数据量很大的情形里，这样的查询将不具有可操作性。
 
-TBD with NebulaGraph Algorithm
+###### 更 Scale 的方法
+
+为了能处理更大规模，我们可以利用 Spark 等并行计算平台进行算法执行；
+
+在全图运算时，我们可以利用局部敏感哈希 MinHash 来对两两比对降维，庆幸的是，Spark 中提供了 MinHash 的实现供我们使用！
+
+> 参考：
+>
+> - https://aksakalli.github.io/2016/03/01/jaccard-similarity-with-minhash.html
+> - https://en.wikipedia.org/wiki/MinHash
+> - https://spark.apache.org/docs/3.1.1/api/python/reference/api/pyspark.ml.feature.MinHashLSH.html
+> - https://github.com/apache/spark/blob/master/mllib/src/main/scala/org/apache/spark/ml/feature/LSH.scala
+
+> MinHash 的思想：
+>
+> 这个方法是用概率去有损估计 Jaccard 系数，这里的降维体现在它用 bit map 去数字化每一个集合，随机定义不同的集合上的 shuffle（乱序）变换，取变换之后 hash 的最小值。这里，两个集合的随机变换后最小值 相等的概率是等于 Jaccard 系数的。所以，这样偷梁换柱，就把需要两两集合运算比较的算法变成只需要对每一个集合做常数次随机变换取最小的降维近似运算了。
+
+在图上，对于每一个点，我们认为它的邻居就是这个点的集合，那么在 Spark 中运算 Jaccard 系数的过程就是：
+
+1. 获取每一个点的邻居集合
+2. 对点的邻居进行 MinHash 运算，获得 Jaccard 系数
+
+庆幸的是，开源的 NebulaGraph Algorithm 已经提供了这个算法的实现，感兴趣的同学可以访问 [nebula-algorithm/src/main/scala/com/vesoft/nebula/algorithm/lib/JaccardAlgo.scala](https://github.com/vesoft-inc/nebula-algorithm/blob/master/nebula-algorithm/src/main/scala/com/vesoft/nebula/algorithm/lib/JaccardAlgo.scala) 了解它的实现，而我们只需要调用 NebulaGraph Algorithm 就可以了，使用方法参考 NebulaGraph Algorithm 文档。
+
+> 注，[配置](https://github.com/vesoft-inc/nebula-algorithm/blob/master/nebula-algorithm/src/main/resources/application.conf)中 jaccard.tol 的意涵是 [approxSimilarityJoin](https://github.com/apache/spark/blob/master/mllib/src/main/scala/org/apache/spark/ml/feature/LSH.scala) 中的 threshold ：
+>
+> ```scala
+> def approxSimilarityJoin(
+>     datasetA: Dataset[_],
+>     datasetB: Dataset[_],
+>     threshold: Double,
+>     distCol: String): Dataset[_] = {
+>     ...
+>     // Filter the joined datasets where the distance are smaller than the threshold.
+>     joinedDatasetWithDist.filter(col(distCol) < threshold)
+> ```
+
+读者到这里应该会注意到，这个方法显然是假设所有的点都是用户实体，边是他们之间的直连关系的。所以再应用这个方法之前，我们需要创建经过预处理的直连边，这个步骤正是前边章节“利用新的边连接不同方法”中的内容。
+
+##### 基于 NebulaGraph Algorithm 图计算平台社区发现算法
+
+提到基于全图的算法，我们自然可以想到可以利用社区发现的手段去帮助识别相同用户的不同账号，弱联通分量（WCC）、Louvain 算法都是常见的手段。
+
+同样，NebulaGraph Algorithm 开箱即用地提供了这两种算法，我们可以很容易在 NebulaGraph 得出社区划分，并在此基础上做复合方法的识别。
+
+##### 上手基于 NebulaGraph Algorithm 图计算方法
+
+因为篇幅关系，这里不展示 NebulaGraph Algorithm 方法的上手环节，类似于在之前 Fraud Detection 方法文章中的对应章节，你可以利用 Nebula-Up 的 all-in-one 模式，一行命令搭建这样的环境并亲自体验。
+
+> - Nebula-Up 部署命令：`curl -fsSL nebula-up.siwei.io/all-in-one.sh | bash -s -- v3 spark`
 
 ### 基于图神经网络的方法
 
-我们注意到，在我们讲以上不同的方法相结合的时候，都是把前导方法的结果作为图上的边，进而作为后边的方法的输入，实际上相同用户 ID 的识别本质上就是在图上去预测用户之间链接、边。
+我们注意到，在讲以上不同的方法相结合的时候，会把前导方法的结果作为图上的边，进而作为后边的方法的输入，而相同用户 ID 的识别本质上就是在图上去预测用户之间链接、边。
 
-而在 GNN 的方法中，除了我们在欺诈检测中利用到的节点分类（属性预测）之外，链接预测（Link Prediction）是另一个常见的算法目标和应用场景。我们自然也可以用 GNN 的方法，结合 1. 非 GNN 方法获得的和 2. 已经有的人为标注的链接，学习、预测图上的 ID 映射。
+在 GNN 的方法中，除了我们在欺诈检测中利用到的节点分类（属性预测）之外，链接预测（Link Prediction）也是另一个常见的算法目标和应用场景。自然地，可以想到用 GNN 的方法结合 1. 非 GNN 方法获得的、 2. 已经有的人为标注的链接，来学习、预测图上的 ID 映射。
 
 值得注意的是，GNN 的方法只能利用数字型的 feature、属性，我们没办法把非数字型的属性像在分类情况里那样枚举为数值，相反，我们在真正的 GNN 之前，可以用其他的图方法去建立基于打分、或者相似度的边建立。这时候，这些前边的方法成为了 GNN 链路预测的特征工程。
 
 #### 基于 GNN 的实操
 
-Nebula-DGL 链路预测例子，TBD
+和在 "[基于 NebulaGraph 图数据库的欺诈检测方法与代码示例](https://www.siwei.io/fraud-detection-with-nebulagraph/)" 的欺诈检测类似，我将给出的例子也是 GNN 结合图数据库做实时预测的例子。
+
+##### [HDE[ICDM2021]](https://ieeexplore.ieee.org/document/9679130)
+
+我们利用 [Heterogeneous Graph Neural Network with Distance Encoding](http://www.shichuan.org/doc/116.pdf) 给出的方法来做 Inductive Learning 的异构 GNN 上的链路预测，同时，我们将用一个更方便的 GNN 工具，[OpenHGNN](https://github.com/BUPT-GAMMA/OpenHGNN)，有了它，本例中的代码量也会大大下降。
+
+> 注：OpenHGNN 是由北邮 GAMMA Lab 开发的基于 PyTorch 和 DGL 的开源异质图神经网络工具包。
+
+##### 数据集
+
+本利的数据集是前边方法中建立在 NebulaGraph 中的图谱，借助于 Nebula-DGL，我们可以一行代码把 NebulaGraph 中的图加载到 DGL 之中。
+
+> 注：
+>
+> 1. 这里，我们使用的的工具为 Deep Graph library（DGL），NebulaGraph 图数据库和他们之间的桥梁，Nebula-DGL。
+>
+>    - DGL: https://www.dgl.ai/
+>
+>    - Nebula-DGL: https://github.com/wey-gu/nebula-dgl
+>
+> 2. 你可以直接 load 这个 .ngql 文件到 NebulaGraph。
+>
+>    - https://github.com/wey-gu/identity-correlation-datagen/raw/main/sample/hand_crafted/entity_resolution.ngql
+
+##### 数据处理
+
+为了将 NebulaGraph 图谱进行工程处理，序列化成为 DGL 的图对象，我们要通过 Nebula-DGL 的 YAML 配置文件 API 描述所需的点、边类型以及关心的属性（特征）。
+
+我们看下现在的图中有哪些点、边类型：
+
+```sql
+(root@nebula) [entity_resolution]> SHOW TAGS
++----------------+
+| Name           |
++----------------+
+| "address"      |
+| "device"       |
+| "email"        |
+| "email_handle" |
+| "ip"           |
+| "phone"        |
+| "user"         |
++----------------+
+Got 7 rows (time spent 1335/7357 us)
+
+(root@nebula) [entity_resolution]> SHOW EDGES
++---------------------------+
+| Name                      |
++---------------------------+
+| "has_address"             |
+| "has_email"               |
+| "has_email_with_handle"   |
+| "has_phone"               |
+| "is_similar_to"           |
+| "logged_in_from"          |
+| "shared_name"             |
+| "shared_similar_email"    |
+| "shared_similar_location" |
+| "used_device"             |
+| "with_handle"             |
++---------------------------+
+Got 11 rows (time spent 1439/30418 us)
+```
+
+在本例中，我们不考虑属性(特征)。
+
+> `nebulagraph_entity_resolution_dgl_mapper.yaml`
+
+```yaml
+---
+# If vertex id is string-typed, remap_vertex_id must be true.
+remap_vertex_id: True
+space: entity_resolution
+# str or int
+vertex_id_type: int
+vertex_tags:
+  - name: user
+  - name: address
+  - name: device
+  - name: email_handle
+  - name: ip
+edge_types:
+  - name: has_email_with_handle
+    start_vertex_tag: user
+    end_vertex_tag: email_handle
+  - name: is_similar_to
+    start_vertex_tag: user
+    end_vertex_tag: user
+  - name: shared_similar_location
+    start_vertex_tag: user
+    end_vertex_tag: user
+  - name: has_address
+    start_vertex_tag: user
+    end_vertex_tag: address
+  - name: logged_in_from
+    start_vertex_tag: user
+    end_vertex_tag: ip
+  - name: used_device
+    start_vertex_tag: user
+    end_vertex_tag: device
+
+```
+
+然后，我们在安装好 Nebula-DGL 之后只需要这几行代码就可以将 NebulaGraph 中的这张图构造为 DGL 的 `DGLHeteroGraph` 图对象：
+
+```python
+from nebula_dgl import NebulaLoader
+
+
+nebula_config = {
+    "graph_hosts": [
+                ('graphd', 9669),
+                ('graphd1', 9669),
+                ('graphd2', 9669)
+            ],
+    "nebula_user": "root",
+    "nebula_password": "nebula",
+}
+
+# load feature_mapper from yaml file
+with open('nebulagraph_entity_resolution_dgl_mapper.yaml', 'r') as f:
+    feature_mapper = yaml.safe_load(f)
+
+nebula_loader = NebulaLoader(nebula_config, feature_mapper)
+g = nebula_loader.load()
+
+g = g.to('cpu')
+device = torch.device('cpu')
+```
+
+##### 模型训练
+
+参考 [custom_link_prediction_dataset.py](https://github.com/BUPT-GAMMA/OpenHGNN/blob/main/examples/customization/custom_link_prediction_dataset.py)
+
+> `HDE_link_predict.py`
+
+```python
+import torch as th
+from openhgnn import Experiment
+from openhgnn.dataset import AsLinkPredictionDataset, generate_random_hg
+from dgl import transforms as T
+from dgl import DGLHeteroGraph
+from dgl.data import DGLDataset
+from dgl.dataloading.negative_sampler import GlobalUniform
+
+meta_paths_dict = {'APA': [('user', 'has_email_with_handle', 'email_handle'), ('user', 'is_similar_to', 'user'), ('user', 'shared_similar_location', 'user'), ('user', 'has_address', 'address'), ('user', 'logged_in_from', 'ip'), ('user', 'used_device', 'device')]}
+target_link = [('user', 'is_similar_to', 'user')]
+target_link_r = [('user', 'is_similar_to', 'user')]
+
+
+class MyLPDataset(DGLDataset):
+    def __init__(self, g):
+        super().__init__(name='entity_resolution', force_reload=True)
+        self.g = g
+
+    def process(self):
+        # Generate a random heterogeneous graph with labels on target node type.
+        self._g = transform_hg(self.g)
+
+    # Some models require meta paths, you can set meta path dict for this dataset.
+    @property
+    def meta_paths_dict(self):
+        return meta_paths_dict
+
+    def __getitem__(self, idx):
+        return self._g
+
+    def __len__(self):
+        return 1
+
+
+def transform_hg(g: DGLHeteroGraph) -> DGLHeteroGraph:
+    transform = T.Compose([T.ToSimple(), T.AddReverse()])
+    hg = transform(g)
+    return hg
+
+
+def train_with_custom_lp_dataset(dataset):
+    experiment = Experiment(model='HDE', dataset=dataset, task='link_prediction', gpu=-1)
+    experiment.run()
+
+
+myLPDataset = AsLinkPredictionDataset(
+    MyLPDataset(g),
+    target_link=target_link,
+    target_link_r=target_link_r,
+    split_ratio=[0.8, 0.1, 0.1],
+    force_reload=True)
+
+train_with_custom_lp_dataset(myLPDataset)
+```
+
+> TBD：尚需把 g 处理成为 MyLPDataset() 可以接受的数据。
+
+##### 保存模型
+
+OpenHGNN 中保存自定义数据集的模型的支持，有些问题，参考 https://github.com/BUPT-GAMMA/OpenHGNN/issues/112
+
+##### 应用落地
+
+参考：https://github.com/wey-gu/NebulaGraph-Fraud-Detection-GNN
+
+
 
 > Feature image credit by [Cosmin Serbin](https://unsplash.com/photos/2fn_pxLMS9g)
 

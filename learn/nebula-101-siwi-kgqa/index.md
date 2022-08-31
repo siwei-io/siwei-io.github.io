@@ -12,7 +12,7 @@ A full solution walkthrough for a Knowledge Graph Dialog System.
 <div id="katacoda-scenario-siwi"
     data-katacoda-id="wey/siwi-kgqa"
     data-katacoda-color="004d7f"
-    style="height: 600px; padding-top: 20px;"></div>
+    style="height: 900px;width: 1480px; padding-top: 20px;"></div>
 
 > Siwi (/ˈsɪwi/) is a PoC of Dialog System With Graph Database Backed Knowledge Graph.
 >
