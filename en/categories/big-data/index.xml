@@ -16,7 +16,7 @@
 <p>How we leverage Serverless Cloud infra to setup Data Pipeline for Nebula Graph Community Insights. We used Google Cloud Scheduler, Google Cloud Functions, BigQuery, and codes are shared in GitHub</p>
 </blockquote>
 <blockquote>
-<p>这是我首发在 Datawhale 的<a href="http://datawhale.club/t/topic/2089" target="_blank" rel="noopener noreffer">文章</a>，介绍我们如何用公有云 Serverless 技术：Google Cloud Scheduler，Google Cloud Functions 和 BigQuery 搭建数据管道，收集探索开源社区洞察。并将全部代码开源在 GitHub。</p>
+<p>这是我首发在 Datawhale 的<a href="http://datawhale.club/t/topic/2089" target="_blank" rel="noopener noreferrer">文章</a>，介绍我们如何用公有云 Serverless 技术：Google Cloud Scheduler，Google Cloud Functions 和 BigQuery 搭建数据管道，收集探索开源社区洞察。并将全部代码开源在 GitHub。</p>
 </blockquote>
 <blockquote>
 <p>引子
@@ -25,8 +25,8 @@
 <blockquote>
 <p>Nebula Graph 是一个现代的开源分布式图数据库(Graph Database)，欢迎同学们从:</p>
 <ul>
-<li>官网: <a href="https://nebula-graph.com.cn" target="_blank" rel="noopener noreffer">https://nebula-graph.com.cn </a></li>
-<li>Bilibili: <a href="https://space.bilibili.com/472621355" target="_blank" rel="noopener noreffer">https://space.bilibili.com/472621355</a></li>
+<li>官网: <a href="https://nebula-graph.com.cn" target="_blank" rel="noopener noreferrer">https://nebula-graph.com.cn </a></li>
+<li>Bilibili: <a href="https://space.bilibili.com/472621355" target="_blank" rel="noopener noreferrer">https://space.bilibili.com/472621355</a></li>
 <li>GitHub:https://github.com/vesoft-inc/nebula-graph
 了解我们哈。</li>
 </ul>
@@ -125,7 +125,7 @@
 <h3 id="数据的获取api" class="headerLink">
     <a href="#%e6%95%b0%e6%8d%ae%e7%9a%84%e8%8e%b7%e5%8f%96api" class="header-mark"></a>1.2 数据的获取，API</h3><p>我们第一阶段想要收集的数据来源是 GitHub 上，社区项目的统计数据、Docker Hub上，社区镜像的拉取计数，之后，会增加更多维度的数据。</p>
 <ul>
-<li>Github API, ref: <a href="https://pygithub.readthedocs.io" target="_blank" rel="noopener noreffer">https://pygithub.readthedocs.io</a>
+<li>Github API, ref: <a href="https://pygithub.readthedocs.io" target="_blank" rel="noopener noreferrer">https://pygithub.readthedocs.io</a>
 这里我们利用了一个Github API的一个 Python 封装，下边是在 IDLE/iPython/Jupyter 里尝试的例子</li>
 </ul>
 <div class="highlight"><div class="chroma">
@@ -378,7 +378,7 @@
 </span></span></code></pre></td></tr></table>
 </div>
 </div><ul>
-<li>Docker Hub API, ref <a href="https://github.com/amalfra/docker-hub/blob/master/src/libs/docker_hub_client.py" target="_blank" rel="noopener noreffer">https://github.com/amalfra/docker-hub/blob/master/src/libs/docker_hub_client.py</a>
+<li>Docker Hub API, ref <a href="https://github.com/amalfra/docker-hub/blob/master/src/libs/docker_hub_client.py" target="_blank" rel="noopener noreferrer">https://github.com/amalfra/docker-hub/blob/master/src/libs/docker_hub_client.py</a>
 这里我们服用了 docker-hub 这个开源小项目中的一个库 <code>docker_hub_client.py</code> 来作为 Docker Hub API的 python wrapper</li>
 </ul>
 <div class="highlight"><div class="chroma">
@@ -462,7 +462,7 @@
 </span></span><span class="line"><span class="cl">$ gcloud pubsub subscriptions create cron-sub --topic nebula-insights-cron-topic
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>任务的创建非常直接，在 <a href="https://console.cloud.google.com/cloudscheduler" target="_blank" rel="noopener noreffer">Scheduler Web Console</a> 上直接图形化操作就可以了，记得要选择触发 Pub/Sub 消息为 <code>cron-sub</code>，消息主题为 <code>nebula-insights-cron-topic</code></p>
+</div><p>任务的创建非常直接，在 <a href="https://console.cloud.google.com/cloudscheduler" target="_blank" rel="noopener noreferrer">Scheduler Web Console</a> 上直接图形化操作就可以了，记得要选择触发 Pub/Sub 消息为 <code>cron-sub</code>，消息主题为 <code>nebula-insights-cron-topic</code></p>
 <h3 id="etl-worker-with-python--google-functions" class="headerLink">
     <a href="#etl-worker-with-python--google-functions" class="header-mark"></a>2.2 ETL Worker with Python + Google Functions</h3><p>当 Scheduler 每天定时发送消息之后，接收方就是我们要定义的 Google Functions了，它的定义如图
 第一步，选择它的触发类型为 Pub/Sub，同时要定义消息的主题和名字。</p>
@@ -522,17 +522,17 @@
 </span></span></code></pre></td></tr></table>
 </div>
 </div><p>这部分的逻辑就是通过前边分析了的API取得信息，然后组装成需要的格式存到 Cloud Storage(对象存储），然后再导入到 BigQuery（数仓）之中，全部代码在GitHub上:
-<a href="https://github.com/wey-gu/nebula-insights/blob/main/functions/data-fetching-0/main.py" target="_blank" rel="noopener noreffer">https://github.com/wey-gu/nebula-insights/blob/main/functions/data-fetching-0/main.py</a>
-另外，可以参考这个官方教程 <a href="https://cloud.google.com/scheduler/docs/tut-pub-sub" target="_blank" rel="noopener noreffer">https://cloud.google.com/scheduler/docs/tut-pub-sub</a></p>
+<a href="https://github.com/wey-gu/nebula-insights/blob/main/functions/data-fetching-0/main.py" target="_blank" rel="noopener noreferrer">https://github.com/wey-gu/nebula-insights/blob/main/functions/data-fetching-0/main.py</a>
+另外，可以参考这个官方教程 <a href="https://cloud.google.com/scheduler/docs/tut-pub-sub" target="_blank" rel="noopener noreferrer">https://cloud.google.com/scheduler/docs/tut-pub-sub</a></p>
 <h3 id="数仓表结构定义" class="headerLink">
     <a href="#%e6%95%b0%e4%bb%93%e8%a1%a8%e7%bb%93%e6%9e%84%e5%ae%9a%e4%b9%89" class="header-mark"></a>2.3 数仓表结构定义</h3><p>数仓的表结构比较直接，schema的图贴在下边了，值得注意的是，BigQuery支持嵌套的表结构（而不像一般关系型数据库那样需要把这样的逻辑结构用辅助表来表示），在我们这个场景下非常方便，比如release表中的 assets的三个嵌套字段。
 <a class="lightgallery" href="./bigquery_schema.png" title="bigquery_schema|475x412" data-thumbnail="./bigquery_schema.png">
         
     </a></p>
-<p>更详细的信息可以参考GitHub上的介绍和代码: <a href="https://github.com/wey-gu/nebula-insights#data-etl-bigquery-and-gcs" target="_blank" rel="noopener noreffer">https://github.com/wey-gu/nebula-insights#data-etl-bigquery-and-gcs</a></p>
+<p>更详细的信息可以参考GitHub上的介绍和代码: <a href="https://github.com/wey-gu/nebula-insights#data-etl-bigquery-and-gcs" target="_blank" rel="noopener noreferrer">https://github.com/wey-gu/nebula-insights#data-etl-bigquery-and-gcs</a></p>
 <h3 id="数据可视化" class="headerLink">
     <a href="#%e6%95%b0%e6%8d%ae%e5%8f%af%e8%a7%86%e5%8c%96" class="header-mark"></a>2.4 数据可视化</h3><p>到这里，我们就可以自动在BigQuery里存有每天收集的不同来源的统计数据啦，有了它，我们可以借助 Data Studio 来生成各式各样的可视化表示。</p>
-<p>参考 <a href="https://cloud.google.com/bigquery/docs/visualize-data-studio" target="_blank" rel="noopener noreffer">https://cloud.google.com/bigquery/docs/visualize-data-studio</a></p>
+<p>参考 <a href="https://cloud.google.com/bigquery/docs/visualize-data-studio" target="_blank" rel="noopener noreferrer">https://cloud.google.com/bigquery/docs/visualize-data-studio</a></p>
 <h2 id="总结" class="headerLink">
     <a href="#%e6%80%bb%e7%bb%93" class="header-mark"></a>3 总结</h2><p>这样，我们实际上不需要任何认为维护的成本和投入，就搭建了一整个数据的流水线，并且只需要按照数据用量付费，在我们的数据量下，及时考虑未来增加数十个新的量度的收集，我们依然没有达到需要付费的用量，是不是很Cool？
 因为数据同时存在于对象存储与数仓里，我们可以方便随时把数据导入任意其他平台上。</p>
