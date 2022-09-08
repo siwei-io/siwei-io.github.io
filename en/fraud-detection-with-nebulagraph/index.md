@@ -106,7 +106,7 @@ With such a mapping, risk control experts can explore the relationships between 
 
 ![](./viz_graph_query.webp)
 
-In this screenshot of renderred query, we can clearly see a risk pattern for a group controlled device that can be given to a graph database developer and abstracted into NebulaGraph database statements that can be queried by anyone or certain applicaiton in real-time fashion:
+In this screenshot of rendered query, we can clearly see a risk pattern for a group-controlled device that can be given to a graph database developer and abstracted into NebulaGraph database statements that can be queried by anyone or certain application in real-time fashion:
 
 ```GRAPHQL
 ## Query started from a person for given transaction
@@ -124,7 +124,22 @@ OPTIONAL MATCH p_shared_d=(n)-[:used_device]->(d)<-[:used_device]-(:applicant)-[
 RETURN count(e)
 ```
 
-In this way, we can build a relatively effective risk control system that uses limited labeled data and expert resources to more efficiently control the risk of gang fraud.
+In this way, we can build an online risk control system that uses limited labeled data and expert resources to more efficiently control the risk of gang fraud.
+
+Another example of leveraging labeled high-risk vertices could be like querying the count of ones whose `is_risky` flag is True:
+
+```graphql
+MATCH p_=(p:applicant)-[*1..2]-(p2:applicant) WHERE id(p)=="200000014810" AND p2.applicant.is_risky == "True" RETURN p_ LIMIT 100
+```
+
+![](is_risky_label.webp)
+
+And the metric would be like:
+
+```graphql
+MATCH (p:applicant)-[*1..2]-(p2:applicant) WHERE id(p)=="200000014810" AND p2.applicant.is_risky == "True" RETURN count(p2)
+```
+
 However, in real world, most of our labeled data is still too expensive to obtain, so is there any way to more effectively use the limited risk labeling and graph structure to predict the risk?
 
 The answer is yes.
@@ -1643,7 +1658,10 @@ The whole example code, including a frontend is [here](https://github.com/wey-gu
   <source src="https://user-images.githubusercontent.com/1651790/182651965-d489a218-36a6-40c9-9fab-ba288e8d959a.mov" type="video/mp4"> 
 </video>
 
+
 ### Conclusion
+
+
 
 <!--
 

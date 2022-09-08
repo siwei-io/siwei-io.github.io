@@ -93,7 +93,25 @@ OPTIONAL MATCH p_shared_d=(n)-[:used_device]->(d)<-[:used_device]-(:applicant)-[
 RETURN count(e)
 ```
 
-如此，我们可以建立一个相对有效的风控系统，利用有限的标注数据和专家资源，去更高效控制团伙欺诈作案风险，然而，在现实情况下，我们的大多数标注数据的获取还是过于昂贵，那么有没有什么方法是更有效利用有限的风险标注和图结构，来预测出风险呢？
+如此，我们可以建立一个相对有效的风控系统，利用有限的标注数据和专家资源，去更高效控制团伙欺诈作案风险。
+
+另一个利用标注风险节点的查询是找到相关联节点高风险属性的数量：
+
+```graphql
+MATCH p_=(p:applicant)-[*1..2]-(p2:applicant) WHERE id(p)=="200000014810" AND p2.applicant.is_risky == "True" RETURN p_ LIMIT 100
+```
+
+可以从这个路径查询看到 `200000014810` 的相连接的申请人中有不少是高风险的（也能看出聚集的 device）。
+
+![](is_risky_label.webp)
+
+如此，我们可以定义相连高风险点数量为一个指标：
+
+```graphql
+MATCH (p:applicant)-[*1..2]-(p2:applicant) WHERE id(p)=="200000014810" AND p2.applicant.is_risky == "True" RETURN count(p2)
+```
+
+然而，在现实情况下，我们的大多数标注数据的获取还是过于昂贵，那么有没有什么方法是更有效利用有限的风险标注和图结构，来预测出风险呢？
 
 ### 利用图扩充标注
 

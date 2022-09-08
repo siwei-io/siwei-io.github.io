@@ -2208,7 +2208,30 @@ $$
 </span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="py">RETURN</span><span class="w"> </span><span class="py">count</span><span class="p">(</span><span class="py">e</span><span class="p">)</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
-</div><p>如此，我们可以建立一个相对有效的风控系统，利用有限的标注数据和专家资源，去更高效控制团伙欺诈作案风险，然而，在现实情况下，我们的大多数标注数据的获取还是过于昂贵，那么有没有什么方法是更有效利用有限的风险标注和图结构，来预测出风险呢？</p>
+</div><p>如此，我们可以建立一个相对有效的风控系统，利用有限的标注数据和专家资源，去更高效控制团伙欺诈作案风险。</p>
+<p>另一个利用标注风险节点的查询是找到相关联节点高风险属性的数量：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-graphql" data-lang="graphql"><span class="line"><span class="cl"><span class="py">MATCH</span><span class="w"> </span><span class="py">p_</span><span class="p">=(</span><span class="py">p</span><span class="p">:</span><span class="nc">applicant</span><span class="p">)</span><span class="err">-</span><span class="p">[</span><span class="err">*</span><span class="py">1</span><span class="err">.</span><span class="mf">.2</span><span class="p">]</span><span class="err">-</span><span class="p">(</span><span class="py">p2</span><span class="p">:</span><span class="nc">applicant</span><span class="p">)</span><span class="w"> </span><span class="py">WHERE</span><span class="w"> </span><span class="py">id</span><span class="p">(</span><span class="py">p</span><span class="p">)==</span><span class="s">&#34;200000014810&#34;</span><span class="w"> </span><span class="py">AND</span><span class="w"> </span><span class="py">p2</span><span class="err">.</span><span class="py">applicant</span><span class="err">.</span><span class="py">is_risky</span><span class="w"> </span><span class="p">==</span><span class="w"> </span><span class="s">&#34;True&#34;</span><span class="w"> </span><span class="py">RETURN</span><span class="w"> </span><span class="py">p_</span><span class="w"> </span><span class="py">LIMIT</span><span class="w"> </span><span class="py">100</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>可以从这个路径查询看到 <code>200000014810</code> 的相连接的申请人中有不少是高风险的（也能看出聚集的 device）。</p>
+<p><a class="lightgallery" href="/fraud-detection-with-nebulagraph/is_risky_label.webp" title="/fraud-detection-with-nebulagraph/is_risky_label.webp" data-thumbnail="/fraud-detection-with-nebulagraph/is_risky_label.webp">
+        
+    </a></p>
+<p>如此，我们可以定义相连高风险点数量为一个指标：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-graphql" data-lang="graphql"><span class="line"><span class="cl"><span class="py">MATCH</span><span class="w"> </span><span class="p">(</span><span class="py">p</span><span class="p">:</span><span class="nc">applicant</span><span class="p">)</span><span class="err">-</span><span class="p">[</span><span class="err">*</span><span class="py">1</span><span class="err">.</span><span class="mf">.2</span><span class="p">]</span><span class="err">-</span><span class="p">(</span><span class="py">p2</span><span class="p">:</span><span class="nc">applicant</span><span class="p">)</span><span class="w"> </span><span class="py">WHERE</span><span class="w"> </span><span class="py">id</span><span class="p">(</span><span class="py">p</span><span class="p">)==</span><span class="s">&#34;200000014810&#34;</span><span class="w"> </span><span class="py">AND</span><span class="w"> </span><span class="py">p2</span><span class="err">.</span><span class="py">applicant</span><span class="err">.</span><span class="py">is_risky</span><span class="w"> </span><span class="p">==</span><span class="w"> </span><span class="s">&#34;True&#34;</span><span class="w"> </span><span class="py">RETURN</span><span class="w"> </span><span class="py">count</span><span class="p">(</span><span class="py">p2</span><span class="p">)</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>然而，在现实情况下，我们的大多数标注数据的获取还是过于昂贵，那么有没有什么方法是更有效利用有限的风险标注和图结构，来预测出风险呢？</p>
 <h3 id="利用图扩充标注" class="headerLink">
     <a href="#%e5%88%a9%e7%94%a8%e5%9b%be%e6%89%a9%e5%85%85%e6%a0%87%e6%b3%a8" class="header-mark"></a>1.3 利用图扩充标注</h3><p>答案是肯定的， Xiaojin Z. 和 Zoubin G. 在论文：<a href="http://mlg.eng.cam.ac.uk/zoubin/papers/CMU-CALD-02-107.pdf" target="_blank" rel="noopener noreferrer">Learning from Labeled and Unlabeled Data with Label Propagation</a> （CMU-CALD-02-107）中，利用标签传播（Label Propagation）算法来把有限的标注信息在图上通过关联关系传播到更多实体中。</p>
 <p>这样，在我们建立的图谱中，我们可以很容易地借助有限的高风险标注，去“传播”产生更多的标注信息。这些扩展出来的标注信息一方面可以在实时的图查询中给出更多的结果，另一方面，它还能作为风控专家重要的输入信息，帮助推进反欺诈调查行动的开展。</p>

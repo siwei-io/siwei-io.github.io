@@ -117,7 +117,7 @@
 <p><a class="lightgallery" href="./viz_graph_query.webp" title="./viz_graph_query.webp" data-thumbnail="./viz_graph_query.webp">
         
     </a></p>
-<p>In this screenshot of renderred query, we can clearly see a risk pattern for a group controlled device that can be given to a graph database developer and abstracted into NebulaGraph database statements that can be queried by anyone or certain applicaiton in real-time fashion:</p>
+<p>In this screenshot of rendered query, we can clearly see a risk pattern for a group-controlled device that can be given to a graph database developer and abstracted into NebulaGraph database statements that can be queried by anyone or certain application in real-time fashion:</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
@@ -147,8 +147,29 @@
 </span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="py">RETURN</span><span class="w"> </span><span class="py">count</span><span class="p">(</span><span class="py">e</span><span class="p">)</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
-</div><p>In this way, we can build a relatively effective risk control system that uses limited labeled data and expert resources to more efficiently control the risk of gang fraud.
-However, in real world, most of our labeled data is still too expensive to obtain, so is there any way to more effectively use the limited risk labeling and graph structure to predict the risk?</p>
+</div><p>In this way, we can build an online risk control system that uses limited labeled data and expert resources to more efficiently control the risk of gang fraud.</p>
+<p>Another example of leveraging labeled high-risk vertices could be like querying the count of ones whose <code>is_risky</code> flag is True:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-graphql" data-lang="graphql"><span class="line"><span class="cl"><span class="py">MATCH</span><span class="w"> </span><span class="py">p_</span><span class="p">=(</span><span class="py">p</span><span class="p">:</span><span class="nc">applicant</span><span class="p">)</span><span class="err">-</span><span class="p">[</span><span class="err">*</span><span class="py">1</span><span class="err">.</span><span class="mf">.2</span><span class="p">]</span><span class="err">-</span><span class="p">(</span><span class="py">p2</span><span class="p">:</span><span class="nc">applicant</span><span class="p">)</span><span class="w"> </span><span class="py">WHERE</span><span class="w"> </span><span class="py">id</span><span class="p">(</span><span class="py">p</span><span class="p">)==</span><span class="s">&#34;200000014810&#34;</span><span class="w"> </span><span class="py">AND</span><span class="w"> </span><span class="py">p2</span><span class="err">.</span><span class="py">applicant</span><span class="err">.</span><span class="py">is_risky</span><span class="w"> </span><span class="p">==</span><span class="w"> </span><span class="s">&#34;True&#34;</span><span class="w"> </span><span class="py">RETURN</span><span class="w"> </span><span class="py">p_</span><span class="w"> </span><span class="py">LIMIT</span><span class="w"> </span><span class="py">100</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p><a class="lightgallery" href="/en/fraud-detection-with-nebulagraph/is_risky_label.webp" title="/en/fraud-detection-with-nebulagraph/is_risky_label.webp" data-thumbnail="/en/fraud-detection-with-nebulagraph/is_risky_label.webp">
+        
+    </a></p>
+<p>And the metric would be like:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-graphql" data-lang="graphql"><span class="line"><span class="cl"><span class="py">MATCH</span><span class="w"> </span><span class="p">(</span><span class="py">p</span><span class="p">:</span><span class="nc">applicant</span><span class="p">)</span><span class="err">-</span><span class="p">[</span><span class="err">*</span><span class="py">1</span><span class="err">.</span><span class="mf">.2</span><span class="p">]</span><span class="err">-</span><span class="p">(</span><span class="py">p2</span><span class="p">:</span><span class="nc">applicant</span><span class="p">)</span><span class="w"> </span><span class="py">WHERE</span><span class="w"> </span><span class="py">id</span><span class="p">(</span><span class="py">p</span><span class="p">)==</span><span class="s">&#34;200000014810&#34;</span><span class="w"> </span><span class="py">AND</span><span class="w"> </span><span class="py">p2</span><span class="err">.</span><span class="py">applicant</span><span class="err">.</span><span class="py">is_risky</span><span class="w"> </span><span class="p">==</span><span class="w"> </span><span class="s">&#34;True&#34;</span><span class="w"> </span><span class="py">RETURN</span><span class="w"> </span><span class="py">count</span><span class="p">(</span><span class="py">p2</span><span class="p">)</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>However, in real world, most of our labeled data is still too expensive to obtain, so is there any way to more effectively use the limited risk labeling and graph structure to predict the risk?</p>
 <p>The answer is yes.</p>
 <h3 id="expand-labels-in-graph" class="headerLink">
     <a href="#expand-labels-in-graph" class="header-mark"></a>1.3 Expand labels in Graph</h3><!--
