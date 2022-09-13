@@ -5,6 +5,11 @@
 
 <!--more-->
 
+## 系列教程
+
+- [nGQL 简明教程，第一期，快速入门](https://www.siwei.io/ngql-tutorial/)，本文
+- [nGQL 简明教程，第二期，查询计划与调优](https://www.siwei.io/ngql-execution-plan/)
+
 ## 视频
 
 本教程的视频版在[这里](https://bilibili.com/video/BV1PT411P7w8)。
