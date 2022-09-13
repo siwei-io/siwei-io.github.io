@@ -247,6 +247,6 @@ OPTIONAL MATCH (n)-[]->(l) WHERE id(n)=="player125" \
 
 > 题图版权：DALL·E Open-AI，[原图](./featured-image-raw.webp)
 >
-> Featured image was generated with key words: learning spells of the nebula magic, with DALL·E Open-AI.
+> The featured image was generated with keywords: learning spells of the nebula magic, with DALL·E Open-AI.
 
 
