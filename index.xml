@@ -1578,8 +1578,8 @@
 </ul>
 <p>这样，优化之后的查询不仅少了一个 GraphD 里的算子执行过程，GetNeighbors 捞取的数据也因为传递了 filter 参数可能比全量的数据少了。</p>
 <p>在这个例子中，我们应该可以感性推得这样的一个规律：显示表达尽可能多的已知信息往往是有帮助的。事实上，这个结论是有客观的道理的，在规则优化、数据查询的时候，模糊的查询常常是更昂贵的，而确定的信息总会带来更多的剪枝、过滤、短路可能，并且这些信息在查询中越明确、越早提供也会越好。下边是另一个例子：</p>
-<h3 id="减少模糊增加确定越早越好" class="headerLink">
-    <a href="#%e5%87%8f%e5%b0%91%e6%a8%a1%e7%b3%8a%e5%a2%9e%e5%8a%a0%e7%a1%ae%e5%ae%9a%e8%b6%8a%e6%97%a9%e8%b6%8a%e5%a5%bd" class="header-mark"></a>4.3 减少模糊，增加确定，越早越好</h3><p>这里我给出三对查询的比较：</p>
+<h3 id="优化原则减少模糊增加确定越早越好" class="headerLink">
+    <a href="#%e4%bc%98%e5%8c%96%e5%8e%9f%e5%88%99%e5%87%8f%e5%b0%91%e6%a8%a1%e7%b3%8a%e5%a2%9e%e5%8a%a0%e7%a1%ae%e5%ae%9a%e8%b6%8a%e6%97%a9%e8%b6%8a%e5%a5%bd" class="header-mark"></a>4.3 优化原则：减少模糊，增加确定，越早越好</h3><p>这里我给出三对查询的比较：</p>
 <ol>
 <li><code>GO FROM &quot;player100&quot; OVER follow YIELD dst(edge)</code> 对比 <code>GO FROM &quot;player100&quot; OVER follow YIELD follow._dst</code></li>
 <li><code>MATCH (:player)-[e]-(:player) RETURN e</code> 与 <code>MATCH (:player)-[e:follow]-(:player) RETURN e</code></li>
@@ -6277,9 +6277,10 @@
 </div>
 </div><h2 id="小结" class="headerLink">
     <a href="#%e5%b0%8f%e7%bb%93" class="header-mark"></a>5 小结</h2><p>在理解了 NebulaGraph 的基本架构设计、存储格式、查询的简单调用流程和常见的优化规则之后，结合 PROFILE/EXPLAIN，我们可以一点点去设计更适合不同场景的图建模与图查询。</p>
+<p>优化原则：减少模糊，增加确定，越早越好。</p>
 <p>欢迎大家在本文的评论区讨论、提供更多优化查询的例子。</p>
 <blockquote>
-<p>Feature image generated with OpenAI Dall-E, with key word &ldquo;make potions for the nebula magic&rdquo; and Outpainting.</p>
+<p>Feature image generated with OpenAI Dall-E, with the keyword &ldquo;make potions for the nebula magic&rdquo; and Outpainting.</p>
 <p>Raw <a href="./DALL%c2%b7E-make-potions-for-the-nebula-magic.png" rel="">image</a></p>
 </blockquote>]]></description>
 </item><item>

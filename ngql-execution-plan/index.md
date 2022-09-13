@@ -896,7 +896,7 @@ Execution Plan (optimize time 161 us)
 
 在这个例子中，我们应该可以感性推得这样的一个规律：显示表达尽可能多的已知信息往往是有帮助的。事实上，这个结论是有客观的道理的，在规则优化、数据查询的时候，模糊的查询常常是更昂贵的，而确定的信息总会带来更多的剪枝、过滤、短路可能，并且这些信息在查询中越明确、越早提供也会越好。下边是另一个例子：
 
-### 减少模糊，增加确定，越早越好
+### 优化原则：减少模糊，增加确定，越早越好
 
 这里我给出三对查询的比较：
 
@@ -3310,11 +3310,11 @@ Execution Plan (optimize time 333 us)
 
 在理解了 NebulaGraph 的基本架构设计、存储格式、查询的简单调用流程和常见的优化规则之后，结合 PROFILE/EXPLAIN，我们可以一点点去设计更适合不同场景的图建模与图查询。
 
+优化原则：减少模糊，增加确定，越早越好。
+
 欢迎大家在本文的评论区讨论、提供更多优化查询的例子。
 
-
-
-> Feature image generated with OpenAI Dall-E, with key word "make potions for the nebula magic" and Outpainting.
+> Feature image generated with OpenAI Dall-E, with the keyword "make potions for the nebula magic" and Outpainting.
 >
 > Raw [image](./DALL·E-make-potions-for-the-nebula-magic.png)
 
