@@ -36,7 +36,7 @@
 
 的过程：
 
-![img](./code-reading-qe-planner-arch.png)
+![img](code-reading-qe-planner-arch.png)
 
 举一个例子，在查年龄大于 34 岁的三跳好友的语句被查询之后
 
@@ -46,7 +46,7 @@ GO 3 STEPS FROM "player100" OVER follow WHERE $$.player.age > 34 YIELD DISTINCT 
 
 语句经过了解析、验证、优化之后，最终的执行计划是， `Start -> Loop -> Start -> GetNeighbors -> Project -> Dedup -> Loop -> GetNeighbors -> Project -> GetVertices -> Project -> LeftJoin -> Filter -> Project -> Dedup -> Sort`，或者如下图所示。
 
-![go_n_steps](./go_n_steps.svg)
+![go_n_steps](go_n_steps.svg)
 
 了解这个优化过程和最终执行计划意味着什么是调优查询、面向性能设计图建模的关键。
 
@@ -3316,5 +3316,5 @@ Execution Plan (optimize time 333 us)
 
 > Feature image generated with OpenAI Dall-E, with the keyword "make potions for the nebula magic" and Outpainting.
 >
-> Raw [image](./DALL·E-make-potions-for-the-nebula-magic.png)
+> Raw [image](DALL·E-make-potions-for-the-nebula-magic.png)
 
