@@ -1,0 +1,1096 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noodp" />
+    <title class="pjax-title">NebulaGraph 内核贡献开发指南 - siwei.io</title><meta name="Description" content="本文是一个快速了解为 NebulaGraph 内核贡献代码、构建、Debug 的一站式指南。"><meta property="og:title" content="NebulaGraph 内核贡献开发指南" />
+<meta property="og:description" content="本文是一个快速了解为 NebulaGraph 内核贡献代码、构建、Debug 的一站式指南。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://siwei.io/nebulagraph-hacking-guide/" /><meta property="og:image" content="https://siwei.io/nebulagraph-hacking-guide/featured-image.png"/><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2022-10-23T14:57:07+08:00" />
+<meta property="article:modified_time" content="2022-10-23T14:57:07+08:00" /><meta property="og:site_name" content="siwei.io" />
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://siwei.io/nebulagraph-hacking-guide/featured-image.png"/>
+<meta name="twitter:title" content="NebulaGraph 内核贡献开发指南"/>
+<meta name="twitter:description" content="本文是一个快速了解为 NebulaGraph 内核贡献代码、构建、Debug 的一站式指南。"/>
+<meta name="application-name" content="siwei.io">
+<meta name="apple-mobile-web-app-title" content="siwei.io">
+
+<meta name="theme-color" content="#f8f8f8"><meta name="msapplication-TileColor" content="#da532c"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="manifest" href="/site.webmanifest"><link rel="canonical" href="https://siwei.io/nebulagraph-hacking-guide/" /><link rel="prev" href="https://siwei.io/ngql-execution-plan/" /><link rel="stylesheet" href="/lib/normalize/normalize.min.css"><link rel="stylesheet" href="/css/style.min.css"><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/fontawesome-free/all.min.css">
+        <noscript><link rel="stylesheet" href="/lib/fontawesome-free/all.min.css"></noscript><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/animate/animate.min.css">
+        <noscript><link rel="stylesheet" href="/lib/animate/animate.min.css"></noscript>
+    
+    
+    
+    <meta name="baidu-site-verification" content="code-4R67zl7SwH" /><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "NebulaGraph 内核贡献开发指南",
+        "inLanguage": "zh-CN",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "https:\/\/siwei.io\/nebulagraph-hacking-guide\/"
+        },"image": ["https:\/\/siwei.io\/images\/site-feature-image.webp"],"genre": "posts","keywords": "NebulaGraph, contributing, open-source, 开发指南","wordcount":  6439 ,
+        "url": "https:\/\/siwei.io\/nebulagraph-hacking-guide\/","datePublished": "2022-10-23T14:57:07+08:00","dateModified": "2022-10-23T14:57:07+08:00","publisher": {
+            "@type": "Organization",
+            "name": "Wey Gu","logo": "https:\/\/siwei.io\/images\/site-feature-image.webp"},"author": {
+                "@type": "Person",
+                "name": "Wey Gu"
+            },"description": "本文是一个快速了解为 NebulaGraph 内核贡献代码、构建、Debug 的一站式指南。"
+    }
+    </script></head>
+
+<body header-desktop="fixed" header-mobile="auto"><script type="text/javascript">
+        function setTheme(theme) {document.body.setAttribute('theme', theme); document.documentElement.style.setProperty('color-scheme', theme === 'light' ? 'light' : 'dark');}
+        function saveTheme(theme) {window.localStorage && localStorage.setItem('theme', theme);}
+        function getMeta(metaName) {const metas = document.getElementsByTagName('meta'); for (let i = 0; i < metas.length; i++) if (metas[i].getAttribute('name') === metaName) return metas[i]; return '';}
+        if (window.localStorage && localStorage.getItem('theme')) {let theme = localStorage.getItem('theme');theme === 'light' || theme === 'dark' || theme === 'black' ? setTheme(theme) : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light')); } else { if ('auto' === 'light' || 'auto' === 'dark' || 'auto' === 'black') setTheme('auto'), saveTheme('auto'); else saveTheme('auto'), window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light');}
+        let metaColors = {'light': '#f8f8f8','dark': '#252627','black': '#000000'}
+        getMeta('theme-color').content = metaColors[document.body.getAttribute('theme')];
+    </script>
+    <div id="back-to-top"></div>
+    <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/" title="siwei.io"><span class="header-title-pre"><i class="fas fa-code-branch"></i></span>siwei.io</a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="/about/"> 关于 </a><a class="menu-item" href="/projects/"> 项目 </a><a class="menu-item" href="/sketch-notes/"> 手绘 </a><a class="menu-item" href="/posts/"> 博客 </a><a class="menu-item" href="/talk/"> 演讲 </a><a class="menu-item" href="/cources/"> 课程 </a><a class="menu-item" href="https://vesoft.com/cn/careers/" rel="noopener noreferrer" target="_blank"> 招聘 </a><a class="menu-item" href="/about/#%E8%81%94%E7%B3%BB%E6%88%91"> 联系 </a><a class="menu-item" href="/path/"> 学习路径 </a><span class="menu-item delimiter"></span><a href="#" onclick="return false;" class="menu-item language" title="选择语言">🌏 Chinese<i class="fas fa-chevron-right fa-fw"></i>
+                        <select class="language-select" title="Select Language" id="language-select-desktop" onchange="location = this.value;"><option value="/nebulagraph-hacking-guide/" selected>🌏 Chinese</option></select>
+                    </a><span class="menu-item search" id="search-desktop">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-desktop">
+                        <a href="#" onclick="return false;" class="search-button search-toggle" id="search-toggle-desktop" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="#" onclick="return false;" class="search-button search-clear" id="search-clear-desktop" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-desktop">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </span><a href="#" onclick="return false;" class="menu-item theme-select" title="切换主题">
+                    <i class="fas fa-adjust fa-fw"></i>
+                    <select class="color-theme-select" id="theme-select-desktop" title="切换主题">
+                        <option value="light">浅色</option>
+                        <option value="dark">深色</option>
+                        <option value="black">黑色</option>
+                        <option value="auto">跟随系统</option>
+                    </select>
+                </a></div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="/" title="siwei.io"><span class="header-title-pre"><i class="fas fa-code-branch"></i></span>siwei.io</a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><div class="search-wrapper">
+                    <div class="search mobile" id="search-mobile">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-mobile">
+                        <a href="#" onclick="return false;" class="search-button search-toggle" id="search-toggle-mobile" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="#" onclick="return false;" class="search-button search-clear" id="search-clear-mobile" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-mobile">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </div>
+                    <a href="#" onclick="return false;" class="search-cancel" id="search-cancel-mobile">
+                        取消
+                    </a>
+                </div><a class="menu-item" href="/about/" title="">关于</a><a class="menu-item" href="/projects/" title="">项目</a><a class="menu-item" href="/sketch-notes/" title="">手绘</a><a class="menu-item" href="/posts/" title="">博客</a><a class="menu-item" href="/talk/" title="">演讲</a><a class="menu-item" href="/cources/" title="">课程</a><a class="menu-item" href="https://vesoft.com/cn/careers/" title="" rel="noopener noreferrer" target="_blank">招聘</a><a class="menu-item" href="/about/#%E8%81%94%E7%B3%BB%E6%88%91" title="">联系</a><a class="menu-item" href="/path/" title="">学习路径</a><a href="#" onclick="return false;" class="menu-item theme-select" title="切换主题">
+                <i class="fas fa-adjust fa-fw"></i>
+                <select class="color-theme-select" id="theme-select-mobile" title="切换主题">
+                    <option value="light">浅色</option>
+                    <option value="dark">深色</option>
+                    <option value="black">黑色</option>
+                    <option value="auto">跟随系统</option>
+                </select>
+            </a><a href="#" onclick="return false;" class="menu-item" title="选择语言">🌏 Chinese<i class="fas fa-chevron-right fa-fw"></i>
+                    <select class="language-select" title="Select Language" onchange="location = this.value;"><option value="/nebulagraph-hacking-guide/" selected>🌏 Chinese</option></select>
+                </a></div>
+    </div>
+</header>
+<div class="search-dropdown desktop">
+    <div id="search-dropdown-desktop"></div>
+</div>
+<div class="search-dropdown mobile">
+    <div id="search-dropdown-mobile"></div>
+</div>
+<main class="main">
+            <div class="container"><div class="toc" id="toc-auto">
+        <h2 class="toc-title">目录</h2>
+        <div class="toc-content always-active" id="toc-content-auto"><nav id="TableOfContents">
+  <ol>
+    <li><a href="#nebulagraph-的架构简介">NebulaGraph 的架构简介</a>
+      <ol>
+        <li><a href="#服务进程">服务、进程</a></li>
+        <li><a href="#计算层与存储层">计算层与存储层</a>
+          <ol>
+            <li><a href="#graph-service-nebula-graphd">Graph Service: nebula-graphd</a></li>
+            <li><a href="#meta-service-nebula-metad">Meta Service: nebula-metad</a></li>
+            <li><a href="#storage-service-nebula-storaged">Storage Service: nebula-storaged</a></li>
+          </ol>
+        </li>
+        <li><a href="#进程间通信服务发现机制">进程间通信、服务发现机制</a></li>
+      </ol>
+    </li>
+    <li><a href="#开发环境搭建">开发环境搭建</a>
+      <ol>
+        <li><a href="#创建一个容器化的-nebulagraph-集群">创建一个容器化的 NebulaGraph 集群</a></li>
+        <li><a href="#代码获取">代码获取</a></li>
+        <li><a href="#创建开发容器">创建开发容器</a></li>
+        <li><a href="#编译环境">编译环境</a></li>
+      </ol>
+    </li>
+    <li><a href="#调试-nebulagraph">调试 NebulaGraph</a>
+      <ol>
+        <li><a href="#安装依赖">安装依赖</a></li>
+        <li><a href="#准备客户端">准备客户端</a></li>
+        <li><a href="#gdb-运行-graphd">gdb 运行 graphd</a></li>
+      </ol>
+    </li>
+    <li><a href="#修改-nebulagraph-代码">修改 NebulaGraph 代码</a>
+      <ol>
+        <li><a href="#读代码">读代码</a>
+          <ol>
+            <li><a href="#在哪里修改">在哪里修改</a></li>
+          </ol>
+        </li>
+        <li><a href="#开始改代码">开始改代码</a></li>
+        <li><a href="#调试代码">调试代码</a></li>
+      </ol>
+    </li>
+    <li><a href="#提交-pr">提交 PR</a>
+      <ol>
+        <li><a href="#提交到个人远程分支">提交到个人远程分支</a>
+          <ol>
+            <li><a href="#commit-本地修改">commit 本地修改</a></li>
+            <li><a href="#提交到自己远程的分支">提交到自己远程的分支</a></li>
+            <li><a href="#在个人远程分叉分支上创建-pr">在个人远程分叉分支上创建 PR</a></li>
+          </ol>
+        </li>
+        <li><a href="#调试-ci-测试代码">调试 CI 测试代码</a>
+          <ol>
+            <li><a href="#ctest">CTest</a></li>
+            <li><a href="#tck">TCK</a></li>
+          </ol>
+        </li>
+        <li><a href="#邀请再次-review">邀请再次 review</a></li>
+      </ol>
+    </li>
+  </ol>
+</nav></div>
+    </div><script>document.getElementsByTagName("main")[0].setAttribute("pageStyle", "normal")</script><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC", "true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">NebulaGraph 内核贡献开发指南</h1><div class="post-meta">
+            <div class="post-meta-line">
+                <span class="post-author"><i class="author fas fa-user-circle fa-fw"></i><a href="https://siwei.io" title="Author" target="_blank" rel="noopener noreferrer author" class="author">Wey Gu</a>
+                </span>&nbsp;<span class="post-category">收录于 </span>&nbsp;<span class="post-category">类别 <a href="/categories/nebula-graph/"><i class="far fa-folder fa-fw"></i>Nebula Graph</a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime="2022-10-23">2022-10-23</time>&nbsp;<i class="far fa-edit fa-fw"></i>&nbsp;<time datetime="2022-10-23">2022-10-23</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;约 6439 字&nbsp;
+                <i class="far fa-clock fa-fw"></i>&nbsp;预计阅读 13 分钟&nbsp;</div>
+        </div><div class="featured-image"><img
+        class="lazyload"
+        data-src="/nebulagraph-hacking-guide/featured-image.webp"
+        data-srcset="/nebulagraph-hacking-guide/featured-image.webp, /nebulagraph-hacking-guide/featured-image.webp 1.5x, /nebulagraph-hacking-guide/featured-image.webp 2x"
+        data-sizes="auto"
+        alt="/nebulagraph-hacking-guide/featured-image.webp"
+        title="本文是一个快速了解为 NebulaGraph 内核贡献代码、构建、Debug 的一站式指南。" height="914" width="1738"></div><div class="details toc" id="toc-static"  kept="">
+                <div class="details-summary toc-title">
+                    <span>目录</span>
+                    <span><i class="details-icon fas fa-angle-right"></i></span>
+                </div>
+                <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ol>
+    <li><a href="#nebulagraph-的架构简介">NebulaGraph 的架构简介</a>
+      <ol>
+        <li><a href="#服务进程">服务、进程</a></li>
+        <li><a href="#计算层与存储层">计算层与存储层</a>
+          <ol>
+            <li><a href="#graph-service-nebula-graphd">Graph Service: nebula-graphd</a></li>
+            <li><a href="#meta-service-nebula-metad">Meta Service: nebula-metad</a></li>
+            <li><a href="#storage-service-nebula-storaged">Storage Service: nebula-storaged</a></li>
+          </ol>
+        </li>
+        <li><a href="#进程间通信服务发现机制">进程间通信、服务发现机制</a></li>
+      </ol>
+    </li>
+    <li><a href="#开发环境搭建">开发环境搭建</a>
+      <ol>
+        <li><a href="#创建一个容器化的-nebulagraph-集群">创建一个容器化的 NebulaGraph 集群</a></li>
+        <li><a href="#代码获取">代码获取</a></li>
+        <li><a href="#创建开发容器">创建开发容器</a></li>
+        <li><a href="#编译环境">编译环境</a></li>
+      </ol>
+    </li>
+    <li><a href="#调试-nebulagraph">调试 NebulaGraph</a>
+      <ol>
+        <li><a href="#安装依赖">安装依赖</a></li>
+        <li><a href="#准备客户端">准备客户端</a></li>
+        <li><a href="#gdb-运行-graphd">gdb 运行 graphd</a></li>
+      </ol>
+    </li>
+    <li><a href="#修改-nebulagraph-代码">修改 NebulaGraph 代码</a>
+      <ol>
+        <li><a href="#读代码">读代码</a>
+          <ol>
+            <li><a href="#在哪里修改">在哪里修改</a></li>
+          </ol>
+        </li>
+        <li><a href="#开始改代码">开始改代码</a></li>
+        <li><a href="#调试代码">调试代码</a></li>
+      </ol>
+    </li>
+    <li><a href="#提交-pr">提交 PR</a>
+      <ol>
+        <li><a href="#提交到个人远程分支">提交到个人远程分支</a>
+          <ol>
+            <li><a href="#commit-本地修改">commit 本地修改</a></li>
+            <li><a href="#提交到自己远程的分支">提交到自己远程的分支</a></li>
+            <li><a href="#在个人远程分叉分支上创建-pr">在个人远程分叉分支上创建 PR</a></li>
+          </ol>
+        </li>
+        <li><a href="#调试-ci-测试代码">调试 CI 测试代码</a>
+          <ol>
+            <li><a href="#ctest">CTest</a></li>
+            <li><a href="#tck">TCK</a></li>
+          </ol>
+        </li>
+        <li><a href="#邀请再次-review">邀请再次 review</a></li>
+      </ol>
+    </li>
+  </ol>
+</nav></div>
+            </div><div class="content" id="content"><blockquote>
+<p>如何 build NebulaGraph？如何为 NebulaGraph 内核做贡献？从本章作为切入点就够了。</p>
+</blockquote>
+<h2 id="nebulagraph-的架构简介" class="headerLink">
+    <a href="#nebulagraph-%e7%9a%84%e6%9e%b6%e6%9e%84%e7%ae%80%e4%bb%8b" class="header-mark"></a>1 NebulaGraph 的架构简介</h2><p>为了方便对 NebulaGraph 尚未了解的读者也能快速直接从贡献代码为起点了解它，我把开发、贡献内核代码入手所需要的基本架构知识也在这里以最小信息量的形式总结一下，作为前导知识，请资深的 NebulaGraph 玩家直接跳过这一章节。</p>
+<h3 id="服务进程" class="headerLink">
+    <a href="#%e6%9c%8d%e5%8a%a1%e8%bf%9b%e7%a8%8b" class="header-mark"></a>1.1 服务、进程</h3><p>NebulaGraph 的架构和 Google Spanner, TiDB 很相似，核心部分只有三种服务、进程：Graph 服务、Meta 服务和 Storage 服务。它们之间彼此通过 TCP 之上的 Thrift RPC 协议进行通信。</p>
+<p><a class="lightgallery" href="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/nebula-graph-architecture-1.png" title="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/nebula-graph-architecture-1.png" data-thumbnail="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/nebula-graph-architecture-1.png">
+        <img
+            class="lazyload"
+            data-src="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/nebula-graph-architecture-1.png"
+            data-srcset="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/nebula-graph-architecture-1.png, https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/nebula-graph-architecture-1.png 1.5x, https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/nebula-graph-architecture-1.png 2x"
+            data-sizes="auto"
+            alt="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/nebula-graph-architecture-1.png">
+    </a></p>
+<h3 id="计算层与存储层" class="headerLink">
+    <a href="#%e8%ae%a1%e7%ae%97%e5%b1%82%e4%b8%8e%e5%ad%98%e5%82%a8%e5%b1%82" class="header-mark"></a>1.2 计算层与存储层</h3><p>NebulaGraph 是存储与计算分离的架构，它的 Meta 服务和 Storage 服务共同组成了存储层，Graph 服务是内核提供的计算层。</p>
+<p>这样的设计使得 NebulaGraph 的集群部署可以灵活按需分配计算、存储的资源，比如我们可以为同一个集群中创建不同配置的两组 Graph 服务实例、用来面向不同类型的业务。</p>
+<p>同时，计算层解耦于存储层使得在 NebulaGraph 之上的构建不同的特定计算层成为可能，比如 NebulaGraph Algorithm、NebulaGraph Analytics 就是在 NebulaGraph 之上构建了异构的另一个计算层，如果需要，任何人也可以定制自己的专属计算层，从而满足统一图基础存储之上的复合、多样的计算需求。</p>
+<h4 id="graph-service-nebula-graphd" class="headerLink">
+    <a href="#graph-service-nebula-graphd" class="header-mark"></a>1.2.1 Graph Service: nebula-graphd</h4><p>Graph 服务是对外接受图库登录、图查询请求、集群管理操作、schema 定义所直接连接的服务，他的进程名字叫 graphd，表示 nebula graph demon。</p>
+<p>Graph 服务的每一个进程是无状态的，这使得横向扩缩 Graph 服务的实例非常灵活、简单。</p>
+<p>Graph 服务也叫 Query Engine，其内部和传统的数据库系统的设计非常相似，分为：解析、校验、计划、执行几部分。</p>
+<p><a class="lightgallery" href="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/query-engine-architecture.png" title="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/query-engine-architecture.png" data-thumbnail="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/query-engine-architecture.png">
+        <img
+            class="lazyload"
+            data-src="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/query-engine-architecture.png"
+            data-srcset="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/query-engine-architecture.png, https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/query-engine-architecture.png 1.5x, https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/query-engine-architecture.png 2x"
+            data-sizes="auto"
+            alt="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/query-engine-architecture.png">
+    </a></p>
+<h4 id="meta-service-nebula-metad" class="headerLink">
+    <a href="#meta-service-nebula-metad" class="header-mark"></a>1.2.2 Meta Service: nebula-metad</h4><p>Meta 服务顾名思义负责元数据管理，进程名字叫 metad。这些元数据包括：</p>
+<ul>
+<li>所有的图空间、Schema 定义</li>
+<li>用户鉴权、授权信息</li>
+<li>集群服务的发现与服务的分布</li>
+<li>图空间中的数据分布</li>
+</ul>
+<p>Meta 服务的进程可以单实例部署，在非单机部署的场景下，为了数据、服务的高 SLA ，我们可以奇数多个实例的部署，通常来说 3 个 nebula-metad 就足够了，三个 nebula-metad 通过 RAFT 共识协议构成一个集群提供服务。</p>
+<p><a class="lightgallery" href="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/meta-architecture1.png" title="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/meta-architecture1.png" data-thumbnail="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/meta-architecture1.png">
+        <img
+            class="lazyload"
+            data-src="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/meta-architecture1.png"
+            data-srcset="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/meta-architecture1.png, https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/meta-architecture1.png 1.5x, https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/meta-architecture1.png 2x"
+            data-sizes="auto"
+            alt="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/meta-architecture1.png">
+    </a></p>
+<h4 id="storage-service-nebula-storaged" class="headerLink">
+    <a href="#storage-service-nebula-storaged" class="header-mark"></a>1.2.3 Storage Service: nebula-storaged</h4><p>Storage 服务存储所有的图数据，进程名字叫 storaged。storaged 分布式地存储图数据，为 Graph 内部的图查询执行期提供底层的图语义存储接口，方便 Storage 客户端通过 Thrift RPC 协议面向涉及的 storaged 示例进行图语义的读写。</p>
+<p>当 NebulaGraph 中图空间的副本数大于 1 的时候，每一个分区都会在不同 storaged 示例上有副本，副本之间则通过 RAFT 协议协调同步与读写。</p>
+<p><a class="lightgallery" href="https://www-cdn.nebula-graph.com.cn/nebula-blog/nebula-reading-storage-architecture.png" title="https://www-cdn.nebula-graph.com.cn/nebula-blog/nebula-reading-storage-architecture.png" data-thumbnail="https://www-cdn.nebula-graph.com.cn/nebula-blog/nebula-reading-storage-architecture.png">
+        <img
+            class="lazyload"
+            data-src="https://www-cdn.nebula-graph.com.cn/nebula-blog/nebula-reading-storage-architecture.png"
+            data-srcset="https://www-cdn.nebula-graph.com.cn/nebula-blog/nebula-reading-storage-architecture.png, https://www-cdn.nebula-graph.com.cn/nebula-blog/nebula-reading-storage-architecture.png 1.5x, https://www-cdn.nebula-graph.com.cn/nebula-blog/nebula-reading-storage-architecture.png 2x"
+            data-sizes="auto"
+            alt="https://www-cdn.nebula-graph.com.cn/nebula-blog/nebula-reading-storage-architecture.png">
+    </a></p>
+<blockquote>
+<p>参考 <a href="https://docs.nebula-graph.com.cn/master/1.introduction/3.nebula-graph-architecture/1.architecture-overview/" target="_blank" rel="noopener noreferrer">文档：架构介绍</a>，了解更多详情；</p>
+<p>推荐阅读社区官方播客的架构系列文章：<a href="https://www.nebula-graph.com.cn/tags/%E6%9E%B6%E6%9E%84%E7%B3%BB%E5%88%97" target="_blank" rel="noopener noreferrer">nebula-graph.com.cn/tags/架构系列</a>。</p>
+</blockquote>
+<h3 id="进程间通信服务发现机制" class="headerLink">
+    <a href="#%e8%bf%9b%e7%a8%8b%e9%97%b4%e9%80%9a%e4%bf%a1%e6%9c%8d%e5%8a%a1%e5%8f%91%e7%8e%b0%e6%9c%ba%e5%88%b6" class="header-mark"></a>1.3 进程间通信、服务发现机制</h3><p>graphd、metad、storaged 之间通过 Thrift 协议进行远程调用（RPC），下边给一些例子：</p>
+<p>graphd 会通过 metaclient 调用 metad</p>
+<ul>
+<li>将自己报告为一个正在运行的服务，以便被发现</li>
+<li>为用户（使用 graphclient ）登录进行 RPC 调用</li>
+<li>当它处理 nGQL 查询时，获取图形存储分布情况</li>
+</ul>
+<p>graphd 会通过 storageclient 调用 storaged</p>
+<ul>
+<li>在处理 nGQL 时，在它从 metad 获得所需的元信息后，进行图形数据的读/写</li>
+</ul>
+<p>storaged 会通过  metaclient调用 metad</p>
+<ul>
+<li>将自己报告为一个正在运行的服务，以便被发现</li>
+</ul>
+<p>当然有状态的存储引擎内部也有集群同步的流量与通信</p>
+<ul>
+<li>
+<p>storaged 与其他 storaged 有 RAFT 连接</p>
+</li>
+<li>
+<p>metad 与其他 metad 实例有 RAFT 连接</p>
+</li>
+</ul>
+<h2 id="开发环境搭建" class="headerLink">
+    <a href="#%e5%bc%80%e5%8f%91%e7%8e%af%e5%a2%83%e6%90%ad%e5%bb%ba" class="header-mark"></a>2 开发环境搭建</h2><p>接下来我们开始 NebulaGraph 的构建、开发环境的部分。</p>
+<p>NebulaGraph 只支持在 GNU/Linux 分支中构建，目前来说，最方便的方式是在社区预先提供好了依赖的容器镜像的基础上在容器内部构建、调试 NebulaGraph 代码的更改和 Debug。</p>
+<h3 id="创建一个容器化的-nebulagraph-集群" class="headerLink">
+    <a href="#%e5%88%9b%e5%bb%ba%e4%b8%80%e4%b8%aa%e5%ae%b9%e5%99%a8%e5%8c%96%e7%9a%84-nebulagraph-%e9%9b%86%e7%be%a4" class="header-mark"></a>2.1 创建一个容器化的 NebulaGraph 集群</h3><p>为了更方便地调试代码，我习惯提前创建一个 NebulaGraph Docker 环境，我们可以使用官方的 Docker-Compose 方式部署，也可以使用我在官方 Docker-Compose 基础之上弄的一键部署工具：nebula-up.siwei.io。</p>
+<p>以 nebula-up 为例：</p>
+<p>在我们的 Linux 开发服务器中执行 <code>curl -fsSL nebula-up.siwei.io/install.sh | bash</code> 就可以了。</p>
+<h3 id="代码获取" class="headerLink">
+    <a href="#%e4%bb%a3%e7%a0%81%e8%8e%b7%e5%8f%96" class="header-mark"></a>2.2 代码获取</h3><p>NebulaGraph 的代码仓库托管在 GitHub 之上，我们可以在有互联网的地方直接克隆下来：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">git clone git@github.com:vesoft-inc/nebula.git
+</span></span><span class="line"><span class="cl"><span class="nb">cd</span> nebula
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="创建开发容器" class="headerLink">
+    <a href="#%e5%88%9b%e5%bb%ba%e5%bc%80%e5%8f%91%e5%ae%b9%e5%99%a8" class="header-mark"></a>2.3 创建开发容器</h3><p>有了 NebulaGraph 集群，我们可以借助 <a href="https://github.com/vesoft-inc/nebula-dev-docker/" target="_blank" rel="noopener noreferrer">https://github.com/vesoft-inc/nebula-dev-docker/</a> 提供的开箱即用开发容器镜像，搭建开发环境：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">TAG</span><span class="o">=</span>ubuntu2004
+</span></span><span class="line"><span class="cl">docker run -ti <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>  --network nebula-net <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>  --security-opt <span class="nv">seccomp</span><span class="o">=</span>unconfined <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>  -v <span class="s2">&#34;</span><span class="nv">$PWD</span><span class="s2">&#34;</span>:/home/nebula <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>  -w /home/nebula <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>  --name nebula_dev <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>  vesoft/nebula-dev:<span class="nv">$TAG</span> <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>  bash
+</span></span></code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>这其中，<code>-v &quot;$PWD&quot;</code> 表示当前的 NebulaGraph 代码本地的路径会被映射到开发容器内部的 <code>/home/nebula</code>，而启动的容器名字是 <code>nebula_dev</code>。</p>
+</blockquote>
+<p>待这个容器启动之后，我们会自动进入到这个容器的 bash shell 之中，如果我们输入 <code>exit</code> 退出容器，它会被关闭，如果我们想再次启动容器，只需要执行：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker start nebula_dev
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>之后，我们的编译、Debug、测试工作都在 <code>nebula_dev</code> 容器内部进行，在容器是运行状态的情况下，可以随时新建一个容器内部的 bash shell 进程：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker <span class="nb">exec</span> -ti nebula_dev bash
+</span></span></code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>注，为了保持编译环境是最新的，我们可以定期删除、拉取、重建这个开发容器，以保持环境与代码相匹配。</p>
+</blockquote>
+<h3 id="编译环境" class="headerLink">
+    <a href="#%e7%bc%96%e8%af%91%e7%8e%af%e5%a2%83" class="header-mark"></a>2.4 编译环境</h3><p>在 <code>nebula_dev</code> 这个容器内部，我们可以进行代码编译：</p>
+<p>进入编译容器</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker <span class="nb">exec</span> -ti nebula_dev bash
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>用 CMake 准备 makefile，第一次构建的时候，为了节省时间、内存，我关闭了测试（<code>-DENABLE_TESTING=OFF</code>）：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">mkdir build <span class="o">&amp;&amp;</span> <span class="nb">cd</span> build
+</span></span><span class="line"><span class="cl">cmake -DCMAKE_CXX_COMPILER<span class="o">=</span><span class="nv">$TOOLSET_CLANG_DIR</span>/bin/g++ -DCMAKE_C_COMPILER<span class="o">=</span><span class="nv">$TOOLSET_CLANG_DIR</span>/bin/gcc -DENABLE_WERROR<span class="o">=</span>OFF -DCMAKE_BUILD_TYPE<span class="o">=</span>Debug -DENABLE_TESTING<span class="o">=</span>OFF ..
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>开始编译，根据服务器的空闲 CPU 个数和内存量力而行，比如我在自己 72 核心的服务器上准备允许同时运行 64 个 job，则运行：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">make -j64
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>第一次构建的时间会慢一些，在 make 成功之后，我们也可以执行 <code>make install</code> 把二进制安装到像生产安装时候一样的路径：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">root@1827b82e88bf:/home/nebula/build# make install
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">root@1827b82e88bf:/home/nebula/build# ls /usr/local/nebula/bin
+</span></span><span class="line"><span class="cl">db_dump  db_upgrader  meta_dump  nebula-graphd  nebula-metad  nebula-storaged
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">root@1827b82e88bf:/home/nebula/build# ls /usr/local/nebula/
+</span></span><span class="line"><span class="cl">bin  etc  pids  scripts  share
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="调试-nebulagraph" class="headerLink">
+    <a href="#%e8%b0%83%e8%af%95-nebulagraph" class="header-mark"></a>3 调试 NebulaGraph</h2><p>以 GraphD 调试为例。</p>
+<h3 id="安装依赖" class="headerLink">
+    <a href="#%e5%ae%89%e8%a3%85%e4%be%9d%e8%b5%96" class="header-mark"></a>3.1 安装依赖</h3><p>安装一些后边会方便 Debug 额外用到的依赖</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 装一个 ping，测试一下 nebula-up 安装的集群可以访问</span>
+</span></span><span class="line"><span class="cl">apt update <span class="o">&amp;&amp;</span> apt install iputils-ping -y
+</span></span><span class="line"><span class="cl"><span class="c1"># ping graphd 试试看</span>
+</span></span><span class="line"><span class="cl">ping graphd -c <span class="m">4</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 安装 gdb gdb-dashboard</span>
+</span></span><span class="line"><span class="cl">apt install gdb -y
+</span></span><span class="line"><span class="cl">wget -P ~ https://git.io/.gdbinit
+</span></span><span class="line"><span class="cl">pip install pygments
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="准备客户端" class="headerLink">
+    <a href="#%e5%87%86%e5%a4%87%e5%ae%a2%e6%88%b7%e7%ab%af" class="header-mark"></a>3.2 准备客户端</h3><p>准备一个 NebulaGraph 的命令行客户端：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 新开一个 nebula_dev 的 shell</span>
+</span></span><span class="line"><span class="cl">docker <span class="nb">exec</span> -ti nebula_dev bash
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 下载 nebula-console 二进制文件，并赋予可执行权限，命名为 nebula-console 并安装到 /usr/bin/ 下</span>
+</span></span><span class="line"><span class="cl">wget https://github.com/vesoft-inc/nebula-console/releases/download/v3.2.0/nebula-console-linux-amd64-v3.2.0
+</span></span><span class="line"><span class="cl">chmod +x nebula-console*
+</span></span><span class="line"><span class="cl">mv nebula-console* /usr/bin/nebula-console
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>连接到前边我们 nebula-up 准备的集群之上，加载 basketballplayer 这个测试数据：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">nebula-console -u root -p nebula --address<span class="o">=</span>graphd --port<span class="o">=</span><span class="m">9669</span>
+</span></span><span class="line"><span class="cl">:play basketballplayer<span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="nb">exit</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="gdb-运行-graphd" class="headerLink">
+    <a href="#gdb-%e8%bf%90%e8%a1%8c-graphd" class="header-mark"></a>3.3 gdb 运行 graphd</h3><p>我们用 gdb 执行刚刚编译的 nebula-graphd 二进制，让他成为一个新的 graphd 服务，名字就叫 <code>nebula_dev</code>。</p>
+<p>首先启动 gdb</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 新开一个 nebula_dev 的 shell</span>
+</span></span><span class="line"><span class="cl">docker <span class="nb">exec</span> -ti nebula_dev bash
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nb">cd</span> /usr/local/nebula/
+</span></span><span class="line"><span class="cl">mkdir -p /home/nebula/build/log
+</span></span><span class="line"><span class="cl">gdb bin/nebula-graphd
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>在 gdb 内部执行设置必要的参数</p>
+<p>跟随 fork 的子进程</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-makefile" data-lang="makefile"><span class="line"><span class="cl"><span class="err">set</span> <span class="err">follow-fork-mode</span> <span class="err">child</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>设置待调试 graphd 的启动参数（配置）：</p>
+<ul>
+<li>meta_server_addrs 填已经启动的集群的所有 metad 的地址</li>
+<li>local_ip 和 ws_ip 填本容器的域名，port 是 graphd 监听端口</li>
+<li>log_dir 是输出日志的目录，v 和 minloglevel 是日志的输出等级</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-makefile" data-lang="makefile"><span class="line"><span class="cl"><span class="err">set</span> <span class="err">args</span> <span class="nv">--flagfile</span><span class="o">=</span>/usr/local/nebula/etc/nebula-graphd.conf.default <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    --meta_server_addrs<span class="o">=</span>metad0:9559,metad1:9559,metad2:9559 <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    --port<span class="o">=</span><span class="m">9669</span> <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    --local_ip<span class="o">=</span>nebula_dev <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    --ws_ip<span class="o">=</span>nebula_dev <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    --ws_http_port<span class="o">=</span><span class="m">19669</span> <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    --log_dir<span class="o">=</span>/home/nebula/build/log <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    --v<span class="o">=</span><span class="m">4</span> <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    --minloglevel<span class="o">=</span><span class="m">0</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>如果我们想加断点在 <code>src/common/function/FunctionManager.cpp</code> 2783 行，可以再执行：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-makefile" data-lang="makefile"><span class="line"><span class="cl"><span class="nf">b /home/nebula/src/common/function/FunctionManager.cpp</span><span class="o">:</span>2783
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>配置前边安装的 gdb-dashboard，一个开源的 gdb 界面插件。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-makefile" data-lang="makefile"><span class="line"><span class="cl"><span class="c"># 设定在 gdb 界面上展示 代码、历史、回调栈、变量、表达几个部分，详细参考 https://github.com/cyrus-and/gdb-dashboard
+</span></span></span><span class="line"><span class="cl"><span class="c"></span><span class="err">dashboard</span> <span class="err">-layout</span> <span class="err">source</span> <span class="err">history</span> <span class="err">stack</span> <span class="err">variables</span> <span class="err">expressions</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>最后我们让进程通过 gdb 跑起来吧：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-makefile" data-lang="makefile"><span class="line"><span class="cl"><span class="err">run</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>之后，我们就可以在这个窗口/shell 会话下调试 graphd 程序了。</p>
+<h2 id="修改-nebulagraph-代码" class="headerLink">
+    <a href="#%e4%bf%ae%e6%94%b9-nebulagraph-%e4%bb%a3%e7%a0%81" class="header-mark"></a>4 修改 NebulaGraph 代码</h2><p>这里，我以 <a href="https://github.com/vesoft-inc/nebula/issues/3513" target="_blank" rel="noopener noreferrer">#3513</a> 这个 issue 为例子，快速介绍一下代码修改的过程。</p>
+<h3 id="读代码" class="headerLink">
+    <a href="#%e8%af%bb%e4%bb%a3%e7%a0%81" class="header-mark"></a>4.1 读代码</h3><p>这个 issue 表达的内容是在有一小部分用户决定把 JSON 以 String 的形式存储在 NebulaGraph 中的属性里，因为这种方式比较罕见且不被推崇，NebulaGraph 没有直接支持对 JSON String 直接解析的方法。</p>
+<p>本来这个功能是等到很希望得到支持的同学过来亲自去实现的，而在 Issue 中，刚好有一位新手贡献者在里边回复求助如何能开始参与这个贡献。接着这个契机，我去参与讨论看了一下这个功能可以实现成什么样子，最终讨论的结果是可以做成和 MySQL 中的 <code>JSON_EXTRACT</code> 函数那样，但是改为只接受 JSON String，无需处理输出路径参数。</p>
+<p>这个任务一句话来说就是为 NebulaGraph 引入一个解析 JSON String 为 Map 的函数。那么，应该大概如何实现这个功能呢？</p>
+<h4 id="在哪里修改" class="headerLink">
+    <a href="#%e5%9c%a8%e5%93%aa%e9%87%8c%e4%bf%ae%e6%94%b9" class="header-mark"></a>4.1.1 在哪里修改</h4><p>很自然，引入新的函数的更改肯定有很多，所以我们只需要找到之前增加新函数的 PR 就可以快速知道在哪些地方修改了。</p>
+<blockquote>
+<p>当然我们可以自底向上去了解 NebulaGraph 整体的代码结构，然后一点点找到函数处理的位置，事实上有的时候我们也不得不这么做，这时候除了代码本身，一些面向贡献者的文章可能会帮助我们事半功倍对整体有一个了解，NebulaGraph 官方博客里就有这样的一个系列文章，推荐大家在贡献的时候也去通读一下：<a href="https://www.nebula-graph.com.cn/posts/nebula-graph-source-code-reading-00" target="_blank" rel="noopener noreferrer">nebula-graph.com.cn/posts/nebula-graph-source-code-reading-00</a>。</p>
+</blockquote>
+<p>于是，我从 <a href="https://github.com/vesoft-inc/nebula/pull/4526" target="_blank" rel="noopener noreferrer">#4526</a> 这个 PR 里了解到所有函数入口都被统一管理在 <a href="https://github.com/vesoft-inc/nebula/blob/master/src/common/function/FunctionManager.cpp" target="_blank" rel="noopener noreferrer">src/common/function/FunctionManager.cpp</a> 之中，通过搜索、理解其中其他某一个函数的关键词之后可以很容易理解一个函数实体的关键词、输入输出数据类型、以及它的处理逻辑的代码在哪里实现。</p>
+<p>同时，我注意到在同一个目录下，<code>src/common/function/test/FunctionManagerTest.cpp</code> 之中则是所有这些函数的单元测试代码，用同样的方式也可以知道新加的一个函数需要如何在里边实现基于 gtest 的单元测试。</p>
+<h3 id="开始改代码" class="headerLink">
+    <a href="#%e5%bc%80%e5%a7%8b%e6%94%b9%e4%bb%a3%e7%a0%81" class="header-mark"></a>4.2 开始改代码</h3><blockquote>
+<p>注：在修改代码之前，请确保自己在最新的 master 分支之上创建一个单独的分支，这里的例子中，我把分支名字叫 <code>JSON_EXTRACT</code>：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">git checkout master
+</span></span><span class="line"><span class="cl">git pull
+</span></span><span class="line"><span class="cl">git checkout -b fn_JSON_EXTRACT
+</span></span></code></pre></td></tr></table>
+</div>
+</div></blockquote>
+<p>通过 Google 了解与交叉验证 NebulaGraph 内部使用的 utils 库，我知道我应该用 <code>folly::parseJson</code> 把字符串读成 <code>folly::dynamic</code> 然后再 cast 成 NebulaGraph 内置的 Map() 类型，然后，借助于 StackOverflow/GitHub Copilot，我终于完成了第一个版本的代码修改。</p>
+<h3 id="调试代码" class="headerLink">
+    <a href="#%e8%b0%83%e8%af%95%e4%bb%a3%e7%a0%81" class="header-mark"></a>4.3 调试代码</h3><p>接下来，我兴冲冲地改好了第一版的代码，信心满满地开始编译！实际上因为是 CPP 新手，即使在 Copilot 的加持下，我的代码还是花了好几次修改才通过编译。</p>
+<p>然后，我开始用 GDB 把修改了的 GraphD 启动起来，用 console 发起 <code>JSON_EXTRACT</code> 的函数调用，先调通了期待中的效果，并试着跑几种异常的输入，在发现新问题、修改、编译、调试的几轮循环下让代码达到了期望的状态，这时候，我知道我要把代码提交到 GitHub 请项目的资深贡献者帮忙 review 啦！</p>
+<h2 id="提交-pr" class="headerLink">
+    <a href="#%e6%8f%90%e4%ba%a4-pr" class="header-mark"></a>5 提交 PR</h2><p>PR（Pull Request）是 GitHub 中方便多人代码协作、代码审查中的一种方式，它通过把一个 repo 下的分支与这个审查协作的实例（PR）做映射，得到一个项目下唯一的 PR 号码之后，生成单独的网页，在这个网页下，我们可以做不同贡献者之间的交流和后续的代码更新，这个过程中代码提交者们可以一直在这个分支上不断提交代码直到代码的状态被各方同意之后，就可以合并（merge）到目的分支中。</p>
+<p>这个过程可以分为：</p>
+<ul>
+<li>创建 GitHub 上远程的个人开发分支</li>
+<li>基于分支创建目标项目仓库中的 PR</li>
+<li>在 PR 中协作、讨论、不断再次提交到开发分支直到多方达到合并、或者关闭的共识</li>
+</ul>
+<h3 id="提交到个人远程分支" class="headerLink">
+    <a href="#%e6%8f%90%e4%ba%a4%e5%88%b0%e4%b8%aa%e4%ba%ba%e8%bf%9c%e7%a8%8b%e5%88%86%e6%94%af" class="header-mark"></a>5.1 提交到个人远程分支</h3><p>这一步骤里，我们要把当前的本地提交的 commit，提交到自己的 GitHub 分叉之中。</p>
+<h4 id="commit-本地修改" class="headerLink">
+    <a href="#commit-%e6%9c%ac%e5%9c%b0%e4%bf%ae%e6%94%b9" class="header-mark"></a>5.1.1 commit 本地修改</h4><p>首先，我们确认一下本地的修改是否都是期待中的：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 先确定修改的文件</span>
+</span></span><span class="line"><span class="cl">$ git status
+</span></span><span class="line"><span class="cl"><span class="c1"># 再看看修改的内容</span>
+</span></span><span class="line"><span class="cl">$ git diff
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>然后，把它们 commit（提交在本地仓库）</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 添加所有当前目录（. 这个点表示当前目录）修改过的文件为待 commit</span>
+</span></span><span class="line"><span class="cl">$ git add .
+</span></span><span class="line"><span class="cl"><span class="c1"># 然后我们可以看一下状态，这些修改的文件状态已经不同了</span>
+</span></span><span class="line"><span class="cl">$ git status
+</span></span><span class="line"><span class="cl"><span class="c1"># 最后，提交在本地仓库，并用 -m 参数指定单行的 commit message</span>
+</span></span><span class="line"><span class="cl">$ git commit -m <span class="s2">&#34;feat: introduce function JSON_EXTRACT&#34;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="提交到自己远程的分支" class="headerLink">
+    <a href="#%e6%8f%90%e4%ba%a4%e5%88%b0%e8%87%aa%e5%b7%b1%e8%bf%9c%e7%a8%8b%e7%9a%84%e5%88%86%e6%94%af" class="header-mark"></a>5.1.2 提交到自己远程的分支</h4><p>在提交之前，要确保自己的 GitHub 账号之下确实存在 NebulaGraph 代码仓库的分叉（fork），比如我的 GitHub 账号是 wey-gu，我访问，那么我对 <a href="https://github.com/vesoft-inc/nebula" target="_blank" rel="noopener noreferrer">https://github.com/vesoft-inc/nebula</a> 的分叉应该就是 <a href="https://github.com/wey-gu/nebula" target="_blank" rel="noopener noreferrer">https://github.com/wey-gu/nebula</a> 。</p>
+<p>如果还没有自己的分叉，可以直接在  <a href="https://github.com/vesoft-inc/nebula" target="_blank" rel="noopener noreferrer">https://github.com/vesoft-inc/nebula</a> 上点击右上角的 Fork，创建自己的分叉仓库。</p>
+<p>当远程的个人分叉存在之后，我们可以把代码提交上去了</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 添加一个新的远程仓库叫 wey</span>
+</span></span><span class="line"><span class="cl">git remote add wey git@github.com:wey-gu/nebula.git
+</span></span><span class="line"><span class="cl"><span class="c1"># 提交 JSON_EXTRACT 分支到 wey 这个 remote 仓库</span>
+</span></span><span class="line"><span class="cl">git push wey JSON_EXTRACT
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="在个人远程分叉分支上创建-pr" class="headerLink">
+    <a href="#%e5%9c%a8%e4%b8%aa%e4%ba%ba%e8%bf%9c%e7%a8%8b%e5%88%86%e5%8f%89%e5%88%86%e6%94%af%e4%b8%8a%e5%88%9b%e5%bb%ba-pr" class="header-mark"></a>5.1.3 在个人远程分叉分支上创建 PR</h4><p>这时候，我们访问这个远程分支：https://github.com/wey-gu/nebula/tree/fn_JSON_EXTRACT ，就能找到 Open PR 的入口：</p>
+<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/197544575-c04a06cf-b867-409c-832e-f3d893fea784.png" title="https://user-images.githubusercontent.com/1651790/197544575-c04a06cf-b867-409c-832e-f3d893fea784.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/197544575-c04a06cf-b867-409c-832e-f3d893fea784.png">
+        <img
+            class="lazyload"
+            data-src="https://user-images.githubusercontent.com/1651790/197544575-c04a06cf-b867-409c-832e-f3d893fea784.png"
+            data-srcset="https://user-images.githubusercontent.com/1651790/197544575-c04a06cf-b867-409c-832e-f3d893fea784.png, https://user-images.githubusercontent.com/1651790/197544575-c04a06cf-b867-409c-832e-f3d893fea784.png 1.5x, https://user-images.githubusercontent.com/1651790/197544575-c04a06cf-b867-409c-832e-f3d893fea784.png 2x"
+            data-sizes="auto"
+            alt="https://user-images.githubusercontent.com/1651790/197544575-c04a06cf-b867-409c-832e-f3d893fea784.png">
+    </a></p>
+<p>然后点击 Open pull request 按钮，就进入到创建 PR 的界面了，这和在一般的论坛里提交一个帖子是很类似的：</p>
+<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/197545824-93706cc7-32a9-4638-84eb-26573106aa28.png" title="https://user-images.githubusercontent.com/1651790/197545824-93706cc7-32a9-4638-84eb-26573106aa28.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/197545824-93706cc7-32a9-4638-84eb-26573106aa28.png">
+        <img
+            class="lazyload"
+            data-src="https://user-images.githubusercontent.com/1651790/197545824-93706cc7-32a9-4638-84eb-26573106aa28.png"
+            data-srcset="https://user-images.githubusercontent.com/1651790/197545824-93706cc7-32a9-4638-84eb-26573106aa28.png, https://user-images.githubusercontent.com/1651790/197545824-93706cc7-32a9-4638-84eb-26573106aa28.png 1.5x, https://user-images.githubusercontent.com/1651790/197545824-93706cc7-32a9-4638-84eb-26573106aa28.png 2x"
+            data-sizes="auto"
+            alt="https://user-images.githubusercontent.com/1651790/197545824-93706cc7-32a9-4638-84eb-26573106aa28.png">
+    </a></p>
+<p>提交之后，我们可以等待、或者邀请其他人来做代码的审查（review），往往其他的贡献者都能从他们的角度给出一些代码修改的建议和提示，我们需要经过几轮的代码修改、讨论之后使得代码达到最佳的状态。</p>
+<p>而这些审查者中除了社区的贡献者（人类）之外，还有一些自动化的机器人，他们会在代码库中自动化的通过持续集成（CI）的方式运行一些自动化的审查工作，可能包括以下几种：</p>
+<ul>
+<li>CLA：Contributor License Agreement（贡献者许可协议），这是一个要 PR 作者在首次提交代码到项目时签署的协议，因为代码将被提交到公共空间，这份协议的签署意味着作者同意代码被分享、复用、修改这件事情。</li>
+<li>lint：代码风格检查，这也是最常见的 CI 任务</li>
+<li>test：各种层面的测试检查任务</li>
+</ul>
+<p>通常来说，这些所有的自动化审查机器人所代表的任务也需要全都通过，代码的状态才能被认为是可以合并的，而不出意外，我首次提交的代码果然有测试的失败。</p>
+<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/197549538-4bba79b5-6b0a-42f4-b287-55061c08cbe8.png" title="https://user-images.githubusercontent.com/1651790/197549538-4bba79b5-6b0a-42f4-b287-55061c08cbe8.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/197549538-4bba79b5-6b0a-42f4-b287-55061c08cbe8.png">
+        <img
+            class="lazyload"
+            data-src="https://user-images.githubusercontent.com/1651790/197549538-4bba79b5-6b0a-42f4-b287-55061c08cbe8.png"
+            data-srcset="https://user-images.githubusercontent.com/1651790/197549538-4bba79b5-6b0a-42f4-b287-55061c08cbe8.png, https://user-images.githubusercontent.com/1651790/197549538-4bba79b5-6b0a-42f4-b287-55061c08cbe8.png 1.5x, https://user-images.githubusercontent.com/1651790/197549538-4bba79b5-6b0a-42f4-b287-55061c08cbe8.png 2x"
+            data-sizes="auto"
+            alt="https://user-images.githubusercontent.com/1651790/197549538-4bba79b5-6b0a-42f4-b287-55061c08cbe8.png">
+    </a></p>
+<h3 id="调试-ci-测试代码" class="headerLink">
+    <a href="#%e8%b0%83%e8%af%95-ci-%e6%b5%8b%e8%af%95%e4%bb%a3%e7%a0%81" class="header-mark"></a>5.2 调试 CI 测试代码</h3><p>NebulaGraph 里所有的 CI 测试代码也都能在本地被触发，并且（显然）都有被单独触发的方式，我们需要掌握它们而不是在每次修改一个小的测试修复之后提交到服务器上等着 CI 做全量的运行（这样常常几十分钟就这么浪费掉了）。</p>
+<h4 id="ctest" class="headerLink">
+    <a href="#ctest" class="header-mark"></a>5.2.1 CTest</h4><p>在这个距离的 PR 提交中，我修改的函数代码同一层级下的单元测试 CTest 就有问题，问题可能是测试代码本身造成、我们的修改破坏了原来的测试用例导致、亦或者是我们自己的测试用例发现了代码修改本身的问题。</p>
+<p>这次，我们要根据 CTest 失败的报错进行排查和代码修改，然后编译代码，在本地运行一下这个失败的用例：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 我们需要进入到我们的编译容器内部的 build 目录下</span>
+</span></span><span class="line"><span class="cl">$ docker <span class="nb">exec</span> -ti nebula_dev bash
+</span></span><span class="line"><span class="cl">$ <span class="nb">cd</span> build
+</span></span><span class="line"><span class="cl"><span class="c1"># 在 -DENABLE_TESTING=ON 之中编译，如果之前的编译 job 数下内存已经跑满了的话，这次可以把 job 数调小一点，因为开启测试会占用更多内存</span>
+</span></span><span class="line"><span class="cl">$ cmake -DCMAKE_CXX_COMPILER<span class="o">=</span><span class="nv">$TOOLSET_CLANG_DIR</span>/bin/g++ -DCMAKE_C_COMPILER<span class="o">=</span><span class="nv">$TOOLSET_CLANG_DIR</span>/bin/gcc -DENABLE_WERROR<span class="o">=</span>OFF -DCMAKE_BUILD_TYPE<span class="o">=</span>Debug -DENABLE_TESTING<span class="o">=</span>ON ..
+</span></span><span class="line"><span class="cl">$ make -j <span class="m">48</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 可以看到编译成功了 CTest 的单元测试二进制可执行文件</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># [100%] Linking CXX executable ../../../../bin/test/function_manager_test</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># [100%] Built target function_manager_test</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 执行重新修改过的单元测试！</span>
+</span></span><span class="line"><span class="cl">$ bin/test/function_manager_test
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="o">[==========]</span> Running <span class="m">11</span> tests from <span class="m">1</span> <span class="nb">test</span> suite.
+</span></span><span class="line"><span class="cl"><span class="o">[</span>----------<span class="o">]</span> Global <span class="nb">test</span> environment set-up.
+</span></span><span class="line"><span class="cl"><span class="o">[</span>----------<span class="o">]</span> <span class="m">11</span> tests from FunctionManagerTest
+</span></span><span class="line"><span class="cl"><span class="o">[</span> RUN      <span class="o">]</span> FunctionManagerTest.testNull
+</span></span><span class="line"><span class="cl"><span class="o">[</span>       OK <span class="o">]</span> FunctionManagerTest.testNull <span class="o">(</span><span class="m">0</span> ms<span class="o">)</span>
+</span></span><span class="line"><span class="cl"><span class="o">[</span> RUN      <span class="o">]</span> FunctionManagerTest.functionCall
+</span></span><span class="line"><span class="cl">W20221020 23:35:18.579897 <span class="m">28679</span> Map.cpp:77<span class="o">]</span> JSON_EXTRACT nested layer 1: Map can be populated only by Bool, Double, Int, String value and null, now trying to parse from: object
+</span></span><span class="line"><span class="cl"><span class="o">[</span>       OK <span class="o">]</span> FunctionManagerTest.functionCall <span class="o">(</span><span class="m">2</span> ms<span class="o">)</span>
+</span></span><span class="line"><span class="cl"><span class="o">[</span> RUN      <span class="o">]</span> FunctionManagerTest.time
+</span></span><span class="line"><span class="cl"><span class="o">[</span>       OK <span class="o">]</span> FunctionManagerTest.time <span class="o">(</span><span class="m">0</span> ms<span class="o">)</span>
+</span></span><span class="line"><span class="cl"><span class="o">[</span> RUN      <span class="o">]</span> FunctionManagerTest.returnType
+</span></span><span class="line"><span class="cl"><span class="o">[</span>       OK <span class="o">]</span> FunctionManagerTest.returnType <span class="o">(</span><span class="m">0</span> ms<span class="o">)</span>
+</span></span><span class="line"><span class="cl"><span class="o">[</span> RUN      <span class="o">]</span> FunctionManagerTest.SchemaRelated
+</span></span><span class="line"><span class="cl"><span class="o">[</span>       OK <span class="o">]</span> FunctionManagerTest.SchemaRelated <span class="o">(</span><span class="m">0</span> ms<span class="o">)</span>
+</span></span><span class="line"><span class="cl"><span class="o">[</span> RUN      <span class="o">]</span> FunctionManagerTest.ScalarFunctionTest
+</span></span><span class="line"><span class="cl"><span class="o">[</span>       OK <span class="o">]</span> FunctionManagerTest.ScalarFunctionTest <span class="o">(</span><span class="m">0</span> ms<span class="o">)</span>
+</span></span><span class="line"><span class="cl"><span class="o">[</span> RUN      <span class="o">]</span> FunctionManagerTest.ListFunctionTest
+</span></span><span class="line"><span class="cl"><span class="o">[</span>       OK <span class="o">]</span> FunctionManagerTest.ListFunctionTest <span class="o">(</span><span class="m">0</span> ms<span class="o">)</span>
+</span></span><span class="line"><span class="cl"><span class="o">[</span> RUN      <span class="o">]</span> FunctionManagerTest.duplicateEdgesORVerticesInPath
+</span></span><span class="line"><span class="cl"><span class="o">[</span>       OK <span class="o">]</span> FunctionManagerTest.duplicateEdgesORVerticesInPath <span class="o">(</span><span class="m">0</span> ms<span class="o">)</span>
+</span></span><span class="line"><span class="cl"><span class="o">[</span> RUN      <span class="o">]</span> FunctionManagerTest.ReversePath
+</span></span><span class="line"><span class="cl"><span class="o">[</span>       OK <span class="o">]</span> FunctionManagerTest.ReversePath <span class="o">(</span><span class="m">0</span> ms<span class="o">)</span>
+</span></span><span class="line"><span class="cl"><span class="o">[</span> RUN      <span class="o">]</span> FunctionManagerTest.DataSetRowCol
+</span></span><span class="line"><span class="cl"><span class="o">[</span>       OK <span class="o">]</span> FunctionManagerTest.DataSetRowCol <span class="o">(</span><span class="m">0</span> ms<span class="o">)</span>
+</span></span><span class="line"><span class="cl"><span class="o">[</span> RUN      <span class="o">]</span> FunctionManagerTest.PurityTest
+</span></span><span class="line"><span class="cl"><span class="o">[</span>       OK <span class="o">]</span> FunctionManagerTest.PurityTest <span class="o">(</span><span class="m">0</span> ms<span class="o">)</span>
+</span></span><span class="line"><span class="cl"><span class="o">[</span>----------<span class="o">]</span> <span class="m">11</span> tests from FunctionManagerTest <span class="o">(</span><span class="m">5</span> ms total<span class="o">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="o">[</span>----------<span class="o">]</span> Global <span class="nb">test</span> environment tear-down
+</span></span><span class="line"><span class="cl"><span class="o">[==========]</span> <span class="m">11</span> tests from <span class="m">1</span> <span class="nb">test</span> suite ran. <span class="o">(</span><span class="m">5</span> ms total<span class="o">)</span>
+</span></span><span class="line"><span class="cl"><span class="o">[</span>  PASSED  <span class="o">]</span> <span class="m">11</span> tests.
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>成功！</p>
+<p>于是，我把新的更改提交到远程分支上，在 PR 的网页中，可以看到 CI 已经在新的提交的触发下重新编译、执行了，过一会儿果然都 pass 了，于是我兴高采烈地等待着两位以上的审查者帮忙批准代码，然后合并它！</p>
+<p>但是，我收到了新的建议：</p>
+<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/197553025-82f1e7e5-b8a8-4729-a9b8-0f13a34adfed.png" title="https://user-images.githubusercontent.com/1651790/197553025-82f1e7e5-b8a8-4729-a9b8-0f13a34adfed.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/197553025-82f1e7e5-b8a8-4729-a9b8-0f13a34adfed.png">
+        <img
+            class="lazyload"
+            data-src="https://user-images.githubusercontent.com/1651790/197553025-82f1e7e5-b8a8-4729-a9b8-0f13a34adfed.png"
+            data-srcset="https://user-images.githubusercontent.com/1651790/197553025-82f1e7e5-b8a8-4729-a9b8-0f13a34adfed.png, https://user-images.githubusercontent.com/1651790/197553025-82f1e7e5-b8a8-4729-a9b8-0f13a34adfed.png 1.5x, https://user-images.githubusercontent.com/1651790/197553025-82f1e7e5-b8a8-4729-a9b8-0f13a34adfed.png 2x"
+            data-sizes="auto"
+            alt="https://user-images.githubusercontent.com/1651790/197553025-82f1e7e5-b8a8-4729-a9b8-0f13a34adfed.png">
+    </a></p>
+<p>另一位贡献者请我添加 TCK 的测试用例。</p>
+<h4 id="tck" class="headerLink">
+    <a href="#tck" class="header-mark"></a>5.2.2 TCK</h4><p>TCK 的全称是 The Cypher Technology Compatibility Kit，它是 NebulaGraph 从 OpenCypher 社区继承演进而来的一套测试框架，我们用 Python 做了测试用例格式兼容的实现。</p>
+<p>它的优雅在于，我们可以像写英语一样去描述我们想实现的端到端功能测试用例，像这样！</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-tcl" data-lang="tcl"><span class="line"><span class="cl"><span class="c"># tests/tck/features/function/json_extract.feature
+</span></span></span><span class="line"><span class="cl"><span class="c"></span><span class="nv">Feature</span><span class="o">:</span> json_extract Function
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="nv">Background</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">    <span class="nv">Test</span> json_extract function
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="nv">Scenario</span><span class="o">:</span> Test Positive Cases
+</span></span><span class="line"><span class="cl">    <span class="nv">When</span> executing query:
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;&#34;&#34;
+</span></span></span><span class="line"><span class="cl"><span class="s2">      YIELD JSON_EXTRACT(&#39;{&#34;</span><span class="nv">a</span><span class="s2">&#34;: &#34;</span>foo<span class="s2">&#34;, &#34;</span>b<span class="s2">&#34;: 0.2, &#34;</span>c<span class="s2">&#34;: true}&#39;) AS result;
+</span></span></span><span class="line"><span class="cl"><span class="s2">      &#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="nv">Then</span> the result should be<span class="err">,</span> <span class="ow">in</span> any order:
+</span></span><span class="line"><span class="cl">      <span class="o">|</span> <span class="nv">result</span>                      <span class="o">|</span>
+</span></span><span class="line"><span class="cl">      <span class="o">|</span> <span class="k">{</span><span class="nv">a</span><span class="o">:</span> <span class="s2">&#34;foo&#34;</span><span class="err">,</span> b: <span class="mf">0.2</span><span class="err">,</span> c: true<span class="k">}</span> <span class="o">|</span>
+</span></span><span class="line"><span class="cl">    <span class="nv">When</span> executing query:
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;&#34;&#34;
+</span></span></span><span class="line"><span class="cl"><span class="s2">      YIELD JSON_EXTRACT(&#39;{&#34;</span><span class="nv">a</span><span class="s2">&#34;: 1, &#34;</span>b<span class="s2">&#34;: {}, &#34;</span>c<span class="s2">&#34;: {&#34;</span>d<span class="s2">&#34;: true}}&#39;) AS result;
+</span></span></span><span class="line"><span class="cl"><span class="s2">      &#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="nv">Then</span> the result should be<span class="err">,</span> <span class="ow">in</span> any order:
+</span></span><span class="line"><span class="cl">      <span class="o">|</span> <span class="nv">result</span>                      <span class="o">|</span>
+</span></span><span class="line"><span class="cl">      <span class="o">|</span> <span class="k">{</span><span class="nv">a</span><span class="o">:</span> <span class="mi">1</span><span class="err">,</span> b: <span class="k">{}</span><span class="err">,</span> c: <span class="k">{</span><span class="nv">d</span><span class="o">:</span> true<span class="k">}}</span> <span class="o">|</span>
+</span></span><span class="line"><span class="cl">    <span class="nv">When</span> executing query:
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;&#34;&#34;
+</span></span></span><span class="line"><span class="cl"><span class="s2">      YIELD JSON_EXTRACT(&#39;{}&#39;) AS result;
+</span></span></span><span class="line"><span class="cl"><span class="s2">      &#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="nv">Then</span> the result should be<span class="err">,</span> <span class="ow">in</span> any order:
+</span></span><span class="line"><span class="cl">      <span class="o">|</span> <span class="nv">result</span> <span class="o">|</span>
+</span></span><span class="line"><span class="cl">      <span class="o">|</span> <span class="k">{}</span>     <span class="o">|</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>在添加了自己的一个新的 tck 测试用例文本文件之后，我们只需要在测试文件中临时增加标签，并在执行的时候指定标签，就可以单独执行新增的 tck 测试用例了：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 还是在编译容器内部，进入到 tests 目录下</span>
+</span></span><span class="line"><span class="cl"><span class="nb">cd</span> ../tests
+</span></span><span class="line"><span class="cl"><span class="c1"># 安装 tck 测试所需依赖</span>
+</span></span><span class="line"><span class="cl">python3 -m pip install -r requirements.txt
+</span></span><span class="line"><span class="cl">python3 -m pip install nebula3-python<span class="o">==</span>3.1.0
+</span></span><span class="line"><span class="cl"><span class="c1"># 运行一个单独为 tck 测试准备的集群</span>
+</span></span><span class="line"><span class="cl">make <span class="nv">CONTAINERIZED</span><span class="o">=</span><span class="nb">true</span> <span class="nv">ENABLE_SSL</span><span class="o">=</span><span class="nb">true</span> <span class="nv">CA_SIGNED</span><span class="o">=</span><span class="nb">true</span> up
+</span></span><span class="line"><span class="cl"><span class="c1"># 给 tests/tck/features/function/json_extract.feature 以@开头第一行加上标签，比如 @wey</span>
+</span></span><span class="line"><span class="cl">vi tests/tck/features/function/json_extract.feature
+</span></span><span class="line"><span class="cl"><span class="c1"># 执行 pytest (包含 tck 用例)，因为制定了 -m &#34;wey&#34;，只有 tests/tck/features/function/json_extract.feature 会被执行</span>
+</span></span><span class="line"><span class="cl">python3 -m pytest -m <span class="s2">&#34;wey&#34;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>延伸阅读：</p>
+<ul>
+<li>基于 BDD 理论的 Nebula 集成测试框架重构，https://nebula-graph.com.cn/posts/bdd-testing-practice</li>
+<li>如何向 NebulaGraph 增加一个测试用例，https://nebula-graph.com.cn/posts/bdd-testing-practice-add-test-case</li>
+</ul>
+</blockquote>
+<h3 id="邀请再次-review" class="headerLink">
+    <a href="#%e9%82%80%e8%af%b7%e5%86%8d%e6%ac%a1-review" class="header-mark"></a>5.3 邀请再次 review</h3><p>待我们把需要的测试调通、再次提交 PR 并且 CI 用例全都通过之后，我们可以再次邀请之前帮助审查代码的同学做做最后的查看，如果一切都顺利，代码就会被合并了！</p>
+<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/197557709-2c851a03-d001-4fc9-bc5a-b858219fbded.png" title="https://user-images.githubusercontent.com/1651790/197557709-2c851a03-d001-4fc9-bc5a-b858219fbded.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/197557709-2c851a03-d001-4fc9-bc5a-b858219fbded.png">
+        <img
+            class="lazyload"
+            data-src="https://user-images.githubusercontent.com/1651790/197557709-2c851a03-d001-4fc9-bc5a-b858219fbded.png"
+            data-srcset="https://user-images.githubusercontent.com/1651790/197557709-2c851a03-d001-4fc9-bc5a-b858219fbded.png, https://user-images.githubusercontent.com/1651790/197557709-2c851a03-d001-4fc9-bc5a-b858219fbded.png 1.5x, https://user-images.githubusercontent.com/1651790/197557709-2c851a03-d001-4fc9-bc5a-b858219fbded.png 2x"
+            data-sizes="auto"
+            alt="https://user-images.githubusercontent.com/1651790/197557709-2c851a03-d001-4fc9-bc5a-b858219fbded.png">
+    </a></p>
+<blockquote>
+<p>题图来自 <a href="https://unsplash.com/photos/TGEWJXylgJk" target="_blank" rel="noopener noreferrer">Jon</a></p>
+</blockquote></div>
+
+        
+
+
+<h2>相关内容</h2>
+<div class="related-container">
+    <div class="related-item-container">
+            <div class="related-image">
+                <a href="/ngql-execution-plan/"><img
+        class="lazyload"
+        data-src="/ngql-execution-plan/featured-image.webp"
+        data-srcset="/ngql-execution-plan/featured-image.webp, /ngql-execution-plan/featured-image.webp 1.5x, /ngql-execution-plan/featured-image.webp 2x"
+        data-sizes="auto"
+        alt="/ngql-execution-plan/featured-image.webp"
+        title="本文是一个快速了解为 NebulaGraph 内核贡献代码、构建、Debug 的一站式指南。" height="200" width="400"></a>
+            </div><h2 class="related-title">
+                <a href="/ngql-execution-plan/">nGQL 简明教程，第二期 nGQL 执行计划详解与调优</a>
+            </h2>
+        </div>
+    <div class="related-item-container">
+            <div class="related-image">
+                <a href="/ngql-tutorial/"><img
+        class="lazyload"
+        data-src="/ngql-tutorial/featured-image.webp"
+        data-srcset="/ngql-tutorial/featured-image.webp, /ngql-tutorial/featured-image.webp 1.5x, /ngql-tutorial/featured-image.webp 2x"
+        data-sizes="auto"
+        alt="/ngql-tutorial/featured-image.webp"
+        title="本文是一个快速了解为 NebulaGraph 内核贡献代码、构建、Debug 的一站式指南。" height="200" width="400"></a>
+            </div><h2 class="related-title">
+                <a href="/ngql-tutorial/">nGQL 简明教程，第一期</a>
+            </h2>
+        </div>
+    
+
+</div>
+
+<div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>更新于 2022-10-23</span>
+            </div>
+            <div class="post-info-license"></div>
+        </div>
+        <div class="post-info-line">
+            <div class="post-info-md"><span><a class="link-to-mardown" href=/nebulagraph-hacking-guide/index.md target="_blank" rel="noopener noreferrer">阅读原始文档</a>
+                    </span></div>
+            <div class="post-info-share">
+                <span><a href="#" onclick="return false;" title="分享到 Twitter" data-sharer="twitter" data-url="https://siwei.io/nebulagraph-hacking-guide/" data-title="NebulaGraph 内核贡献开发指南" data-via="wey_gu" data-hashtags="NebulaGraph,contributing,open-source,开发指南"><i class="fab fa-twitter fa-fw"></i></a><a href="#" onclick="return false;" title="分享到 Facebook" data-sharer="facebook" data-url="https://siwei.io/nebulagraph-hacking-guide/" data-hashtag="NebulaGraph"><i class="fab fa-facebook-square fa-fw"></i></a><a href="#" onclick="return false;" title="分享到 WhatsApp" data-sharer="whatsapp" data-url="https://siwei.io/nebulagraph-hacking-guide/" data-title="NebulaGraph 内核贡献开发指南" data-web><i class="fab fa-whatsapp fa-fw"></i></a><a href="#" onclick="return false;" title="分享到 Line" data-sharer="line" data-url="https://siwei.io/nebulagraph-hacking-guide/" data-title="NebulaGraph 内核贡献开发指南"><i data-svg-src="/lib/simple-icons/icons/line.min.svg"></i></a><a href="#" onclick="return false;" title="分享到 微博" data-sharer="weibo" data-url="https://siwei.io/nebulagraph-hacking-guide/" data-title="NebulaGraph 内核贡献开发指南" data-image="featured-image.webp" data-ralateuid="siweigu"><i class="fab fa-weibo fa-fw"></i></a><a href="#" onclick="return false;" title="分享到 Myspace" data-sharer="myspace" data-url="https://siwei.io/nebulagraph-hacking-guide/" data-title="NebulaGraph 内核贡献开发指南" data-description="本文是一个快速了解为 NebulaGraph 内核贡献代码、构建、Debug 的一站式指南。"><i data-svg-src="/lib/simple-icons/icons/myspace.min.svg"></i></a><a href="#" onclick="return false;" title="分享到 Blogger" data-sharer="blogger" data-url="https://siwei.io/nebulagraph-hacking-guide/" data-title="NebulaGraph 内核贡献开发指南" data-description="本文是一个快速了解为 NebulaGraph 内核贡献代码、构建、Debug 的一站式指南。"><i class="fab fa-blogger fa-fw"></i></a><a href="#" onclick="return false;" title="分享到 Evernote" data-sharer="evernote" data-url="https://siwei.io/nebulagraph-hacking-guide/" data-title="NebulaGraph 内核贡献开发指南"><i class="fab fa-evernote fa-fw"></i></a></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section class="post-tags"><i class="fas fa-tags fa-fw"></i>&nbsp;<a href="/tags/nebulagraph/">NebulaGraph</a>,&nbsp;<a href="/tags/contributing/">contributing</a>,&nbsp;<a href="/tags/open-source/">open-source</a>,&nbsp;<a href="/tags/%E5%BC%80%E5%8F%91%E6%8C%87%E5%8D%97/">开发指南</a></section>
+        <section>
+            <span><a href="javascript:void(0);" onclick="window.history.back();">返回</a></span>&nbsp;|&nbsp;<span><a href="/">主页</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/ngql-execution-plan/" class="prev" rel="prev" title="nGQL 简明教程，第二期 nGQL 执行计划详解与调优"><i class="fas fa-angle-left fa-fw"></i>nGQL 简明教程，第二期 nGQL 执行计划详解与调优</a></div>
+</div>
+<div id="comments"><div id="giscus"></div><noscript>
+                Please enable JavaScript to view the comments powered by <a href="https://giscus.app/">giscus</a>.
+            </noscript></div></article></div>
+        </main><footer class="footer">
+        <div class="footer-container"><div class="footer-line">
+                    由 <a href="https://gohugo.io/" target="_blank" rel="noopener noreferrer" title="Hugo 0.101.0">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreferrer" title="DoIt 0.2.13"><i class="far fa-edit fa-fw"></i> DoIt</a>
+                </div><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2018 - 2022</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="https://siwei.io" target="_blank" rel="noopener noreferrer">Wey Gu</a></span>&nbsp;|&nbsp;<span class="license"><a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">CC BY-NC 4.0</a></span></div>
+            <div class="footer-line"></div>
+            <div class="footer-line">
+            </div>
+        </div><script>
+                    if('serviceWorker' in navigator) {
+                        navigator.serviceWorker
+                            .register('/sw.min.js', { scope: '/' })
+                            .then(function(registration) {
+                            });
+                
+                        navigator.serviceWorker
+                            .ready
+                            .then(function(registration) {
+                            });
+                    }
+                </script></footer></div>
+
+    <div id="fixed-buttons"><a href="#back-to-top" id="back-to-top-button" class="fixed-button" title="回到顶部">
+            <i class="fas fa-arrow-up fa-fw"></i>
+        </a><a href="#" id="view-comments" class="fixed-button" title="查看评论">
+            <i class="fas fa-comment fa-fw"></i>
+        </a>
+    </div><div class="assets"><script type="text/javascript" src="/lib/autocomplete/autocomplete.min.js"></script><script type="text/javascript" src="/lib/fuse/fuse.min.js"></script><script type="text/javascript" src="/lib/lazysizes/lazysizes.min.js"></script><script type="text/javascript" src="/lib/tablesort/tablesort.min.js"></script><script type="text/javascript" src="/lib/topbar/topbar.min.js"></script><script type="text/javascript" src="/lib/pjax/pjax.min.js"></script><script type="text/javascript" src="/js/theme.min.js" defer></script><script type="text/javascript">
+            window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());
+            gtag('config', 'UA-659952-4', { 'anonymize_ip': true });
+        </script><script type="text/javascript" src="https://www.googletagmanager.com/gtag/js?id=UA-659952-4" async></script></div>
+
+<div class="pjax-assets"><script type="text/javascript">window.config={"code":{"copyTitle":"复制到剪贴板","maxShownLines":10},"comment":{"giscus":{"darkTheme":"dark","dataCategory":"Comments","dataCategoryId":"DIC_kwDOFhiy8c4CQeuu","dataEmitMetadata":"1","dataInputPosition":"bottom","dataLang":"en","dataMapping":"title","dataReactionsEnabled":"1","dataRepo":"siwei-io/siwei-io.github.io","dataRepoId":"MDEwOlJlcG9zaXRvcnkzNzA3MTc0MjU=","dataStrict":"1","lightTheme":"light"}},"math":{"delimiters":[{"display":true,"left":"$$","right":"$$"},{"display":true,"left":"\\[","right":"\\]"},{"display":false,"left":"$","right":"$"},{"display":false,"left":"\\(","right":"\\)"}],"strict":false},"search":{"distance":100,"findAllMatches":true,"fuseIndexURL":"/index.json","highlightTag":"em","ignoreFieldNorm":false,"ignoreLocation":false,"isCaseSensitive":false,"location":0,"maxResultLength":10,"minMatchCharLength":2,"noResultsFound":"没有找到结果","snippetLength":50,"threshold":0.3,"type":"fuse","useExtendedSearch":false},"sharerjs":true,"table":{"sort":true}};</script><script type="text/javascript" src="/js/giscus.min.js" defer></script><script type="text/javascript" src="/lib/clipboard/clipboard.min.js"></script><script type="text/javascript" src="/lib/sharer/sharer.min.js"></script><script type="text/javascript" src="/lib/katex/katex.min.js" defer></script><script type="text/javascript" src="/lib/katex/auto-render.min.js" defer></script><script type="text/javascript" src="/lib/katex/copy-tex.min.js" defer></script><script type="text/javascript" src="/lib/katex/mhchem.min.js" defer></script><script type="text/javascript" src="/js/katex.min.js" defer></script><link rel="stylesheet" href="/lib/katex/katex.min.css"><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/katex/copy-tex.min.css">
+        <noscript><link rel="stylesheet" href="/lib/katex/copy-tex.min.css"></noscript></div>
+</body>
+
+</html>
