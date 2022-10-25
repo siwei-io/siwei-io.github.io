@@ -27,7 +27,7 @@ NebulaGraph 是存储与计算分离的架构，它的 Meta 服务和 Storage �
 
 #### Graph Service: nebula-graphd
 
-Graph 服务是对外接受图库登录、图查询请求、集群管理操作、schema 定义所直接连接的服务，他的进程名字叫 graphd，表示 nebula graph demon。
+Graph 服务是对外接受图库登录、图查询请求、集群管理操作、schema 定义所直接连接的服务，他的进程名字叫 graphd，表示 nebula graph daemon。
 
 Graph 服务的每一个进程是无状态的，这使得横向扩缩 Graph 服务的实例非常灵活、简单。
 
@@ -512,6 +512,8 @@ make CONTAINERIZED=true ENABLE_SSL=true CA_SIGNED=true up
 vi tests/tck/features/function/json_extract.feature
 # 执行 pytest (包含 tck 用例)，因为制定了 -m "wey"，只有 tests/tck/features/function/json_extract.feature 会被执行
 python3 -m pytest -m "wey"
+# 关闭 pytest 所依赖的集群
+make CONTAINERIZED=true ENABLE_SSL=true CA_SIGNED=true down
 ```
 
 > 延伸阅读：

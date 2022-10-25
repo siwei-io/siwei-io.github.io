@@ -29,7 +29,7 @@
 <p>这样的设计使得 NebulaGraph 的集群部署可以灵活按需分配计算、存储的资源，比如我们可以为同一个集群中创建不同配置的两组 Graph 服务实例、用来面向不同类型的业务。</p>
 <p>同时，计算层解耦于存储层使得在 NebulaGraph 之上的构建不同的特定计算层成为可能，比如 NebulaGraph Algorithm、NebulaGraph Analytics 就是在 NebulaGraph 之上构建了异构的另一个计算层，如果需要，任何人也可以定制自己的专属计算层，从而满足统一图基础存储之上的复合、多样的计算需求。</p>
 <h4 id="graph-service-nebula-graphd" class="headerLink">
-    <a href="#graph-service-nebula-graphd" class="header-mark"></a>1.2.1 Graph Service: nebula-graphd</h4><p>Graph 服务是对外接受图库登录、图查询请求、集群管理操作、schema 定义所直接连接的服务，他的进程名字叫 graphd，表示 nebula graph demon。</p>
+    <a href="#graph-service-nebula-graphd" class="header-mark"></a>1.2.1 Graph Service: nebula-graphd</h4><p>Graph 服务是对外接受图库登录、图查询请求、集群管理操作、schema 定义所直接连接的服务，他的进程名字叫 graphd，表示 nebula graph daemon。</p>
 <p>Graph 服务的每一个进程是无状态的，这使得横向扩缩 Graph 服务的实例非常灵活、简单。</p>
 <p>Graph 服务也叫 Query Engine，其内部和传统的数据库系统的设计非常相似，分为：解析、校验、计划、执行几部分。</p>
 <p><a class="lightgallery" href="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/query-engine-architecture.png" title="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/query-engine-architecture.png" data-thumbnail="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/query-engine-architecture.png">
@@ -660,6 +660,8 @@
 </span><span class="lnt"> 9
 </span><span class="lnt">10
 </span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 还是在编译容器内部，进入到 tests 目录下</span>
@@ -673,6 +675,8 @@
 </span></span><span class="line"><span class="cl">vi tests/tck/features/function/json_extract.feature
 </span></span><span class="line"><span class="cl"><span class="c1"># 执行 pytest (包含 tck 用例)，因为制定了 -m &#34;wey&#34;，只有 tests/tck/features/function/json_extract.feature 会被执行</span>
 </span></span><span class="line"><span class="cl">python3 -m pytest -m <span class="s2">&#34;wey&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 关闭 pytest 所依赖的集群</span>
+</span></span><span class="line"><span class="cl">make <span class="nv">CONTAINERIZED</span><span class="o">=</span><span class="nb">true</span> <span class="nv">ENABLE_SSL</span><span class="o">=</span><span class="nb">true</span> <span class="nv">CA_SIGNED</span><span class="o">=</span><span class="nb">true</span> down
 </span></span></code></pre></td></tr></table>
 </div>
 </div><blockquote>
