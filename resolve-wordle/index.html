@@ -305,12 +305,12 @@
 </span><span class="lnt">5
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-GraphQL" data-lang="GraphQL"><span class="line"><span class="cl"><span class="c"># 匹配成语中的一个结果</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="py">MATCH</span><span class="w"> </span><span class="p">(</span><span class="py">x</span><span class="p">:</span><span class="nc">idiom</span><span class="p">)</span><span class="w"> </span><span class="py">RETURN</span><span class="w"> </span><span class="py">x</span><span class="w"> </span><span class="py">LIMIT</span><span class="w"> </span><span class="py">1</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c"># 返回结果</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">(</span><span class="s">&#34;爱憎分明&#34;</span><span class="w"> </span><span class="p">:</span><span class="nc">idiom</span><span class="p">{</span><span class="py">pinyin</span><span class="p">:</span><span class="w"> </span><span class="s">&#34;[&#39;ai4&#39;, &#39;zeng1&#39;, &#39;fen1&#39;, &#39;ming2&#39;]&#34;</span><span class="p">})</span><span class="w">
-</span></span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">// 匹配成语中的一个结果
+</span></span><span class="line"><span class="cl">MATCH (x:idiom) RETURN x LIMIT 1
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">// 返回结果
+</span></span><span class="line"><span class="cl">(&#34;爱憎分明&#34; :idiom{pinyin: &#34;[&#39;ai4&#39;, &#39;zeng1&#39;, &#39;fen1&#39;, &#39;ming2&#39;]&#34;})
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>然后我们把它填到汉兜之中，获得第一次尝试的提示条件：</p>
 <p><a class="lightgallery" href="/resolve-wordle/initial_word.webp" title="/resolve-wordle/initial_word.webp" data-thumbnail="/resolve-wordle/initial_word.webp">
@@ -347,21 +347,21 @@
 </span><span class="lnt">14
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-GraphQL" data-lang="GraphQL"><span class="line"><span class="cl"><span class="c"># 有一个非第一个位置的字，拼音是 4 声，韵母是 ai，但不是爱</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="py">MATCH</span><span class="w"> </span><span class="p">(</span><span class="py">char0</span><span class="p">:</span><span class="nc">character</span><span class="p">)</span><span class="err">&lt;-</span><span class="p">[</span><span class="py">with_char_0</span><span class="p">:</span><span class="nc">with_character</span><span class="p">]</span><span class="err">-</span><span class="p">(</span><span class="py">x</span><span class="p">:</span><span class="nc">idiom</span><span class="p">)</span><span class="err">-</span><span class="p">[</span><span class="py">with_pinyin_0</span><span class="p">:</span><span class="nc">with_pinyin</span><span class="p">]</span><span class="err">-&gt;</span><span class="p">(</span><span class="py">pinyin_0</span><span class="p">:</span><span class="nc">character_pinyin</span><span class="p">)</span><span class="err">-</span><span class="p">[:</span><span class="nc">with_pinyin_part</span><span class="p">]</span><span class="err">-&gt;</span><span class="p">(</span><span class="py">final_part_0</span><span class="p">:</span><span class="nc">pinyin_part</span><span class="p">{</span><span class="py">part_type</span><span class="p">:</span><span class="w"> </span><span class="s">&#34;final&#34;</span><span class="p">})</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nc">WHERE</span><span class="w"> </span><span class="py">id</span><span class="p">(</span><span class="py">final_part_0</span><span class="p">)</span><span class="w"> </span><span class="p">==</span><span class="w"> </span><span class="s">&#34;ai&#34;</span><span class="w"> </span><span class="py">AND</span><span class="w"> </span><span class="py">pinyin_0</span><span class="err">.</span><span class="py">character_pinyin</span><span class="err">.</span><span class="py">tone</span><span class="w"> </span><span class="p">==</span><span class="w"> </span><span class="py">4</span><span class="w"> </span><span class="py">AND</span><span class="w"> </span><span class="py">with_pinyin_0</span><span class="err">.</span><span class="py">position</span><span class="w"> </span><span class="p">!=</span><span class="w"> </span><span class="py">0</span><span class="w"> </span><span class="py">AND</span><span class="w"> </span><span class="py">with_char_0</span><span class="err">.</span><span class="py">position</span><span class="w"> </span><span class="p">!=</span><span class="w"> </span><span class="py">0</span><span class="w"> </span><span class="py">AND</span><span class="w"> </span><span class="py">id</span><span class="p">(</span><span class="py">char0</span><span class="p">)</span><span class="w"> </span><span class="p">!=</span><span class="w"> </span><span class="sc">&#34;爱&#34;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c"># 有一个一声的字，不在第二个位置</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="py">MATCH</span><span class="w"> </span><span class="p">(</span><span class="py">x</span><span class="p">:</span><span class="nc">idiom</span><span class="p">)</span><span class="w"> </span><span class="err">-</span><span class="p">[</span><span class="py">with_pinyin_1</span><span class="p">:</span><span class="nc">with_pinyin</span><span class="p">]</span><span class="err">-&gt;</span><span class="p">(</span><span class="py">pinyin_1</span><span class="p">:</span><span class="nc">character_pinyin</span><span class="p">)</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="py">WHERE</span><span class="w"> </span><span class="py">pinyin_1</span><span class="err">.</span><span class="py">character_pinyin</span><span class="err">.</span><span class="py">tone</span><span class="w"> </span><span class="p">==</span><span class="w"> </span><span class="py">1</span><span class="w"> </span><span class="py">AND</span><span class="w"> </span><span class="py">with_pinyin_1</span><span class="err">.</span><span class="py">position</span><span class="w"> </span><span class="p">!=</span><span class="w"> </span><span class="py">1</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c"># 有一个字韵母是 ing，不在第四个位置</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="py">MATCH</span><span class="w"> </span><span class="p">(</span><span class="py">x</span><span class="p">:</span><span class="nc">idiom</span><span class="p">)</span><span class="w"> </span><span class="err">-</span><span class="p">[</span><span class="py">with_pinyin_2</span><span class="p">:</span><span class="nc">with_pinyin</span><span class="p">]</span><span class="err">-&gt;</span><span class="p">(:</span><span class="nc">character_pinyin</span><span class="p">)</span><span class="err">-</span><span class="p">[:</span><span class="nc">with_pinyin_part</span><span class="p">]</span><span class="err">-&gt;</span><span class="p">(</span><span class="py">final_part_2</span><span class="p">:</span><span class="nc">pinyin_part</span><span class="p">{</span><span class="py">part_type</span><span class="p">:</span><span class="w"> </span><span class="s">&#34;final&#34;</span><span class="p">})</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nc">WHERE</span><span class="w"> </span><span class="py">id</span><span class="p">(</span><span class="py">final_part_2</span><span class="p">)</span><span class="w"> </span><span class="p">==</span><span class="w"> </span><span class="s">&#34;ing&#34;</span><span class="w"> </span><span class="py">AND</span><span class="w"> </span><span class="py">with_pinyin_2</span><span class="err">.</span><span class="py">position</span><span class="w"> </span><span class="p">!=</span><span class="w"> </span><span class="py">3</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c"># 第四个字是二声</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="py">MATCH</span><span class="w"> </span><span class="p">(</span><span class="py">x</span><span class="p">:</span><span class="nc">idiom</span><span class="p">)</span><span class="w"> </span><span class="err">-</span><span class="p">[</span><span class="py">with_pinyin_3</span><span class="p">:</span><span class="nc">with_pinyin</span><span class="p">]</span><span class="err">-&gt;</span><span class="p">(</span><span class="py">pinyin_3</span><span class="p">:</span><span class="nc">character_pinyin</span><span class="p">)</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="py">WHERE</span><span class="w"> </span><span class="py">pinyin_3</span><span class="err">.</span><span class="py">character_pinyin</span><span class="err">.</span><span class="py">tone</span><span class="w"> </span><span class="p">==</span><span class="w"> </span><span class="py">2</span><span class="w"> </span><span class="py">AND</span><span class="w"> </span><span class="py">with_pinyin_3</span><span class="err">.</span><span class="py">position</span><span class="w"> </span><span class="p">==</span><span class="w"> </span><span class="py">3</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="py">RETURN</span><span class="w"> </span><span class="py">x</span><span class="p">,</span><span class="w"> </span><span class="py">count</span><span class="p">(</span><span class="py">x</span><span class="p">)</span><span class="w"> </span><span class="py">as</span><span class="w"> </span><span class="py">c</span><span class="w"> </span><span class="py">ORDER</span><span class="w"> </span><span class="py">BY</span><span class="w"> </span><span class="py">c</span><span class="w"> </span><span class="py">DESC</span><span class="w">
-</span></span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">// 有一个非第一个位置的字，拼音是 4 声，韵母是 ai，但不是爱
+</span></span><span class="line"><span class="cl">MATCH (char0:character)&lt;-[with_char_0:with_character]-(x:idiom)-[with_pinyin_0:with_pinyin]-&gt;(pinyin_0:character_pinyin)-[:with_pinyin_part]-&gt;(final_part_0:pinyin_part{part_type: &#34;final&#34;})
+</span></span><span class="line"><span class="cl">WHERE id(final_part_0) == &#34;ai&#34; AND pinyin_0.character_pinyin.tone == 4 AND with_pinyin_0.position != 0 AND with_char_0.position != 0 AND id(char0) != &#34;爱&#34;
+</span></span><span class="line"><span class="cl">// 有一个一声的字，不在第二个位置
+</span></span><span class="line"><span class="cl">MATCH (x:idiom) -[with_pinyin_1:with_pinyin]-&gt;(pinyin_1:character_pinyin)
+</span></span><span class="line"><span class="cl">WHERE pinyin_1.character_pinyin.tone == 1 AND with_pinyin_1.position != 1
+</span></span><span class="line"><span class="cl">// 有一个字韵母是 ing，不在第四个位置
+</span></span><span class="line"><span class="cl">MATCH (x:idiom) -[with_pinyin_2:with_pinyin]-&gt;(:character_pinyin)-[:with_pinyin_part]-&gt;(final_part_2:pinyin_part{part_type: &#34;final&#34;})
+</span></span><span class="line"><span class="cl">WHERE id(final_part_2) == &#34;ing&#34; AND with_pinyin_2.position != 3
+</span></span><span class="line"><span class="cl">// 第四个字是二声
+</span></span><span class="line"><span class="cl">MATCH (x:idiom) -[with_pinyin_3:with_pinyin]-&gt;(pinyin_3:character_pinyin)
+</span></span><span class="line"><span class="cl">WHERE pinyin_3.character_pinyin.tone == 2 AND with_pinyin_3.position == 3
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">RETURN x, count(x) as c ORDER BY c DESC
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>在图数据库之中运行，得到了 7 个答案：</p>
 <div class="highlight"><div class="chroma">
@@ -416,12 +416,12 @@
 </span><span class="lnt">5
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-GraphQL" data-lang="GraphQL"><span class="line"><span class="cl"><span class="c"># 有一个非第一个位置的字，拼音是 4 声，韵母是 ai</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="py">MATCH</span><span class="w"> </span><span class="p">(</span><span class="py">x</span><span class="p">:</span><span class="nc">idiom</span><span class="p">)</span><span class="err">-</span><span class="p">[</span><span class="py">with_pinyin_0</span><span class="p">:</span><span class="nc">with_pinyin</span><span class="p">]</span><span class="err">-&gt;</span><span class="p">(</span><span class="py">pinyin_0</span><span class="p">:</span><span class="nc">character_pinyin</span><span class="p">)</span><span class="err">-</span><span class="p">[:</span><span class="nc">with_pinyin_part</span><span class="p">]</span><span class="err">-&gt;</span><span class="p">(</span><span class="py">final_part_0</span><span class="p">:</span><span class="nc">pinyin_part</span><span class="p">{</span><span class="py">part_type</span><span class="p">:</span><span class="w"> </span><span class="s">&#34;final&#34;</span><span class="p">})</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nc">WHERE</span><span class="w"> </span><span class="py">id</span><span class="p">(</span><span class="py">final_part_0</span><span class="p">)</span><span class="w"> </span><span class="p">==</span><span class="w"> </span><span class="s">&#34;ai&#34;</span><span class="w"> </span><span class="py">AND</span><span class="w"> </span><span class="py">pinyin_0</span><span class="err">.</span><span class="py">character_pinyin</span><span class="err">.</span><span class="py">tone</span><span class="w"> </span><span class="p">==</span><span class="w"> </span><span class="py">4</span><span class="w"> </span><span class="py">AND</span><span class="w"> </span><span class="py">with_pinyin_0</span><span class="err">.</span><span class="py">position</span><span class="w"> </span><span class="p">!=</span><span class="w"> </span><span class="py">0</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c"># ...</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="py">RETURN</span><span class="w"> </span><span class="py">x</span><span class="w">
-</span></span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">// 有一个非第一个位置的字，拼音是 4 声，韵母是 ai
+</span></span><span class="line"><span class="cl">MATCH (x:idiom)-[with_pinyin_0:with_pinyin]-&gt;(pinyin_0:character_pinyin)-[:with_pinyin_part]-&gt;(final_part_0:pinyin_part{part_type: &#34;final&#34;})
+</span></span><span class="line"><span class="cl">WHERE id(final_part_0) == &#34;ai&#34; AND pinyin_0.character_pinyin.tone == 4 AND with_pinyin_0.position != 0
+</span></span><span class="line"><span class="cl">// ...
+</span></span><span class="line"><span class="cl">RETURN x
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>类似的，表示非第一个位置的字，不是<code>爱</code> 的表达是：</p>
 <div class="highlight"><div class="chroma">
@@ -433,12 +433,12 @@
 </span><span class="lnt">5
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-GraphQL" data-lang="GraphQL"><span class="line"><span class="cl"><span class="c"># 有一个非第一个位置的字，拼音是 4 声，韵母是 ai，但不是爱</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="py">MATCH</span><span class="w"> </span><span class="p">(</span><span class="py">char0</span><span class="p">:</span><span class="nc">character</span><span class="p">)</span><span class="err">&lt;-</span><span class="p">[</span><span class="py">with_char_0</span><span class="p">:</span><span class="nc">with_character</span><span class="p">]</span><span class="err">-</span><span class="p">(</span><span class="py">x</span><span class="p">:</span><span class="nc">idiom</span><span class="p">)</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="py">WHERE</span><span class="w"> </span><span class="py">with_char_0</span><span class="err">.</span><span class="py">position</span><span class="w"> </span><span class="p">!=</span><span class="w"> </span><span class="py">0</span><span class="w"> </span><span class="py">AND</span><span class="w"> </span><span class="py">id</span><span class="p">(</span><span class="py">char0</span><span class="p">)</span><span class="w"> </span><span class="p">!=</span><span class="w"> </span><span class="sc">&#34;爱&#34;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c"># ...</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="py">RETURN</span><span class="w"> </span><span class="py">x</span><span class="p">,</span><span class="w"> </span><span class="py">count</span><span class="p">(</span><span class="py">x</span><span class="p">)</span><span class="w"> </span><span class="py">as</span><span class="w"> </span><span class="py">c</span><span class="w"> </span><span class="py">ORDER</span><span class="w"> </span><span class="py">BY</span><span class="w"> </span><span class="py">c</span><span class="w"> </span><span class="py">DESC</span><span class="w">
-</span></span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl"># 有一个非第一个位置的字，拼音是 4 声，韵母是 ai，但不是爱
+</span></span><span class="line"><span class="cl">MATCH (char0:character)&lt;-[with_char_0:with_character]-(x:idiom)
+</span></span><span class="line"><span class="cl">WHERE with_char_0.position != 0 AND id(char0) != &#34;爱&#34;
+</span></span><span class="line"><span class="cl"># ...
+</span></span><span class="line"><span class="cl">RETURN x, count(x) as c ORDER BY c DESC
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>而因为这两个条件最终描述的是同一个字，所以它们是可以被写在一个路径下的：</p>
 <div class="highlight"><div class="chroma">
@@ -450,12 +450,12 @@
 </span><span class="lnt">5
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-GraphQL" data-lang="GraphQL"><span class="line"><span class="cl"><span class="c"># 有一个非第一个位置的字，拼音是 4 声，韵母是 ai，但不是爱</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="py">MATCH</span><span class="w"> </span><span class="p">(</span><span class="py">char0</span><span class="p">:</span><span class="nc">character</span><span class="p">)</span><span class="err">&lt;-</span><span class="p">[</span><span class="py">with_char_0</span><span class="p">:</span><span class="nc">with_character</span><span class="p">]</span><span class="err">-</span><span class="p">(</span><span class="py">x</span><span class="p">:</span><span class="nc">idiom</span><span class="p">)</span><span class="err">-</span><span class="p">[</span><span class="py">with_pinyin_0</span><span class="p">:</span><span class="nc">with_pinyin</span><span class="p">]</span><span class="err">-&gt;</span><span class="p">(</span><span class="py">pinyin_0</span><span class="p">:</span><span class="nc">character_pinyin</span><span class="p">)</span><span class="err">-</span><span class="p">[:</span><span class="nc">with_pinyin_part</span><span class="p">]</span><span class="err">-&gt;</span><span class="p">(</span><span class="py">final_part_0</span><span class="p">:</span><span class="nc">pinyin_part</span><span class="p">{</span><span class="py">part_type</span><span class="p">:</span><span class="w"> </span><span class="s">&#34;final&#34;</span><span class="p">})</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nc">WHERE</span><span class="w"> </span><span class="py">id</span><span class="p">(</span><span class="py">final_part_0</span><span class="p">)</span><span class="w"> </span><span class="p">==</span><span class="w"> </span><span class="s">&#34;ai&#34;</span><span class="w"> </span><span class="py">AND</span><span class="w"> </span><span class="py">pinyin_0</span><span class="err">.</span><span class="py">character_pinyin</span><span class="err">.</span><span class="py">tone</span><span class="w"> </span><span class="p">==</span><span class="w"> </span><span class="py">4</span><span class="w"> </span><span class="py">AND</span><span class="w"> </span><span class="py">with_pinyin_0</span><span class="err">.</span><span class="py">position</span><span class="w"> </span><span class="p">!=</span><span class="w"> </span><span class="py">0</span><span class="w"> </span><span class="py">AND</span><span class="w"> </span><span class="py">with_char_0</span><span class="err">.</span><span class="py">position</span><span class="w"> </span><span class="p">!=</span><span class="w"> </span><span class="py">0</span><span class="w"> </span><span class="py">AND</span><span class="w"> </span><span class="py">id</span><span class="p">(</span><span class="py">char0</span><span class="p">)</span><span class="w"> </span><span class="p">!=</span><span class="w"> </span><span class="sc">&#34;爱&#34;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c"># ...</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="py">RETURN</span><span class="w"> </span><span class="py">x</span><span class="w">
-</span></span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl"># 有一个非第一个位置的字，拼音是 4 声，韵母是 ai，但不是爱
+</span></span><span class="line"><span class="cl">MATCH (char0:character)&lt;-[with_char_0:with_character]-(x:idiom)-[with_pinyin_0:with_pinyin]-&gt;(pinyin_0:character_pinyin)-[:with_pinyin_part]-&gt;(final_part_0:pinyin_part{part_type: &#34;final&#34;})
+</span></span><span class="line"><span class="cl">WHERE id(final_part_0) == &#34;ai&#34; AND pinyin_0.character_pinyin.tone == 4 AND with_pinyin_0.position != 0 AND with_char_0.position != 0 AND id(char0) != &#34;爱&#34;
+</span></span><span class="line"><span class="cl"># ...
+</span></span><span class="line"><span class="cl">RETURN x
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>更多的 <code>MATCH</code> 语法和例子细节，请大家参考文档：</p>
 <ul>
@@ -483,21 +483,21 @@
 </span><span class="lnt">14
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-GraphQL" data-lang="GraphQL"><span class="line"><span class="cl"><span class="c"># 有一个非第一个位置的字，拼音是 4 声，韵母是 ai，但不是爱</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="py">MATCH</span><span class="w"> </span><span class="py">p0</span><span class="p">=(</span><span class="py">char0</span><span class="p">:</span><span class="nc">character</span><span class="p">)</span><span class="err">&lt;-</span><span class="p">[</span><span class="py">with_char_0</span><span class="p">:</span><span class="nc">with_character</span><span class="p">]</span><span class="err">-</span><span class="p">(</span><span class="py">x</span><span class="p">:</span><span class="nc">idiom</span><span class="p">)</span><span class="err">-</span><span class="p">[</span><span class="py">with_pinyin_0</span><span class="p">:</span><span class="nc">with_pinyin</span><span class="p">]</span><span class="err">-&gt;</span><span class="p">(</span><span class="py">pinyin_0</span><span class="p">:</span><span class="nc">character_pinyin</span><span class="p">)</span><span class="err">-</span><span class="p">[:</span><span class="nc">with_pinyin_part</span><span class="p">]</span><span class="err">-&gt;</span><span class="p">(</span><span class="py">final_part_0</span><span class="p">:</span><span class="nc">pinyin_part</span><span class="p">{</span><span class="py">part_type</span><span class="p">:</span><span class="w"> </span><span class="s">&#34;final&#34;</span><span class="p">})</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nc">WHERE</span><span class="w"> </span><span class="py">id</span><span class="p">(</span><span class="py">final_part_0</span><span class="p">)</span><span class="w"> </span><span class="p">==</span><span class="w"> </span><span class="s">&#34;ai&#34;</span><span class="w"> </span><span class="py">AND</span><span class="w"> </span><span class="py">pinyin_0</span><span class="err">.</span><span class="py">character_pinyin</span><span class="err">.</span><span class="py">tone</span><span class="w"> </span><span class="p">==</span><span class="w"> </span><span class="py">4</span><span class="w"> </span><span class="py">AND</span><span class="w"> </span><span class="py">with_pinyin_0</span><span class="err">.</span><span class="py">position</span><span class="w"> </span><span class="p">!=</span><span class="w"> </span><span class="py">0</span><span class="w"> </span><span class="py">AND</span><span class="w"> </span><span class="py">with_char_0</span><span class="err">.</span><span class="py">position</span><span class="w"> </span><span class="p">!=</span><span class="w"> </span><span class="py">0</span><span class="w"> </span><span class="py">AND</span><span class="w"> </span><span class="py">id</span><span class="p">(</span><span class="py">char0</span><span class="p">)</span><span class="w"> </span><span class="p">!=</span><span class="w"> </span><span class="sc">&#34;爱&#34;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c"># 有一个一声的字，不在第二个位置</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="py">MATCH</span><span class="w"> </span><span class="py">p1</span><span class="p">=(</span><span class="py">x</span><span class="p">:</span><span class="nc">idiom</span><span class="p">)</span><span class="w"> </span><span class="err">-</span><span class="p">[</span><span class="py">with_pinyin_1</span><span class="p">:</span><span class="nc">with_pinyin</span><span class="p">]</span><span class="err">-&gt;</span><span class="p">(</span><span class="py">pinyin_1</span><span class="p">:</span><span class="nc">character_pinyin</span><span class="p">)</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="py">WHERE</span><span class="w"> </span><span class="py">pinyin_1</span><span class="err">.</span><span class="py">character_pinyin</span><span class="err">.</span><span class="py">tone</span><span class="w"> </span><span class="p">==</span><span class="w"> </span><span class="py">1</span><span class="w"> </span><span class="py">AND</span><span class="w"> </span><span class="py">with_pinyin_1</span><span class="err">.</span><span class="py">position</span><span class="w"> </span><span class="p">!=</span><span class="w"> </span><span class="py">1</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c"># 有一个字韵母是 ing，不在第四个位置</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="py">MATCH</span><span class="w"> </span><span class="py">p2</span><span class="p">=(</span><span class="py">x</span><span class="p">:</span><span class="nc">idiom</span><span class="p">)</span><span class="w"> </span><span class="err">-</span><span class="p">[</span><span class="py">with_pinyin_2</span><span class="p">:</span><span class="nc">with_pinyin</span><span class="p">]</span><span class="err">-&gt;</span><span class="p">(:</span><span class="nc">character_pinyin</span><span class="p">)</span><span class="err">-</span><span class="p">[:</span><span class="nc">with_pinyin_part</span><span class="p">]</span><span class="err">-&gt;</span><span class="p">(</span><span class="py">final_part_2</span><span class="p">:</span><span class="nc">pinyin_part</span><span class="p">{</span><span class="py">part_type</span><span class="p">:</span><span class="w"> </span><span class="s">&#34;final&#34;</span><span class="p">})</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nc">WHERE</span><span class="w"> </span><span class="py">id</span><span class="p">(</span><span class="py">final_part_2</span><span class="p">)</span><span class="w"> </span><span class="p">==</span><span class="w"> </span><span class="s">&#34;ing&#34;</span><span class="w"> </span><span class="py">AND</span><span class="w"> </span><span class="py">with_pinyin_2</span><span class="err">.</span><span class="py">position</span><span class="w"> </span><span class="p">!=</span><span class="w"> </span><span class="py">3</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c"># 第四个字是二声</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="py">MATCH</span><span class="w"> </span><span class="py">p3</span><span class="p">=(</span><span class="py">x</span><span class="p">:</span><span class="nc">idiom</span><span class="p">)</span><span class="w"> </span><span class="err">-</span><span class="p">[</span><span class="py">with_pinyin_3</span><span class="p">:</span><span class="nc">with_pinyin</span><span class="p">]</span><span class="err">-&gt;</span><span class="p">(</span><span class="py">pinyin_3</span><span class="p">:</span><span class="nc">character_pinyin</span><span class="p">)</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="py">WHERE</span><span class="w"> </span><span class="py">pinyin_3</span><span class="err">.</span><span class="py">character_pinyin</span><span class="err">.</span><span class="py">tone</span><span class="w"> </span><span class="p">==</span><span class="w"> </span><span class="py">2</span><span class="w"> </span><span class="py">AND</span><span class="w"> </span><span class="py">with_pinyin_3</span><span class="err">.</span><span class="py">position</span><span class="w"> </span><span class="p">==</span><span class="w"> </span><span class="py">3</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="py">RETURN</span><span class="w"> </span><span class="py">p0</span><span class="p">,</span><span class="py">p1</span><span class="p">,</span><span class="py">p2</span><span class="p">,</span><span class="py">p3</span><span class="w">
-</span></span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl"># 有一个非第一个位置的字，拼音是 4 声，韵母是 ai，但不是爱
+</span></span><span class="line"><span class="cl">MATCH p0=(char0:character)&lt;-[with_char_0:with_character]-(x:idiom)-[with_pinyin_0:with_pinyin]-&gt;(pinyin_0:character_pinyin)-[:with_pinyin_part]-&gt;(final_part_0:pinyin_part{part_type: &#34;final&#34;})
+</span></span><span class="line"><span class="cl">WHERE id(final_part_0) == &#34;ai&#34; AND pinyin_0.character_pinyin.tone == 4 AND with_pinyin_0.position != 0 AND with_char_0.position != 0 AND id(char0) != &#34;爱&#34;
+</span></span><span class="line"><span class="cl"># 有一个一声的字，不在第二个位置
+</span></span><span class="line"><span class="cl">MATCH p1=(x:idiom) -[with_pinyin_1:with_pinyin]-&gt;(pinyin_1:character_pinyin)
+</span></span><span class="line"><span class="cl">WHERE pinyin_1.character_pinyin.tone == 1 AND with_pinyin_1.position != 1
+</span></span><span class="line"><span class="cl"># 有一个字韵母是 ing，不在第四个位置
+</span></span><span class="line"><span class="cl">MATCH p2=(x:idiom) -[with_pinyin_2:with_pinyin]-&gt;(:character_pinyin)-[:with_pinyin_part]-&gt;(final_part_2:pinyin_part{part_type: &#34;final&#34;})
+</span></span><span class="line"><span class="cl">WHERE id(final_part_2) == &#34;ing&#34; AND with_pinyin_2.position != 3
+</span></span><span class="line"><span class="cl"># 第四个字是二声
+</span></span><span class="line"><span class="cl">MATCH p3=(x:idiom) -[with_pinyin_3:with_pinyin]-&gt;(pinyin_3:character_pinyin)
+</span></span><span class="line"><span class="cl">WHERE pinyin_3.character_pinyin.tone == 2 AND with_pinyin_3.position == 3
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">RETURN p0,p1,p2,p3
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>在可视化工具的 Console 控制台里执行上边的语句之后，选择导入图探索，就可以看到</p>
 <p><a class="lightgallery" href="/resolve-wordle/studio.webp" title="/resolve-wordle/studio.webp" data-thumbnail="/resolve-wordle/studio.webp">
@@ -747,6 +747,19 @@
 <div class="related-container">
     <div class="related-item-container">
             <div class="related-image">
+                <a href="/recommendation-system-with-graphdb/"><img
+        class="lazyload"
+        data-src="/recommendation-system-with-graphdb/featured-image.webp"
+        data-srcset="/recommendation-system-with-graphdb/featured-image.webp, /recommendation-system-with-graphdb/featured-image.webp 1.5x, /recommendation-system-with-graphdb/featured-image.webp 2x"
+        data-sizes="auto"
+        alt="/recommendation-system-with-graphdb/featured-image.webp"
+        title="我发现用 Nebula Graph 的图查询解 Antfu 的汉兜特别有意思！" height="200" width="400"></a>
+            </div><h2 class="related-title">
+                <a href="/recommendation-system-with-graphdb/">基于图数据库的推荐系统</a>
+            </h2>
+        </div>
+    <div class="related-item-container">
+            <div class="related-image">
                 <a href="/identity-resolution/"><img
         class="lazyload"
         data-src="/identity-resolution/featured-image.webp"
@@ -797,19 +810,6 @@
                 <a href="/nebula-graph-on-pi/">Nebula Graph on Pi</a>
             </h2>
         </div>
-    <div class="related-item-container">
-            <div class="related-image">
-                <a href="/nebula-index-explained/"><img
-        class="lazyload"
-        data-src="/nebula-index-explained/featured-image.webp"
-        data-srcset="/nebula-index-explained/featured-image.webp, /nebula-index-explained/featured-image.webp 1.5x, /nebula-index-explained/featured-image.webp 2x"
-        data-sizes="auto"
-        alt="/nebula-index-explained/featured-image.webp"
-        title="我发现用 Nebula Graph 的图查询解 Antfu 的汉兜特别有意思！" height="200" width="400"></a>
-            </div><h2 class="related-title">
-                <a href="/nebula-index-explained/">Nebula Graph 索引详解</a>
-            </h2>
-        </div>
     
 
 </div>
@@ -847,7 +847,7 @@
             </noscript></div></article></div>
         </main><footer class="footer">
         <div class="footer-container"><div class="footer-line">
-                    由 <a href="https://gohugo.io/" target="_blank" rel="noopener noreferrer" title="Hugo 0.101.0">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreferrer" title="DoIt 0.2.13"><i class="far fa-edit fa-fw"></i> DoIt</a>
+                    由 <a href="https://gohugo.io/" target="_blank" rel="noopener noreferrer" title="Hugo 0.105.0">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreferrer" title="DoIt 0.2.13"><i class="far fa-edit fa-fw"></i> DoIt</a>
                 </div><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2018 - 2022</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="https://siwei.io" target="_blank" rel="noopener noreferrer">Wey Gu</a></span>&nbsp;|&nbsp;<span class="license"><a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">CC BY-NC 4.0</a></span></div>
             <div class="footer-line"></div>
             <div class="footer-line">

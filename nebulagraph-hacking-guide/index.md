@@ -304,7 +304,7 @@ run
 
 ### 开始改代码
 
-> 注：在修改代码之前，请确保自己在最新的 master 分支之上创建一个单独的分支，这里的例子中，我把分支名字叫 `JSON_EXTRACT`：
+> 注：在修改代码之前，请确保自己在最新的 master 分支之上创建一个单独的分支，这里的例子中，我把分支名字叫 `fn_JSON_EXTRACT`：
 >
 > ```bash
 > git checkout master

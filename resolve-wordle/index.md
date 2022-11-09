@@ -84,11 +84,11 @@
 
 假设我们想从一个成语开始，如果你没有想法的话可以试试这个：
 
-```GraphQL
-# 匹配成语中的一个结果
+```cypher
+// 匹配成语中的一个结果
 MATCH (x:idiom) RETURN x LIMIT 1
 
-# 返回结果
+// 返回结果
 ("爱憎分明" :idiom{pinyin: "['ai4', 'zeng1', 'fen1', 'ming2']"})
 ```
 
@@ -105,17 +105,17 @@ MATCH (x:idiom) RETURN x LIMIT 1
 
 下面，我们开始图数据库语句体操！
 
-```GraphQL
-# 有一个非第一个位置的字，拼音是 4 声，韵母是 ai，但不是爱
+```cypher
+// 有一个非第一个位置的字，拼音是 4 声，韵母是 ai，但不是爱
 MATCH (char0:character)<-[with_char_0:with_character]-(x:idiom)-[with_pinyin_0:with_pinyin]->(pinyin_0:character_pinyin)-[:with_pinyin_part]->(final_part_0:pinyin_part{part_type: "final"})
 WHERE id(final_part_0) == "ai" AND pinyin_0.character_pinyin.tone == 4 AND with_pinyin_0.position != 0 AND with_char_0.position != 0 AND id(char0) != "爱"
-# 有一个一声的字，不在第二个位置
+// 有一个一声的字，不在第二个位置
 MATCH (x:idiom) -[with_pinyin_1:with_pinyin]->(pinyin_1:character_pinyin)
 WHERE pinyin_1.character_pinyin.tone == 1 AND with_pinyin_1.position != 1
-# 有一个字韵母是 ing，不在第四个位置
+// 有一个字韵母是 ing，不在第四个位置
 MATCH (x:idiom) -[with_pinyin_2:with_pinyin]->(:character_pinyin)-[:with_pinyin_part]->(final_part_2:pinyin_part{part_type: "final"})
 WHERE id(final_part_2) == "ing" AND with_pinyin_2.position != 3
-# 第四个字是二声
+// 第四个字是二声
 MATCH (x:idiom) -[with_pinyin_3:with_pinyin]->(pinyin_3:character_pinyin)
 WHERE pinyin_3.character_pinyin.tone == 2 AND with_pinyin_3.position == 3
 
@@ -159,17 +159,17 @@ RETURN x, count(x) as c ORDER BY c DESC
 
 因为建模的时候，属性名称我用的是英文（其实中文也是支持的），实际上的语句为：
 
-```GraphQL
-# 有一个非第一个位置的字，拼音是 4 声，韵母是 ai
+```cypher
+// 有一个非第一个位置的字，拼音是 4 声，韵母是 ai
 MATCH (x:idiom)-[with_pinyin_0:with_pinyin]->(pinyin_0:character_pinyin)-[:with_pinyin_part]->(final_part_0:pinyin_part{part_type: "final"})
 WHERE id(final_part_0) == "ai" AND pinyin_0.character_pinyin.tone == 4 AND with_pinyin_0.position != 0
-# ...
+// ...
 RETURN x
 ```
 
 类似的，表示非第一个位置的字，不是`爱` 的表达是：
 
-```GraphQL
+```cypher
 # 有一个非第一个位置的字，拼音是 4 声，韵母是 ai，但不是爱
 MATCH (char0:character)<-[with_char_0:with_character]-(x:idiom)
 WHERE with_char_0.position != 0 AND id(char0) != "爱"
@@ -179,7 +179,7 @@ RETURN x, count(x) as c ORDER BY c DESC
 
 而因为这两个条件最终描述的是同一个字，所以它们是可以被写在一个路径下的：
 
-```GraphQL
+```cypher
 # 有一个非第一个位置的字，拼音是 4 声，韵母是 ai，但不是爱
 MATCH (char0:character)<-[with_char_0:with_character]-(x:idiom)-[with_pinyin_0:with_pinyin]->(pinyin_0:character_pinyin)-[:with_pinyin_part]->(final_part_0:pinyin_part{part_type: "final"})
 WHERE id(final_part_0) == "ai" AND pinyin_0.character_pinyin.tone == 4 AND with_pinyin_0.position != 0 AND with_char_0.position != 0 AND id(char0) != "爱"
@@ -199,7 +199,7 @@ RETURN x
 
 我们把每一个条件的匹配路径作为输出，利用 Nebula Graph 的可视化能力，可以得到：
 
-```GraphQL
+```cypher
 # 有一个非第一个位置的字，拼音是 4 声，韵母是 ai，但不是爱
 MATCH p0=(char0:character)<-[with_char_0:with_character]-(x:idiom)-[with_pinyin_0:with_pinyin]->(pinyin_0:character_pinyin)-[:with_pinyin_part]->(final_part_0:pinyin_part{part_type: "final"})
 WHERE id(final_part_0) == "ai" AND pinyin_0.character_pinyin.tone == 4 AND with_pinyin_0.position != 0 AND with_char_0.position != 0 AND id(char0) != "爱"

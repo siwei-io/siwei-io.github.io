@@ -108,7 +108,7 @@ With such a mapping, risk control experts can explore the relationships between 
 
 In this screenshot of rendered query, we can clearly see a risk pattern for a group-controlled device that can be given to a graph database developer and abstracted into NebulaGraph database statements that can be queried by anyone or certain application in real-time fashion:
 
-```GRAPHQL
+```cypher
 ## Query started from a person for given transaction
 MATCH (n) WHERE id(n) == "200000010265"
 OPTIONAL MATCH p_shared_d=(n)-[:used_device]->(d)<-[:used_device]-(:applicant)-[:with_phone_num]->(pn:phone_num)<-[e:with_phone_num]-(:applicant)
@@ -117,7 +117,7 @@ RETURN p_shared_d
 
 Then we could create an API based on queries like the following, which returns `count(e)` as a metrics.
 
-```graphql
+```cypher
 ## group controlled device metric
 MATCH (n) WHERE id(n) == "200000010265"
 OPTIONAL MATCH p_shared_d=(n)-[:used_device]->(d)<-[:used_device]-(:applicant)-[:with_phone_num]->(pn:phone_num)<-[e:with_phone_num]-(:applicant)
@@ -128,7 +128,7 @@ In this way, we can build an online risk control system that uses limited labele
 
 Another example of leveraging labeled high-risk vertices could be like querying the count of ones whose `is_risky` flag is True:
 
-```graphql
+```cypher
 MATCH p_=(p:applicant)-[*1..2]-(p2:applicant) WHERE id(p)=="200000014810" AND p2.applicant.is_risky == "True" RETURN p_ LIMIT 100
 ```
 
@@ -136,7 +136,7 @@ MATCH p_=(p:applicant)-[*1..2]-(p2:applicant) WHERE id(p)=="200000014810" AND p2
 
 And the metric would be like:
 
-```graphql
+```cypher
 MATCH (p:applicant)-[*1..2]-(p2:applicant) WHERE id(p)=="200000014810" AND p2.applicant.is_risky == "True" RETURN count(p2)
 ```
 
@@ -1454,7 +1454,7 @@ Remember the flowchart of an online inference system with GNN?
 
 Now, assume a new transaction request comes to the system, and corresponding relations has been already written to the graph database, we could randomly find one review to simulate that:
 
-```graphql
+```cypher
 MATCH (n:review) RETURN n LIMIT 1
 ```
 

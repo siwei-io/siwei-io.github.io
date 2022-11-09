@@ -128,11 +128,11 @@
 </span><span class="lnt">4
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-GRAPHQL" data-lang="GRAPHQL"><span class="line"><span class="cl"><span class="c">## Query started from a person for given transaction</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="py">MATCH</span><span class="w"> </span><span class="p">(</span><span class="py">n</span><span class="p">)</span><span class="w"> </span><span class="py">WHERE</span><span class="w"> </span><span class="py">id</span><span class="p">(</span><span class="py">n</span><span class="p">)</span><span class="w"> </span><span class="p">==</span><span class="w"> </span><span class="s">&#34;200000010265&#34;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="py">OPTIONAL</span><span class="w"> </span><span class="py">MATCH</span><span class="w"> </span><span class="py">p_shared_d</span><span class="p">=(</span><span class="py">n</span><span class="p">)</span><span class="err">-</span><span class="p">[:</span><span class="nc">used_device</span><span class="p">]</span><span class="err">-&gt;</span><span class="p">(</span><span class="py">d</span><span class="p">)</span><span class="err">&lt;-</span><span class="p">[:</span><span class="nc">used_device</span><span class="p">]</span><span class="err">-</span><span class="p">(:</span><span class="nc">applicant</span><span class="p">)</span><span class="err">-</span><span class="p">[:</span><span class="nc">with_phone_num</span><span class="p">]</span><span class="err">-&gt;</span><span class="p">(</span><span class="py">pn</span><span class="p">:</span><span class="nc">phone_num</span><span class="p">)</span><span class="err">&lt;-</span><span class="p">[</span><span class="py">e</span><span class="p">:</span><span class="nc">with_phone_num</span><span class="p">]</span><span class="err">-</span><span class="p">(:</span><span class="nc">applicant</span><span class="p">)</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="py">RETURN</span><span class="w"> </span><span class="py">p_shared_d</span><span class="w">
-</span></span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">## Query started from a person for given transaction
+</span></span><span class="line"><span class="cl">MATCH (n) WHERE id(n) == &#34;200000010265&#34;
+</span></span><span class="line"><span class="cl">OPTIONAL MATCH p_shared_d=(n)-[:used_device]-&gt;(d)&lt;-[:used_device]-(:applicant)-[:with_phone_num]-&gt;(pn:phone_num)&lt;-[e:with_phone_num]-(:applicant)
+</span></span><span class="line"><span class="cl">RETURN p_shared_d
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>Then we could create an API based on queries like the following, which returns <code>count(e)</code> as a metrics.</p>
 <div class="highlight"><div class="chroma">
@@ -143,11 +143,11 @@
 </span><span class="lnt">4
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-graphql" data-lang="graphql"><span class="line"><span class="cl"><span class="c">## group controlled device metric</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="py">MATCH</span><span class="w"> </span><span class="p">(</span><span class="py">n</span><span class="p">)</span><span class="w"> </span><span class="py">WHERE</span><span class="w"> </span><span class="py">id</span><span class="p">(</span><span class="py">n</span><span class="p">)</span><span class="w"> </span><span class="p">==</span><span class="w"> </span><span class="s">&#34;200000010265&#34;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="py">OPTIONAL</span><span class="w"> </span><span class="py">MATCH</span><span class="w"> </span><span class="py">p_shared_d</span><span class="p">=(</span><span class="py">n</span><span class="p">)</span><span class="err">-</span><span class="p">[:</span><span class="nc">used_device</span><span class="p">]</span><span class="err">-&gt;</span><span class="p">(</span><span class="py">d</span><span class="p">)</span><span class="err">&lt;-</span><span class="p">[:</span><span class="nc">used_device</span><span class="p">]</span><span class="err">-</span><span class="p">(:</span><span class="nc">applicant</span><span class="p">)</span><span class="err">-</span><span class="p">[:</span><span class="nc">with_phone_num</span><span class="p">]</span><span class="err">-&gt;</span><span class="p">(</span><span class="py">pn</span><span class="p">:</span><span class="nc">phone_num</span><span class="p">)</span><span class="err">&lt;-</span><span class="p">[</span><span class="py">e</span><span class="p">:</span><span class="nc">with_phone_num</span><span class="p">]</span><span class="err">-</span><span class="p">(:</span><span class="nc">applicant</span><span class="p">)</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="py">RETURN</span><span class="w"> </span><span class="py">count</span><span class="p">(</span><span class="py">e</span><span class="p">)</span><span class="w">
-</span></span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">## group controlled device metric
+</span></span><span class="line"><span class="cl">MATCH (n) WHERE id(n) == &#34;200000010265&#34;
+</span></span><span class="line"><span class="cl">OPTIONAL MATCH p_shared_d=(n)-[:used_device]-&gt;(d)&lt;-[:used_device]-(:applicant)-[:with_phone_num]-&gt;(pn:phone_num)&lt;-[e:with_phone_num]-(:applicant)
+</span></span><span class="line"><span class="cl">RETURN count(e)
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>In this way, we can build an online risk control system that uses limited labeled data and expert resources to more efficiently control the risk of gang fraud.</p>
 <p>Another example of leveraging labeled high-risk vertices could be like querying the count of ones whose <code>is_risky</code> flag is True:</p>
@@ -156,8 +156,8 @@
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-graphql" data-lang="graphql"><span class="line"><span class="cl"><span class="py">MATCH</span><span class="w"> </span><span class="py">p_</span><span class="p">=(</span><span class="py">p</span><span class="p">:</span><span class="nc">applicant</span><span class="p">)</span><span class="err">-</span><span class="p">[</span><span class="err">*</span><span class="py">1</span><span class="err">.</span><span class="mf">.2</span><span class="p">]</span><span class="err">-</span><span class="p">(</span><span class="py">p2</span><span class="p">:</span><span class="nc">applicant</span><span class="p">)</span><span class="w"> </span><span class="py">WHERE</span><span class="w"> </span><span class="py">id</span><span class="p">(</span><span class="py">p</span><span class="p">)==</span><span class="s">&#34;200000014810&#34;</span><span class="w"> </span><span class="py">AND</span><span class="w"> </span><span class="py">p2</span><span class="err">.</span><span class="py">applicant</span><span class="err">.</span><span class="py">is_risky</span><span class="w"> </span><span class="p">==</span><span class="w"> </span><span class="s">&#34;True&#34;</span><span class="w"> </span><span class="py">RETURN</span><span class="w"> </span><span class="py">p_</span><span class="w"> </span><span class="py">LIMIT</span><span class="w"> </span><span class="py">100</span><span class="w">
-</span></span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">MATCH p_=(p:applicant)-[*1..2]-(p2:applicant) WHERE id(p)==&#34;200000014810&#34; AND p2.applicant.is_risky == &#34;True&#34; RETURN p_ LIMIT 100
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p><a class="lightgallery" href="/en/fraud-detection-with-nebulagraph/is_risky_label.webp" title="/en/fraud-detection-with-nebulagraph/is_risky_label.webp" data-thumbnail="/en/fraud-detection-with-nebulagraph/is_risky_label.webp">
         
@@ -168,8 +168,8 @@
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-graphql" data-lang="graphql"><span class="line"><span class="cl"><span class="py">MATCH</span><span class="w"> </span><span class="p">(</span><span class="py">p</span><span class="p">:</span><span class="nc">applicant</span><span class="p">)</span><span class="err">-</span><span class="p">[</span><span class="err">*</span><span class="py">1</span><span class="err">.</span><span class="mf">.2</span><span class="p">]</span><span class="err">-</span><span class="p">(</span><span class="py">p2</span><span class="p">:</span><span class="nc">applicant</span><span class="p">)</span><span class="w"> </span><span class="py">WHERE</span><span class="w"> </span><span class="py">id</span><span class="p">(</span><span class="py">p</span><span class="p">)==</span><span class="s">&#34;200000014810&#34;</span><span class="w"> </span><span class="py">AND</span><span class="w"> </span><span class="py">p2</span><span class="err">.</span><span class="py">applicant</span><span class="err">.</span><span class="py">is_risky</span><span class="w"> </span><span class="p">==</span><span class="w"> </span><span class="s">&#34;True&#34;</span><span class="w"> </span><span class="py">RETURN</span><span class="w"> </span><span class="py">count</span><span class="p">(</span><span class="py">p2</span><span class="p">)</span><span class="w">
-</span></span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">MATCH (p:applicant)-[*1..2]-(p2:applicant) WHERE id(p)==&#34;200000014810&#34; AND p2.applicant.is_risky == &#34;True&#34; RETURN count(p2)
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>However, in real world, most of our labeled data is still too expensive to obtain, so is there any way to more effectively use the limited risk labeling and graph structure to predict the risk?</p>
 <p>The answer is yes.</p>
@@ -2376,8 +2376,8 @@ GraphSAGE 是针对同构图，且边无 feature 的算法，而我们当下的 
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-graphql" data-lang="graphql"><span class="line"><span class="cl"><span class="py">MATCH</span><span class="w"> </span><span class="p">(</span><span class="py">n</span><span class="p">:</span><span class="nc">review</span><span class="p">)</span><span class="w"> </span><span class="py">RETURN</span><span class="w"> </span><span class="py">n</span><span class="w"> </span><span class="py">LIMIT</span><span class="w"> </span><span class="py">1</span><span class="w">
-</span></span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">MATCH (n:review) RETURN n LIMIT 1
+</span></span></code></pre></td></tr></table>
 </div>
 </div><div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
