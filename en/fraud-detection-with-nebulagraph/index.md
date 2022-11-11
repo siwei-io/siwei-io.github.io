@@ -111,7 +111,7 @@ In this screenshot of rendered query, we can clearly see a risk pattern for a gr
 ```cypher
 ## Query started from a person for given transaction
 MATCH (n) WHERE id(n) == "200000010265"
-OPTIONAL MATCH p_shared_d=(n)-[:`used_device`]->(d)<-[:`used_device`]-(:applicant)-[:with_phone_num]->(pn:phone_num)<-[e:with_phone_num]-(:applicant)
+OPTIONAL MATCH p_shared_d=(n)-[:`used_device`]->(d)<-[:`used_device`]-(:`applicant`)-[:`with_phone_num`]->(pn:`phone_num`)<-[e:`with_phone_num`]-(:`applicant`)
 RETURN p_shared_d
 ```
 
@@ -120,7 +120,7 @@ Then we could create an API based on queries like the following, which returns `
 ```cypher
 ## group controlled device metric
 MATCH (n) WHERE id(n) == "200000010265"
-OPTIONAL MATCH p_shared_d=(n)-[:`used_device`]->(d)<-[:`used_device`]-(:`applicant`)-[:with_phone_num]->(pn:phone_num)<-[e:with_phone_num]-(:`applicant`)
+OPTIONAL MATCH p_shared_d=(n)-[:`used_device`]->(d)<-[:`used_device`]-(:`applicant`)-[:`with_phone_num`]->(pn:`phone_num`)<-[e:`with_phone_num`]-(:`applicant`)
 RETURN count(e)
 ```
 
@@ -1455,7 +1455,7 @@ Remember the flowchart of an online inference system with GNN?
 Now, assume a new transaction request comes to the system, and corresponding relations has been already written to the graph database, we could randomly find one review to simulate that:
 
 ```cypher
-MATCH (n:review) RETURN n LIMIT 1
+MATCH (n:`review`) RETURN n LIMIT 1
 ```
 
 ```sql
