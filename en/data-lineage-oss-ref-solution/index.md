@@ -866,7 +866,7 @@ Two of the advantages to use a Graph Database as Metadata Storage are:
 - The graph query itself is a flexible DSL for lineage API, for example, this query helps us do the equivalent query of the Amundsen metadata API for fetching lineage:
 
 ```cypher
-MATCH p=(t:Table) -[:HAS_UPSTREAM|:HAS_DOWNSTREAM *1..3]->(x)
+MATCH p=(t:`Table`) -[:`HAS_UPSTREAM`|:`HAS_DOWNSTREAM` *1..3]->(x)
 WHERE id(t) == "snowflake://dbt_demo.public/raw_inventory_value" RETURN p
 ```
 

@@ -111,7 +111,7 @@ In this screenshot of rendered query, we can clearly see a risk pattern for a gr
 ```cypher
 ## Query started from a person for given transaction
 MATCH (n) WHERE id(n) == "200000010265"
-OPTIONAL MATCH p_shared_d=(n)-[:used_device]->(d)<-[:used_device]-(:applicant)-[:with_phone_num]->(pn:phone_num)<-[e:with_phone_num]-(:applicant)
+OPTIONAL MATCH p_shared_d=(n)-[:`used_device`]->(d)<-[:`used_device`]-(:applicant)-[:with_phone_num]->(pn:phone_num)<-[e:with_phone_num]-(:applicant)
 RETURN p_shared_d
 ```
 
@@ -120,7 +120,7 @@ Then we could create an API based on queries like the following, which returns `
 ```cypher
 ## group controlled device metric
 MATCH (n) WHERE id(n) == "200000010265"
-OPTIONAL MATCH p_shared_d=(n)-[:used_device]->(d)<-[:used_device]-(:applicant)-[:with_phone_num]->(pn:phone_num)<-[e:with_phone_num]-(:applicant)
+OPTIONAL MATCH p_shared_d=(n)-[:`used_device`]->(d)<-[:`used_device`]-(:`applicant`)-[:with_phone_num]->(pn:phone_num)<-[e:with_phone_num]-(:`applicant`)
 RETURN count(e)
 ```
 
@@ -129,7 +129,7 @@ In this way, we can build an online risk control system that uses limited labele
 Another example of leveraging labeled high-risk vertices could be like querying the count of ones whose `is_risky` flag is True:
 
 ```cypher
-MATCH p_=(p:applicant)-[*1..2]-(p2:applicant) WHERE id(p)=="200000014810" AND p2.applicant.is_risky == "True" RETURN p_ LIMIT 100
+MATCH p_=(p:`applicant`)-[*1..2]-(p2:`applicant`) WHERE id(p)=="200000014810" AND p2.`applicant`.is_risky == "True" RETURN p_ LIMIT 100
 ```
 
 ![](is_risky_label.webp)
@@ -137,7 +137,7 @@ MATCH p_=(p:applicant)-[*1..2]-(p2:applicant) WHERE id(p)=="200000014810" AND p2
 And the metric would be like:
 
 ```cypher
-MATCH (p:applicant)-[*1..2]-(p2:applicant) WHERE id(p)=="200000014810" AND p2.applicant.is_risky == "True" RETURN count(p2)
+MATCH (p:`applicant`)-[*1..2]-(p2:`applicant`) WHERE id(p)=="200000014810" AND p2.`applicant`.is_risky == "True" RETURN count(p2)
 ```
 
 However, in real world, most of our labeled data is still too expensive to obtain, so is there any way to more effectively use the limited risk labeling and graph structure to predict the risk?

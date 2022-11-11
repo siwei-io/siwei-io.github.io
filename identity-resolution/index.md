@@ -212,8 +212,8 @@ INSERT EDGE `logged_in_from` (`time`) VALUES
 
 在前边的图谱、图数据库中，拥有相同的 email 可以直接表达为如下的图模式（Graph Pattern）。
 
-```
-(:user)-[:has_email]->(:email)<-[:has_email]-[:user]
+```cypher
+(:`user`)-[:`has_email`]->(:`email`)<-[:`has_email`]-[:`user`]
 ```
 
 下图为顶点： user 与边：has_email 的一个图的可视化结果，可以看到这其中有两个三个点相连的串正是符合拥有相同 email 的模式的点。
@@ -228,7 +228,7 @@ INSERT EDGE `logged_in_from` (`time`) VALUES
 显然，在构建 ID Mapping 系统的过程中，我们就是通过在图数据库中直接查询，可视化渲染结果来看到等效的洞察，这个查询可以写成：
 
 ```cypher
-MATCH p=(:user)-[:has_email]->(:email)<-[:has_email]-(:user)
+MATCH p=(:`user`)-[:`has_email`]->(:`email`)<-[:`has_email`]-(:`user`)
 RETURN p limit 10
 ```
 
@@ -427,8 +427,8 @@ INSERT EDGE `with_handle` (`email_domain`) VALUES
 
 可以看到，经过这个处理，我们已经得到更多关联的用户了，它可以用这个图查询表达：
 
-```sql
-MATCH p=(:user)-[:has_email_with_handle]->(:email_handle)<-[:has_email_with_handle]-(:user)
+```cypher
+MATCH p=(:`user`)-[:`has_email_with_handle`]->(:`email_handle`)<-[:`has_email_with_handle`]-(:`user`)
 RETURN p limit 10
 ```
 
@@ -542,19 +542,19 @@ RETURN ST_Distance(ST_Point(13.13, -87.65),ST_Point(13.12, -87.60)) AS distance;
 
 那么，我们可以用查询语句来表达”所有拥有相同邮箱前缀用户之间的距离“：
 
-```sql
-MATCH (v_start:user)-[:has_email_with_handle]->(:email_handle)<-[:has_email_with_handle]-(v_end:user)
-MATCH (v_start:user)-[:has_address]->(a_start:address)
-MATCH (v_end:user)-[:has_address]->(a_end:address)
+```cypher
+MATCH (v_start:`user`)-[:has_email_with_handle]->(:email_handle)<-[:has_email_with_handle]-(v_end:`user`)
+MATCH (v_start:`user`)-[:has_address]->(a_start:address)
+MATCH (v_end:`user`)-[:has_address]->(a_end:address)
 RETURN v_start, v_end, ST_Distance(a_start.address.geo_point, a_end.address.geo_point) AS distance, a_start, a_end;
 ```
 
 这里，为了展现出针对 ”非确定性“ 条件之间的 ”相似性”，我们可以把地址中字符串完全相同的结果过滤掉，`WHERE a_start.address.address != a_end.address.address`，如此：
 
-```sql
-MATCH (v_start:user)-[:has_email_with_handle]->(:email_handle)<-[:has_email_with_handle]-(v_end:user)
-MATCH (v_start:user)-[:has_address]->(a_start:address)
-MATCH (v_end:user)-[:has_address]->(a_end:address)
+```cypher
+MATCH (v_start:`user`)-[:has_email_with_handle]->(:email_handle)<-[:has_email_with_handle]-(v_end:`user`)
+MATCH (v_start:`user`)-[:has_address]->(a_start:address)
+MATCH (v_end:`user`)-[:has_address]->(a_end:address)
 WHERE a_start.address.address != a_end.address.address
 RETURN v_start.`user`.name, v_end.`user`.name, ST_Distance(a_start.address.geo_point, a_end.address.geo_point) AS distance, a_start.address.address, a_end.address.address
 ```
@@ -605,7 +605,7 @@ RETURN v_start.`user`.name, v_end.`user`.name, ST_Distance(a_start.address.geo_p
 
 > 注，为了防止两两全匹配，我们从相同邮件前缀条件作为初始匹配条件。
 
-```sql
+```cypher
 MATCH (v_start:user)-[:has_email_with_handle]->(:email_handle)<-[:has_email_with_handle]-(v_end:user)
 MATCH (v_start:user)-[:has_address]->(a_start:address)
 MATCH (v_end:user)-[:has_address]->(a_end:address)
@@ -636,10 +636,10 @@ RETURN s, e, 1 AS shared_email_handle, s_name == e_name AS shared_name, distance
 
 然后，我们计算加权分数：
 
-```sql
-MATCH (v_start:user)-[:has_email_with_handle]->(:email_handle)<-[:has_email_with_handle]-(v_end:user)
-MATCH (v_start:user)-[:has_address]->(a_start:address)
-MATCH (v_end:user)-[:has_address]->(a_end:address)
+```cypher
+MATCH (v_start:`user`)-[:has_email_with_handle]->(:email_handle)<-[:has_email_with_handle]-(v_end:`user`)
+MATCH (v_start:`user`)-[:has_address]->(a_start:address)
+MATCH (v_end:`user`)-[:has_address]->(a_end:address)
 WITH id(v_start) AS s, id(v_end) AS e, v_start.`user`.name AS s_name, v_end.`user`.name AS e_name, ST_Distance(a_start.address.geo_point, a_end.address.geo_point) AS distance
 WITH s, e, 1 AS shared_email_handle, CASE WHEN s_name == e_name THEN 1 ELSE 0 END AS shared_name, CASE WHEN distance < 10000 THEN 1 ELSE 0 END AS shared_location
 RETURN s, e, (shared_email_handle + shared_name + shared_location) AS score
@@ -731,10 +731,10 @@ INSERT EDGE `shared_similar_location` () VALUES
 
 比如，我们查询综合分数大于 2 的点：
 
-```sql
-MATCH (v_start:user)-[:has_email_with_handle]->(:email_handle)<-[:has_email_with_handle]-(v_end:user)
-MATCH (v_start:user)-[:has_address]->(a_start:address)
-MATCH (v_end:user)-[:has_address]->(a_end:address)
+```cypher
+MATCH (v_start:`user`)-[:has_email_with_handle]->(:email_handle)<-[:has_email_with_handle]-(v_end:`user`)
+MATCH (v_start:`user`)-[:has_address]->(a_start:address)
+MATCH (v_end:`user`)-[:has_address]->(a_end:address)
 WITH id(v_start) AS s, id(v_end) AS e, v_start.`user`.name AS s_name, v_end.`user`.name AS e_name, ST_Distance(a_start.address.geo_point, a_end.address.geo_point) AS distance
 WITH s, e, 1 AS shared_email_handle, CASE WHEN s_name == e_name THEN 1 ELSE 0 END AS shared_name, CASE WHEN distance < 10000 THEN 1 ELSE 0 END AS shared_location
 WITH s, e, (shared_email_handle + shared_name + shared_location) AS score
@@ -779,12 +779,12 @@ J(A,B)= \frac {|A\cap B|}{|A\cup B|}
 $$
 这里，我们把交集理解为 A 与 B 共同连接的点（设备、IP、邮箱前缀、地址），而并集理解为这几种关系下与 A 或者 B 直连的所有点，于是，我们用这样的 NebulaGraph OpenCypher 查询就可以算出至少包含一跳关系的点和它相关的点、以及 Jaccard Index 值，越大代表关联度越大。
 
-```sql
-MATCH (v_start:user)-[:used_device|logged_in_from|has_email_with_handle|has_address]->(shared_components)<-[:used_device|logged_in_from|has_email_with_handle|has_address]-(v_end:user)
+```cypher
+MATCH (v_start:`user`)-[:used_device|logged_in_from|has_email_with_handle|has_address]->(shared_components)<-[:used_device|logged_in_from|has_email_with_handle|has_address]-(v_end:`user`)
 WITH v_start, v_end, count(shared_components) AS intersection_size
-MATCH (v_start:user)-[:used_device|logged_in_from|has_email_with_handle|has_address]->(shared_components)
+MATCH (v_start:`user`)-[:used_device|logged_in_from|has_email_with_handle|has_address]->(shared_components)
 WITH id(v_start) AS v_start, v_end, intersection_size, COLLECT(id(shared_components)) AS set_a
-MATCH (v_end:user)-[:used_device|logged_in_from|has_email_with_handle|has_address]->(shared_components)
+MATCH (v_end:`user`)-[:used_device|logged_in_from|has_email_with_handle|has_address]->(shared_components)
 WITH  v_start, id(v_end) AS v_end, intersection_size, set_a, COLLECT(id(shared_components)) AS set_b
 WITH v_start, v_end, toFloat(intersection_size) AS intersection_size, toSet(set_a + set_b) AS A_U_B
 RETURN v_start, v_end, intersection_size/size(A_U_B) AS jaccard_index

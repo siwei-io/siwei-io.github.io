@@ -187,7 +187,7 @@ CREATE TAG person(name string);
 CREATE TAG corp(name string);
 CREATE TAG INDEX person_name on person(name(20));
 CREATE TAG INDEX corp_name on corp(name(20));
-CREATE EDGE role_as(role string);
+CREATE EDGE `role_as`(role string);
 CREATE EDGE is_branch_of();
 CREATE EDGE hold_share(share float);
 CREATE EDGE reletive_with(degree int);
@@ -265,13 +265,13 @@ CREATE EDGE reletive_with(degree int);
 我们假设用户请求的实体是 `c_132` ，那么请求 1 到 3 步的关系穿透的语法是：
 
 ```cypher
-MATCH p=(v)-[e:hold_share|:is_branch_of|:reletive_with|:role_as*1..3]-(v2) \
+MATCH p=(v)-[e:`hold_share`|:`is_branch_of`|:`reletive_with`|:`role_as`*1..3]-(v2) \
 WHERE id(v) IN ["c_132"] RETURN p LIMIT 100
 ```
 
 这里边 `()`包裹的是图之中的点，而`[]` 包裹的则是点之间的关系：边，所以：
 
- `(v)-[e:hold_share|:is_branch_of|:reletive_with|:role_as*1..3]-(v2)` 之中的：
+ `(v)-[e:`hold_share`|:`is_branch_of`|:`reletive_with`|:`role_as`*1..3]-(v2)` 之中的：
 
 `(v)-[xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx]-(v2)`应该比较好理解，意思是从 `v` 到`v2` 做拓展。
 
@@ -303,7 +303,7 @@ In [3]: config = Config()
 
 In [4]: resp = session.execute("use shareholding")
 In [5]: query = '''
-   ...: MATCH p=(v)-[e:hold_share|:is_branch_of|:reletive_with|:role_as*1..3]-(v2) \
+   ...: MATCH p=(v)-[e:`hold_share`|:`is_branch_of`|:`reletive_with`|:`role_as`*1..3]-(v2) \
    ...: WHERE id(v) IN ["c_132"] RETURN p LIMIT 100
    ...: '''
 In [6]: resp = session.execute(query) # Note: after nebula graph 2.6.0, we could use execute_json as well
@@ -326,7 +326,7 @@ Out[12]:
  ("p_4000" :person{name: "Colton Bailey"})]
 
 In [13]: p.relationships()
-Out[13]: [("p_4000")-[:role_as@0{role: "Editorial assistant"}]->("c_132")]
+Out[13]: [("p_4000")-[:`role_as`@0{role: "Editorial assistant"}]->("c_132")]
 ```
 
 对于边来说有这些方法 `.edge_name()`, `.properties()`, `.start_vertex_id()`, `.end_vertex_id()`，这里 edge_name 是获得边的类型。
@@ -335,10 +335,10 @@ Out[13]: [("p_4000")-[:role_as@0{role: "Editorial assistant"}]->("c_132")]
 In [14]: rel=p.relationships()[0]
 
 In [15]: rel
-Out[15]: ("p_4000")-[:role_as@0{role: "Editorial assistant"}]->("c_132")
+Out[15]: ("p_4000")-[:`role_as`@0{role: "Editorial assistant"}]->("c_132")
 
 In [16]: rel.edge_name()
-Out[16]: 'role_as'
+Out[16]: '`role_as`'
 
 In [17]: rel.properties()
 Out[17]: {'role': "Editorial assistant"}
@@ -380,7 +380,7 @@ nodes: [
         {"id": "c_132", "name": "Chambers LLC", "tag": "corp"},
         {"id": "p_4000", "name": "Colton Bailey", "tag": "person"}],
 relationships: [
-        {"source": "p_4000", "target": "c_132", "properties": { "role": "Editorial assistant" }, "edge": "role_as"}]
+        {"source": "p_4000", "target": "c_132", "properties": { "role": "Editorial assistant" }, "edge": "`role_as`"}]
 ```
 
 ![d3-demo](./vue-network-d3-demo.webp)
@@ -401,7 +401,7 @@ Nodes:
 Relationships:
 
 ```json
-[{"source": "p_4000", "target": "c_132", "properties": { "role": "Editorial assistant" }, "edge": "role_as"},
+[{"source": "p_4000", "target": "c_132", "properties": { "role": "Editorial assistant" }, "edge": "`role_as`"},
  {"source": "p_1039", "target": "c_132", "properties": { "share": "3.0" }, "edge": "hold_share"}]
 ```
 
@@ -477,7 +477,7 @@ def parse_nebula_graphd_endpoint():
 def query_shareholding(entity):
     query_string = (
         f"USE shareholding; "
-        f"MATCH p=(v)-[e:hold_share|:is_branch_of|:reletive_with|:role_as*1..3]-(v2) "
+        f"MATCH p=(v)-[e:`hold_share`|:`is_branch_of`|:`reletive_with`|:`role_as`*1..3]-(v2) "
         f"WHERE id(v) IN ['{ entity }'] RETURN p LIMIT 100"
     )
     session = connection_pool.get_session('root', 'nebula')

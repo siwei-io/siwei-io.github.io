@@ -107,7 +107,7 @@ It's indeed entertaining to me, and I could write Graph Queries[*] by hand or vi
 
   ```cypher
   # There is one Character not in 1st position, with tone-4, final part as "ai", but is not "爱"
-  MATCH (char0:character)<-[with_char_0:with_character]-(x:idiom)-[with_pinyin_0:with_pinyin]->(pinyin_0:character_pinyin)-[:with_pinyin_part]->(final_part_0:pinyin_part{part_type: "final"})
+  MATCH (char0:`character`)<-[with_char_0:with_character]-(x:idiom)-[with_pinyin_0:with_pinyin]->(pinyin_0:character_pinyin)-[:with_pinyin_part]->(final_part_0:pinyin_part{part_type: "final"})
   WHERE id(final_part_0) == "ai" AND pinyin_0.character_pinyin.tone == 4 AND with_pinyin_0.position != 0 AND with_char_0.position != 0 AND id(char0) != "爱"
   
   # There is one Character in tone-1 not in 2nd position
@@ -154,7 +154,7 @@ Then we just query it from Nebula Graph:
 
 ```cypher
 # There is one Character not in 1st position, with tone-4, final part as "ai", but is not "爱"
-MATCH (char0:character)<-[with_char_0:with_character]-(x:idiom)-[with_pinyin_0:with_pinyin]->(pinyin_0:character_pinyin)-[:with_pinyin_part]->(final_part_0:pinyin_part{part_type: "final"})
+MATCH (char0:`character`)<-[with_char_0:with_character]-(x:idiom)-[with_pinyin_0:with_pinyin]->(pinyin_0:character_pinyin)-[:with_pinyin_part]->(final_part_0:pinyin_part{part_type: "final"})
 WHERE id(final_part_0) == "ai" AND pinyin_0.character_pinyin.tone == 4 AND with_pinyin_0.position != 0 AND with_char_0.position != 0 AND id(char0) != "爱"
 
 # There is one Character in tone-1 not in 2nd position
@@ -194,7 +194,7 @@ We could modify our query to make every part of the subquery returned, thus, the
 
 ```cypher
 # There is one Character not in 1st position, with tone-4, final part as "ai", but is not "爱"
-MATCH p0=(char0:character)<-[with_char_0:with_character]-(x:idiom)-[with_pinyin_0:with_pinyin]->(pinyin_0:character_pinyin)-[:with_pinyin_part]->(final_part_0:pinyin_part{part_type: "final"})
+MATCH p0=(char0:`character`)<-[with_char_0:with_character]-(x:idiom)-[with_pinyin_0:with_pinyin]->(pinyin_0:character_pinyin)-[:with_pinyin_part]->(final_part_0:pinyin_part{part_type: "final"})
 WHERE id(final_part_0) == "ai" AND pinyin_0.character_pinyin.tone == 4 AND with_pinyin_0.position != 0 AND with_char_0.position != 0 AND id(char0) != "爱"
 
 # There is one Character in tone-1 not in 2nd position

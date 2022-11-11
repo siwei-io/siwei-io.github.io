@@ -80,7 +80,7 @@ docker run --rm -ti \
 ```cypher
 ## 针对一笔交易申请关联查询
 MATCH (n) WHERE id(n) == "200000010265"
-OPTIONAL MATCH p_shared_d=(n)-[:used_device]->(d)<-[:used_device]-(:applicant)-[:with_phone_num]->(pn:phone_num)<-[e:with_phone_num]-(:applicant)
+OPTIONAL MATCH p_shared_d=(n)-[:`used_device`]->(d)<-[:`used_device`]-(:`applicant`)-[:`with_phone_num`]->(pn:phone_num)<-[e:`with_phone_num`]-(:`applicant`)
 RETURN p_shared_d
 ```
 
@@ -89,7 +89,7 @@ RETURN p_shared_d
 ```cypher
 ## 群控指标
 MATCH (n) WHERE id(n) == "200000010265"
-OPTIONAL MATCH p_shared_d=(n)-[:used_device]->(d)<-[:used_device]-(:applicant)-[:with_phone_num]->(pn:phone_num)<-[e:with_phone_num]-(:applicant)
+OPTIONAL MATCH p_shared_d=(n)-[:`used_device`]->(d)<-[:`used_device`]-(:`applicant`)-[:`with_phone_num`]->(pn:phone_num)<-[e:`with_phone_num`]-(:`applicant`)
 RETURN count(e)
 ```
 
@@ -98,7 +98,7 @@ RETURN count(e)
 另一个利用标注风险节点的查询是找到相关联节点高风险属性的数量：
 
 ```cypher
-MATCH p_=(p:applicant)-[*1..2]-(p2:applicant) WHERE id(p)=="200000014810" AND p2.applicant.is_risky == "True" RETURN p_ LIMIT 100
+MATCH p_=(p:`applicant`)-[*1..2]-(p2:`applicant`) WHERE id(p)=="200000014810" AND p2.`applicant`.is_risky == "True" RETURN p_ LIMIT 100
 ```
 
 可以从这个路径查询看到 `200000014810` 的相连接的申请人中有不少是高风险的（也能看出聚集的 device）。
@@ -108,7 +108,7 @@ MATCH p_=(p:applicant)-[*1..2]-(p2:applicant) WHERE id(p)=="200000014810" AND p2
 如此，我们可以定义相连高风险点数量为一个指标：
 
 ```cypher
-MATCH (p:applicant)-[*1..2]-(p2:applicant) WHERE id(p)=="200000014810" AND p2.applicant.is_risky == "True" RETURN count(p2)
+MATCH (p:`applicant`)-[*1..2]-(p2:`applicant`) WHERE id(p)=="200000014810" AND p2.`applicant`.is_risky == "True" RETURN count(p2)
 ```
 
 然而，在现实情况下，我们的大多数标注数据的获取还是过于昂贵，那么有没有什么方法是更有效利用有限的风险标注和图结构，来预测出风险呢？
@@ -1321,7 +1321,7 @@ print("Test Accuracy {:.4f}".format(acc.item()))
 现在，我们假设这个新的交易请求已经发起了，这条交易记录已经被更新在图谱里了，咱们随便取一个点作为这样的请求吧
 
 ```cypher
-MATCH (n:review) RETURN n LIMIT 1
+MATCH (n:`review`) RETURN n LIMIT 1
 ```
 
 ```cypher

@@ -87,9 +87,9 @@ MATCH (v:player { name: 'Tim Duncan' })--(v2) \
 >
 > ```cypher
 > # sample vertex
-> MATCH (v:team) RETURN v LIMIT 3
+> MATCH (v:`team`) RETURN v LIMIT 3
 > # or sample edge
-> MATCH ()-[e:follow]->() RETURN e LIMIT 3
+> MATCH ()-[e:`follow`]->() RETURN e LIMIT 3
 > ```
 
 ### 为什么只有纯属性条件出发查询
@@ -181,8 +181,8 @@ MATCH (v:player { name: 'Tim Duncan' })--(v2) \
 - 也可以是 MATCH ，这里边 `v` 是通过索引得到的，而 `v2` 则是在数据（非索引）部分拓展查询获得的。
 
   ```cypher
-  MATCH (v:player{name:"Tim Duncan"})--(v2:player) \
-    RETURN v2.player.name AS Name;
+  MATCH (v:`player`{name:"Tim Duncan"})--(v2:`player`) \
+    RETURN v2.`player`.name AS Name;
   ```
 
 - 复合索引的能力与限制

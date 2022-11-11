@@ -227,14 +227,14 @@ MATCH 的基本表达是以 `(v:tag_a)` 包裹的点 `-->` 或者 `<-[:edge_type
 - 点的属性表达需要填写 TAG，例如 `v3.player.name` 而不是 `v3.name`
 
 ```cypher
-MATCH (v:player{name:"Tim Duncan"})-->(v2)<--(v3) \
-    RETURN v3.player.name AS Name;
+MATCH (v:`player`{name:"Tim Duncan"})-->(v2)<--(v3) \
+    RETURN v3.`player`.name AS Name;
 
-MATCH (v:player) \
+MATCH (v:`player`) \
     WHERE NOT (v)--() \
     RETURN v;
 
-MATCH (v:player)--(v2) \
+MATCH (v:`player`)--(v2) \
     WHERE id(v2) IN ["player101", "player102"] \
     RETURN v;
 

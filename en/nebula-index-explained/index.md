@@ -33,12 +33,12 @@ Not all of the queries relied on index, here are some examples, let's call them 
 #### Queries relying on Nebula Graph Index
 
 # query 0 pure-property-condition-start query
-LOOKUP ON tag1 WHERE col1 > 1 AND col2 == "foo" \
-    YIELD tag1.col1 as col1, tag1.col3 as col3;
+LOOKUP ON `tag1` WHERE col1 > 1 AND col2 == "foo" \
+    YIELD `tag1`.col1 as col1, `tag1`.col3 as col3;
 
 # query 1 pure-property-condition-start query
-MATCH (v:player { name: 'Tim Duncan' })-->(v2:player) \
-        RETURN v2.player.name AS Name;
+MATCH (v:`player` { name: 'Tim Duncan' })-->(v2:`player`) \
+        RETURN v2.`player`.name AS Name;
 ```
 
 In both `query 0` and `query 1`, the pattern is to "Find VID/EDGE only based on given the propertiy condtions". On the contrary, the starting point are VertexID based instead in `query 2` and `query 3`:
@@ -56,9 +56,9 @@ GO FROM "player100" OVER follow REVERSELY \
 
 # query 3, walk query starting from given vertex VID: "player101" or "player102"
 
-MATCH (v:player { name: 'Tim Duncan' })--(v2) \
+MATCH (v:`player` { name: 'Tim Duncan' })--(v2) \
         WHERE id(v2) IN ["player101", "player102"] \
-        RETURN v2.player.name AS Name;
+        RETURN v2.`player`.name AS Name;
 ```
 
 If we look into `query 1` and `query 3`, which shared condition on vertex on `tag:player` are both `{ name: 'Tim Duncan' }` though, they are differenciated in starting points:
@@ -89,9 +89,9 @@ The reason is Nebula Graph stores data in a distributed and graph-oriented way, 
 >
 > ```cypher
 > # sample vertex
-> MATCH (v:team) RETURN v LIMIT 3
+> MATCH (v:`team`) RETURN v LIMIT 3
 > # or sample edge
-> MATCH ()-[e:follow]->() RETURN e LIMIT 3
+> MATCH ()-[e:`follow`]->() RETURN e LIMIT 3
 > ```
 
 ### Why starting point only
@@ -123,8 +123,8 @@ To understand more details/limitations/cost of Nebula, let's reveal more on its 
   - `LOOKUP ON t YIELD t.name | LIMIT 1`
 
   - ```cypher
-    MATCH (v:player { name: 'Tim Duncan' })-->(v2:player) \
-            RETURN v2.player.name AS Name LIMIT 3;
+    MATCH (v:`player` { name: 'Tim Duncan' })-->(v2:`player`) \
+            RETURN v2.`player`.name AS Name LIMIT 3;
     ```
 
 The key info can be seen from one of my [sketch notes](https://www.siwei.io/en/sketch-notes/):
@@ -177,8 +177,8 @@ We should always refer to the [documentation](https://docs.nebula-graph.io/3.1.0
 - Queries levering index could be LOOKUP, and with the pipeline, in most cases we will do follow-up graph-walk queries like:
 
   ```sql
-  LOOKUP ON player \
-    WHERE player.name == "Kobe Bryant"\
+  LOOKUP ON `player` \
+    WHERE `player`.name == "Kobe Bryant"\
     YIELD id(vertex) AS VertexID, properties(vertex).name AS name |\
     GO FROM $-.VertexID OVER serve \
     YIELD $-.name, properties(edge).start_year, properties(edge).end_year, properties($$).name;
@@ -187,8 +187,8 @@ We should always refer to the [documentation](https://docs.nebula-graph.io/3.1.0
 - Or in MATCH query like this, under the hood, v will be searched on index and v2 will be walked by default graph data structure without involving index.
 
   ```cypher
-  MATCH (v:player{name:"Tim Duncan"})-->(v2:player) \
-    RETURN v2.player.name AS Name;
+  MATCH (v:`player`{name:"Tim Duncan"})-->(v2:`player`) \
+    RETURN v2.`player`.name AS Name;
   ```
 
 
