@@ -639,7 +639,30 @@ while resp.has_next():
 - NebulaGraph 底层存储接口的暴露在 K8s 中可以利用 APISIX Stream Proxy 和 SNI 来优雅实现；
 - 利用 API 网关对出口传输层的加密是一个很好的选择，相较于用 NebulaGraph 原生的 TLS 的方式。
 
+## 一些坑
 
+- 发现 fbthrift python 并不支持 发送 extend host name（SNI），https://github.com/vesoft-inc/nebula-python/pull/238 ，写了 PR 去做支持，这时候 APISIX 中的报错是 `failed to find SNI: `
+
+  ```log
+  2022/11/15 10:18:26 [error] 78#78: *1744270 stream [lua] init.lua:842: stream_ssl_phase(): failed to fetch ssl config: failed to find SNI: 
+  please check if the client requests via IP or uses an outdated protocol. If you need to report an issue, provide a packet capture file of the TLS handshake., context: 
+  ssl_certificate_by_lua*, client: 172.17.0.1, server: 0.0.0.0:9779
+  ```
+
+  参考：
+
+  - https://docs.python.org/3/library/ssl.html#ssl.SSLContext.sslsocket_class
+  - https://github.com/apache/thrift/commit/937228e030569bf25ceb379c9491426709792701 
+  - https://github.com/apache/thrift/pull/894
+  - https://github.com/apache/thrift/blob/e8353cb46e9f5e71f9b76f55d6bf59530b7f98ef/lib/py/src/transport/TSSLSocket.py#L184
+
+- 发现 APISIX stream 里边不解析上游 node 域名，我查了所有一溜的 dns 都没有问题，去提了 issue 才知道是已知问题：https://github.com/apache/apisix/issues/8334，只好先手配 `IP:Port` 作罢。
+
+  ```log
+  2022/11/15 12:26:59 [error] 44#44: *9538531 stream [lua] resolver.lua:47: parse_domain(): failed to parse domain: nebula-storaged-0.nebula-storaged-headless.default.svc.cluster.local, error: failed to query the DNS server: dns client error: 101 empty record received while prereading client data, client: 172.17.0.1, server: 0.0.0.0:9779
+  2022/11/15 12:26:59 [error] 44#44: *9538531 stream [lua] upstream.lua:79: parse_domain_for_nodes(): dns resolver domain: nebula-storaged-0.nebula-storaged-headless.default.svc.cluster.local error: failed to query the DNS server: dns client error: 101 empty record received while prereading client data, client: 172.17.0.1, server: 0.0.0.0:9779
+  2022/11/15 12:26:59 [error] 44#44: *9538531 stream [lua] init.lua:965: stream_preread_phase(): failed to set upstream: no valid upstream node while prereading client data, client: 172.17.0.1, server: 0.0.0.0:9779
+  ```
 
 > 题图版权 [Lars](https://unsplash.com/photos/IlxX7xnbRF8) 
 

@@ -987,6 +987,46 @@
 <li>NebulaGraph 底层存储接口的暴露在 K8s 中可以利用 APISIX Stream Proxy 和 SNI 来优雅实现；</li>
 <li>利用 API 网关对出口传输层的加密是一个很好的选择，相较于用 NebulaGraph 原生的 TLS 的方式。</li>
 </ul>
+<h2 id="一些坑" class="headerLink">
+    <a href="#%e4%b8%80%e4%ba%9b%e5%9d%91" class="header-mark"></a>6 一些坑</h2><ul>
+<li>
+<p>发现 fbthrift python 并不支持 发送 extend host name（SNI），https://github.com/vesoft-inc/nebula-python/pull/238 ，写了 PR 去做支持，这时候 APISIX 中的报错是 <code>failed to find SNI: </code></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">2022/11/15 10:18:26 [error] 78#78: *1744270 stream [lua] init.lua:842: stream_ssl_phase(): failed to fetch ssl config: failed to find SNI: 
+</span></span><span class="line"><span class="cl">please check if the client requests via IP or uses an outdated protocol. If you need to report an issue, provide a packet capture file of the TLS handshake., context: 
+</span></span><span class="line"><span class="cl">ssl_certificate_by_lua*, client: 172.17.0.1, server: 0.0.0.0:9779
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>参考：</p>
+<ul>
+<li><a href="https://docs.python.org/3/library/ssl.html#ssl.SSLContext.sslsocket_class" target="_blank" rel="noopener noreferrer">https://docs.python.org/3/library/ssl.html#ssl.SSLContext.sslsocket_class</a></li>
+<li><a href="https://github.com/apache/thrift/commit/937228e030569bf25ceb379c9491426709792701" target="_blank" rel="noopener noreferrer">https://github.com/apache/thrift/commit/937228e030569bf25ceb379c9491426709792701</a></li>
+<li><a href="https://github.com/apache/thrift/pull/894" target="_blank" rel="noopener noreferrer">https://github.com/apache/thrift/pull/894</a></li>
+<li><a href="https://github.com/apache/thrift/blob/e8353cb46e9f5e71f9b76f55d6bf59530b7f98ef/lib/py/src/transport/TSSLSocket.py#L184" target="_blank" rel="noopener noreferrer">https://github.com/apache/thrift/blob/e8353cb46e9f5e71f9b76f55d6bf59530b7f98ef/lib/py/src/transport/TSSLSocket.py#L184</a></li>
+</ul>
+</li>
+<li>
+<p>发现 APISIX stream 里边不解析上游 node 域名，我查了所有一溜的 dns 都没有问题，去提了 issue 才知道是已知问题：https://github.com/apache/apisix/issues/8334，只好先手配 <code>IP:Port</code> 作罢。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">2022/11/15 12:26:59 [error] 44#44: *9538531 stream [lua] resolver.lua:47: parse_domain(): failed to parse domain: nebula-storaged-0.nebula-storaged-headless.default.svc.cluster.local, error: failed to query the DNS server: dns client error: 101 empty record received while prereading client data, client: 172.17.0.1, server: 0.0.0.0:9779
+</span></span><span class="line"><span class="cl">2022/11/15 12:26:59 [error] 44#44: *9538531 stream [lua] upstream.lua:79: parse_domain_for_nodes(): dns resolver domain: nebula-storaged-0.nebula-storaged-headless.default.svc.cluster.local error: failed to query the DNS server: dns client error: 101 empty record received while prereading client data, client: 172.17.0.1, server: 0.0.0.0:9779
+</span></span><span class="line"><span class="cl">2022/11/15 12:26:59 [error] 44#44: *9538531 stream [lua] init.lua:965: stream_preread_phase(): failed to set upstream: no valid upstream node while prereading client data, client: 172.17.0.1, server: 0.0.0.0:9779
+</span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+</ul>
 <blockquote>
 <p>题图版权 <a href="https://unsplash.com/photos/IlxX7xnbRF8" target="_blank" rel="noopener noreferrer">Lars</a></p>
 </blockquote>]]></description>
