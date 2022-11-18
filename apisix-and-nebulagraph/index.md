@@ -1,7 +1,7 @@
 # NebulaGraph 的云原生 API 网关最佳实践
 
 
-> 本文介绍了利用开源 API 网关 APISIX 加速 NebulaGraph 多个场景的落地最佳实践：负载均衡、暴露存储结构与TLS Termination。
+> 本文介绍了利用开源 API 网关 APISIX 加速 NebulaGraph 多个场景的落地最佳实践：负载均衡、暴露接口结构与 TLS Termination。
 
 <!--more-->
 
