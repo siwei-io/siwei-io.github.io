@@ -652,31 +652,33 @@
 <p>注意，当下，APISIX 的 stream-proxy 上游节点不支持域名解析，是首先于上游的 lua 库，详见我报的 issue：https://github.com/apache/apisix/issues/8334 ，理想情况下，我们这里应该给出每一个 storaged 的 SNI 相同的地址作为 <code>upstream.nodes</code>，好像：</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">kubectl <span class="nb">exec</span> -it <span class="nv">$apisix_pod</span> -- <span class="se">\
-</span></span></span></code></pre></td></tr></table>
-</div>
-</div></blockquote>
-<pre><code>curl http://127.0.0.1:9180/apisix/admin/stream_routes/1 \
--H &quot;X-API-KEY: $apisix_api_key&quot; -X PUT -d \
-</code></pre>
-<p>&lsquo;{
-&ldquo;sni&rdquo;: &ldquo;nebula-storaged-0.nebula-storaged-headless.default.svc.cluster.local&rdquo;,
-&ldquo;upstream&rdquo;: {
-&ldquo;nodes&rdquo;: {
-&ldquo;nebula-storaged-0.nebula-storaged-headless.default.svc.cluster.local&rdquo;: 1
-},
-&ldquo;type&rdquo;: &ldquo;roundrobin&rdquo;
-}
-}&rsquo;</p>
-<blockquote>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"></code></pre></td></tr></table>
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    curl http://127.0.0.1:9180/apisix/admin/stream_routes/1 <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    -H <span class="s2">&#34;X-API-KEY: </span><span class="nv">$apisix_api_key</span><span class="s2">&#34;</span> -X PUT -d <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span><span class="s1">&#39;{
+</span></span></span><span class="line"><span class="cl"><span class="s1">    &#34;sni&#34;: &#34;nebula-storaged-0.nebula-storaged-headless.default.svc.cluster.local&#34;,
+</span></span></span><span class="line"><span class="cl"><span class="s1">    &#34;upstream&#34;: {
+</span></span></span><span class="line"><span class="cl"><span class="s1">        &#34;nodes&#34;: {
+</span></span></span><span class="line"><span class="cl"><span class="s1">            &#34;nebula-storaged-0.nebula-storaged-headless.default.svc.cluster.local&#34;: 1
+</span></span></span><span class="line"><span class="cl"><span class="s1">        },
+</span></span></span><span class="line"><span class="cl"><span class="s1">        &#34;type&#34;: &#34;roundrobin&#34;
+</span></span></span><span class="line"><span class="cl"><span class="s1">    }
+</span></span></span><span class="line"><span class="cl"><span class="s1">}&#39;</span>
+</span></span></code></pre></td></tr></table>
 </div>
 </div></blockquote>
 <h4 id="配置-apisix-中-storaged-地址的-tls-证书" class="headerLink">

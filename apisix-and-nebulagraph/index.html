@@ -10,7 +10,7 @@
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://siwei.io/apisix-and-nebulagraph/" /><meta property="og:image" content="https://siwei.io/apisix-and-nebulagraph/featured-image.png"/><meta property="article:section" content="posts" />
 <meta property="article:published_time" content="2022-11-16T17:24:42+08:00" />
-<meta property="article:modified_time" content="2022-11-17T23:47:55+08:00" /><meta property="og:site_name" content="siwei.io" />
+<meta property="article:modified_time" content="2022-11-18T09:52:18+08:00" /><meta property="og:site_name" content="siwei.io" />
 
 <meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:image" content="https://siwei.io/apisix-and-nebulagraph/featured-image.png"/>
@@ -36,8 +36,8 @@
         "mainEntityOfPage": {
             "@type": "WebPage",
             "@id": "https:\/\/siwei.io\/apisix-and-nebulagraph\/"
-        },"image": ["https:\/\/siwei.io\/images\/site-feature-image.webp"],"genre": "posts","keywords": "Nebula Graph, API Gateway, 云原生, k8s","wordcount":  7813 ,
-        "url": "https:\/\/siwei.io\/apisix-and-nebulagraph\/","datePublished": "2022-11-16T17:24:42+08:00","dateModified": "2022-11-17T23:47:55+08:00","publisher": {
+        },"image": ["https:\/\/siwei.io\/images\/site-feature-image.webp"],"genre": "posts","keywords": "Nebula Graph, API Gateway, 云原生, k8s","wordcount":  7824 ,
+        "url": "https:\/\/siwei.io\/apisix-and-nebulagraph\/","datePublished": "2022-11-16T17:24:42+08:00","dateModified": "2022-11-18T09:52:18+08:00","publisher": {
             "@type": "Organization",
             "name": "Wey Gu","logo": "https:\/\/siwei.io\/images\/site-feature-image.webp"},"author": {
                 "@type": "Person",
@@ -178,7 +178,7 @@
             <div class="post-meta-line">
                 <span class="post-author"><i class="author fas fa-user-circle fa-fw"></i><a href="https://siwei.io" title="Author" target="_blank" rel="noopener noreferrer author" class="author">Wey Gu</a>
                 </span>&nbsp;<span class="post-category">收录于 </span>&nbsp;<span class="post-category">类别 <a href="/categories/nebula-graph/"><i class="far fa-folder fa-fw"></i>Nebula Graph</a></span></div>
-            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime="2022-11-16">2022-11-16</time>&nbsp;<i class="far fa-edit fa-fw"></i>&nbsp;<time datetime="2022-11-17">2022-11-17</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;约 7813 字&nbsp;
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime="2022-11-16">2022-11-16</time>&nbsp;<i class="far fa-edit fa-fw"></i>&nbsp;<time datetime="2022-11-18">2022-11-18</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;约 7824 字&nbsp;
                 <i class="far fa-clock fa-fw"></i>&nbsp;预计阅读 16 分钟&nbsp;</div>
         </div><div class="featured-image"><img
         class="lazyload"
@@ -875,31 +875,33 @@
 <p>注意，当下，APISIX 的 stream-proxy 上游节点不支持域名解析，是首先于上游的 lua 库，详见我报的 issue：https://github.com/apache/apisix/issues/8334 ，理想情况下，我们这里应该给出每一个 storaged 的 SNI 相同的地址作为 <code>upstream.nodes</code>，好像：</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">kubectl <span class="nb">exec</span> -it <span class="nv">$apisix_pod</span> -- <span class="se">\
-</span></span></span></code></pre></td></tr></table>
-</div>
-</div></blockquote>
-<pre><code>curl http://127.0.0.1:9180/apisix/admin/stream_routes/1 \
--H &quot;X-API-KEY: $apisix_api_key&quot; -X PUT -d \
-</code></pre>
-<p>&lsquo;{
-&ldquo;sni&rdquo;: &ldquo;nebula-storaged-0.nebula-storaged-headless.default.svc.cluster.local&rdquo;,
-&ldquo;upstream&rdquo;: {
-&ldquo;nodes&rdquo;: {
-&ldquo;nebula-storaged-0.nebula-storaged-headless.default.svc.cluster.local&rdquo;: 1
-},
-&ldquo;type&rdquo;: &ldquo;roundrobin&rdquo;
-}
-}&rsquo;</p>
-<blockquote>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"></code></pre></td></tr></table>
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    curl http://127.0.0.1:9180/apisix/admin/stream_routes/1 <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    -H <span class="s2">&#34;X-API-KEY: </span><span class="nv">$apisix_api_key</span><span class="s2">&#34;</span> -X PUT -d <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span><span class="s1">&#39;{
+</span></span></span><span class="line"><span class="cl"><span class="s1">    &#34;sni&#34;: &#34;nebula-storaged-0.nebula-storaged-headless.default.svc.cluster.local&#34;,
+</span></span></span><span class="line"><span class="cl"><span class="s1">    &#34;upstream&#34;: {
+</span></span></span><span class="line"><span class="cl"><span class="s1">        &#34;nodes&#34;: {
+</span></span></span><span class="line"><span class="cl"><span class="s1">            &#34;nebula-storaged-0.nebula-storaged-headless.default.svc.cluster.local&#34;: 1
+</span></span></span><span class="line"><span class="cl"><span class="s1">        },
+</span></span></span><span class="line"><span class="cl"><span class="s1">        &#34;type&#34;: &#34;roundrobin&#34;
+</span></span></span><span class="line"><span class="cl"><span class="s1">    }
+</span></span></span><span class="line"><span class="cl"><span class="s1">}&#39;</span>
+</span></span></code></pre></td></tr></table>
 </div>
 </div></blockquote>
 <h4 id="配置-apisix-中-storaged-地址的-tls-证书" class="headerLink">
@@ -1339,8 +1341,8 @@
     <div class="post-info">
         <div class="post-info-line">
             <div class="post-info-mod">
-                <span>更新于 2022-11-17&nbsp;<a class="git-hash" href="github.com/siwei-io/siwei-io.github.io/commit/0070e575b7e97eabcbdd3a70189d48aafb24ba53" target="_blank" title="commit by wey-gu(1651790&#43;wey-gu@users.noreply.github.com) 0070e575b7e97eabcbdd3a70189d48aafb24ba53: add apisix notes" rel="noopener noreferrer">
-                                    <i class="fas fa-hashtag fa-fw"></i>0070e57</a></span>
+                <span>更新于 2022-11-18&nbsp;<a class="git-hash" href="github.com/siwei-io/siwei-io.github.io/commit/7197b05e748275edfb19025b93daaf90ec2a942a" target="_blank" title="commit by wey-gu(1651790&#43;wey-gu@users.noreply.github.com) 7197b05e748275edfb19025b93daaf90ec2a942a: typo fix" rel="noopener noreferrer">
+                                    <i class="fas fa-hashtag fa-fw"></i>7197b05</a></span>
             </div>
             <div class="post-info-license"></div>
         </div>
