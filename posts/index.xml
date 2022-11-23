@@ -5,1034 +5,6 @@
         <description>所有文章 | siwei.io</description>
         <generator>Hugo -- gohugo.io</generator><language>zh-CN</language><managingEditor>weyl.gu@gmail.com (Wey Gu)</managingEditor>
             <webMaster>weyl.gu@gmail.com (Wey Gu)</webMaster><lastBuildDate>Wed, 16 Nov 2022 17:24:42 &#43;0800</lastBuildDate><atom:link href="https://siwei.io/posts/" rel="self" type="application/rss+xml" /><item>
-    <title>NebulaGraph 的云原生 API 网关最佳实践</title>
-    <link>https://siwei.io/apisix-and-nebulagraph/</link>
-    <pubDate>Wed, 16 Nov 2022 17:24:42 &#43;0800</pubDate><author>
-        <name>Wey Gu</name>
-    </author><guid>https://siwei.io/apisix-and-nebulagraph/</guid>
-    <description><![CDATA[<div class="featured-image">
-                <img src="/apisix-and-nebulagraph/featured-image.webp" referrerpolicy="no-referrer">
-            </div><blockquote>
-<p>本文介绍了利用开源 API 网关 APISIX 加速 NebulaGraph 多个场景的落地最佳实践：负载均衡、暴露接口结构与 TLS Termination。</p>
-</blockquote>
-<!--
-
-[TOC]
-
--->
-<h2 id="api-网关介绍" class="headerLink">
-    <a href="#api-%e7%bd%91%e5%85%b3%e4%bb%8b%e7%bb%8d" class="header-mark"></a>1 API 网关介绍</h2><h3 id="什么是-api-网关" class="headerLink">
-    <a href="#%e4%bb%80%e4%b9%88%e6%98%af-api-%e7%bd%91%e5%85%b3" class="header-mark"></a>1.1 什么是 API 网关</h3><p>API 网关是它位于客户端和服务器之间的“中间人”，用于管理、监控和保护 API。它可以在 API 之前执行一些操作，例如身份验证、授权、缓存、日志记录、审计、流量控制、安全、防火墙、压缩、解压缩、加密、解密等。</p>
-<p>API 网关可以工作在 4 层和 7 层。跑在 7 层的API 网关可以使用多种协议，例如 HTTP、HTTPS、WebSocket、gRPC、MQTT 等，在这些应用层协议中做一些操作，例如请求重写、请求转发、请求合并、请求重试、请求缓存、请求限流、请求熔断、请求降级、请求鉴权、请求监控、请求日志、请求审计、请求转发等等。</p>
-<p>这里举例一下借助 API 网关可以做的具体的事儿吧：</p>
-<ul>
-<li>我们可以在网关层增加认证层，比如 JWT 认证、OAuth2 认证、OpenID 认证等等，这样则不需要在每个服务中都做具体的认证集成工作，这可以节省非常多的开发成本。</li>
-<li>我们可以借助网关给跳板机 SSH 流量增加无需客户端修改的复杂认证，比如跳转任何客户端的 SSH 登录，给出一个网址或者输入框，引导登陆者通过网页的 SSO 认证（包含多因素认证），然后再通过网关转发到 SSH 服务。</li>
-<li>我们甚至可以在网关层做 Serverless 数据库！TiDB 社区的同学们就在做这个事儿，他们从普通的 MySQL 客户端的登录请求中解析能推断出转到需要的 TiDB 示例的信息，并且在需要 cold start 唤醒实例的时候把连接保持住，可以参考这篇文章：<a href="https://disksing.com/tidb-gateway/" target="_blank" rel="noopener noreferrer">TiDB Gateway</a>。</li>
-<li>如果我们特别惨在维护一些屎山项目，不得不针对旧版本的应用程序对新版本的服务端进行兼容，这时候 API 网关也可以通过一些请求重写，把旧版本的请求转换成新版本的请求。</li>
-</ul>
-<p>只要脑洞大，理论上API 的网关可以做很多很多事儿，显然，不是所有的事情都是适合在这一层面去做的，通常那些比较通用的事情才适合在这一层面去做，这里我只是给出一些典型和极端的具体例子。</p>
-<h3 id="apache-apisix" class="headerLink">
-    <a href="#apache-apisix" class="header-mark"></a>1.2 Apache APISIX</h3><p>API 网关是从 LB、Reverse Proxy 项目演进过来的，随着云原生的兴起，API 网关也逐渐成为了云原生的一部分，流行的开源的网关就有很多：</p>
-<ul>
-<li><a href="github.com/nginx/nginx" rel="">Nginx</a></li>
-<li><a href="github.com/apache/apisix" rel="">Apache APISIX</a></li>
-<li><a href="github.com/Kong/kong" rel="">Kong</a></li>
-<li><a href="github.com/luraproject/lura" rel="">Lura</a></li>
-<li><a href="github.com/openresty/openresty" rel="">OpenResty</a></li>
-<li><a href="github.com/TykTechnologies/tyk" rel="">Tyk</a></li>
-<li><a href="github.com/traefik/traefik" rel="">Traefik</a></li>
-<li><a href="github.com/istio/istio" rel="">Istio</a></li>
-<li><a href="github.com/envoyproxy/envoy" rel="">Envoy</a></li>
-</ul>
-<p>而且其中很多都是基于 Nginx/OpenResty 的下游项目，这里就以 Apache APISIX 为例，介绍一下 NebulaGraph 借助 API 网关的几个实践。</p>
-<h2 id="nebulagraph-介绍" class="headerLink">
-    <a href="#nebulagraph-%e4%bb%8b%e7%bb%8d" class="header-mark"></a>2 NebulaGraph 介绍</h2><p>NebulaGraph 是一个开源的分布式图数据库，它的特点是：</p>
-<ul>
-<li>高性能：NebulaGraph 的性能可以达到每秒百万级的读写，具有极高的扩展性，在千亿点万亿边的规模上支持毫秒级的查询。</li>
-<li>易扩展：NebulaGraph 的架构是分布式的，可以在多台机器上扩展，每台机器上可以运行多个服务进程，它的查询层是无状态的计算存储分离架构，我们可以很容易引入不同配置、不通类型的计算层，实现同一集群上 TP、AP、 图计算等不同负载的混合查询。</li>
-<li>易使用：NebulaGraph 的原生查询语言是类 SQL 的，易于学习和使用，同时支持 OpenCypher。</li>
-<li>丰富生态：NebulaGraph 的生态系统正在不断壮大，目前已经有了多个客户端，包括 Java、Python、Go、C++、JavaScript、Spark、Flink 等，同时也有了多个可视化工具，包括 NebulaGraph Studio、Nebula Dashboard、Nebula Explorer 等。</li>
-</ul>
-<h2 id="本文讨论的问题" class="headerLink">
-    <a href="#%e6%9c%ac%e6%96%87%e8%ae%a8%e8%ae%ba%e7%9a%84%e9%97%ae%e9%a2%98" class="header-mark"></a>3 本文讨论的问题</h2><p>本文给出了基于 NebulaGraph 集群应用中涉及到 API 网关的几个场景。</p>
-<ul>
-<li>查询接口的负载均衡</li>
-<li>底层存储接口的暴露</li>
-<li>传输层的加密</li>
-</ul>
-<h3 id="查询接口负载均衡" class="headerLink">
-    <a href="#%e6%9f%a5%e8%af%a2%e6%8e%a5%e5%8f%a3%e8%b4%9f%e8%bd%bd%e5%9d%87%e8%a1%a1" class="header-mark"></a>3.1 查询接口负载均衡</h3><p>首先是图数据库查询接口（GraphD）的负载均衡与高可用的问题。</p>
-<p>NebulaGraph 内核由三种服务组成：GraphD、MetaD 和 StorageD：</p>
-<p><a class="lightgallery" href="https://docs-cdn.nebula-graph.com.cn/figures/nebula-graph-architecture_3.png" title="https://docs-cdn.nebula-graph.com.cn/figures/nebula-graph-architecture_3.png" data-thumbnail="https://docs-cdn.nebula-graph.com.cn/figures/nebula-graph-architecture_3.png">
-        
-    </a></p>
-<p>所以，在默认情况下，集群只会暴露 GraphD 的接口，提供给客户端连接，执行 nGQL 的查询。</p>
-<p>这其中，GraphD 是无状态的，这意味着我们可以在多个 GraphD 之间做负载均衡。这里，我们有两种方法：基于客户端的（Client-Side LB），与基于代理的。</p>
-<h4 id="客户端的负载均衡" class="headerLink">
-    <a href="#%e5%ae%a2%e6%88%b7%e7%ab%af%e7%9a%84%e8%b4%9f%e8%bd%bd%e5%9d%87%e8%a1%a1" class="header-mark"></a>3.1.1 客户端的负载均衡</h4><p>客户端的负载均衡，就是在客户端，也就是应用程序中，实现负载均衡的逻辑，NebulaGraph 的各个语言的客户端里边已经内置了简单的轮询（Round-Robin）负载均衡，我们只需要在客户端配置多个 GraphD 的地址就可以了：</p>
-<p>比如我们在创建连接池的时候，指定了两个不同的 GraphD 的地址（对应不同进程实例）：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span><span class="lnt">7
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">nebula3.gclient.net</span> <span class="kn">import</span> <span class="n">ConnectionPool</span>
-</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">nebula3.Config</span> <span class="kn">import</span> <span class="n">Config</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">config</span> <span class="o">=</span> <span class="n">Config</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl"><span class="n">config</span><span class="o">.</span><span class="n">max_connection_pool_size</span> <span class="o">=</span> <span class="mi">10</span>
-</span></span><span class="line"><span class="cl"><span class="n">connection_pool</span> <span class="o">=</span> <span class="n">ConnectionPool</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl"><span class="n">connection_pool</span><span class="o">.</span><span class="n">init</span><span class="p">([(</span><span class="s1">&#39;127.0.0.1&#39;</span><span class="p">,</span> <span class="mi">9669</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;127.0.0.1&#39;</span><span class="p">,</span> <span class="mi">49433</span><span class="p">)],</span> <span class="n">config</span><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>我们在取得连接的时候，就会从连接池中随机取得一个连接：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span><span class="lnt">7
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">In</span> <span class="p">[</span><span class="mi">10</span><span class="p">]:</span> <span class="n">connection0</span> <span class="o">=</span> <span class="n">connection_pool</span><span class="o">.</span><span class="n">get_connection</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">In</span> <span class="p">[</span><span class="mi">11</span><span class="p">]:</span> <span class="n">connection1</span> <span class="o">=</span> <span class="n">connection_pool</span><span class="o">.</span><span class="n">get_connection</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="c1"># 这两个连接的 GraphD 地址是不同的</span>
-</span></span><span class="line"><span class="cl"><span class="n">In</span> <span class="p">[</span><span class="mi">12</span><span class="p">]:</span> <span class="n">connection0</span><span class="o">.</span><span class="n">_port</span><span class="p">,</span> <span class="n">connection1</span><span class="o">.</span><span class="n">_port</span>
-</span></span><span class="line"><span class="cl"><span class="n">Out</span><span class="p">[</span><span class="mi">12</span><span class="p">]:</span> <span class="p">(</span><span class="mi">9669</span><span class="p">,</span> <span class="mi">49433</span><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>这种客户端的负载均衡的问题在于它的配置、实现细节与应用代码耦合在一起，如果我们需要修改负载均衡的策略，就需要修改应用代码，这样就会增加应用的复杂度。</p>
-<h4 id="代理的负载均衡" class="headerLink">
-    <a href="#%e4%bb%a3%e7%90%86%e7%9a%84%e8%b4%9f%e8%bd%bd%e5%9d%87%e8%a1%a1" class="header-mark"></a>3.1.2 代理的负载均衡</h4><p>基于代理的负载均衡，就是在应用程序之前，增加一个代理层，来实现负载均衡的逻辑，这样应用程序就不需要关心负载均衡的问题了。在 k8s 里的话，我们可以使用 k8s 的 Service 来实现这个代理层。</p>
-<p>这是一个在 Minikube 中为 NebulaGraph 集群中 GraphD 创建的 Service：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
-</span><span class="lnt">28
-</span><span class="lnt">29
-</span><span class="lnt">30
-</span><span class="lnt">31
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">cat <span class="s">&lt;&lt;EOF | kubectl create -f -
-</span></span></span><span class="line"><span class="cl"><span class="s">apiVersion: v1
-</span></span></span><span class="line"><span class="cl"><span class="s">kind: Service
-</span></span></span><span class="line"><span class="cl"><span class="s">metadata:
-</span></span></span><span class="line"><span class="cl"><span class="s">  labels:
-</span></span></span><span class="line"><span class="cl"><span class="s">    app.kubernetes.io/cluster: nebula
-</span></span></span><span class="line"><span class="cl"><span class="s">    app.kubernetes.io/component: graphd
-</span></span></span><span class="line"><span class="cl"><span class="s">    app.kubernetes.io/managed-by: nebula-operator
-</span></span></span><span class="line"><span class="cl"><span class="s">    app.kubernetes.io/name: nebula-graph
-</span></span></span><span class="line"><span class="cl"><span class="s">  name: nebula-graphd-svc-nodeport
-</span></span></span><span class="line"><span class="cl"><span class="s">  namespace: default
-</span></span></span><span class="line"><span class="cl"><span class="s">spec:
-</span></span></span><span class="line"><span class="cl"><span class="s">  externalTrafficPolicy: Local
-</span></span></span><span class="line"><span class="cl"><span class="s">  ports:
-</span></span></span><span class="line"><span class="cl"><span class="s">  - name: thrift
-</span></span></span><span class="line"><span class="cl"><span class="s">    port: 9669
-</span></span></span><span class="line"><span class="cl"><span class="s">    protocol: TCP
-</span></span></span><span class="line"><span class="cl"><span class="s">    targetPort: 9669
-</span></span></span><span class="line"><span class="cl"><span class="s">    nodePort: 30000
-</span></span></span><span class="line"><span class="cl"><span class="s">  - name: http
-</span></span></span><span class="line"><span class="cl"><span class="s">    port: 19669
-</span></span></span><span class="line"><span class="cl"><span class="s">    protocol: TCP
-</span></span></span><span class="line"><span class="cl"><span class="s">    targetPort: 19669
-</span></span></span><span class="line"><span class="cl"><span class="s">    nodePort: 30001
-</span></span></span><span class="line"><span class="cl"><span class="s">  selector:
-</span></span></span><span class="line"><span class="cl"><span class="s">    app.kubernetes.io/cluster: nebula
-</span></span></span><span class="line"><span class="cl"><span class="s">    app.kubernetes.io/component: graphd
-</span></span></span><span class="line"><span class="cl"><span class="s">    app.kubernetes.io/managed-by: nebula-operator
-</span></span></span><span class="line"><span class="cl"><span class="s">    app.kubernetes.io/name: nebula-graph
-</span></span></span><span class="line"><span class="cl"><span class="s">  type: NodePort
-</span></span></span><span class="line"><span class="cl"><span class="s">EOF</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>创建了它之后，我们就可以通过它暴露的单独端口来访问 NebulaGraph 集群中的 GraphD 了：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">In</span> <span class="p">[</span><span class="mi">13</span><span class="p">]:</span> <span class="n">connection_pool</span> <span class="o">=</span> <span class="n">ConnectionPool</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">    <span class="o">...</span><span class="p">:</span> <span class="n">connection_pool</span><span class="o">.</span><span class="n">init</span><span class="p">([(</span><span class="s1">&#39;192.168.49.2&#39;</span><span class="p">,</span> <span class="mi">9669</span><span class="p">)],</span> <span class="n">config</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="n">Out</span><span class="p">[</span><span class="mi">13</span><span class="p">]:</span> <span class="kc">True</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">In</span> <span class="p">[</span><span class="mi">14</span><span class="p">]:</span> <span class="n">connection0</span> <span class="o">=</span> <span class="n">connection_pool</span><span class="o">.</span><span class="n">get_connection</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">In</span> <span class="p">[</span><span class="mi">15</span><span class="p">]:</span> <span class="n">connection1</span> <span class="o">=</span> <span class="n">connection_pool</span><span class="o">.</span><span class="n">get_connection</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">In</span> <span class="p">[</span><span class="mi">16</span><span class="p">]:</span> <span class="n">connection0</span><span class="o">.</span><span class="n">_ip</span><span class="p">,</span> <span class="n">connection1</span><span class="o">.</span><span class="n">_ip</span>
-</span></span><span class="line"><span class="cl"><span class="n">Out</span><span class="p">[</span><span class="mi">16</span><span class="p">]:</span> <span class="p">(</span><span class="s1">&#39;192.168.49.2&#39;</span><span class="p">,</span> <span class="s1">&#39;192.168.49.2&#39;</span><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>可以看到，在连接层面上来看，客户端只知道代理的地址，而不知道 NebulaGraph 集群中的 GraphD 的地址，这样就实现了客户端与 NebulaGraph 集群中的 GraphD 的解耦。</p>
-<p>然而，当我们在 connection 之上创建 session 的时候，就能看到实际上客户端的不同请求是落在了不同的 GraphD 上的：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">In</span> <span class="p">[</span><span class="mi">17</span><span class="p">]:</span> <span class="n">session</span> <span class="o">=</span> <span class="n">connection_pool</span><span class="o">.</span><span class="n">get_session</span><span class="p">(</span><span class="s1">&#39;root&#39;</span><span class="p">,</span> <span class="s1">&#39;nebula&#39;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">In</span> <span class="p">[</span><span class="mi">18</span><span class="p">]:</span> <span class="n">session</span><span class="o">.</span><span class="n">_session_id</span>
-</span></span><span class="line"><span class="cl"><span class="n">Out</span><span class="p">[</span><span class="mi">18</span><span class="p">]:</span> <span class="mi">1668670607568178</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">In</span> <span class="p">[</span><span class="mi">19</span><span class="p">]:</span> <span class="n">session1</span> <span class="o">=</span> <span class="n">connection_pool</span><span class="o">.</span><span class="n">get_session</span><span class="p">(</span><span class="s1">&#39;root&#39;</span><span class="p">,</span> <span class="s1">&#39;nebula&#39;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">In</span> <span class="p">[</span><span class="mi">20</span><span class="p">]:</span> <span class="n">session1</span><span class="o">.</span><span class="n">_session_id</span>
-</span></span><span class="line"><span class="cl"><span class="n">Out</span><span class="p">[</span><span class="mi">20</span><span class="p">]:</span> <span class="mi">1668670625563307</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="c1"># 得到每一个 session 的 ID</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">In</span> <span class="p">[</span><span class="mi">21</span><span class="p">]:</span> <span class="n">session</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&#34;SHOW SESSIONS&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="c1"># 它们分别对应了两个不同的 graphd 实例</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">Out</span><span class="p">[</span><span class="mi">21</span><span class="p">]:</span> <span class="n">ResultSet</span><span class="p">(</span><span class="n">keys</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;SessionId&#39;</span><span class="p">,</span> <span class="s1">&#39;UserName&#39;</span><span class="p">,</span> <span class="s1">&#39;SpaceName&#39;</span><span class="p">,</span> <span class="s1">&#39;CreateTime&#39;</span><span class="p">,</span> <span class="s1">&#39;UpdateTime&#39;</span><span class="p">,</span> <span class="s1">&#39;GraphAddr&#39;</span><span class="p">,</span> <span class="s1">&#39;Timezone&#39;</span><span class="p">,</span> <span class="s1">&#39;ClientIp&#39;</span><span class="p">],</span> <span class="n">values</span><span class="p">:</span> <span class="p">[</span><span class="mi">1668670607568178</span><span class="p">,</span> <span class="s2">&#34;root&#34;</span><span class="p">,</span> <span class="s2">&#34;&#34;</span><span class="p">,</span> <span class="n">utc</span> <span class="n">datetime</span><span class="p">:</span> <span class="mi">2022</span><span class="o">-</span><span class="mi">11</span><span class="o">-</span><span class="mi">17</span><span class="n">T07</span><span class="p">:</span><span class="mi">36</span><span class="p">:</span><span class="mf">47.568178</span><span class="p">,</span> <span class="n">timezone_offset</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="n">utc</span> <span class="n">datetime</span><span class="p">:</span> <span class="mi">2022</span><span class="o">-</span><span class="mi">11</span><span class="o">-</span><span class="mi">17</span><span class="n">T07</span><span class="p">:</span><span class="mi">36</span><span class="p">:</span><span class="mf">47.575303</span><span class="p">,</span> <span class="n">timezone_offset</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&#34;nebula-graphd-0.nebula-graphd-svc.default.svc.cluster.local:9669&#34;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&#34;172.17.0.1&#34;</span><span class="p">],[</span><span class="mi">1668670625563307</span><span class="p">,</span> <span class="s2">&#34;root&#34;</span><span class="p">,</span> <span class="s2">&#34;&#34;</span><span class="p">,</span> <span class="n">utc</span> <span class="n">datetime</span><span class="p">:</span> <span class="mi">2022</span><span class="o">-</span><span class="mi">11</span><span class="o">-</span><span class="mi">17</span><span class="n">T07</span><span class="p">:</span><span class="mi">37</span><span class="p">:</span><span class="mf">05.563307</span><span class="p">,</span> <span class="n">timezone_offset</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="n">utc</span> <span class="n">datetime</span><span class="p">:</span> <span class="mi">2022</span><span class="o">-</span><span class="mi">11</span><span class="o">-</span><span class="mi">17</span><span class="n">T07</span><span class="p">:</span><span class="mi">37</span><span class="p">:</span><span class="mf">03.638910</span><span class="p">,</span> <span class="n">timezone_offset</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&#34;nebula-graphd-1.nebula-graphd-svc.default.svc.cluster.local:9669&#34;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&#34;172.17.0.1&#34;</span><span class="p">])</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><h3 id="底层存储接口的暴露" class="headerLink">
-    <a href="#%e5%ba%95%e5%b1%82%e5%ad%98%e5%82%a8%e6%8e%a5%e5%8f%a3%e7%9a%84%e6%9a%b4%e9%9c%b2" class="header-mark"></a>3.2 底层存储接口的暴露</h3><p>在 NebulaGraph 中，我们可以通过 StorageClient 来访问底层的存储接口，这个接口可以用来做一些分析型、数据全扫描计算的工作。</p>
-<p>然而存储层的分布式服务实例不像 GraphD 那样，它们是有状态的，这其实与 K8s 或者 Docker Compose 的部署模型是相违背的，如果访问的应用 StorageD 客户端在集群外部，我们需要在 NebulaGraph 集群中的每一个存储实例上都部署一个代理（Service），这非常不方便，有时候还是一种浪费。</p>
-<p>此外，由于 NebulaGraph 内部服务发现机制和 StorageD 客户端的实现机制决定，每一个 storaged 服务实体都是由其内部的 <code>host:port</code> 唯一确定和寻址的，这给我们中间的代理工作也带来了一些麻烦。</p>
-<p>总结来看，我们的需求是：</p>
-<ul>
-<li>能够从集群外部访问 NebulaGraph 的存储层每一个实例</li>
-<li>每一个实例的访问地址（host:port）和内部的地址是完全一致的</li>
-</ul>
-<p>为了实现这个需求，我之前的做法是为每一个实例单独部署一个 GraphD 代理（消耗一个地址，保证端口不变），再在外部手动搭一个 nginx 作为代理，配合 DNS 把内部的地址解析 nginx 上，然后通过域名找到上游（每一个单独的 GraphD 代理）。</p>
-<blockquote>
-<p>注：我在这两个 gist 里给出了这个方法的实验步骤：</p>
-<ul>
-<li><a href="https://gist.github.com/wey-gu/950e4f4c673badae375e59007d80d372" target="_blank" rel="noopener noreferrer">https://gist.github.com/wey-gu/950e4f4c673badae375e59007d80d372</a></li>
-<li><a href="https://gist.github.com/wey-gu/699b9a2ef5dff5f0fb5f288d692ddfd5" target="_blank" rel="noopener noreferrer">https://gist.github.com/wey-gu/699b9a2ef5dff5f0fb5f288d692ddfd5</a></li>
-</ul>
-</blockquote>
-<p>最近，我找到了一个相对优雅的可维护的方式：</p>
-<ul>
-<li>在 NebulaGraph 集群同一个命名空间下引入一个 APISIX 网关</li>
-<li>利用 APISIX 中的 nginx TCP 代理的封装：<a href="https://apisix.apache.org/docs/apisix/stream-proxy/" target="_blank" rel="noopener noreferrer">stream-proxy</a>来暴露 storeaged 的接口</li>
-<li>为了最终只利用一个集群的出口（Service，我们利用其支持的 TLSv1.3 中的 extend host name 字段：SNI 来路由上游），做到用不同域名的 TCP over TLS 指向后端的不同 storaged</li>
-<li>最终，只需要 Storage 客户端能支持 TLSv1.3（发送 SNI），并且能解析所有 StorageD 的地址到 APISIX 的 Service 上即可</li>
-</ul>
-<p>示例图：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
-</span><span class="lnt">28
-</span><span class="lnt">29
-</span><span class="lnt">30
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">           ┌────────────────────────────────────────────────────────────────────────────────────┐
-</span></span><span class="line"><span class="cl">           │  K8s Cluster                                                                       │
-</span></span><span class="line"><span class="cl">           │                                                      ┌──────────────────────────┐  │
-</span></span><span class="line"><span class="cl">           │          ┌────────────────────────────────────┐      │ NebulaGraph Cluster      │  │
-</span></span><span class="line"><span class="cl">           │          │  APISIX API-GATEWAY                │      │       ┌──────────────┐   │  │
-</span></span><span class="line"><span class="cl">           │          │                                    │      │       │ Storaged-0   │   │  │
-</span></span><span class="line"><span class="cl">           │          │                                    │ ┌────┼──────▶│              │   │  │
-</span></span><span class="line"><span class="cl">           │          │                                    │ │    │       │              │   │  │
-</span></span><span class="line"><span class="cl">           │          │   ┌────────────────────────────┐   │ │    │       └──────────────┘   │  │
-</span></span><span class="line"><span class="cl">           │          │   │ stream-proxy               │   │ │    │                          │  │
-</span></span><span class="line"><span class="cl">  ┌─────┐  │ .─────.  │   │                ┌────┐      │   │ │    │       ┌──────────────┐   │  │
-</span></span><span class="line"><span class="cl">  │     │  │╱       ╲ │   │  - addr: 9559  │    │──────┼───┼─┘    │       │ Storaged-1   │   │  │
-</span></span><span class="line"><span class="cl">━━┫ DNS ┣━━( Service )╋━━━╋▶   tls: true   │    │      │   │ ┌────┼──────▶│              │   │  │
-</span></span><span class="line"><span class="cl">  │     │  │`.     ,&#39; │   │                │    │──────┼───┼─┘    │       │              │   │  │
-</span></span><span class="line"><span class="cl">  └─────┘  │  `───&#39;   │   │                │    │      │   │      │       └──────────────┘   │  │
-</span></span><span class="line"><span class="cl">           │          │   │                │SNI │      │   │      │                          │  │
-</span></span><span class="line"><span class="cl">           │          │   │                │    │──────┼───┼─┐    │       ┌──────────────┐   │  │
-</span></span><span class="line"><span class="cl">           │          │   │                │    │      │   │ │    │       │ Storaged-2   │   │  │
-</span></span><span class="line"><span class="cl">           │          │   │                │    │      │   │ └────┼──────▶│              │   │  │
-</span></span><span class="line"><span class="cl">           │          │   │                │    │──────┼───┼─┐    │       │              │   │  │
-</span></span><span class="line"><span class="cl">           │          │   │                └────┘      │   │ │    │       └──────────────┘   │  │
-</span></span><span class="line"><span class="cl">           │          │   └────────────────────────────┘   │ │    │                          │  │
-</span></span><span class="line"><span class="cl">           │          │                                    │ │    │       ┌──────────────┐   │  │
-</span></span><span class="line"><span class="cl">           │          │                                    │ │    │       │ Storaged-3   │   │  │
-</span></span><span class="line"><span class="cl">           │          │                                    │ └────┼──────▶│              │   │  │
-</span></span><span class="line"><span class="cl">           │          │                                    │      │       │              │   │  │
-</span></span><span class="line"><span class="cl">           │          │                                    │      │       └──────────────┘   │  │
-</span></span><span class="line"><span class="cl">           │          └────────────────────────────────────┘      └──────────────────────────┘  │
-</span></span><span class="line"><span class="cl">           │                                                                                    │
-</span></span><span class="line"><span class="cl">           └────────────────────────────────────────────────────────────────────────────────────┘
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>这样做的好处是：</p>
-<ul>
-<li>在 APISIX 中比较优雅地维护代理的配置，并且可以用到 APISIX 这些现代化的流量管理能力</li>
-<li>不需要为每一个 StorageD 单独创建 Service，只需要一个 Service，出集群地址 就可以了</li>
-<li>为流量增加了 TLSv1.3 的加密，提高了安全性同时没有给 NebulaGraph 集群内部的南北流量带来的性能损耗</li>
-</ul>
-<p>在本文的结尾，我会给出一个实操的实验过程，这里包含了本文提到的所有要点和细节。</p>
-<h3 id="传输层的加密" class="headerLink">
-    <a href="#%e4%bc%a0%e8%be%93%e5%b1%82%e7%9a%84%e5%8a%a0%e5%af%86" class="header-mark"></a>3.3 传输层的加密</h3><p>我们在前一个问题中提及到了，在 APISIX 网关中 terminate TLSv1.3 的连接，借助 SNI 信息路由 StorageD 的方法，其实，单独将 GraphD 接口的 TLS 交给网关来做，好处也是非常明显的：</p>
-<ul>
-<li>证书管理在统一的网关控制面做，更加方便</li>
-<li>证书运维无 NebulaGraph 集群配置侵入（NebulaGraph 原生支持 TLS 加密，但是加密之后带来了集群内部通信的开销，而且配置和集群其他层面配置在一起，证书更新涉及进程重启，不够灵活）</li>
-</ul>
-<p>具体的方法在后边实操中也是有体现的。</p>
-<h2 id="实操利用-apisix-的-stream-proxy-暴露-storaged-的接口" class="headerLink">
-    <a href="#%e5%ae%9e%e6%93%8d%e5%88%a9%e7%94%a8-apisix-%e7%9a%84-stream-proxy-%e6%9a%b4%e9%9c%b2-storaged-%e7%9a%84%e6%8e%a5%e5%8f%a3" class="header-mark"></a>4 实操：利用 APISIX 的 stream-proxy 暴露 StorageD 的接口</h2><h3 id="实验环境minikube" class="headerLink">
-    <a href="#%e5%ae%9e%e9%aa%8c%e7%8e%af%e5%a2%83minikube" class="header-mark"></a>4.1 实验环境：minikube</h3><p>我们就在本地的 minikube 上做这个实验吧，首先启动一个 minikube，因为 APISIX 内部的 etcd 需要用到 storageclass，我们带上 穷人版的 storageclass 插件，同时，为了在 k8s 外部访问 storaged 的时候用和内部相同的域名和端口，我们把 node-port 允许的端口扩充到小于 9779 的范围。</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">minikube start <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    --addons<span class="o">=</span><span class="s2">&#34;default-storageclass&#34;</span> <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    --extra-config<span class="o">=</span>apiserver.service-node-port-range<span class="o">=</span>1-65535
-</span></span></code></pre></td></tr></table>
-</div>
-</div><h3 id="实验环境nebulagraph-on-k8s" class="headerLink">
-    <a href="#%e5%ae%9e%e9%aa%8c%e7%8e%af%e5%a2%83nebulagraph-on-k8s" class="header-mark"></a>4.2 实验环境：NebulaGraph on K8s</h3><p>这里，我们使用 Nebula Operator 来部署 NebulaGraph 集群，具体的部署方法可以参考 <a href="https://docs.nebula-graph.com.cn/3.3.0/nebula-operator/1.introduction-to-nebula-operator/" target="_blank" rel="noopener noreferrer">Nebula Operator 文档</a>。</p>
-<p>咱们做实验，就偷个懒，用我写的 <a href="https://github.com/wey-gu/nebula-operator-kind" target="_blank" rel="noopener noreferrer">Nebula-Operator-KinD</a> 来一键部署：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">curl -sL nebula-kind.siwei.io/install-on-k8s.sh <span class="p">|</span> bash
-</span></span></code></pre></td></tr></table>
-</div>
-</div><h3 id="实验环境apisix-on-k8s" class="headerLink">
-    <a href="#%e5%ae%9e%e9%aa%8c%e7%8e%af%e5%a2%83apisix-on-k8s" class="header-mark"></a>4.3 实验环境：APISIX on k8s</h3><p>首先是安装，在 Helm 参数中指定打开 stream-proxy 的开关：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">helm repo add apisix https://charts.apiseven.com
-</span></span><span class="line"><span class="cl">helm repo add bitnami https://charts.bitnami.com/bitnami
-</span></span><span class="line"><span class="cl">helm repo update
-</span></span><span class="line"><span class="cl">helm install apisix apisix/apisix <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>  --set gateway.type<span class="o">=</span>NodePort <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>  --set gateway.stream.enabled<span class="o">=</span><span class="nb">true</span> <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>  --set ingress-controller.enabled<span class="o">=</span><span class="nb">true</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="c1"># dashboard 也装上，方便我们绕过 admin API call 做一些方便的操作。</span>
-</span></span><span class="line"><span class="cl">helm install apisix-dashboard apisix/apisix-dashboard
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>然后，因为截止到现在，APISIX 的 Helm Chart 之中并没有提供 stream-proxy TCP 的监听端口的 TLS 支持的配置格式，见 <a href="https://github.com/apache/apisix-helm-chart/issues/348" target="_blank" rel="noopener noreferrer">https://github.com/apache/apisix-helm-chart/issues/348</a> ，我们需要手动更改 APISIX 的 configmap，把 stream-proxy 的 TLS 配置加上：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">kubectl edit ConfigMap apisix
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>我们编辑把 <code>stream_proxy.tcp</code> 改写成这样：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span><span class="lnt">7
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="w">     </span><span class="nt">stream_proxy</span><span class="p">:</span><span class="w">                 </span><span class="c"># TCP/UDP proxy</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">       </span><span class="nt">only</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">       </span><span class="nt">tcp</span><span class="p">:</span><span class="w">                        </span><span class="c"># TCP proxy port list</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">         </span>- <span class="nt">addr</span><span class="p">:</span><span class="w"> </span><span class="m">9779</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">           </span><span class="nt">tls</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">         </span>- <span class="nt">addr</span><span class="p">:</span><span class="w"> </span><span class="m">9559</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">           </span><span class="nt">tls</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
-</span></span></span></code></pre></td></tr></table>
-</div>
-</div><p>这里我们需要重建 APISIX Pod，因为 APISIX 的 stream-proxy 的 TLS 配置是在启动的时候加载的，所以我们需要重建 APISIX Pod：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">kubectl delete <span class="k">$(</span>kubectl get po -l <span class="s2">&#34;app.kubernetes.io/name=apisix&#34;</span> -o name<span class="k">)</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><h3 id="开始实验" class="headerLink">
-    <a href="#%e5%bc%80%e5%a7%8b%e5%ae%9e%e9%aa%8c" class="header-mark"></a>4.4 开始实验</h3><p>我们看看这个实验的目标，就是把 NebulaGraph 的 StorageD 的接口暴露出来，让外部的客户端可以访问到，而暴露的方式如图：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
-</span><span class="lnt">28
-</span><span class="lnt">29
-</span><span class="lnt">30
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">           ┌────────────────────────────────────────────────────────────────────────────────────┐
-</span></span><span class="line"><span class="cl">           │  K8s Cluster                                                                       │
-</span></span><span class="line"><span class="cl">           │                                                      ┌──────────────────────────┐  │
-</span></span><span class="line"><span class="cl">           │          ┌────────────────────────────────────┐      │ NebulaGraph Cluster      │  │
-</span></span><span class="line"><span class="cl">           │          │  APISIX API-GATEWAY                │      │       ┌──────────────┐   │  │
-</span></span><span class="line"><span class="cl">           │          │                                    │      │       │ Storaged-0   │   │  │
-</span></span><span class="line"><span class="cl">           │          │                                    │ ┌────┼──────▶│              │   │  │
-</span></span><span class="line"><span class="cl">           │          │                                    │ │    │       │              │   │  │
-</span></span><span class="line"><span class="cl">           │          │   ┌────────────────────────────┐   │ │    │       └──────────────┘   │  │
-</span></span><span class="line"><span class="cl">           │          │   │ stream-proxy               │   │ │    │                          │  │
-</span></span><span class="line"><span class="cl">  ┌─────┐  │ .─────.  │   │                ┌────┐      │   │ │    │       ┌──────────────┐   │  │
-</span></span><span class="line"><span class="cl">  │     │  │╱       ╲ │   │  - addr: 9559  │    │──────┼───┼─┘    │       │ Storaged-1   │   │  │
-</span></span><span class="line"><span class="cl">━━┫ DNS ┣━━( Service )╋━━━╋▶   tls: true   │    │      │   │ ┌────┼──────▶│              │   │  │
-</span></span><span class="line"><span class="cl">  │     │  │`.     ,&#39; │   │                │    │──────┼───┼─┘    │       │              │   │  │
-</span></span><span class="line"><span class="cl">  └─────┘  │  `───&#39;   │   │                │    │      │   │      │       └──────────────┘   │  │
-</span></span><span class="line"><span class="cl">           │          │   │                │SNI │      │   │      │                          │  │
-</span></span><span class="line"><span class="cl">           │          │   │                │    │──────┼───┼─┐    │       ┌──────────────┐   │  │
-</span></span><span class="line"><span class="cl">           │          │   │                │    │      │   │ │    │       │ Storaged-2   │   │  │
-</span></span><span class="line"><span class="cl">           │          │   │                │    │      │   │ └────┼──────▶│              │   │  │
-</span></span><span class="line"><span class="cl">           │          │   │                │    │──────┼───┼─┐    │       │              │   │  │
-</span></span><span class="line"><span class="cl">           │          │   │                └────┘      │   │ │    │       └──────────────┘   │  │
-</span></span><span class="line"><span class="cl">           │          │   └────────────────────────────┘   │ │    │                          │  │
-</span></span><span class="line"><span class="cl">           │          │                                    │ │    │       ┌──────────────┐   │  │
-</span></span><span class="line"><span class="cl">           │          │                                    │ │    │       │ Storaged-3   │   │  │
-</span></span><span class="line"><span class="cl">           │          │                                    │ └────┼──────▶│              │   │  │
-</span></span><span class="line"><span class="cl">           │          │                                    │      │       │              │   │  │
-</span></span><span class="line"><span class="cl">           │          │                                    │      │       └──────────────┘   │  │
-</span></span><span class="line"><span class="cl">           │          └────────────────────────────────────┘      └──────────────────────────┘  │
-</span></span><span class="line"><span class="cl">           │                                                                                    │
-</span></span><span class="line"><span class="cl">           └────────────────────────────────────────────────────────────────────────────────────┘
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>我们已经有了所有的框架，我们要往里填箭头和圆圈了。</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ kubectl get po
-</span></span><span class="line"><span class="cl">NAME                                         READY   STATUS     RESTARTS      AGE
-</span></span><span class="line"><span class="cl">apisix-6d89854bc5-5m788                      1/1     Running    <span class="m">1</span> <span class="o">(</span>31h ago<span class="o">)</span>   2d4h
-</span></span><span class="line"><span class="cl">apisix-dashboard-b544bd766-nh79j             1/1     Running    <span class="m">8</span> <span class="o">(</span>31h ago<span class="o">)</span>   2d10h
-</span></span><span class="line"><span class="cl">apisix-etcd-0                                1/1     Running    <span class="m">2</span> <span class="o">(</span>31h ago<span class="o">)</span>   2d10h
-</span></span><span class="line"><span class="cl">apisix-etcd-1                                1/1     Running    <span class="m">2</span> <span class="o">(</span>31h ago<span class="o">)</span>   2d10h
-</span></span><span class="line"><span class="cl">apisix-etcd-2                                1/1     Running    <span class="m">2</span> <span class="o">(</span>31h ago<span class="o">)</span>   2d10h
-</span></span><span class="line"><span class="cl">nebula-graphd-0                              1/1     Running    <span class="m">2</span> <span class="o">(</span>31h ago<span class="o">)</span>   3d4h
-</span></span><span class="line"><span class="cl">nebula-metad-0                               1/1     Running    <span class="m">2</span> <span class="o">(</span>31h ago<span class="o">)</span>   3d4h
-</span></span><span class="line"><span class="cl">nebula-storaged-0                            1/1     Running    <span class="m">2</span> <span class="o">(</span>31h ago<span class="o">)</span>   3d4h
-</span></span><span class="line"><span class="cl">nebula-storaged-1                            1/1     Running    <span class="m">2</span> <span class="o">(</span>31h ago<span class="o">)</span>   3d4h
-</span></span><span class="line"><span class="cl">nebula-storaged-2                            1/1     Running    <span class="m">2</span> <span class="o">(</span>31h ago<span class="o">)</span>   3d4h
-</span></span></code></pre></td></tr></table>
-</div>
-</div><h4 id="配置-apisix-的-stream-proxy" class="headerLink">
-    <a href="#%e9%85%8d%e7%bd%ae-apisix-%e7%9a%84-stream-proxy" class="header-mark"></a>4.4.1 配置 APISIX 的 stream-proxy</h4><p>参考 APISIX 文档：https://apisix.apache.org/docs/apisix/stream-proxy/#accept-tls-over-tcp-connection</p>
-<p>我们用 APISIX 的 API 来配置 stream-proxy：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
-</span><span class="lnt">28
-</span><span class="lnt">29
-</span><span class="lnt">30
-</span><span class="lnt">31
-</span><span class="lnt">32
-</span><span class="lnt">33
-</span><span class="lnt">34
-</span><span class="lnt">35
-</span><span class="lnt">36
-</span><span class="lnt">37
-</span><span class="lnt">38
-</span><span class="lnt">39
-</span><span class="lnt">40
-</span><span class="lnt">41
-</span><span class="lnt">42
-</span><span class="lnt">43
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="nv">apisix_api_key</span><span class="o">=</span><span class="s2">&#34;edd1c9f034335f136f87ad84b625c8f1&#34;</span>
-</span></span><span class="line"><span class="cl"><span class="nv">apisix_pod</span><span class="o">=</span><span class="k">$(</span>kubectl get po -l <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    <span class="s2">&#34;app.kubernetes.io/name=apisix&#34;</span> -o name<span class="k">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">kubectl <span class="nb">exec</span> -it <span class="nv">$apisix_pod</span> -- <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    curl http://127.0.0.1:9180/apisix/admin/stream_routes/1 <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    -H <span class="s2">&#34;X-API-KEY: </span><span class="nv">$apisix_api_key</span><span class="s2">&#34;</span> -X PUT -d <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span><span class="s1">&#39;{
-</span></span></span><span class="line"><span class="cl"><span class="s1">    &#34;sni&#34;: &#34;nebula-storaged-0.nebula-storaged-headless.default.svc.cluster.local&#34;,
-</span></span></span><span class="line"><span class="cl"><span class="s1">    &#34;upstream&#34;: {
-</span></span></span><span class="line"><span class="cl"><span class="s1">        &#34;nodes&#34;: {
-</span></span></span><span class="line"><span class="cl"><span class="s1">            &#34;172.17.0.13:9779&#34;: 1
-</span></span></span><span class="line"><span class="cl"><span class="s1">        },
-</span></span></span><span class="line"><span class="cl"><span class="s1">        &#34;type&#34;: &#34;roundrobin&#34;
-</span></span></span><span class="line"><span class="cl"><span class="s1">    }
-</span></span></span><span class="line"><span class="cl"><span class="s1">}&#39;</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">kubectl <span class="nb">exec</span> -it <span class="nv">$apisix_pod</span> -- <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    curl http://127.0.0.1:9180/apisix/admin/stream_routes/2 <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    -H <span class="s2">&#34;X-API-KEY: </span><span class="nv">$apisix_api_key</span><span class="s2">&#34;</span> -X PUT -d <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span><span class="s1">&#39;{
-</span></span></span><span class="line"><span class="cl"><span class="s1">    &#34;sni&#34;: &#34;nebula-storaged-1.nebula-storaged-headless.default.svc.cluster.local&#34;,
-</span></span></span><span class="line"><span class="cl"><span class="s1">    &#34;upstream&#34;: {
-</span></span></span><span class="line"><span class="cl"><span class="s1">        &#34;nodes&#34;: {
-</span></span></span><span class="line"><span class="cl"><span class="s1">            &#34;172.17.0.18:9779&#34;: 1
-</span></span></span><span class="line"><span class="cl"><span class="s1">        },
-</span></span></span><span class="line"><span class="cl"><span class="s1">        &#34;type&#34;: &#34;roundrobin&#34;
-</span></span></span><span class="line"><span class="cl"><span class="s1">    }
-</span></span></span><span class="line"><span class="cl"><span class="s1">}&#39;</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">kubectl <span class="nb">exec</span> -it <span class="nv">$apisix_pod</span> -- <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    curl http://127.0.0.1:9180/apisix/admin/stream_routes/3 <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    -H <span class="s2">&#34;X-API-KEY: </span><span class="nv">$apisix_api_key</span><span class="s2">&#34;</span> -X PUT -d <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span><span class="s1">&#39;{
-</span></span></span><span class="line"><span class="cl"><span class="s1">    &#34;sni&#34;: &#34;nebula-storaged-2.nebula-storaged-headless.default.svc.cluster.local&#34;,
-</span></span></span><span class="line"><span class="cl"><span class="s1">    &#34;upstream&#34;: {
-</span></span></span><span class="line"><span class="cl"><span class="s1">        &#34;nodes&#34;: {
-</span></span></span><span class="line"><span class="cl"><span class="s1">            &#34;172.17.0.5:9779&#34;: 1
-</span></span></span><span class="line"><span class="cl"><span class="s1">        },
-</span></span></span><span class="line"><span class="cl"><span class="s1">        &#34;type&#34;: &#34;roundrobin&#34;
-</span></span></span><span class="line"><span class="cl"><span class="s1">    }
-</span></span></span><span class="line"><span class="cl"><span class="s1">}&#39;</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><blockquote>
-<p>注意，当下，APISIX 的 stream-proxy 上游节点不支持域名解析，是首先于上游的 lua 库，详见我报的 issue：https://github.com/apache/apisix/issues/8334 ，理想情况下，我们这里应该给出每一个 storaged 的 SNI 相同的地址作为 <code>upstream.nodes</code>，好像：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">kubectl <span class="nb">exec</span> -it <span class="nv">$apisix_pod</span> -- <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    curl http://127.0.0.1:9180/apisix/admin/stream_routes/1 <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    -H <span class="s2">&#34;X-API-KEY: </span><span class="nv">$apisix_api_key</span><span class="s2">&#34;</span> -X PUT -d <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span><span class="s1">&#39;{
-</span></span></span><span class="line"><span class="cl"><span class="s1">    &#34;sni&#34;: &#34;nebula-storaged-0.nebula-storaged-headless.default.svc.cluster.local&#34;,
-</span></span></span><span class="line"><span class="cl"><span class="s1">    &#34;upstream&#34;: {
-</span></span></span><span class="line"><span class="cl"><span class="s1">        &#34;nodes&#34;: {
-</span></span></span><span class="line"><span class="cl"><span class="s1">            &#34;nebula-storaged-0.nebula-storaged-headless.default.svc.cluster.local&#34;: 1
-</span></span></span><span class="line"><span class="cl"><span class="s1">        },
-</span></span></span><span class="line"><span class="cl"><span class="s1">        &#34;type&#34;: &#34;roundrobin&#34;
-</span></span></span><span class="line"><span class="cl"><span class="s1">    }
-</span></span></span><span class="line"><span class="cl"><span class="s1">}&#39;</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div></blockquote>
-<h4 id="配置-apisix-中-storaged-地址的-tls-证书" class="headerLink">
-    <a href="#%e9%85%8d%e7%bd%ae-apisix-%e4%b8%ad-storaged-%e5%9c%b0%e5%9d%80%e7%9a%84-tls-%e8%af%81%e4%b9%a6" class="header-mark"></a>4.4.2 配置 APISIX 中 storaged 地址的 TLS 证书</h4><p>在生产环境下，我们应该云原生的方式去管理自签或者公共信任的证书，这里，我们就手动利用 mkcert 工具来做这件事儿。</p>
-<p>安装 mkcert</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 首次运行，需要安装 mkcert，并且生成根证书</span>
-</span></span><span class="line"><span class="cl"><span class="c1"># macOS 的话</span>
-</span></span><span class="line"><span class="cl">brew install mkcert
-</span></span><span class="line"><span class="cl"><span class="c1"># ubuntu 的话</span>
-</span></span><span class="line"><span class="cl">apt-get install wget libnss3-tools
-</span></span><span class="line"><span class="cl"><span class="c1"># 然后再去 https://github.com/FiloSottile/mkcert/releases/ 下载 mkcert</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>签发证书：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">mkcert <span class="s1">&#39;*.nebula-storaged-headless.default.svc.cluster.local&#39;</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>利用 APISIX-dashboard 将证书导入到 APISIX 之中</p>
-<p>单独开一个终端，运行：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span><span class="lnt">7
-</span><span class="lnt">8
-</span><span class="lnt">9
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">POD_NAME</span><span class="o">=</span><span class="k">$(</span><span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    kubectl get pods <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    -l <span class="s2">&#34;app.kubernetes.io/name=apisix-dashboard,app.kubernetes.io/instance=apisix-dashboard&#34;</span> <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    -o <span class="nv">jsonpath</span><span class="o">=</span><span class="s2">&#34;{.items[0].metadata.name}&#34;</span><span class="k">)</span>
-</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">CONTAINER_PORT</span><span class="o">=</span><span class="k">$(</span><span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    kubectl get pod <span class="nv">$POD_NAME</span> <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    -o <span class="nv">jsonpath</span><span class="o">=</span><span class="s2">&#34;{.spec.containers[0].ports[0].containerPort}&#34;</span><span class="k">)</span>
-</span></span><span class="line"><span class="cl">kubectl <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    port-forward <span class="nv">$POD_NAME</span> 8080:<span class="nv">$CONTAINER_PORT</span> --address<span class="o">=</span><span class="s1">&#39;0.0.0.0&#39;</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>浏览器访问 http://10.1.1.168:8080/ssl/list ，账号密码都是 <code>admin</code> ，点击 <code>Create</code> 按钮，将刚刚生成的证书导入到 APISIX 之中。</p>
-<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/202471244-7081b37e-1e8f-4298-8887-db2feefe74a2.png" title="https://user-images.githubusercontent.com/1651790/202471244-7081b37e-1e8f-4298-8887-db2feefe74a2.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/202471244-7081b37e-1e8f-4298-8887-db2feefe74a2.png">
-        
-    </a></p>
-<h4 id="增加-apisix-的-nodeport-service" class="headerLink">
-    <a href="#%e5%a2%9e%e5%8a%a0-apisix-%e7%9a%84-nodeport-service" class="header-mark"></a>4.4.3 增加 APISIX 的 NodePort Service</h4><p>创建一个 NodePort Service，用于暴露 APISIX 的 9779 端口，这样，我们就可以通过外部的 IP 地址访问到 APISIX 了。</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">cat <span class="s">&lt;&lt;EOF | kubectl apply -f -
-</span></span></span><span class="line"><span class="cl"><span class="s">spec:
-</span></span></span><span class="line"><span class="cl"><span class="s">  selector:
-</span></span></span><span class="line"><span class="cl"><span class="s">    app.kubernetes.io/instance: apisix
-</span></span></span><span class="line"><span class="cl"><span class="s">    app.kubernetes.io/name: apisix
-</span></span></span><span class="line"><span class="cl"><span class="s">  ports:
-</span></span></span><span class="line"><span class="cl"><span class="s">    - protocol: TCP
-</span></span></span><span class="line"><span class="cl"><span class="s">      port: 9779
-</span></span></span><span class="line"><span class="cl"><span class="s">      targetPort: 9779
-</span></span></span><span class="line"><span class="cl"><span class="s">      name: thrift
-</span></span></span><span class="line"><span class="cl"><span class="s">      nodePort: 9779
-</span></span></span><span class="line"><span class="cl"><span class="s">  type: NodePort
-</span></span></span><span class="line"><span class="cl"><span class="s">EOF</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>因为前边 minikube 中我们配置了端口的范围覆盖到了 9779，所以我们可以看到，这个 NodePort Service 的端口在宿主机上也可以从 minikube ip 的同一个端口访问到：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span><span class="lnt">7
-</span><span class="lnt">8
-</span><span class="lnt">9
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ minikube service apisix-svc
-</span></span><span class="line"><span class="cl">$ minikube service list
-</span></span><span class="line"><span class="cl"><span class="p">|</span>------------------------<span class="p">|</span>---------------------------------<span class="p">|</span>-------------------<span class="p">|</span>---------------------------<span class="p">|</span>
-</span></span><span class="line"><span class="cl"><span class="p">|</span>       NAMESPACE        <span class="p">|</span>              NAME               <span class="p">|</span>    TARGET PORT    <span class="p">|</span>            URL            <span class="p">|</span>
-</span></span><span class="line"><span class="cl"><span class="p">|</span>------------------------<span class="p">|</span>---------------------------------<span class="p">|</span>-------------------<span class="p">|</span>---------------------------<span class="p">|</span>
-</span></span><span class="line"><span class="cl">...
-</span></span><span class="line"><span class="cl"><span class="p">|</span> default                <span class="p">|</span> apisix-svc                      <span class="p">|</span> thrift/9779       <span class="p">|</span> http://192.168.49.2:9779  <span class="p">|</span>&lt;---
-</span></span><span class="line"><span class="cl">...
-</span></span><span class="line"><span class="cl"><span class="p">|</span>------------------------<span class="p">|</span>---------------------------------<span class="p">|</span>-------------------<span class="p">|</span>---------------------------<span class="p">|</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>当然，minikube 假设我们的服务都是 HTTP 的，给出的 URL 是 HTTP:// 的，不用理会它，我们心里知道它是 TCP over TLS 就好了。</p>
-<h4 id="配置-k8s-外部-dns" class="headerLink">
-    <a href="#%e9%85%8d%e7%bd%ae-k8s-%e5%a4%96%e9%83%a8-dns" class="header-mark"></a>4.4.4 配置 K8s 外部 DNS</h4><p>我们需要配置一个 DNS 服务，让我们可以通过 <code>nebula-storaged-0.nebula-storaged-headless.default.svc.cluster.local</code> 等三个域名通过 minikube 的 NodePort Service 访问到我们的 NebulaGraph 的 storaged 服务。</p>
-<p>获得 minikube 的 IP 地址：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ minikube ip
-</span></span><span class="line"><span class="cl">192.168.49.2
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>配置 <code>/etc/hosts</code></p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">192.168.49.2 nebula-storaged-0.nebula-storaged-headless.default.svc.cluster.local
-</span></span><span class="line"><span class="cl">192.168.49.2 nebula-storaged-1.nebula-storaged-headless.default.svc.cluster.local
-</span></span><span class="line"><span class="cl">192.168.49.2 nebula-storaged-2.nebula-storaged-headless.default.svc.cluster.local
-</span></span><span class="line"><span class="cl">192.168.49.2 nebula-metad-0.nebula-metad-headless.default.svc.cluster.local
-</span></span></code></pre></td></tr></table>
-</div>
-</div><h4 id="验证-nebulagraph-storage-client-可以从所有的节点中获取到数据" class="headerLink">
-    <a href="#%e9%aa%8c%e8%af%81-nebulagraph-storage-client-%e5%8f%af%e4%bb%a5%e4%bb%8e%e6%89%80%e6%9c%89%e7%9a%84%e8%8a%82%e7%82%b9%e4%b8%ad%e8%8e%b7%e5%8f%96%e5%88%b0%e6%95%b0%e6%8d%ae" class="header-mark"></a>4.4.5 验证 NebulaGraph Storage Client 可以从所有的节点中获取到数据</h4><p>这里，为了方便，我们用到 python 的客户端。</p>
-<p>由于在写本文的时候，NebulaGraph Python 客户端的 StorageClient 尚未支持 TLS，对它支持的 PR 刚好是我为了本实验写的：https://github.com/vesoft-inc/nebula-python/pull/239 。</p>
-<p>所以我们要从我的个人分支安装这个客户端：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">git clone https://github.com/wey-gu/nebula-python.git
-</span></span><span class="line"><span class="cl"><span class="nb">cd</span> nebula-python
-</span></span><span class="line"><span class="cl">python3 -m pip install .
-</span></span><span class="line"><span class="cl">python3 -m pip install ipython
-</span></span><span class="line"><span class="cl"><span class="c1"># 进入 ipython</span>
-</span></span><span class="line"><span class="cl">ipython
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>我们在 iPython 中交互式验证：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
-</span><span class="lnt">28
-</span><span class="lnt">29
-</span><span class="lnt">30
-</span><span class="lnt">31
-</span><span class="lnt">32
-</span><span class="lnt">33
-</span><span class="lnt">34
-</span><span class="lnt">35
-</span><span class="lnt">36
-</span><span class="lnt">37
-</span><span class="lnt">38
-</span><span class="lnt">39
-</span><span class="lnt">40
-</span><span class="lnt">41
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">nebula3.mclient</span> <span class="kn">import</span> <span class="n">MetaCache</span><span class="p">,</span> <span class="n">HostAddr</span>
-</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">nebula3.sclient.GraphStorageClient</span> <span class="kn">import</span> <span class="n">GraphStorageClient</span>
-</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">nebula3.Config</span> <span class="kn">import</span> <span class="n">SSL_config</span>
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">ssl</span>
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">os</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">meta_cache</span> <span class="o">=</span> <span class="n">MetaCache</span><span class="p">([(</span><span class="s1">&#39;nebula-metad-0.nebula-metad-headless.default.svc.cluster.local&#39;</span><span class="p">,</span> <span class="mi">9559</span><span class="p">)],</span>
-</span></span><span class="line"><span class="cl">                       <span class="mi">50000</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">storage_addrs</span> <span class="o">=</span> <span class="p">[</span><span class="n">HostAddr</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s1">&#39;nebula-storaged-0.nebula-storaged-headless.default.svc.cluster.local&#39;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">9779</span><span class="p">),</span>
-</span></span><span class="line"><span class="cl">                 <span class="n">HostAddr</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s1">&#39;nebula-storaged-1.nebula-storaged-headless.default.svc.cluster.local&#39;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">9779</span><span class="p">),</span>
-</span></span><span class="line"><span class="cl">                 <span class="n">HostAddr</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s1">&#39;nebula-storaged-2.nebula-storaged-headless.default.svc.cluster.local&#39;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">9779</span><span class="p">)]</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="c1"># 自签证书配置</span>
-</span></span><span class="line"><span class="cl"><span class="n">current_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="s2">&#34;.&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">ssl_config</span> <span class="o">=</span> <span class="n">SSL_config</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl"><span class="n">ssl_config</span><span class="o">.</span><span class="n">cert_reqs</span> <span class="o">=</span> <span class="n">ssl</span><span class="o">.</span><span class="n">CERT_OPTIONAL</span>
-</span></span><span class="line"><span class="cl"><span class="n">ssl_config</span><span class="o">.</span><span class="n">cert_reqs</span> <span class="o">=</span> <span class="n">ssl</span><span class="o">.</span><span class="n">CERT_OPTIONAL</span>
-</span></span><span class="line"><span class="cl"><span class="n">ssl_config</span><span class="o">.</span><span class="n">ca_certs</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="s2">&#34;~/.local/share/mkcert&#34;</span><span class="p">),</span> <span class="s1">&#39;rootCA.pem&#39;</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="n">ssl_config</span><span class="o">.</span><span class="n">keyfile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="n">current_dir</span><span class="p">,</span> <span class="s1">&#39;nebula-storaged-headless.default.svc.cluster.local+1-key.pem&#39;</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="n">ssl_config</span><span class="o">.</span><span class="n">certfile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="n">current_dir</span><span class="p">,</span> <span class="s1">&#39;nebula-storaged-headless.default.svc.cluster.local+1.pem&#39;</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="c1"># 实例化 StorageClient</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">graph_storage_client</span> <span class="o">=</span> <span class="n">GraphStorageClient</span><span class="p">(</span><span class="n">meta_cache</span><span class="p">,</span> <span class="n">storage_addrs</span><span class="p">,</span> <span class="mi">5000</span><span class="p">,</span> <span class="n">ssl_config</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="c1"># 验证可以从所有的节点中获取到数据</span>
-</span></span><span class="line"><span class="cl"><span class="n">resp</span> <span class="o">=</span> <span class="n">graph_storage_client</span><span class="o">.</span><span class="n">scan_vertex</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">        <span class="n">space_name</span><span class="o">=</span><span class="s1">&#39;basketballplayer&#39;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">        <span class="n">tag_name</span><span class="o">=</span><span class="s1">&#39;player&#39;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="k">while</span> <span class="n">resp</span><span class="o">.</span><span class="n">has_next</span><span class="p">():</span>
-</span></span><span class="line"><span class="cl">    <span class="n">result</span> <span class="o">=</span> <span class="n">resp</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="n">vertex_data</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="n">vertex_data</span><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>结果✅：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="p">(</span><span class="s2">&#34;player112&#34;</span> <span class="p">:</span><span class="n">player</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="s2">&#34;Jonathon Simmons&#34;</span><span class="p">,</span> <span class="n">age</span><span class="p">:</span> <span class="mi">29</span><span class="p">})</span>
-</span></span><span class="line"><span class="cl"><span class="p">(</span><span class="s2">&#34;player1120&#34;</span> <span class="p">:</span><span class="n">player</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="s2">&#34;李四&#34;</span><span class="p">,</span> <span class="n">age</span><span class="p">:</span> <span class="mi">30</span><span class="p">})</span>
-</span></span><span class="line"><span class="cl"><span class="p">(</span><span class="s2">&#34;player117&#34;</span> <span class="p">:</span><span class="n">player</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="s2">&#34;Stephen Curry&#34;</span><span class="p">,</span> <span class="n">age</span><span class="p">:</span> <span class="mi">31</span><span class="p">})</span>
-</span></span><span class="line"><span class="cl"><span class="p">(</span><span class="s2">&#34;player119&#34;</span> <span class="p">:</span><span class="n">player</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="s2">&#34;Kevin Durant&#34;</span><span class="p">,</span> <span class="n">age</span><span class="p">:</span> <span class="mi">30</span><span class="p">})</span>
-</span></span><span class="line"><span class="cl"><span class="p">(</span><span class="s2">&#34;player134&#34;</span> <span class="p">:</span><span class="n">player</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="s2">&#34;Blake Griffin&#34;</span><span class="p">,</span> <span class="n">age</span><span class="p">:</span> <span class="mi">30</span><span class="p">})</span>
-</span></span><span class="line"><span class="cl"><span class="p">(</span><span class="s2">&#34;player141&#34;</span> <span class="p">:</span><span class="n">player</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="s2">&#34;Ray Allen&#34;</span><span class="p">,</span> <span class="n">age</span><span class="p">:</span> <span class="mi">43</span><span class="p">})</span>
-</span></span><span class="line"><span class="cl"><span class="p">(</span><span class="s2">&#34;player144&#34;</span> <span class="p">:</span><span class="n">player</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="s2">&#34;Shaquille O&#39;Neal&#34;</span><span class="p">,</span> <span class="n">age</span><span class="p">:</span> <span class="mi">47</span><span class="p">})</span>
-</span></span><span class="line"><span class="cl"><span class="p">(</span><span class="s2">&#34;player149&#34;</span> <span class="p">:</span><span class="n">player</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="s2">&#34;Ben Simmons&#34;</span><span class="p">,</span> <span class="n">age</span><span class="p">:</span> <span class="mi">22</span><span class="p">})</span>
-</span></span><span class="line"><span class="cl"><span class="p">(</span><span class="s2">&#34;player100&#34;</span> <span class="p">:</span><span class="n">player</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="s2">&#34;Tim Duncan&#34;</span><span class="p">,</span> <span class="n">age</span><span class="p">:</span> <span class="mi">42</span><span class="p">})</span>
-</span></span><span class="line"><span class="cl"><span class="p">(</span><span class="s2">&#34;player101&#34;</span> <span class="p">:</span><span class="n">player</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="s2">&#34;Tony Parker&#34;</span><span class="p">,</span> <span class="n">age</span><span class="p">:</span> <span class="mi">36</span><span class="p">})</span>
-</span></span><span class="line"><span class="cl"><span class="p">(</span><span class="s2">&#34;player110&#34;</span> <span class="p">:</span><span class="n">player</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="s2">&#34;Cory Joseph&#34;</span><span class="p">,</span> <span class="n">age</span><span class="p">:</span> <span class="mi">27</span><span class="p">})</span>
-</span></span><span class="line"><span class="cl"><span class="p">(</span><span class="s2">&#34;player126&#34;</span> <span class="p">:</span><span class="n">player</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="s2">&#34;Kyrie Irving&#34;</span><span class="p">,</span> <span class="n">age</span><span class="p">:</span> <span class="mi">26</span><span class="p">})</span>
-</span></span><span class="line"><span class="cl"><span class="p">(</span><span class="s2">&#34;player131&#34;</span> <span class="p">:</span><span class="n">player</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="s2">&#34;Paul George&#34;</span><span class="p">,</span> <span class="n">age</span><span class="p">:</span> <span class="mi">28</span><span class="p">})</span>
-</span></span><span class="line"><span class="cl"><span class="p">(</span><span class="s2">&#34;player133&#34;</span> <span class="p">:</span><span class="n">player</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="s2">&#34;Yao Ming&#34;</span><span class="p">,</span> <span class="n">age</span><span class="p">:</span> <span class="mi">38</span><span class="p">})</span>
-</span></span><span class="line"><span class="cl"><span class="p">(</span><span class="s2">&#34;player140&#34;</span> <span class="p">:</span><span class="n">player</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="s2">&#34;Grant Hill&#34;</span><span class="p">,</span> <span class="n">age</span><span class="p">:</span> <span class="mi">46</span><span class="p">})</span>
-</span></span><span class="line"><span class="cl"><span class="p">(</span><span class="s2">&#34;player105&#34;</span> <span class="p">:</span><span class="n">player</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="s2">&#34;Danny Green&#34;</span><span class="p">,</span> <span class="n">age</span><span class="p">:</span> <span class="mi">31</span><span class="p">})</span>
-</span></span><span class="line"><span class="cl"><span class="p">(</span><span class="s2">&#34;player109&#34;</span> <span class="p">:</span><span class="n">player</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="s2">&#34;Tiago Splitter&#34;</span><span class="p">,</span> <span class="n">age</span><span class="p">:</span> <span class="mi">34</span><span class="p">})</span>
-</span></span><span class="line"><span class="cl"><span class="p">(</span><span class="s2">&#34;player111&#34;</span> <span class="p">:</span><span class="n">player</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="s2">&#34;David West&#34;</span><span class="p">,</span> <span class="n">age</span><span class="p">:</span> <span class="mi">38</span><span class="p">})</span>
-</span></span><span class="line"><span class="cl"><span class="o">...</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><h2 id="总结" class="headerLink">
-    <a href="#%e6%80%bb%e7%bb%93" class="header-mark"></a>5 总结</h2><ul>
-<li>NebulaGraph 查询接口的负载均衡可以借助 K8s Service来做；</li>
-<li>NebulaGraph 底层存储接口的暴露在 K8s 中可以利用 APISIX Stream Proxy 和 SNI 来优雅实现；</li>
-<li>利用 API 网关对出口传输层的加密是一个很好的选择，相较于用 NebulaGraph 原生的 TLS 的方式。</li>
-</ul>
-<h2 id="一些坑" class="headerLink">
-    <a href="#%e4%b8%80%e4%ba%9b%e5%9d%91" class="header-mark"></a>6 一些坑</h2><ul>
-<li>
-<p>发现 fbthrift python 并不支持 发送 extend host name（SNI），https://github.com/vesoft-inc/nebula-python/pull/238 ，写了 PR 去做支持，这时候 APISIX 中的报错是 <code>failed to find SNI: </code></p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">2022/11/15 10:18:26 [error] 78#78: *1744270 stream [lua] init.lua:842: stream_ssl_phase(): failed to fetch ssl config: failed to find SNI: 
-</span></span><span class="line"><span class="cl">please check if the client requests via IP or uses an outdated protocol. If you need to report an issue, provide a packet capture file of the TLS handshake., context: 
-</span></span><span class="line"><span class="cl">ssl_certificate_by_lua*, client: 172.17.0.1, server: 0.0.0.0:9779
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>参考：</p>
-<ul>
-<li><a href="https://docs.python.org/3/library/ssl.html#ssl.SSLContext.sslsocket_class" target="_blank" rel="noopener noreferrer">https://docs.python.org/3/library/ssl.html#ssl.SSLContext.sslsocket_class</a></li>
-<li><a href="https://github.com/apache/thrift/commit/937228e030569bf25ceb379c9491426709792701" target="_blank" rel="noopener noreferrer">https://github.com/apache/thrift/commit/937228e030569bf25ceb379c9491426709792701</a></li>
-<li><a href="https://github.com/apache/thrift/pull/894" target="_blank" rel="noopener noreferrer">https://github.com/apache/thrift/pull/894</a></li>
-<li><a href="https://github.com/apache/thrift/blob/e8353cb46e9f5e71f9b76f55d6bf59530b7f98ef/lib/py/src/transport/TSSLSocket.py#L184" target="_blank" rel="noopener noreferrer">https://github.com/apache/thrift/blob/e8353cb46e9f5e71f9b76f55d6bf59530b7f98ef/lib/py/src/transport/TSSLSocket.py#L184</a></li>
-</ul>
-</li>
-<li>
-<p>发现 APISIX stream 里边不解析上游 node 域名，我查了所有一溜的 dns 都没有问题，去提了 issue 才知道是已知问题：https://github.com/apache/apisix/issues/8334，只好先手配 <code>IP:Port</code> 作罢。</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">2022/11/15 12:26:59 [error] 44#44: *9538531 stream [lua] resolver.lua:47: parse_domain(): failed to parse domain: nebula-storaged-0.nebula-storaged-headless.default.svc.cluster.local, error: failed to query the DNS server: dns client error: 101 empty record received while prereading client data, client: 172.17.0.1, server: 0.0.0.0:9779
-</span></span><span class="line"><span class="cl">2022/11/15 12:26:59 [error] 44#44: *9538531 stream [lua] upstream.lua:79: parse_domain_for_nodes(): dns resolver domain: nebula-storaged-0.nebula-storaged-headless.default.svc.cluster.local error: failed to query the DNS server: dns client error: 101 empty record received while prereading client data, client: 172.17.0.1, server: 0.0.0.0:9779
-</span></span><span class="line"><span class="cl">2022/11/15 12:26:59 [error] 44#44: *9538531 stream [lua] init.lua:965: stream_preread_phase(): failed to set upstream: no valid upstream node while prereading client data, client: 172.17.0.1, server: 0.0.0.0:9779
-</span></span></code></pre></td></tr></table>
-</div>
-</div></li>
-</ul>
-<blockquote>
-<p>题图版权 <a href="https://unsplash.com/photos/IlxX7xnbRF8" target="_blank" rel="noopener noreferrer">Lars</a></p>
-</blockquote>]]></description>
-</item><item>
     <title>利用 dbt，基于表结构的 Nebulagraph 图建模与 ETL</title>
     <link>https://siwei.io/nebulagraph-etl-dbt/</link>
     <pubDate>Thu, 10 Nov 2022 20:19:45 &#43;0800</pubDate><author>
@@ -1739,7 +711,7 @@
 </span></span><span class="line"><span class="cl">rm *.zip
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>再导入数仓进行转换（Transform）之前我们做一些数据的预处理，然后把他们放到 <code>seeds</code> 之下。</p>
+</div><p>在导入数仓进行转换（Transform）之前我们做一些数据的预处理，然后把他们放到 <code>seeds</code> 之下。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -2252,6 +1224,1034 @@
 <p>借助于 dbt，我们可以版本控制、测试、迭代我们的建模与数据转换，一点点进化、丰富构建的知识图谱。</p>
 <blockquote>
 <p>题图版权：<a href="https://unsplash.com/photos/Bu4lHKIHr-E" target="_blank" rel="noopener noreferrer">Claudio</a></p>
+</blockquote>]]></description>
+</item><item>
+    <title>NebulaGraph 的云原生 API 网关最佳实践</title>
+    <link>https://siwei.io/apisix-and-nebulagraph/</link>
+    <pubDate>Wed, 16 Nov 2022 17:24:42 &#43;0800</pubDate><author>
+        <name>Wey Gu</name>
+    </author><guid>https://siwei.io/apisix-and-nebulagraph/</guid>
+    <description><![CDATA[<div class="featured-image">
+                <img src="/apisix-and-nebulagraph/featured-image.webp" referrerpolicy="no-referrer">
+            </div><blockquote>
+<p>本文介绍了利用开源 API 网关 APISIX 加速 NebulaGraph 多个场景的落地最佳实践：负载均衡、暴露接口结构与 TLS Termination。</p>
+</blockquote>
+<!--
+
+[TOC]
+
+-->
+<h2 id="api-网关介绍" class="headerLink">
+    <a href="#api-%e7%bd%91%e5%85%b3%e4%bb%8b%e7%bb%8d" class="header-mark"></a>1 API 网关介绍</h2><h3 id="什么是-api-网关" class="headerLink">
+    <a href="#%e4%bb%80%e4%b9%88%e6%98%af-api-%e7%bd%91%e5%85%b3" class="header-mark"></a>1.1 什么是 API 网关</h3><p>API 网关是它位于客户端和服务器之间的“中间人”，用于管理、监控和保护 API。它可以在 API 之前执行一些操作，例如身份验证、授权、缓存、日志记录、审计、流量控制、安全、防火墙、压缩、解压缩、加密、解密等。</p>
+<p>API 网关可以工作在 4 层和 7 层。跑在 7 层的API 网关可以使用多种协议，例如 HTTP、HTTPS、WebSocket、gRPC、MQTT 等，在这些应用层协议中做一些操作，例如请求重写、请求转发、请求合并、请求重试、请求缓存、请求限流、请求熔断、请求降级、请求鉴权、请求监控、请求日志、请求审计、请求转发等等。</p>
+<p>这里举例一下借助 API 网关可以做的具体的事儿吧：</p>
+<ul>
+<li>我们可以在网关层增加认证层，比如 JWT 认证、OAuth2 认证、OpenID 认证等等，这样则不需要在每个服务中都做具体的认证集成工作，这可以节省非常多的开发成本。</li>
+<li>我们可以借助网关给跳板机 SSH 流量增加无需客户端修改的复杂认证，比如跳转任何客户端的 SSH 登录，给出一个网址或者输入框，引导登陆者通过网页的 SSO 认证（包含多因素认证），然后再通过网关转发到 SSH 服务。</li>
+<li>我们甚至可以在网关层做 Serverless 数据库！TiDB 社区的同学们就在做这个事儿，他们从普通的 MySQL 客户端的登录请求中解析能推断出转到需要的 TiDB 示例的信息，并且在需要 cold start 唤醒实例的时候把连接保持住，可以参考这篇文章：<a href="https://disksing.com/tidb-gateway/" target="_blank" rel="noopener noreferrer">TiDB Gateway</a>。</li>
+<li>如果我们特别惨在维护一些屎山项目，不得不针对旧版本的应用程序对新版本的服务端进行兼容，这时候 API 网关也可以通过一些请求重写，把旧版本的请求转换成新版本的请求。</li>
+</ul>
+<p>只要脑洞大，理论上API 的网关可以做很多很多事儿，显然，不是所有的事情都是适合在这一层面去做的，通常那些比较通用的事情才适合在这一层面去做，这里我只是给出一些典型和极端的具体例子。</p>
+<h3 id="apache-apisix" class="headerLink">
+    <a href="#apache-apisix" class="header-mark"></a>1.2 Apache APISIX</h3><p>API 网关是从 LB、Reverse Proxy 项目演进过来的，随着云原生的兴起，API 网关也逐渐成为了云原生的一部分，流行的开源的网关就有很多：</p>
+<ul>
+<li><a href="github.com/nginx/nginx" rel="">Nginx</a></li>
+<li><a href="github.com/apache/apisix" rel="">Apache APISIX</a></li>
+<li><a href="github.com/Kong/kong" rel="">Kong</a></li>
+<li><a href="github.com/luraproject/lura" rel="">Lura</a></li>
+<li><a href="github.com/openresty/openresty" rel="">OpenResty</a></li>
+<li><a href="github.com/TykTechnologies/tyk" rel="">Tyk</a></li>
+<li><a href="github.com/traefik/traefik" rel="">Traefik</a></li>
+<li><a href="github.com/istio/istio" rel="">Istio</a></li>
+<li><a href="github.com/envoyproxy/envoy" rel="">Envoy</a></li>
+</ul>
+<p>而且其中很多都是基于 Nginx/OpenResty 的下游项目，这里就以 Apache APISIX 为例，介绍一下 NebulaGraph 借助 API 网关的几个实践。</p>
+<h2 id="nebulagraph-介绍" class="headerLink">
+    <a href="#nebulagraph-%e4%bb%8b%e7%bb%8d" class="header-mark"></a>2 NebulaGraph 介绍</h2><p>NebulaGraph 是一个开源的分布式图数据库，它的特点是：</p>
+<ul>
+<li>高性能：NebulaGraph 的性能可以达到每秒百万级的读写，具有极高的扩展性，在千亿点万亿边的规模上支持毫秒级的查询。</li>
+<li>易扩展：NebulaGraph 的架构是分布式的，可以在多台机器上扩展，每台机器上可以运行多个服务进程，它的查询层是无状态的计算存储分离架构，我们可以很容易引入不同配置、不通类型的计算层，实现同一集群上 TP、AP、 图计算等不同负载的混合查询。</li>
+<li>易使用：NebulaGraph 的原生查询语言是类 SQL 的，易于学习和使用，同时支持 OpenCypher。</li>
+<li>丰富生态：NebulaGraph 的生态系统正在不断壮大，目前已经有了多个客户端，包括 Java、Python、Go、C++、JavaScript、Spark、Flink 等，同时也有了多个可视化工具，包括 NebulaGraph Studio、Nebula Dashboard、Nebula Explorer 等。</li>
+</ul>
+<h2 id="本文讨论的问题" class="headerLink">
+    <a href="#%e6%9c%ac%e6%96%87%e8%ae%a8%e8%ae%ba%e7%9a%84%e9%97%ae%e9%a2%98" class="header-mark"></a>3 本文讨论的问题</h2><p>本文给出了基于 NebulaGraph 集群应用中涉及到 API 网关的几个场景。</p>
+<ul>
+<li>查询接口的负载均衡</li>
+<li>底层存储接口的暴露</li>
+<li>传输层的加密</li>
+</ul>
+<h3 id="查询接口负载均衡" class="headerLink">
+    <a href="#%e6%9f%a5%e8%af%a2%e6%8e%a5%e5%8f%a3%e8%b4%9f%e8%bd%bd%e5%9d%87%e8%a1%a1" class="header-mark"></a>3.1 查询接口负载均衡</h3><p>首先是图数据库查询接口（GraphD）的负载均衡与高可用的问题。</p>
+<p>NebulaGraph 内核由三种服务组成：GraphD、MetaD 和 StorageD：</p>
+<p><a class="lightgallery" href="https://docs-cdn.nebula-graph.com.cn/figures/nebula-graph-architecture_3.png" title="https://docs-cdn.nebula-graph.com.cn/figures/nebula-graph-architecture_3.png" data-thumbnail="https://docs-cdn.nebula-graph.com.cn/figures/nebula-graph-architecture_3.png">
+        
+    </a></p>
+<p>所以，在默认情况下，集群只会暴露 GraphD 的接口，提供给客户端连接，执行 nGQL 的查询。</p>
+<p>这其中，GraphD 是无状态的，这意味着我们可以在多个 GraphD 之间做负载均衡。这里，我们有两种方法：基于客户端的（Client-Side LB），与基于代理的。</p>
+<h4 id="客户端的负载均衡" class="headerLink">
+    <a href="#%e5%ae%a2%e6%88%b7%e7%ab%af%e7%9a%84%e8%b4%9f%e8%bd%bd%e5%9d%87%e8%a1%a1" class="header-mark"></a>3.1.1 客户端的负载均衡</h4><p>客户端的负载均衡，就是在客户端，也就是应用程序中，实现负载均衡的逻辑，NebulaGraph 的各个语言的客户端里边已经内置了简单的轮询（Round-Robin）负载均衡，我们只需要在客户端配置多个 GraphD 的地址就可以了：</p>
+<p>比如我们在创建连接池的时候，指定了两个不同的 GraphD 的地址（对应不同进程实例）：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">nebula3.gclient.net</span> <span class="kn">import</span> <span class="n">ConnectionPool</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">nebula3.Config</span> <span class="kn">import</span> <span class="n">Config</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">config</span> <span class="o">=</span> <span class="n">Config</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="n">config</span><span class="o">.</span><span class="n">max_connection_pool_size</span> <span class="o">=</span> <span class="mi">10</span>
+</span></span><span class="line"><span class="cl"><span class="n">connection_pool</span> <span class="o">=</span> <span class="n">ConnectionPool</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="n">connection_pool</span><span class="o">.</span><span class="n">init</span><span class="p">([(</span><span class="s1">&#39;127.0.0.1&#39;</span><span class="p">,</span> <span class="mi">9669</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;127.0.0.1&#39;</span><span class="p">,</span> <span class="mi">49433</span><span class="p">)],</span> <span class="n">config</span><span class="p">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>我们在取得连接的时候，就会从连接池中随机取得一个连接：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">In</span> <span class="p">[</span><span class="mi">10</span><span class="p">]:</span> <span class="n">connection0</span> <span class="o">=</span> <span class="n">connection_pool</span><span class="o">.</span><span class="n">get_connection</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">In</span> <span class="p">[</span><span class="mi">11</span><span class="p">]:</span> <span class="n">connection1</span> <span class="o">=</span> <span class="n">connection_pool</span><span class="o">.</span><span class="n">get_connection</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 这两个连接的 GraphD 地址是不同的</span>
+</span></span><span class="line"><span class="cl"><span class="n">In</span> <span class="p">[</span><span class="mi">12</span><span class="p">]:</span> <span class="n">connection0</span><span class="o">.</span><span class="n">_port</span><span class="p">,</span> <span class="n">connection1</span><span class="o">.</span><span class="n">_port</span>
+</span></span><span class="line"><span class="cl"><span class="n">Out</span><span class="p">[</span><span class="mi">12</span><span class="p">]:</span> <span class="p">(</span><span class="mi">9669</span><span class="p">,</span> <span class="mi">49433</span><span class="p">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>这种客户端的负载均衡的问题在于它的配置、实现细节与应用代码耦合在一起，如果我们需要修改负载均衡的策略，就需要修改应用代码，这样就会增加应用的复杂度。</p>
+<h4 id="代理的负载均衡" class="headerLink">
+    <a href="#%e4%bb%a3%e7%90%86%e7%9a%84%e8%b4%9f%e8%bd%bd%e5%9d%87%e8%a1%a1" class="header-mark"></a>3.1.2 代理的负载均衡</h4><p>基于代理的负载均衡，就是在应用程序之前，增加一个代理层，来实现负载均衡的逻辑，这样应用程序就不需要关心负载均衡的问题了。在 k8s 里的话，我们可以使用 k8s 的 Service 来实现这个代理层。</p>
+<p>这是一个在 Minikube 中为 NebulaGraph 集群中 GraphD 创建的 Service：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">cat <span class="s">&lt;&lt;EOF | kubectl create -f -
+</span></span></span><span class="line"><span class="cl"><span class="s">apiVersion: v1
+</span></span></span><span class="line"><span class="cl"><span class="s">kind: Service
+</span></span></span><span class="line"><span class="cl"><span class="s">metadata:
+</span></span></span><span class="line"><span class="cl"><span class="s">  labels:
+</span></span></span><span class="line"><span class="cl"><span class="s">    app.kubernetes.io/cluster: nebula
+</span></span></span><span class="line"><span class="cl"><span class="s">    app.kubernetes.io/component: graphd
+</span></span></span><span class="line"><span class="cl"><span class="s">    app.kubernetes.io/managed-by: nebula-operator
+</span></span></span><span class="line"><span class="cl"><span class="s">    app.kubernetes.io/name: nebula-graph
+</span></span></span><span class="line"><span class="cl"><span class="s">  name: nebula-graphd-svc-nodeport
+</span></span></span><span class="line"><span class="cl"><span class="s">  namespace: default
+</span></span></span><span class="line"><span class="cl"><span class="s">spec:
+</span></span></span><span class="line"><span class="cl"><span class="s">  externalTrafficPolicy: Local
+</span></span></span><span class="line"><span class="cl"><span class="s">  ports:
+</span></span></span><span class="line"><span class="cl"><span class="s">  - name: thrift
+</span></span></span><span class="line"><span class="cl"><span class="s">    port: 9669
+</span></span></span><span class="line"><span class="cl"><span class="s">    protocol: TCP
+</span></span></span><span class="line"><span class="cl"><span class="s">    targetPort: 9669
+</span></span></span><span class="line"><span class="cl"><span class="s">    nodePort: 30000
+</span></span></span><span class="line"><span class="cl"><span class="s">  - name: http
+</span></span></span><span class="line"><span class="cl"><span class="s">    port: 19669
+</span></span></span><span class="line"><span class="cl"><span class="s">    protocol: TCP
+</span></span></span><span class="line"><span class="cl"><span class="s">    targetPort: 19669
+</span></span></span><span class="line"><span class="cl"><span class="s">    nodePort: 30001
+</span></span></span><span class="line"><span class="cl"><span class="s">  selector:
+</span></span></span><span class="line"><span class="cl"><span class="s">    app.kubernetes.io/cluster: nebula
+</span></span></span><span class="line"><span class="cl"><span class="s">    app.kubernetes.io/component: graphd
+</span></span></span><span class="line"><span class="cl"><span class="s">    app.kubernetes.io/managed-by: nebula-operator
+</span></span></span><span class="line"><span class="cl"><span class="s">    app.kubernetes.io/name: nebula-graph
+</span></span></span><span class="line"><span class="cl"><span class="s">  type: NodePort
+</span></span></span><span class="line"><span class="cl"><span class="s">EOF</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>创建了它之后，我们就可以通过它暴露的单独端口来访问 NebulaGraph 集群中的 GraphD 了：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">In</span> <span class="p">[</span><span class="mi">13</span><span class="p">]:</span> <span class="n">connection_pool</span> <span class="o">=</span> <span class="n">ConnectionPool</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">    <span class="o">...</span><span class="p">:</span> <span class="n">connection_pool</span><span class="o">.</span><span class="n">init</span><span class="p">([(</span><span class="s1">&#39;192.168.49.2&#39;</span><span class="p">,</span> <span class="mi">9669</span><span class="p">)],</span> <span class="n">config</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="n">Out</span><span class="p">[</span><span class="mi">13</span><span class="p">]:</span> <span class="kc">True</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">In</span> <span class="p">[</span><span class="mi">14</span><span class="p">]:</span> <span class="n">connection0</span> <span class="o">=</span> <span class="n">connection_pool</span><span class="o">.</span><span class="n">get_connection</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">In</span> <span class="p">[</span><span class="mi">15</span><span class="p">]:</span> <span class="n">connection1</span> <span class="o">=</span> <span class="n">connection_pool</span><span class="o">.</span><span class="n">get_connection</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">In</span> <span class="p">[</span><span class="mi">16</span><span class="p">]:</span> <span class="n">connection0</span><span class="o">.</span><span class="n">_ip</span><span class="p">,</span> <span class="n">connection1</span><span class="o">.</span><span class="n">_ip</span>
+</span></span><span class="line"><span class="cl"><span class="n">Out</span><span class="p">[</span><span class="mi">16</span><span class="p">]:</span> <span class="p">(</span><span class="s1">&#39;192.168.49.2&#39;</span><span class="p">,</span> <span class="s1">&#39;192.168.49.2&#39;</span><span class="p">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>可以看到，在连接层面上来看，客户端只知道代理的地址，而不知道 NebulaGraph 集群中的 GraphD 的地址，这样就实现了客户端与 NebulaGraph 集群中的 GraphD 的解耦。</p>
+<p>然而，当我们在 connection 之上创建 session 的时候，就能看到实际上客户端的不同请求是落在了不同的 GraphD 上的：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">In</span> <span class="p">[</span><span class="mi">17</span><span class="p">]:</span> <span class="n">session</span> <span class="o">=</span> <span class="n">connection_pool</span><span class="o">.</span><span class="n">get_session</span><span class="p">(</span><span class="s1">&#39;root&#39;</span><span class="p">,</span> <span class="s1">&#39;nebula&#39;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">In</span> <span class="p">[</span><span class="mi">18</span><span class="p">]:</span> <span class="n">session</span><span class="o">.</span><span class="n">_session_id</span>
+</span></span><span class="line"><span class="cl"><span class="n">Out</span><span class="p">[</span><span class="mi">18</span><span class="p">]:</span> <span class="mi">1668670607568178</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">In</span> <span class="p">[</span><span class="mi">19</span><span class="p">]:</span> <span class="n">session1</span> <span class="o">=</span> <span class="n">connection_pool</span><span class="o">.</span><span class="n">get_session</span><span class="p">(</span><span class="s1">&#39;root&#39;</span><span class="p">,</span> <span class="s1">&#39;nebula&#39;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">In</span> <span class="p">[</span><span class="mi">20</span><span class="p">]:</span> <span class="n">session1</span><span class="o">.</span><span class="n">_session_id</span>
+</span></span><span class="line"><span class="cl"><span class="n">Out</span><span class="p">[</span><span class="mi">20</span><span class="p">]:</span> <span class="mi">1668670625563307</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 得到每一个 session 的 ID</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">In</span> <span class="p">[</span><span class="mi">21</span><span class="p">]:</span> <span class="n">session</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&#34;SHOW SESSIONS&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 它们分别对应了两个不同的 graphd 实例</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">Out</span><span class="p">[</span><span class="mi">21</span><span class="p">]:</span> <span class="n">ResultSet</span><span class="p">(</span><span class="n">keys</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;SessionId&#39;</span><span class="p">,</span> <span class="s1">&#39;UserName&#39;</span><span class="p">,</span> <span class="s1">&#39;SpaceName&#39;</span><span class="p">,</span> <span class="s1">&#39;CreateTime&#39;</span><span class="p">,</span> <span class="s1">&#39;UpdateTime&#39;</span><span class="p">,</span> <span class="s1">&#39;GraphAddr&#39;</span><span class="p">,</span> <span class="s1">&#39;Timezone&#39;</span><span class="p">,</span> <span class="s1">&#39;ClientIp&#39;</span><span class="p">],</span> <span class="n">values</span><span class="p">:</span> <span class="p">[</span><span class="mi">1668670607568178</span><span class="p">,</span> <span class="s2">&#34;root&#34;</span><span class="p">,</span> <span class="s2">&#34;&#34;</span><span class="p">,</span> <span class="n">utc</span> <span class="n">datetime</span><span class="p">:</span> <span class="mi">2022</span><span class="o">-</span><span class="mi">11</span><span class="o">-</span><span class="mi">17</span><span class="n">T07</span><span class="p">:</span><span class="mi">36</span><span class="p">:</span><span class="mf">47.568178</span><span class="p">,</span> <span class="n">timezone_offset</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="n">utc</span> <span class="n">datetime</span><span class="p">:</span> <span class="mi">2022</span><span class="o">-</span><span class="mi">11</span><span class="o">-</span><span class="mi">17</span><span class="n">T07</span><span class="p">:</span><span class="mi">36</span><span class="p">:</span><span class="mf">47.575303</span><span class="p">,</span> <span class="n">timezone_offset</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&#34;nebula-graphd-0.nebula-graphd-svc.default.svc.cluster.local:9669&#34;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&#34;172.17.0.1&#34;</span><span class="p">],[</span><span class="mi">1668670625563307</span><span class="p">,</span> <span class="s2">&#34;root&#34;</span><span class="p">,</span> <span class="s2">&#34;&#34;</span><span class="p">,</span> <span class="n">utc</span> <span class="n">datetime</span><span class="p">:</span> <span class="mi">2022</span><span class="o">-</span><span class="mi">11</span><span class="o">-</span><span class="mi">17</span><span class="n">T07</span><span class="p">:</span><span class="mi">37</span><span class="p">:</span><span class="mf">05.563307</span><span class="p">,</span> <span class="n">timezone_offset</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="n">utc</span> <span class="n">datetime</span><span class="p">:</span> <span class="mi">2022</span><span class="o">-</span><span class="mi">11</span><span class="o">-</span><span class="mi">17</span><span class="n">T07</span><span class="p">:</span><span class="mi">37</span><span class="p">:</span><span class="mf">03.638910</span><span class="p">,</span> <span class="n">timezone_offset</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&#34;nebula-graphd-1.nebula-graphd-svc.default.svc.cluster.local:9669&#34;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&#34;172.17.0.1&#34;</span><span class="p">])</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="底层存储接口的暴露" class="headerLink">
+    <a href="#%e5%ba%95%e5%b1%82%e5%ad%98%e5%82%a8%e6%8e%a5%e5%8f%a3%e7%9a%84%e6%9a%b4%e9%9c%b2" class="header-mark"></a>3.2 底层存储接口的暴露</h3><p>在 NebulaGraph 中，我们可以通过 StorageClient 来访问底层的存储接口，这个接口可以用来做一些分析型、数据全扫描计算的工作。</p>
+<p>然而存储层的分布式服务实例不像 GraphD 那样，它们是有状态的，这其实与 K8s 或者 Docker Compose 的部署模型是相违背的，如果访问的应用 StorageD 客户端在集群外部，我们需要在 NebulaGraph 集群中的每一个存储实例上都部署一个代理（Service），这非常不方便，有时候还是一种浪费。</p>
+<p>此外，由于 NebulaGraph 内部服务发现机制和 StorageD 客户端的实现机制决定，每一个 storaged 服务实体都是由其内部的 <code>host:port</code> 唯一确定和寻址的，这给我们中间的代理工作也带来了一些麻烦。</p>
+<p>总结来看，我们的需求是：</p>
+<ul>
+<li>能够从集群外部访问 NebulaGraph 的存储层每一个实例</li>
+<li>每一个实例的访问地址（host:port）和内部的地址是完全一致的</li>
+</ul>
+<p>为了实现这个需求，我之前的做法是为每一个实例单独部署一个 GraphD 代理（消耗一个地址，保证端口不变），再在外部手动搭一个 nginx 作为代理，配合 DNS 把内部的地址解析 nginx 上，然后通过域名找到上游（每一个单独的 GraphD 代理）。</p>
+<blockquote>
+<p>注：我在这两个 gist 里给出了这个方法的实验步骤：</p>
+<ul>
+<li><a href="https://gist.github.com/wey-gu/950e4f4c673badae375e59007d80d372" target="_blank" rel="noopener noreferrer">https://gist.github.com/wey-gu/950e4f4c673badae375e59007d80d372</a></li>
+<li><a href="https://gist.github.com/wey-gu/699b9a2ef5dff5f0fb5f288d692ddfd5" target="_blank" rel="noopener noreferrer">https://gist.github.com/wey-gu/699b9a2ef5dff5f0fb5f288d692ddfd5</a></li>
+</ul>
+</blockquote>
+<p>最近，我找到了一个相对优雅的可维护的方式：</p>
+<ul>
+<li>在 NebulaGraph 集群同一个命名空间下引入一个 APISIX 网关</li>
+<li>利用 APISIX 中的 nginx TCP 代理的封装：<a href="https://apisix.apache.org/docs/apisix/stream-proxy/" target="_blank" rel="noopener noreferrer">stream-proxy</a>来暴露 storeaged 的接口</li>
+<li>为了最终只利用一个集群的出口（Service，我们利用其支持的 TLSv1.3 中的 extend host name 字段：SNI 来路由上游），做到用不同域名的 TCP over TLS 指向后端的不同 storaged</li>
+<li>最终，只需要 Storage 客户端能支持 TLSv1.3（发送 SNI），并且能解析所有 StorageD 的地址到 APISIX 的 Service 上即可</li>
+</ul>
+<p>示例图：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">           ┌────────────────────────────────────────────────────────────────────────────────────┐
+</span></span><span class="line"><span class="cl">           │  K8s Cluster                                                                       │
+</span></span><span class="line"><span class="cl">           │                                                      ┌──────────────────────────┐  │
+</span></span><span class="line"><span class="cl">           │          ┌────────────────────────────────────┐      │ NebulaGraph Cluster      │  │
+</span></span><span class="line"><span class="cl">           │          │  APISIX API-GATEWAY                │      │       ┌──────────────┐   │  │
+</span></span><span class="line"><span class="cl">           │          │                                    │      │       │ Storaged-0   │   │  │
+</span></span><span class="line"><span class="cl">           │          │                                    │ ┌────┼──────▶│              │   │  │
+</span></span><span class="line"><span class="cl">           │          │                                    │ │    │       │              │   │  │
+</span></span><span class="line"><span class="cl">           │          │   ┌────────────────────────────┐   │ │    │       └──────────────┘   │  │
+</span></span><span class="line"><span class="cl">           │          │   │ stream-proxy               │   │ │    │                          │  │
+</span></span><span class="line"><span class="cl">  ┌─────┐  │ .─────.  │   │                ┌────┐      │   │ │    │       ┌──────────────┐   │  │
+</span></span><span class="line"><span class="cl">  │     │  │╱       ╲ │   │  - addr: 9559  │    │──────┼───┼─┘    │       │ Storaged-1   │   │  │
+</span></span><span class="line"><span class="cl">━━┫ DNS ┣━━( Service )╋━━━╋▶   tls: true   │    │      │   │ ┌────┼──────▶│              │   │  │
+</span></span><span class="line"><span class="cl">  │     │  │`.     ,&#39; │   │                │    │──────┼───┼─┘    │       │              │   │  │
+</span></span><span class="line"><span class="cl">  └─────┘  │  `───&#39;   │   │                │    │      │   │      │       └──────────────┘   │  │
+</span></span><span class="line"><span class="cl">           │          │   │                │SNI │      │   │      │                          │  │
+</span></span><span class="line"><span class="cl">           │          │   │                │    │──────┼───┼─┐    │       ┌──────────────┐   │  │
+</span></span><span class="line"><span class="cl">           │          │   │                │    │      │   │ │    │       │ Storaged-2   │   │  │
+</span></span><span class="line"><span class="cl">           │          │   │                │    │      │   │ └────┼──────▶│              │   │  │
+</span></span><span class="line"><span class="cl">           │          │   │                │    │──────┼───┼─┐    │       │              │   │  │
+</span></span><span class="line"><span class="cl">           │          │   │                └────┘      │   │ │    │       └──────────────┘   │  │
+</span></span><span class="line"><span class="cl">           │          │   └────────────────────────────┘   │ │    │                          │  │
+</span></span><span class="line"><span class="cl">           │          │                                    │ │    │       ┌──────────────┐   │  │
+</span></span><span class="line"><span class="cl">           │          │                                    │ │    │       │ Storaged-3   │   │  │
+</span></span><span class="line"><span class="cl">           │          │                                    │ └────┼──────▶│              │   │  │
+</span></span><span class="line"><span class="cl">           │          │                                    │      │       │              │   │  │
+</span></span><span class="line"><span class="cl">           │          │                                    │      │       └──────────────┘   │  │
+</span></span><span class="line"><span class="cl">           │          └────────────────────────────────────┘      └──────────────────────────┘  │
+</span></span><span class="line"><span class="cl">           │                                                                                    │
+</span></span><span class="line"><span class="cl">           └────────────────────────────────────────────────────────────────────────────────────┘
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>这样做的好处是：</p>
+<ul>
+<li>在 APISIX 中比较优雅地维护代理的配置，并且可以用到 APISIX 这些现代化的流量管理能力</li>
+<li>不需要为每一个 StorageD 单独创建 Service，只需要一个 Service，出集群地址 就可以了</li>
+<li>为流量增加了 TLSv1.3 的加密，提高了安全性同时没有给 NebulaGraph 集群内部的南北流量带来的性能损耗</li>
+</ul>
+<p>在本文的结尾，我会给出一个实操的实验过程，这里包含了本文提到的所有要点和细节。</p>
+<h3 id="传输层的加密" class="headerLink">
+    <a href="#%e4%bc%a0%e8%be%93%e5%b1%82%e7%9a%84%e5%8a%a0%e5%af%86" class="header-mark"></a>3.3 传输层的加密</h3><p>我们在前一个问题中提及到了，在 APISIX 网关中 terminate TLSv1.3 的连接，借助 SNI 信息路由 StorageD 的方法，其实，单独将 GraphD 接口的 TLS 交给网关来做，好处也是非常明显的：</p>
+<ul>
+<li>证书管理在统一的网关控制面做，更加方便</li>
+<li>证书运维无 NebulaGraph 集群配置侵入（NebulaGraph 原生支持 TLS 加密，但是加密之后带来了集群内部通信的开销，而且配置和集群其他层面配置在一起，证书更新涉及进程重启，不够灵活）</li>
+</ul>
+<p>具体的方法在后边实操中也是有体现的。</p>
+<h2 id="实操利用-apisix-的-stream-proxy-暴露-storaged-的接口" class="headerLink">
+    <a href="#%e5%ae%9e%e6%93%8d%e5%88%a9%e7%94%a8-apisix-%e7%9a%84-stream-proxy-%e6%9a%b4%e9%9c%b2-storaged-%e7%9a%84%e6%8e%a5%e5%8f%a3" class="header-mark"></a>4 实操：利用 APISIX 的 stream-proxy 暴露 StorageD 的接口</h2><h3 id="实验环境minikube" class="headerLink">
+    <a href="#%e5%ae%9e%e9%aa%8c%e7%8e%af%e5%a2%83minikube" class="header-mark"></a>4.1 实验环境：minikube</h3><p>我们就在本地的 minikube 上做这个实验吧，首先启动一个 minikube，因为 APISIX 内部的 etcd 需要用到 storageclass，我们带上 穷人版的 storageclass 插件，同时，为了在 k8s 外部访问 storaged 的时候用和内部相同的域名和端口，我们把 node-port 允许的端口扩充到小于 9779 的范围。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">minikube start <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    --addons<span class="o">=</span><span class="s2">&#34;default-storageclass&#34;</span> <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    --extra-config<span class="o">=</span>apiserver.service-node-port-range<span class="o">=</span>1-65535
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="实验环境nebulagraph-on-k8s" class="headerLink">
+    <a href="#%e5%ae%9e%e9%aa%8c%e7%8e%af%e5%a2%83nebulagraph-on-k8s" class="header-mark"></a>4.2 实验环境：NebulaGraph on K8s</h3><p>这里，我们使用 Nebula Operator 来部署 NebulaGraph 集群，具体的部署方法可以参考 <a href="https://docs.nebula-graph.com.cn/3.3.0/nebula-operator/1.introduction-to-nebula-operator/" target="_blank" rel="noopener noreferrer">Nebula Operator 文档</a>。</p>
+<p>咱们做实验，就偷个懒，用我写的 <a href="https://github.com/wey-gu/nebula-operator-kind" target="_blank" rel="noopener noreferrer">Nebula-Operator-KinD</a> 来一键部署：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">curl -sL nebula-kind.siwei.io/install-on-k8s.sh <span class="p">|</span> bash
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="实验环境apisix-on-k8s" class="headerLink">
+    <a href="#%e5%ae%9e%e9%aa%8c%e7%8e%af%e5%a2%83apisix-on-k8s" class="header-mark"></a>4.3 实验环境：APISIX on k8s</h3><p>首先是安装，在 Helm 参数中指定打开 stream-proxy 的开关：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">helm repo add apisix https://charts.apiseven.com
+</span></span><span class="line"><span class="cl">helm repo add bitnami https://charts.bitnami.com/bitnami
+</span></span><span class="line"><span class="cl">helm repo update
+</span></span><span class="line"><span class="cl">helm install apisix apisix/apisix <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>  --set gateway.type<span class="o">=</span>NodePort <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>  --set gateway.stream.enabled<span class="o">=</span><span class="nb">true</span> <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>  --set ingress-controller.enabled<span class="o">=</span><span class="nb">true</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># dashboard 也装上，方便我们绕过 admin API call 做一些方便的操作。</span>
+</span></span><span class="line"><span class="cl">helm install apisix-dashboard apisix/apisix-dashboard
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>然后，因为截止到现在，APISIX 的 Helm Chart 之中并没有提供 stream-proxy TCP 的监听端口的 TLS 支持的配置格式，见 <a href="https://github.com/apache/apisix-helm-chart/issues/348" target="_blank" rel="noopener noreferrer">https://github.com/apache/apisix-helm-chart/issues/348</a> ，我们需要手动更改 APISIX 的 configmap，把 stream-proxy 的 TLS 配置加上：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">kubectl edit ConfigMap apisix
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>我们编辑把 <code>stream_proxy.tcp</code> 改写成这样：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="w">     </span><span class="nt">stream_proxy</span><span class="p">:</span><span class="w">                 </span><span class="c"># TCP/UDP proxy</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">       </span><span class="nt">only</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">       </span><span class="nt">tcp</span><span class="p">:</span><span class="w">                        </span><span class="c"># TCP proxy port list</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">         </span>- <span class="nt">addr</span><span class="p">:</span><span class="w"> </span><span class="m">9779</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">           </span><span class="nt">tls</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">         </span>- <span class="nt">addr</span><span class="p">:</span><span class="w"> </span><span class="m">9559</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">           </span><span class="nt">tls</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>这里我们需要重建 APISIX Pod，因为 APISIX 的 stream-proxy 的 TLS 配置是在启动的时候加载的，所以我们需要重建 APISIX Pod：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">kubectl delete <span class="k">$(</span>kubectl get po -l <span class="s2">&#34;app.kubernetes.io/name=apisix&#34;</span> -o name<span class="k">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="开始实验" class="headerLink">
+    <a href="#%e5%bc%80%e5%a7%8b%e5%ae%9e%e9%aa%8c" class="header-mark"></a>4.4 开始实验</h3><p>我们看看这个实验的目标，就是把 NebulaGraph 的 StorageD 的接口暴露出来，让外部的客户端可以访问到，而暴露的方式如图：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">           ┌────────────────────────────────────────────────────────────────────────────────────┐
+</span></span><span class="line"><span class="cl">           │  K8s Cluster                                                                       │
+</span></span><span class="line"><span class="cl">           │                                                      ┌──────────────────────────┐  │
+</span></span><span class="line"><span class="cl">           │          ┌────────────────────────────────────┐      │ NebulaGraph Cluster      │  │
+</span></span><span class="line"><span class="cl">           │          │  APISIX API-GATEWAY                │      │       ┌──────────────┐   │  │
+</span></span><span class="line"><span class="cl">           │          │                                    │      │       │ Storaged-0   │   │  │
+</span></span><span class="line"><span class="cl">           │          │                                    │ ┌────┼──────▶│              │   │  │
+</span></span><span class="line"><span class="cl">           │          │                                    │ │    │       │              │   │  │
+</span></span><span class="line"><span class="cl">           │          │   ┌────────────────────────────┐   │ │    │       └──────────────┘   │  │
+</span></span><span class="line"><span class="cl">           │          │   │ stream-proxy               │   │ │    │                          │  │
+</span></span><span class="line"><span class="cl">  ┌─────┐  │ .─────.  │   │                ┌────┐      │   │ │    │       ┌──────────────┐   │  │
+</span></span><span class="line"><span class="cl">  │     │  │╱       ╲ │   │  - addr: 9559  │    │──────┼───┼─┘    │       │ Storaged-1   │   │  │
+</span></span><span class="line"><span class="cl">━━┫ DNS ┣━━( Service )╋━━━╋▶   tls: true   │    │      │   │ ┌────┼──────▶│              │   │  │
+</span></span><span class="line"><span class="cl">  │     │  │`.     ,&#39; │   │                │    │──────┼───┼─┘    │       │              │   │  │
+</span></span><span class="line"><span class="cl">  └─────┘  │  `───&#39;   │   │                │    │      │   │      │       └──────────────┘   │  │
+</span></span><span class="line"><span class="cl">           │          │   │                │SNI │      │   │      │                          │  │
+</span></span><span class="line"><span class="cl">           │          │   │                │    │──────┼───┼─┐    │       ┌──────────────┐   │  │
+</span></span><span class="line"><span class="cl">           │          │   │                │    │      │   │ │    │       │ Storaged-2   │   │  │
+</span></span><span class="line"><span class="cl">           │          │   │                │    │      │   │ └────┼──────▶│              │   │  │
+</span></span><span class="line"><span class="cl">           │          │   │                │    │──────┼───┼─┐    │       │              │   │  │
+</span></span><span class="line"><span class="cl">           │          │   │                └────┘      │   │ │    │       └──────────────┘   │  │
+</span></span><span class="line"><span class="cl">           │          │   └────────────────────────────┘   │ │    │                          │  │
+</span></span><span class="line"><span class="cl">           │          │                                    │ │    │       ┌──────────────┐   │  │
+</span></span><span class="line"><span class="cl">           │          │                                    │ │    │       │ Storaged-3   │   │  │
+</span></span><span class="line"><span class="cl">           │          │                                    │ └────┼──────▶│              │   │  │
+</span></span><span class="line"><span class="cl">           │          │                                    │      │       │              │   │  │
+</span></span><span class="line"><span class="cl">           │          │                                    │      │       └──────────────┘   │  │
+</span></span><span class="line"><span class="cl">           │          └────────────────────────────────────┘      └──────────────────────────┘  │
+</span></span><span class="line"><span class="cl">           │                                                                                    │
+</span></span><span class="line"><span class="cl">           └────────────────────────────────────────────────────────────────────────────────────┘
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>我们已经有了所有的框架，我们要往里填箭头和圆圈了。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ kubectl get po
+</span></span><span class="line"><span class="cl">NAME                                         READY   STATUS     RESTARTS      AGE
+</span></span><span class="line"><span class="cl">apisix-6d89854bc5-5m788                      1/1     Running    <span class="m">1</span> <span class="o">(</span>31h ago<span class="o">)</span>   2d4h
+</span></span><span class="line"><span class="cl">apisix-dashboard-b544bd766-nh79j             1/1     Running    <span class="m">8</span> <span class="o">(</span>31h ago<span class="o">)</span>   2d10h
+</span></span><span class="line"><span class="cl">apisix-etcd-0                                1/1     Running    <span class="m">2</span> <span class="o">(</span>31h ago<span class="o">)</span>   2d10h
+</span></span><span class="line"><span class="cl">apisix-etcd-1                                1/1     Running    <span class="m">2</span> <span class="o">(</span>31h ago<span class="o">)</span>   2d10h
+</span></span><span class="line"><span class="cl">apisix-etcd-2                                1/1     Running    <span class="m">2</span> <span class="o">(</span>31h ago<span class="o">)</span>   2d10h
+</span></span><span class="line"><span class="cl">nebula-graphd-0                              1/1     Running    <span class="m">2</span> <span class="o">(</span>31h ago<span class="o">)</span>   3d4h
+</span></span><span class="line"><span class="cl">nebula-metad-0                               1/1     Running    <span class="m">2</span> <span class="o">(</span>31h ago<span class="o">)</span>   3d4h
+</span></span><span class="line"><span class="cl">nebula-storaged-0                            1/1     Running    <span class="m">2</span> <span class="o">(</span>31h ago<span class="o">)</span>   3d4h
+</span></span><span class="line"><span class="cl">nebula-storaged-1                            1/1     Running    <span class="m">2</span> <span class="o">(</span>31h ago<span class="o">)</span>   3d4h
+</span></span><span class="line"><span class="cl">nebula-storaged-2                            1/1     Running    <span class="m">2</span> <span class="o">(</span>31h ago<span class="o">)</span>   3d4h
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="配置-apisix-的-stream-proxy" class="headerLink">
+    <a href="#%e9%85%8d%e7%bd%ae-apisix-%e7%9a%84-stream-proxy" class="header-mark"></a>4.4.1 配置 APISIX 的 stream-proxy</h4><p>参考 APISIX 文档：https://apisix.apache.org/docs/apisix/stream-proxy/#accept-tls-over-tcp-connection</p>
+<p>我们用 APISIX 的 API 来配置 stream-proxy：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nv">apisix_api_key</span><span class="o">=</span><span class="s2">&#34;edd1c9f034335f136f87ad84b625c8f1&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nv">apisix_pod</span><span class="o">=</span><span class="k">$(</span>kubectl get po -l <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    <span class="s2">&#34;app.kubernetes.io/name=apisix&#34;</span> -o name<span class="k">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">kubectl <span class="nb">exec</span> -it <span class="nv">$apisix_pod</span> -- <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    curl http://127.0.0.1:9180/apisix/admin/stream_routes/1 <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    -H <span class="s2">&#34;X-API-KEY: </span><span class="nv">$apisix_api_key</span><span class="s2">&#34;</span> -X PUT -d <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span><span class="s1">&#39;{
+</span></span></span><span class="line"><span class="cl"><span class="s1">    &#34;sni&#34;: &#34;nebula-storaged-0.nebula-storaged-headless.default.svc.cluster.local&#34;,
+</span></span></span><span class="line"><span class="cl"><span class="s1">    &#34;upstream&#34;: {
+</span></span></span><span class="line"><span class="cl"><span class="s1">        &#34;nodes&#34;: {
+</span></span></span><span class="line"><span class="cl"><span class="s1">            &#34;172.17.0.13:9779&#34;: 1
+</span></span></span><span class="line"><span class="cl"><span class="s1">        },
+</span></span></span><span class="line"><span class="cl"><span class="s1">        &#34;type&#34;: &#34;roundrobin&#34;
+</span></span></span><span class="line"><span class="cl"><span class="s1">    }
+</span></span></span><span class="line"><span class="cl"><span class="s1">}&#39;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">kubectl <span class="nb">exec</span> -it <span class="nv">$apisix_pod</span> -- <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    curl http://127.0.0.1:9180/apisix/admin/stream_routes/2 <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    -H <span class="s2">&#34;X-API-KEY: </span><span class="nv">$apisix_api_key</span><span class="s2">&#34;</span> -X PUT -d <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span><span class="s1">&#39;{
+</span></span></span><span class="line"><span class="cl"><span class="s1">    &#34;sni&#34;: &#34;nebula-storaged-1.nebula-storaged-headless.default.svc.cluster.local&#34;,
+</span></span></span><span class="line"><span class="cl"><span class="s1">    &#34;upstream&#34;: {
+</span></span></span><span class="line"><span class="cl"><span class="s1">        &#34;nodes&#34;: {
+</span></span></span><span class="line"><span class="cl"><span class="s1">            &#34;172.17.0.18:9779&#34;: 1
+</span></span></span><span class="line"><span class="cl"><span class="s1">        },
+</span></span></span><span class="line"><span class="cl"><span class="s1">        &#34;type&#34;: &#34;roundrobin&#34;
+</span></span></span><span class="line"><span class="cl"><span class="s1">    }
+</span></span></span><span class="line"><span class="cl"><span class="s1">}&#39;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">kubectl <span class="nb">exec</span> -it <span class="nv">$apisix_pod</span> -- <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    curl http://127.0.0.1:9180/apisix/admin/stream_routes/3 <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    -H <span class="s2">&#34;X-API-KEY: </span><span class="nv">$apisix_api_key</span><span class="s2">&#34;</span> -X PUT -d <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span><span class="s1">&#39;{
+</span></span></span><span class="line"><span class="cl"><span class="s1">    &#34;sni&#34;: &#34;nebula-storaged-2.nebula-storaged-headless.default.svc.cluster.local&#34;,
+</span></span></span><span class="line"><span class="cl"><span class="s1">    &#34;upstream&#34;: {
+</span></span></span><span class="line"><span class="cl"><span class="s1">        &#34;nodes&#34;: {
+</span></span></span><span class="line"><span class="cl"><span class="s1">            &#34;172.17.0.5:9779&#34;: 1
+</span></span></span><span class="line"><span class="cl"><span class="s1">        },
+</span></span></span><span class="line"><span class="cl"><span class="s1">        &#34;type&#34;: &#34;roundrobin&#34;
+</span></span></span><span class="line"><span class="cl"><span class="s1">    }
+</span></span></span><span class="line"><span class="cl"><span class="s1">}&#39;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>注意，当下，APISIX 的 stream-proxy 上游节点不支持域名解析，是受限于上游的 lua 库，详见我报的 issue：https://github.com/apache/apisix/issues/8334 ，理想情况下，我们这里应该给出每一个 storaged 的 SNI 相同的地址作为 <code>upstream.nodes</code>，好像：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">kubectl <span class="nb">exec</span> -it <span class="nv">$apisix_pod</span> -- <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    curl http://127.0.0.1:9180/apisix/admin/stream_routes/1 <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    -H <span class="s2">&#34;X-API-KEY: </span><span class="nv">$apisix_api_key</span><span class="s2">&#34;</span> -X PUT -d <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span><span class="s1">&#39;{
+</span></span></span><span class="line"><span class="cl"><span class="s1">    &#34;sni&#34;: &#34;nebula-storaged-0.nebula-storaged-headless.default.svc.cluster.local&#34;,
+</span></span></span><span class="line"><span class="cl"><span class="s1">    &#34;upstream&#34;: {
+</span></span></span><span class="line"><span class="cl"><span class="s1">        &#34;nodes&#34;: {
+</span></span></span><span class="line"><span class="cl"><span class="s1">            &#34;nebula-storaged-0.nebula-storaged-headless.default.svc.cluster.local&#34;: 1
+</span></span></span><span class="line"><span class="cl"><span class="s1">        },
+</span></span></span><span class="line"><span class="cl"><span class="s1">        &#34;type&#34;: &#34;roundrobin&#34;
+</span></span></span><span class="line"><span class="cl"><span class="s1">    }
+</span></span></span><span class="line"><span class="cl"><span class="s1">}&#39;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div></blockquote>
+<h4 id="配置-apisix-中-storaged-地址的-tls-证书" class="headerLink">
+    <a href="#%e9%85%8d%e7%bd%ae-apisix-%e4%b8%ad-storaged-%e5%9c%b0%e5%9d%80%e7%9a%84-tls-%e8%af%81%e4%b9%a6" class="header-mark"></a>4.4.2 配置 APISIX 中 storaged 地址的 TLS 证书</h4><p>在生产环境下，我们应该云原生的方式去管理自签或者公共信任的证书，这里，我们就手动利用 mkcert 工具来做这件事儿。</p>
+<p>安装 mkcert</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 首次运行，需要安装 mkcert，并且生成根证书</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># macOS 的话</span>
+</span></span><span class="line"><span class="cl">brew install mkcert
+</span></span><span class="line"><span class="cl"><span class="c1"># ubuntu 的话</span>
+</span></span><span class="line"><span class="cl">apt-get install wget libnss3-tools
+</span></span><span class="line"><span class="cl"><span class="c1"># 然后再去 https://github.com/FiloSottile/mkcert/releases/ 下载 mkcert</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>签发证书：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">mkcert <span class="s1">&#39;*.nebula-storaged-headless.default.svc.cluster.local&#39;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>利用 APISIX-dashboard 将证书导入到 APISIX 之中</p>
+<p>单独开一个终端，运行：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">POD_NAME</span><span class="o">=</span><span class="k">$(</span><span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    kubectl get pods <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    -l <span class="s2">&#34;app.kubernetes.io/name=apisix-dashboard,app.kubernetes.io/instance=apisix-dashboard&#34;</span> <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    -o <span class="nv">jsonpath</span><span class="o">=</span><span class="s2">&#34;{.items[0].metadata.name}&#34;</span><span class="k">)</span>
+</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">CONTAINER_PORT</span><span class="o">=</span><span class="k">$(</span><span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    kubectl get pod <span class="nv">$POD_NAME</span> <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    -o <span class="nv">jsonpath</span><span class="o">=</span><span class="s2">&#34;{.spec.containers[0].ports[0].containerPort}&#34;</span><span class="k">)</span>
+</span></span><span class="line"><span class="cl">kubectl <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    port-forward <span class="nv">$POD_NAME</span> 8080:<span class="nv">$CONTAINER_PORT</span> --address<span class="o">=</span><span class="s1">&#39;0.0.0.0&#39;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>浏览器访问 http://10.1.1.168:8080/ssl/list ，账号密码都是 <code>admin</code> ，点击 <code>Create</code> 按钮，将刚刚生成的证书导入到 APISIX 之中。</p>
+<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/202471244-7081b37e-1e8f-4298-8887-db2feefe74a2.png" title="https://user-images.githubusercontent.com/1651790/202471244-7081b37e-1e8f-4298-8887-db2feefe74a2.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/202471244-7081b37e-1e8f-4298-8887-db2feefe74a2.png">
+        
+    </a></p>
+<h4 id="增加-apisix-的-nodeport-service" class="headerLink">
+    <a href="#%e5%a2%9e%e5%8a%a0-apisix-%e7%9a%84-nodeport-service" class="header-mark"></a>4.4.3 增加 APISIX 的 NodePort Service</h4><p>创建一个 NodePort Service，用于暴露 APISIX 的 9779 端口，这样，我们就可以通过外部的 IP 地址访问到 APISIX 了。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">cat <span class="s">&lt;&lt;EOF | kubectl apply -f -
+</span></span></span><span class="line"><span class="cl"><span class="s">spec:
+</span></span></span><span class="line"><span class="cl"><span class="s">  selector:
+</span></span></span><span class="line"><span class="cl"><span class="s">    app.kubernetes.io/instance: apisix
+</span></span></span><span class="line"><span class="cl"><span class="s">    app.kubernetes.io/name: apisix
+</span></span></span><span class="line"><span class="cl"><span class="s">  ports:
+</span></span></span><span class="line"><span class="cl"><span class="s">    - protocol: TCP
+</span></span></span><span class="line"><span class="cl"><span class="s">      port: 9779
+</span></span></span><span class="line"><span class="cl"><span class="s">      targetPort: 9779
+</span></span></span><span class="line"><span class="cl"><span class="s">      name: thrift
+</span></span></span><span class="line"><span class="cl"><span class="s">      nodePort: 9779
+</span></span></span><span class="line"><span class="cl"><span class="s">  type: NodePort
+</span></span></span><span class="line"><span class="cl"><span class="s">EOF</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>因为前边 minikube 中我们配置了端口的范围覆盖到了 9779，所以我们可以看到，这个 NodePort Service 的端口在宿主机上也可以从 minikube ip 的同一个端口访问到：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ minikube service apisix-svc
+</span></span><span class="line"><span class="cl">$ minikube service list
+</span></span><span class="line"><span class="cl"><span class="p">|</span>------------------------<span class="p">|</span>---------------------------------<span class="p">|</span>-------------------<span class="p">|</span>---------------------------<span class="p">|</span>
+</span></span><span class="line"><span class="cl"><span class="p">|</span>       NAMESPACE        <span class="p">|</span>              NAME               <span class="p">|</span>    TARGET PORT    <span class="p">|</span>            URL            <span class="p">|</span>
+</span></span><span class="line"><span class="cl"><span class="p">|</span>------------------------<span class="p">|</span>---------------------------------<span class="p">|</span>-------------------<span class="p">|</span>---------------------------<span class="p">|</span>
+</span></span><span class="line"><span class="cl">...
+</span></span><span class="line"><span class="cl"><span class="p">|</span> default                <span class="p">|</span> apisix-svc                      <span class="p">|</span> thrift/9779       <span class="p">|</span> http://192.168.49.2:9779  <span class="p">|</span>&lt;---
+</span></span><span class="line"><span class="cl">...
+</span></span><span class="line"><span class="cl"><span class="p">|</span>------------------------<span class="p">|</span>---------------------------------<span class="p">|</span>-------------------<span class="p">|</span>---------------------------<span class="p">|</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>当然，minikube 假设我们的服务都是 HTTP 的，给出的 URL 是 HTTP:// 的，不用理会它，我们心里知道它是 TCP over TLS 就好了。</p>
+<h4 id="配置-k8s-外部-dns" class="headerLink">
+    <a href="#%e9%85%8d%e7%bd%ae-k8s-%e5%a4%96%e9%83%a8-dns" class="header-mark"></a>4.4.4 配置 K8s 外部 DNS</h4><p>我们需要配置一个 DNS 服务，让我们可以通过 <code>nebula-storaged-0.nebula-storaged-headless.default.svc.cluster.local</code> 等三个域名通过 minikube 的 NodePort Service 访问到我们的 NebulaGraph 的 storaged 服务。</p>
+<p>获得 minikube 的 IP 地址：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ minikube ip
+</span></span><span class="line"><span class="cl">192.168.49.2
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>配置 <code>/etc/hosts</code></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">192.168.49.2 nebula-storaged-0.nebula-storaged-headless.default.svc.cluster.local
+</span></span><span class="line"><span class="cl">192.168.49.2 nebula-storaged-1.nebula-storaged-headless.default.svc.cluster.local
+</span></span><span class="line"><span class="cl">192.168.49.2 nebula-storaged-2.nebula-storaged-headless.default.svc.cluster.local
+</span></span><span class="line"><span class="cl">192.168.49.2 nebula-metad-0.nebula-metad-headless.default.svc.cluster.local
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="验证-nebulagraph-storage-client-可以从所有的节点中获取到数据" class="headerLink">
+    <a href="#%e9%aa%8c%e8%af%81-nebulagraph-storage-client-%e5%8f%af%e4%bb%a5%e4%bb%8e%e6%89%80%e6%9c%89%e7%9a%84%e8%8a%82%e7%82%b9%e4%b8%ad%e8%8e%b7%e5%8f%96%e5%88%b0%e6%95%b0%e6%8d%ae" class="header-mark"></a>4.4.5 验证 NebulaGraph Storage Client 可以从所有的节点中获取到数据</h4><p>这里，为了方便，我们用到 python 的客户端。</p>
+<p>由于在写本文的时候，NebulaGraph Python 客户端的 StorageClient 尚未支持 TLS，对它支持的 PR 刚好是我为了本实验写的：https://github.com/vesoft-inc/nebula-python/pull/239 。</p>
+<p>所以我们要从我的个人分支安装这个客户端：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">git clone https://github.com/wey-gu/nebula-python.git
+</span></span><span class="line"><span class="cl"><span class="nb">cd</span> nebula-python
+</span></span><span class="line"><span class="cl">python3 -m pip install .
+</span></span><span class="line"><span class="cl">python3 -m pip install ipython
+</span></span><span class="line"><span class="cl"><span class="c1"># 进入 ipython</span>
+</span></span><span class="line"><span class="cl">ipython
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>我们在 iPython 中交互式验证：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">nebula3.mclient</span> <span class="kn">import</span> <span class="n">MetaCache</span><span class="p">,</span> <span class="n">HostAddr</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">nebula3.sclient.GraphStorageClient</span> <span class="kn">import</span> <span class="n">GraphStorageClient</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">nebula3.Config</span> <span class="kn">import</span> <span class="n">SSL_config</span>
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">ssl</span>
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">os</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">meta_cache</span> <span class="o">=</span> <span class="n">MetaCache</span><span class="p">([(</span><span class="s1">&#39;nebula-metad-0.nebula-metad-headless.default.svc.cluster.local&#39;</span><span class="p">,</span> <span class="mi">9559</span><span class="p">)],</span>
+</span></span><span class="line"><span class="cl">                       <span class="mi">50000</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">storage_addrs</span> <span class="o">=</span> <span class="p">[</span><span class="n">HostAddr</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s1">&#39;nebula-storaged-0.nebula-storaged-headless.default.svc.cluster.local&#39;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">9779</span><span class="p">),</span>
+</span></span><span class="line"><span class="cl">                 <span class="n">HostAddr</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s1">&#39;nebula-storaged-1.nebula-storaged-headless.default.svc.cluster.local&#39;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">9779</span><span class="p">),</span>
+</span></span><span class="line"><span class="cl">                 <span class="n">HostAddr</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s1">&#39;nebula-storaged-2.nebula-storaged-headless.default.svc.cluster.local&#39;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">9779</span><span class="p">)]</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 自签证书配置</span>
+</span></span><span class="line"><span class="cl"><span class="n">current_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="s2">&#34;.&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">ssl_config</span> <span class="o">=</span> <span class="n">SSL_config</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="n">ssl_config</span><span class="o">.</span><span class="n">cert_reqs</span> <span class="o">=</span> <span class="n">ssl</span><span class="o">.</span><span class="n">CERT_OPTIONAL</span>
+</span></span><span class="line"><span class="cl"><span class="n">ssl_config</span><span class="o">.</span><span class="n">cert_reqs</span> <span class="o">=</span> <span class="n">ssl</span><span class="o">.</span><span class="n">CERT_OPTIONAL</span>
+</span></span><span class="line"><span class="cl"><span class="n">ssl_config</span><span class="o">.</span><span class="n">ca_certs</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="s2">&#34;~/.local/share/mkcert&#34;</span><span class="p">),</span> <span class="s1">&#39;rootCA.pem&#39;</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="n">ssl_config</span><span class="o">.</span><span class="n">keyfile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">current_dir</span><span class="p">,</span> <span class="s1">&#39;nebula-storaged-headless.default.svc.cluster.local+1-key.pem&#39;</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="n">ssl_config</span><span class="o">.</span><span class="n">certfile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">current_dir</span><span class="p">,</span> <span class="s1">&#39;nebula-storaged-headless.default.svc.cluster.local+1.pem&#39;</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 实例化 StorageClient</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">graph_storage_client</span> <span class="o">=</span> <span class="n">GraphStorageClient</span><span class="p">(</span><span class="n">meta_cache</span><span class="p">,</span> <span class="n">storage_addrs</span><span class="p">,</span> <span class="mi">5000</span><span class="p">,</span> <span class="n">ssl_config</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 验证可以从所有的节点中获取到数据</span>
+</span></span><span class="line"><span class="cl"><span class="n">resp</span> <span class="o">=</span> <span class="n">graph_storage_client</span><span class="o">.</span><span class="n">scan_vertex</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">        <span class="n">space_name</span><span class="o">=</span><span class="s1">&#39;basketballplayer&#39;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="n">tag_name</span><span class="o">=</span><span class="s1">&#39;player&#39;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="k">while</span> <span class="n">resp</span><span class="o">.</span><span class="n">has_next</span><span class="p">():</span>
+</span></span><span class="line"><span class="cl">    <span class="n">result</span> <span class="o">=</span> <span class="n">resp</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="n">vertex_data</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="n">vertex_data</span><span class="p">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>结果✅：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="p">(</span><span class="s2">&#34;player112&#34;</span> <span class="p">:</span><span class="n">player</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="s2">&#34;Jonathon Simmons&#34;</span><span class="p">,</span> <span class="n">age</span><span class="p">:</span> <span class="mi">29</span><span class="p">})</span>
+</span></span><span class="line"><span class="cl"><span class="p">(</span><span class="s2">&#34;player1120&#34;</span> <span class="p">:</span><span class="n">player</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="s2">&#34;李四&#34;</span><span class="p">,</span> <span class="n">age</span><span class="p">:</span> <span class="mi">30</span><span class="p">})</span>
+</span></span><span class="line"><span class="cl"><span class="p">(</span><span class="s2">&#34;player117&#34;</span> <span class="p">:</span><span class="n">player</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="s2">&#34;Stephen Curry&#34;</span><span class="p">,</span> <span class="n">age</span><span class="p">:</span> <span class="mi">31</span><span class="p">})</span>
+</span></span><span class="line"><span class="cl"><span class="p">(</span><span class="s2">&#34;player119&#34;</span> <span class="p">:</span><span class="n">player</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="s2">&#34;Kevin Durant&#34;</span><span class="p">,</span> <span class="n">age</span><span class="p">:</span> <span class="mi">30</span><span class="p">})</span>
+</span></span><span class="line"><span class="cl"><span class="p">(</span><span class="s2">&#34;player134&#34;</span> <span class="p">:</span><span class="n">player</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="s2">&#34;Blake Griffin&#34;</span><span class="p">,</span> <span class="n">age</span><span class="p">:</span> <span class="mi">30</span><span class="p">})</span>
+</span></span><span class="line"><span class="cl"><span class="p">(</span><span class="s2">&#34;player141&#34;</span> <span class="p">:</span><span class="n">player</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="s2">&#34;Ray Allen&#34;</span><span class="p">,</span> <span class="n">age</span><span class="p">:</span> <span class="mi">43</span><span class="p">})</span>
+</span></span><span class="line"><span class="cl"><span class="p">(</span><span class="s2">&#34;player144&#34;</span> <span class="p">:</span><span class="n">player</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="s2">&#34;Shaquille O&#39;Neal&#34;</span><span class="p">,</span> <span class="n">age</span><span class="p">:</span> <span class="mi">47</span><span class="p">})</span>
+</span></span><span class="line"><span class="cl"><span class="p">(</span><span class="s2">&#34;player149&#34;</span> <span class="p">:</span><span class="n">player</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="s2">&#34;Ben Simmons&#34;</span><span class="p">,</span> <span class="n">age</span><span class="p">:</span> <span class="mi">22</span><span class="p">})</span>
+</span></span><span class="line"><span class="cl"><span class="p">(</span><span class="s2">&#34;player100&#34;</span> <span class="p">:</span><span class="n">player</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="s2">&#34;Tim Duncan&#34;</span><span class="p">,</span> <span class="n">age</span><span class="p">:</span> <span class="mi">42</span><span class="p">})</span>
+</span></span><span class="line"><span class="cl"><span class="p">(</span><span class="s2">&#34;player101&#34;</span> <span class="p">:</span><span class="n">player</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="s2">&#34;Tony Parker&#34;</span><span class="p">,</span> <span class="n">age</span><span class="p">:</span> <span class="mi">36</span><span class="p">})</span>
+</span></span><span class="line"><span class="cl"><span class="p">(</span><span class="s2">&#34;player110&#34;</span> <span class="p">:</span><span class="n">player</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="s2">&#34;Cory Joseph&#34;</span><span class="p">,</span> <span class="n">age</span><span class="p">:</span> <span class="mi">27</span><span class="p">})</span>
+</span></span><span class="line"><span class="cl"><span class="p">(</span><span class="s2">&#34;player126&#34;</span> <span class="p">:</span><span class="n">player</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="s2">&#34;Kyrie Irving&#34;</span><span class="p">,</span> <span class="n">age</span><span class="p">:</span> <span class="mi">26</span><span class="p">})</span>
+</span></span><span class="line"><span class="cl"><span class="p">(</span><span class="s2">&#34;player131&#34;</span> <span class="p">:</span><span class="n">player</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="s2">&#34;Paul George&#34;</span><span class="p">,</span> <span class="n">age</span><span class="p">:</span> <span class="mi">28</span><span class="p">})</span>
+</span></span><span class="line"><span class="cl"><span class="p">(</span><span class="s2">&#34;player133&#34;</span> <span class="p">:</span><span class="n">player</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="s2">&#34;Yao Ming&#34;</span><span class="p">,</span> <span class="n">age</span><span class="p">:</span> <span class="mi">38</span><span class="p">})</span>
+</span></span><span class="line"><span class="cl"><span class="p">(</span><span class="s2">&#34;player140&#34;</span> <span class="p">:</span><span class="n">player</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="s2">&#34;Grant Hill&#34;</span><span class="p">,</span> <span class="n">age</span><span class="p">:</span> <span class="mi">46</span><span class="p">})</span>
+</span></span><span class="line"><span class="cl"><span class="p">(</span><span class="s2">&#34;player105&#34;</span> <span class="p">:</span><span class="n">player</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="s2">&#34;Danny Green&#34;</span><span class="p">,</span> <span class="n">age</span><span class="p">:</span> <span class="mi">31</span><span class="p">})</span>
+</span></span><span class="line"><span class="cl"><span class="p">(</span><span class="s2">&#34;player109&#34;</span> <span class="p">:</span><span class="n">player</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="s2">&#34;Tiago Splitter&#34;</span><span class="p">,</span> <span class="n">age</span><span class="p">:</span> <span class="mi">34</span><span class="p">})</span>
+</span></span><span class="line"><span class="cl"><span class="p">(</span><span class="s2">&#34;player111&#34;</span> <span class="p">:</span><span class="n">player</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="s2">&#34;David West&#34;</span><span class="p">,</span> <span class="n">age</span><span class="p">:</span> <span class="mi">38</span><span class="p">})</span>
+</span></span><span class="line"><span class="cl"><span class="o">...</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="总结" class="headerLink">
+    <a href="#%e6%80%bb%e7%bb%93" class="header-mark"></a>5 总结</h2><ul>
+<li>NebulaGraph 查询接口的负载均衡可以借助 K8s Service来做；</li>
+<li>NebulaGraph 底层存储接口的暴露在 K8s 中可以利用 APISIX Stream Proxy 和 SNI 来优雅实现；</li>
+<li>利用 API 网关对出口传输层的加密是一个很好的选择，相较于用 NebulaGraph 原生的 TLS 的方式。</li>
+</ul>
+<h2 id="一些坑" class="headerLink">
+    <a href="#%e4%b8%80%e4%ba%9b%e5%9d%91" class="header-mark"></a>6 一些坑</h2><ul>
+<li>
+<p>发现 fbthrift python 并不支持 发送 extend host name（SNI），https://github.com/vesoft-inc/nebula-python/pull/238 ，写了 PR 去做支持，这时候 APISIX 中的报错是 <code>failed to find SNI: </code></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">2022/11/15 10:18:26 [error] 78#78: *1744270 stream [lua] init.lua:842: stream_ssl_phase(): failed to fetch ssl config: failed to find SNI: 
+</span></span><span class="line"><span class="cl">please check if the client requests via IP or uses an outdated protocol. If you need to report an issue, provide a packet capture file of the TLS handshake., context: 
+</span></span><span class="line"><span class="cl">ssl_certificate_by_lua*, client: 172.17.0.1, server: 0.0.0.0:9779
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>参考：</p>
+<ul>
+<li><a href="https://docs.python.org/3/library/ssl.html#ssl.SSLContext.sslsocket_class" target="_blank" rel="noopener noreferrer">https://docs.python.org/3/library/ssl.html#ssl.SSLContext.sslsocket_class</a></li>
+<li><a href="https://github.com/apache/thrift/commit/937228e030569bf25ceb379c9491426709792701" target="_blank" rel="noopener noreferrer">https://github.com/apache/thrift/commit/937228e030569bf25ceb379c9491426709792701</a></li>
+<li><a href="https://github.com/apache/thrift/pull/894" target="_blank" rel="noopener noreferrer">https://github.com/apache/thrift/pull/894</a></li>
+<li><a href="https://github.com/apache/thrift/blob/e8353cb46e9f5e71f9b76f55d6bf59530b7f98ef/lib/py/src/transport/TSSLSocket.py#L184" target="_blank" rel="noopener noreferrer">https://github.com/apache/thrift/blob/e8353cb46e9f5e71f9b76f55d6bf59530b7f98ef/lib/py/src/transport/TSSLSocket.py#L184</a></li>
+</ul>
+</li>
+<li>
+<p>发现 APISIX stream 里边不解析上游 node 域名，我查了所有一溜的 dns 都没有问题，去提了 issue 才知道是已知问题：https://github.com/apache/apisix/issues/8334，只好先手配 <code>IP:Port</code> 作罢。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">2022/11/15 12:26:59 [error] 44#44: *9538531 stream [lua] resolver.lua:47: parse_domain(): failed to parse domain: nebula-storaged-0.nebula-storaged-headless.default.svc.cluster.local, error: failed to query the DNS server: dns client error: 101 empty record received while prereading client data, client: 172.17.0.1, server: 0.0.0.0:9779
+</span></span><span class="line"><span class="cl">2022/11/15 12:26:59 [error] 44#44: *9538531 stream [lua] upstream.lua:79: parse_domain_for_nodes(): dns resolver domain: nebula-storaged-0.nebula-storaged-headless.default.svc.cluster.local error: failed to query the DNS server: dns client error: 101 empty record received while prereading client data, client: 172.17.0.1, server: 0.0.0.0:9779
+</span></span><span class="line"><span class="cl">2022/11/15 12:26:59 [error] 44#44: *9538531 stream [lua] init.lua:965: stream_preread_phase(): failed to set upstream: no valid upstream node while prereading client data, client: 172.17.0.1, server: 0.0.0.0:9779
+</span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+</ul>
+<blockquote>
+<p>题图版权 <a href="https://unsplash.com/photos/IlxX7xnbRF8" target="_blank" rel="noopener noreferrer">Lars</a></p>
 </blockquote>]]></description>
 </item><item>
     <title>从零到一：如何构建一个企业股权图谱系统？</title>

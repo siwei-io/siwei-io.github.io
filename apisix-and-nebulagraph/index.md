@@ -431,7 +431,7 @@ kubectl exec -it $apisix_pod -- \
 }'
 ```
 
-> 注意，当下，APISIX 的 stream-proxy 上游节点不支持域名解析，是首先于上游的 lua 库，详见我报的 issue：https://github.com/apache/apisix/issues/8334 ，理想情况下，我们这里应该给出每一个 storaged 的 SNI 相同的地址作为 `upstream.nodes`，好像：
+> 注意，当下，APISIX 的 stream-proxy 上游节点不支持域名解析，是受限于上游的 lua 库，详见我报的 issue：https://github.com/apache/apisix/issues/8334 ，理想情况下，我们这里应该给出每一个 storaged 的 SNI 相同的地址作为 `upstream.nodes`，好像：
 > ```bash
 > kubectl exec -it $apisix_pod -- \
 >     curl http://127.0.0.1:9180/apisix/admin/stream_routes/1 \
