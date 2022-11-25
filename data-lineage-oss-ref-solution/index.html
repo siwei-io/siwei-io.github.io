@@ -1,0 +1,1883 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noodp" />
+    <title class="pjax-title">基于开源技术栈的数据血缘、治理参考解决方案 - siwei.io</title><meta name="Description" content="也许我们没有必要从头在 NebulaGraph 上搭建自己的数据血缘项目，本文分享如何用开源、现代的 DataOps、ETL、Dashboard、元数据、数据血缘管理系统构建大数据治理基础设施"><meta property="og:title" content="基于开源技术栈的数据血缘、治理参考解决方案" />
+<meta property="og:description" content="也许我们没有必要从头在 NebulaGraph 上搭建自己的数据血缘项目，本文分享如何用开源、现代的 DataOps、ETL、Dashboard、元数据、数据血缘管理系统构建大数据治理基础设施" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://siwei.io/data-lineage-oss-ref-solution/" /><meta property="og:image" content="https://siwei.io/data-lineage-oss-ref-solution/featured-image.webp"/><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2022-11-25T16:20:43+08:00" />
+<meta property="article:modified_time" content="2022-11-25T16:20:43+08:00" /><meta property="og:site_name" content="siwei.io" />
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://siwei.io/data-lineage-oss-ref-solution/featured-image.webp"/>
+<meta name="twitter:title" content="基于开源技术栈的数据血缘、治理参考解决方案"/>
+<meta name="twitter:description" content="也许我们没有必要从头在 NebulaGraph 上搭建自己的数据血缘项目，本文分享如何用开源、现代的 DataOps、ETL、Dashboard、元数据、数据血缘管理系统构建大数据治理基础设施"/>
+<meta name="application-name" content="siwei.io">
+<meta name="apple-mobile-web-app-title" content="siwei.io">
+
+<meta name="theme-color" content="#f8f8f8"><meta name="msapplication-TileColor" content="#da532c"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="manifest" href="/site.webmanifest"><link rel="canonical" href="https://siwei.io/data-lineage-oss-ref-solution/" /><link rel="prev" href="https://siwei.io/apisix-and-nebulagraph/" /><link rel="stylesheet" href="/lib/normalize/normalize.min.css"><link rel="stylesheet" href="/css/style.min.css"><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/fontawesome-free/all.min.css">
+        <noscript><link rel="stylesheet" href="/lib/fontawesome-free/all.min.css"></noscript><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/animate/animate.min.css">
+        <noscript><link rel="stylesheet" href="/lib/animate/animate.min.css"></noscript>
+    
+    
+    
+    <meta name="baidu-site-verification" content="code-4R67zl7SwH" /><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "基于开源技术栈的数据血缘、治理参考解决方案",
+        "inLanguage": "zh-CN",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "https:\/\/siwei.io\/data-lineage-oss-ref-solution\/"
+        },"image": ["https:\/\/siwei.io\/images\/site-feature-image.webp"],"genre": "posts","keywords": "Nebula Graph, Amundsen, 数据血缘, 数据治理","wordcount":  11542 ,
+        "url": "https:\/\/siwei.io\/data-lineage-oss-ref-solution\/","datePublished": "2022-11-25T16:20:43+08:00","dateModified": "2022-11-25T16:20:43+08:00","publisher": {
+            "@type": "Organization",
+            "name": "Wey Gu","logo": "https:\/\/siwei.io\/images\/site-feature-image.webp"},"author": {
+                "@type": "Person",
+                "name": "Wey Gu"
+            },"description": "也许我们没有必要从头在 NebulaGraph 上搭建自己的数据血缘项目，本文分享如何用开源、现代的 DataOps、ETL、Dashboard、元数据、数据血缘管理系统构建大数据治理基础设施"
+    }
+    </script></head>
+
+<body header-desktop="fixed" header-mobile="auto"><script type="text/javascript">
+        function setTheme(theme) {document.body.setAttribute('theme', theme); document.documentElement.style.setProperty('color-scheme', theme === 'light' ? 'light' : 'dark');}
+        function saveTheme(theme) {window.localStorage && localStorage.setItem('theme', theme);}
+        function getMeta(metaName) {const metas = document.getElementsByTagName('meta'); for (let i = 0; i < metas.length; i++) if (metas[i].getAttribute('name') === metaName) return metas[i]; return '';}
+        if (window.localStorage && localStorage.getItem('theme')) {let theme = localStorage.getItem('theme');theme === 'light' || theme === 'dark' || theme === 'black' ? setTheme(theme) : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light')); } else { if ('auto' === 'light' || 'auto' === 'dark' || 'auto' === 'black') setTheme('auto'), saveTheme('auto'); else saveTheme('auto'), window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light');}
+        let metaColors = {'light': '#f8f8f8','dark': '#252627','black': '#000000'}
+        getMeta('theme-color').content = metaColors[document.body.getAttribute('theme')];
+    </script>
+    <div id="back-to-top"></div>
+    <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/" title="siwei.io"><span class="header-title-pre"><i class="fas fa-code-branch"></i></span>siwei.io</a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="/about/"> 关于 </a><a class="menu-item" href="/projects/"> 项目 </a><a class="menu-item" href="/sketch-notes/"> 手绘 </a><a class="menu-item" href="/posts/"> 博客 </a><a class="menu-item" href="/talk/"> 演讲 </a><a class="menu-item" href="/cources/"> 课程 </a><a class="menu-item" href="https://vesoft.com/cn/careers/" rel="noopener noreferrer" target="_blank"> 招聘 </a><a class="menu-item" href="/about/#%E8%81%94%E7%B3%BB%E6%88%91"> 联系 </a><a class="menu-item" href="/path/"> 学习路径 </a><span class="menu-item delimiter"></span><a href="#" onclick="return false;" class="menu-item language" title="选择语言">🌏 Chinese<i class="fas fa-chevron-right fa-fw"></i>
+                        <select class="language-select" title="Select Language" id="language-select-desktop" onchange="location = this.value;"><option value="/en/data-lineage-oss-ref-solution/">🌏 English</option><option value="/data-lineage-oss-ref-solution/" selected>🌏 Chinese</option></select>
+                    </a><span class="menu-item search" id="search-desktop">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-desktop">
+                        <a href="#" onclick="return false;" class="search-button search-toggle" id="search-toggle-desktop" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="#" onclick="return false;" class="search-button search-clear" id="search-clear-desktop" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-desktop">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </span><a href="#" onclick="return false;" class="menu-item theme-select" title="切换主题">
+                    <i class="fas fa-adjust fa-fw"></i>
+                    <select class="color-theme-select" id="theme-select-desktop" title="切换主题">
+                        <option value="light">浅色</option>
+                        <option value="dark">深色</option>
+                        <option value="black">黑色</option>
+                        <option value="auto">跟随系统</option>
+                    </select>
+                </a></div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="/" title="siwei.io"><span class="header-title-pre"><i class="fas fa-code-branch"></i></span>siwei.io</a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><div class="search-wrapper">
+                    <div class="search mobile" id="search-mobile">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-mobile">
+                        <a href="#" onclick="return false;" class="search-button search-toggle" id="search-toggle-mobile" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="#" onclick="return false;" class="search-button search-clear" id="search-clear-mobile" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-mobile">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </div>
+                    <a href="#" onclick="return false;" class="search-cancel" id="search-cancel-mobile">
+                        取消
+                    </a>
+                </div><a class="menu-item" href="/about/" title="">关于</a><a class="menu-item" href="/projects/" title="">项目</a><a class="menu-item" href="/sketch-notes/" title="">手绘</a><a class="menu-item" href="/posts/" title="">博客</a><a class="menu-item" href="/talk/" title="">演讲</a><a class="menu-item" href="/cources/" title="">课程</a><a class="menu-item" href="https://vesoft.com/cn/careers/" title="" rel="noopener noreferrer" target="_blank">招聘</a><a class="menu-item" href="/about/#%E8%81%94%E7%B3%BB%E6%88%91" title="">联系</a><a class="menu-item" href="/path/" title="">学习路径</a><a href="#" onclick="return false;" class="menu-item theme-select" title="切换主题">
+                <i class="fas fa-adjust fa-fw"></i>
+                <select class="color-theme-select" id="theme-select-mobile" title="切换主题">
+                    <option value="light">浅色</option>
+                    <option value="dark">深色</option>
+                    <option value="black">黑色</option>
+                    <option value="auto">跟随系统</option>
+                </select>
+            </a><a href="#" onclick="return false;" class="menu-item" title="选择语言">🌏 Chinese<i class="fas fa-chevron-right fa-fw"></i>
+                    <select class="language-select" title="Select Language" onchange="location = this.value;"><option value="/en/data-lineage-oss-ref-solution/">🌏 English</option><option value="/data-lineage-oss-ref-solution/" selected>🌏 Chinese</option></select>
+                </a></div>
+    </div>
+</header>
+<div class="search-dropdown desktop">
+    <div id="search-dropdown-desktop"></div>
+</div>
+<div class="search-dropdown mobile">
+    <div id="search-dropdown-mobile"></div>
+</div>
+<main class="main">
+            <div class="container"><div class="toc" id="toc-auto">
+        <h2 class="toc-title">目录</h2>
+        <div class="toc-content always-active" id="toc-content-auto"><nav id="TableOfContents">
+  <ol>
+    <li><a href="#元数据治理系统">元数据治理系统</a></li>
+    <li><a href="#参考解决方案">参考解决方案</a>
+      <ol>
+        <li><a href="#方案的动机">方案的动机</a></li>
+        <li><a href="#技术栈介绍">技术栈介绍</a>
+          <ol>
+            <li><a href="#数据库和数仓">数据库和数仓</a></li>
+            <li><a href="#数据运维-dataops">数据运维 DataOps</a></li>
+            <li><a href="#etl">ETL</a></li>
+            <li><a href="#数据可视化">数据可视化</a></li>
+            <li><a href="#任务编排dag-job-orchestration">任务编排（DAG Job Orchestration）</a></li>
+            <li><a href="#元数据治理">元数据治理</a></li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+    <li><a href="#环境搭建与各组件初识">环境搭建与各组件初识</a>
+      <ol>
+        <li><a href="#运行一个数仓数据库">运行一个数仓、数据库</a></li>
+        <li><a href="#dataops-工具链部署">DataOps 工具链部署</a>
+          <ol>
+            <li><a href="#安装-meltano">安装 Meltano</a></li>
+            <li><a href="#meltano-gui-界面">Meltano GUI 界面</a></li>
+            <li><a href="#meltano-项目示例">Meltano 项目示例</a></li>
+          </ol>
+        </li>
+        <li><a href="#搭一个-bi-dashboard-系统">搭一个 BI Dashboard 系统</a>
+          <ol>
+            <li><a href="#bootstrap-meltano-和-superset">Bootstrap Meltano 和 Superset</a></li>
+            <li><a href="#创建一个-dashboard">创建一个 Dashboard</a></li>
+          </ol>
+        </li>
+        <li><a href="#元数据发现系统">元数据发现系统</a>
+          <ol>
+            <li><a href="#部署-amundsen">部署 Amundsen</a>
+              <ol>
+                <li><a href="#元数据服务-metadata-service">元数据服务 Metadata service</a></li>
+                <li><a href="#抓取元数据-data-builder">抓取元数据 Data builder</a></li>
+                <li><a href="#验证一下-amundsen">验证一下 Amundsen</a></li>
+              </ol>
+            </li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+    <li><a href="#穿针引线元数据发现">穿针引线：元数据发现</a>
+      <ol>
+        <li><a href="#提取-postgres-元数据">提取 Postgres 元数据</a>
+          <ol>
+            <li><a href="#执行-postgres-元数据-etl">执行 Postgres 元数据 ETL</a></li>
+            <li><a href="#验证-postgres-中元数据的获取">验证 Postgres 中元数据的获取</a></li>
+          </ol>
+        </li>
+        <li><a href="#提取-dbt-元数据">提取 dbt 元数据</a>
+          <ol>
+            <li><a href="#dbt-元数据-etl-的执行">dbt 元数据 ETL 的执行</a></li>
+            <li><a href="#验证-dbt-抓取结果">验证 dbt 抓取结果</a></li>
+          </ol>
+        </li>
+        <li><a href="#提取-superset-中的元数据">提取 Superset 中的元数据</a>
+          <ol>
+            <li><a href="#superset-元数据-etl-的执行">Superset 元数据 ETL 的执行</a></li>
+            <li><a href="#验证-superset-dashboard-元数据">验证 Superset Dashboard 元数据</a></li>
+          </ol>
+        </li>
+        <li><a href="#用-superset-预览数据">用 Superset 预览数据</a></li>
+        <li><a href="#开启数据血缘信息">开启数据血缘信息</a>
+          <ol>
+            <li><a href="#在-nebulagraph-中洞察血缘">在 NebulaGraph 中洞察血缘</a></li>
+            <li><a href="#提取数据血缘">提取数据血缘</a>
+              <ol>
+                <li><a href="#通过-dbt">通过 dbt</a></li>
+                <li><a href="#通过-open-lineage">通过 Open Lineage</a></li>
+              </ol>
+            </li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+    <li><a href="#回顾">回顾</a>
+      <ol>
+        <li><a href="#涉及到的开源">涉及到的开源</a></li>
+      </ol>
+    </li>
+  </ol>
+</nav></div>
+    </div><script>document.getElementsByTagName("main")[0].setAttribute("pageStyle", "normal")</script><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC", "true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">基于开源技术栈的数据血缘、治理参考解决方案</h1><div class="post-meta">
+            <div class="post-meta-line">
+                <span class="post-author"><i class="author fas fa-user-circle fa-fw"></i><a href="https://siwei.io" title="Author" target="_blank" rel="noopener noreferrer author" class="author">Wey Gu</a>
+                </span>&nbsp;<span class="post-category">收录于 </span>&nbsp;<span class="post-category">类别 <a href="/categories/nebula-graph/"><i class="far fa-folder fa-fw"></i>Nebula Graph</a>&nbsp;<a href="/categories/amundsen/"><i class="far fa-folder fa-fw"></i>Amundsen</a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime="2022-11-25">2022-11-25</time>&nbsp;<i class="far fa-edit fa-fw"></i>&nbsp;<time datetime="2022-11-25">2022-11-25</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;约 11542 字&nbsp;
+                <i class="far fa-clock fa-fw"></i>&nbsp;预计阅读 24 分钟&nbsp;</div>
+        </div><div class="featured-image"><img
+        class="lazyload"
+        data-src="/data-lineage-oss-ref-solution/featured-image.webp"
+        data-srcset="/data-lineage-oss-ref-solution/featured-image.webp, /data-lineage-oss-ref-solution/featured-image.webp 1.5x, /data-lineage-oss-ref-solution/featured-image.webp 2x"
+        data-sizes="auto"
+        alt="/data-lineage-oss-ref-solution/featured-image.webp"
+        title="也许我们没有必要从头在 NebulaGraph 上搭建自己的数据血缘项目，本文分享如何用开源、现代的 DataOps、ETL、Dashboard、元数据、数据血缘管理系统构建大数据治理基础设施" height="872" width="1730"></div><div class="details toc" id="toc-static"  kept="">
+                <div class="details-summary toc-title">
+                    <span>目录</span>
+                    <span><i class="details-icon fas fa-angle-right"></i></span>
+                </div>
+                <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ol>
+    <li><a href="#元数据治理系统">元数据治理系统</a></li>
+    <li><a href="#参考解决方案">参考解决方案</a>
+      <ol>
+        <li><a href="#方案的动机">方案的动机</a></li>
+        <li><a href="#技术栈介绍">技术栈介绍</a>
+          <ol>
+            <li><a href="#数据库和数仓">数据库和数仓</a></li>
+            <li><a href="#数据运维-dataops">数据运维 DataOps</a></li>
+            <li><a href="#etl">ETL</a></li>
+            <li><a href="#数据可视化">数据可视化</a></li>
+            <li><a href="#任务编排dag-job-orchestration">任务编排（DAG Job Orchestration）</a></li>
+            <li><a href="#元数据治理">元数据治理</a></li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+    <li><a href="#环境搭建与各组件初识">环境搭建与各组件初识</a>
+      <ol>
+        <li><a href="#运行一个数仓数据库">运行一个数仓、数据库</a></li>
+        <li><a href="#dataops-工具链部署">DataOps 工具链部署</a>
+          <ol>
+            <li><a href="#安装-meltano">安装 Meltano</a></li>
+            <li><a href="#meltano-gui-界面">Meltano GUI 界面</a></li>
+            <li><a href="#meltano-项目示例">Meltano 项目示例</a></li>
+          </ol>
+        </li>
+        <li><a href="#搭一个-bi-dashboard-系统">搭一个 BI Dashboard 系统</a>
+          <ol>
+            <li><a href="#bootstrap-meltano-和-superset">Bootstrap Meltano 和 Superset</a></li>
+            <li><a href="#创建一个-dashboard">创建一个 Dashboard</a></li>
+          </ol>
+        </li>
+        <li><a href="#元数据发现系统">元数据发现系统</a>
+          <ol>
+            <li><a href="#部署-amundsen">部署 Amundsen</a>
+              <ol>
+                <li><a href="#元数据服务-metadata-service">元数据服务 Metadata service</a></li>
+                <li><a href="#抓取元数据-data-builder">抓取元数据 Data builder</a></li>
+                <li><a href="#验证一下-amundsen">验证一下 Amundsen</a></li>
+              </ol>
+            </li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+    <li><a href="#穿针引线元数据发现">穿针引线：元数据发现</a>
+      <ol>
+        <li><a href="#提取-postgres-元数据">提取 Postgres 元数据</a>
+          <ol>
+            <li><a href="#执行-postgres-元数据-etl">执行 Postgres 元数据 ETL</a></li>
+            <li><a href="#验证-postgres-中元数据的获取">验证 Postgres 中元数据的获取</a></li>
+          </ol>
+        </li>
+        <li><a href="#提取-dbt-元数据">提取 dbt 元数据</a>
+          <ol>
+            <li><a href="#dbt-元数据-etl-的执行">dbt 元数据 ETL 的执行</a></li>
+            <li><a href="#验证-dbt-抓取结果">验证 dbt 抓取结果</a></li>
+          </ol>
+        </li>
+        <li><a href="#提取-superset-中的元数据">提取 Superset 中的元数据</a>
+          <ol>
+            <li><a href="#superset-元数据-etl-的执行">Superset 元数据 ETL 的执行</a></li>
+            <li><a href="#验证-superset-dashboard-元数据">验证 Superset Dashboard 元数据</a></li>
+          </ol>
+        </li>
+        <li><a href="#用-superset-预览数据">用 Superset 预览数据</a></li>
+        <li><a href="#开启数据血缘信息">开启数据血缘信息</a>
+          <ol>
+            <li><a href="#在-nebulagraph-中洞察血缘">在 NebulaGraph 中洞察血缘</a></li>
+            <li><a href="#提取数据血缘">提取数据血缘</a>
+              <ol>
+                <li><a href="#通过-dbt">通过 dbt</a></li>
+                <li><a href="#通过-open-lineage">通过 Open Lineage</a></li>
+              </ol>
+            </li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+    <li><a href="#回顾">回顾</a>
+      <ol>
+        <li><a href="#涉及到的开源">涉及到的开源</a></li>
+      </ol>
+    </li>
+  </ol>
+</nav></div>
+            </div><div class="content" id="content"><blockquote>
+<p>也许我们没有必要从头在 NebulaGraph 上搭建自己的数据血缘项目，本文分享如何用开源、现代的 DataOps、ETL、Dashboard、元数据、数据血缘管理系统构建大数据治理基础设施</p>
+</blockquote>
+<h2 id="元数据治理系统" class="headerLink">
+    <a href="#%e5%85%83%e6%95%b0%e6%8d%ae%e6%b2%bb%e7%90%86%e7%b3%bb%e7%bb%9f" class="header-mark"></a>1 元数据治理系统</h2><p><strong>元数据治理</strong>系统是一个提供了所有数据在哪、它们的格式化方式、生成、转换、依赖、呈现和所属的<strong>一站式视图</strong>。</p>
+<p>元数据治理系统是所有数据仓库、数据库、表、仪表板、ETL 作业等的<strong>目录接口</strong>（catalog），有了它，我们就不用在群里喊“大家好，我可以更改这个表的 schema 吗？”， “请问谁知道我如何找到 table-view-foo-bar 的原始数据？”，一个成熟的数据治理方案中的元数据治理系统，对成规模的数据团队来说非常必要。</p>
+<p>对于另一个词：<strong>数据血缘</strong>则是众多需要管理的元数据之一，例如，某些 Dashboard 是 某一个 Table View 的下游，而这个 Table View 又是从另外两个上游的表 JOIN 而来两。 我们显然应该清晰的掌握、管理这些信息，去构建一个可信、可控的系统和数据质量控制体系。</p>
+<h2 id="参考解决方案" class="headerLink">
+    <a href="#%e5%8f%82%e8%80%83%e8%a7%a3%e5%86%b3%e6%96%b9%e6%a1%88" class="header-mark"></a>2 参考解决方案</h2><h3 id="方案的动机" class="headerLink">
+    <a href="#%e6%96%b9%e6%a1%88%e7%9a%84%e5%8a%a8%e6%9c%ba" class="header-mark"></a>2.1 方案的动机</h3><p>元数据和数据血缘本质上非常适合图数据建模、图数据库的场景。这里典型的查询就是面向图关系的查询了，像“查找每个给定组件（即表）的所有 n 深度数据血缘”就是一个 NebulaGraph 中的<code>FIND ALL PATH</code> 查询。</p>
+<p>作为 NebulaGraph 社区中的一员，我发现人们在论坛、群里讨论的查询和图建模总能看出来很多人都在 NebulaGraph 上从头搭建自己的数据血缘系统，而这些工作看起来大多数都是重复造轮子（而且轮子并不容易造）。</p>
+<p>我们来看看这样的元数据治理系统的轮子里，都需要那些功能组件：</p>
+<ul>
+<li>元数据 extractor
+<ul>
+<li>这部分需要从数据栈的不同方（如数据库、数仓、Dashboard，甚至从 ETL Pipeline 和应用、服务等等）中以拉或者推的方式获取。</li>
+</ul>
+</li>
+<li>元数据存储
+<ul>
+<li>可以存在数据库、图数据库里，或者有时候存成超大的 JSON manifest 文件都行</li>
+</ul>
+</li>
+<li>元数据目录接口系统（Catalog）
+<ul>
+<li>提供 API 和/或 GUI 界面以读取/写入元数据和数据血缘的系统</li>
+</ul>
+</li>
+</ul>
+<p>在 NebulaGraph 社区中，我看到不少人因为提问的查询和建模中明显有数据血缘的痕迹，意识到大家都在从头搭建数据血缘系统。考虑到系统中元数据的提取对象都是从各种知名数据库、数仓、最终的需求也大相径庭，这种重复的开发、研究、探索是一种大大的浪费。</p>
+<p>所以，我准备搭建一个能够启发大家的参考数据血缘、治理方案，利用到市面上最好的开源项目。希望能让打算在 NebulaGraph 上定义和迭代自己的 Graph Model 并创建内部元数据和 pipeline 的人可以从这个项目中受益，从而拥有一个相对完善、设计精美的开箱即用的元数据治理系统，和相对更完善的图模型。</p>
+<p>我尽量把这个方案做的完备、端到端（不只有元数据管理），希望也能为考虑做基于图做数据治理的新手一些启发和参考。</p>
+<p>下图是整个方案的简单示意图：</p>
+<p>其中上方是元数据的来源与导入、下方是元数据的存储与展示、发现。</p>
+<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg" title="diagram-of-ref-project" data-thumbnail="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg">
+        <img
+            class="lazyload"
+            data-src="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg"
+            data-srcset="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg, https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg 1.5x, https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg 2x"
+            data-sizes="auto"
+            alt="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg">
+    </a></p>
+<h3 id="技术栈介绍" class="headerLink">
+    <a href="#%e6%8a%80%e6%9c%af%e6%a0%88%e4%bb%8b%e7%bb%8d" class="header-mark"></a>2.2 技术栈介绍</h3><p>下边介绍一下其中的每一部分。</p>
+<h4 id="数据库和数仓" class="headerLink">
+    <a href="#%e6%95%b0%e6%8d%ae%e5%ba%93%e5%92%8c%e6%95%b0%e4%bb%93" class="header-mark"></a>2.2.1 数据库和数仓</h4><p>为了处理和使用原始和中间数据，这里一定涉及至少一个数据库或者数仓。</p>
+<p>它可以是 Hive、Apache Delta、TiDB、Cassandra、MySQL 或 Postgres，在这个参考项目中，我们选一个简单、流行的 Postgres。</p>
+<p>✅ - 数据仓库：Postgres</p>
+<h4 id="数据运维-dataops" class="headerLink">
+    <a href="#%e6%95%b0%e6%8d%ae%e8%bf%90%e7%bb%b4-dataops" class="header-mark"></a>2.2.2 数据运维 DataOps</h4><p>我们应该有某种 DataOps 的方案，让 Pipeline 和环境具有可重复性、可测试性和版本控制性。</p>
+<p>在这里，我们使用了 GitLab 创建的 <a href="https://gitlab.com/meltano/meltano" target="_blank" rel="noopener noreferrer">Meltano</a>。</p>
+<p>Meltano 是一个 just-work 的 DataOps 平台，它以一种神奇而优雅的方式将 <a href="https://singer.io/" target="_blank" rel="noopener noreferrer">Singer</a> 作为 EL 和 <a href="https://getdbt.com/" target="_blank" rel="noopener noreferrer">dbt</a> 作为 T 连接起来，它还连接到其他一些 dataInfra 实用程序，例如 Apache Superset 和 Apache Airflow 等。</p>
+<p>至此，我们又纳入了一个成员：</p>
+<p>✅ - GitOps：Meltano <a href="https://gitlab.com/meltano/meltano" target="_blank" rel="noopener noreferrer">https://gitlab.com/meltano/meltano</a></p>
+<h4 id="etl" class="headerLink">
+    <a href="#etl" class="header-mark"></a>2.2.3 ETL</h4><p>如前边提到，我们还利用 <a href="https://singer.io/" target="_blank" rel="noopener noreferrer">Singer</a> 与 Meltano 一起将来自许多不同数据源的数据 E（提取）和 L（加载）数据目标，并使用 <a href="https://getdbt.com/" target="_blank" rel="noopener noreferrer">dbt</a> 作为 Transform 的平台。</p>
+<p>✅ - EL：Singer <a href="https://singer.io/" target="_blank" rel="noopener noreferrer">https://singer.io/</a></p>
+<p>✅ - T: dbt <a href="https://getdbt.com/" target="_blank" rel="noopener noreferrer">https://getdbt.com/</a></p>
+<h4 id="数据可视化" class="headerLink">
+    <a href="#%e6%95%b0%e6%8d%ae%e5%8f%af%e8%a7%86%e5%8c%96" class="header-mark"></a>2.2.4 数据可视化</h4><p>在数据之上创建 Dashboard、图表和表格来获得洞察是很直接的需求（可以想象为想象大数据之上的 excel 图标功能）。</p>
+<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/172800854-8e01acae-696d-4e07-8e3e-a7d34dec8278.png" title="https://user-images.githubusercontent.com/1651790/172800854-8e01acae-696d-4e07-8e3e-a7d34dec8278.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/172800854-8e01acae-696d-4e07-8e3e-a7d34dec8278.png">
+        <img
+            class="lazyload"
+            data-src="https://user-images.githubusercontent.com/1651790/172800854-8e01acae-696d-4e07-8e3e-a7d34dec8278.png"
+            data-srcset="https://user-images.githubusercontent.com/1651790/172800854-8e01acae-696d-4e07-8e3e-a7d34dec8278.png, https://user-images.githubusercontent.com/1651790/172800854-8e01acae-696d-4e07-8e3e-a7d34dec8278.png 1.5x, https://user-images.githubusercontent.com/1651790/172800854-8e01acae-696d-4e07-8e3e-a7d34dec8278.png 2x"
+            data-sizes="auto"
+            alt="https://user-images.githubusercontent.com/1651790/172800854-8e01acae-696d-4e07-8e3e-a7d34dec8278.png">
+    </a></p>
+<p><a href="https://superset.apache.org/" target="_blank" rel="noopener noreferrer">Apache Superset</a> 是我很喜欢的开源数据可视化项目，我准备用它来作为被治理管理的目标之一，同时，也会利用它的可视化作为元数据洞察功能的一部分。</p>
+<p>✅ - Dashboard：Apache Superset <a href="https://superset.apache.org/" target="_blank" rel="noopener noreferrer">https://superset.apache.org/</a></p>
+<h4 id="任务编排dag-job-orchestration" class="headerLink">
+    <a href="#%e4%bb%bb%e5%8a%a1%e7%bc%96%e6%8e%92dag-job-orchestration" class="header-mark"></a>2.2.5 任务编排（DAG Job Orchestration）</h4><p>在大多数情况下，我们的 DataOps 作业、任务会增长到需要一个编排系统的规模，我们可以用 <a href="https://airflow.apache.org/" target="_blank" rel="noopener noreferrer">Apache Airflow</a> 来负责这一块。</p>
+<p>✅ - DAG：Apache Airflow <a href="https://airflow.apache.org/" target="_blank" rel="noopener noreferrer">https://airflow.apache.org/</a></p>
+<h4 id="元数据治理" class="headerLink">
+    <a href="#%e5%85%83%e6%95%b0%e6%8d%ae%e6%b2%bb%e7%90%86" class="header-mark"></a>2.2.6 元数据治理</h4><p>随着越来越多的组件和数据被引入数据基础设施，在数据库、表、数据建模(schema)、Dashboard、DAG（编排系统中的有向无环图）、应用与服务的所有生命周期中都将存在海量的元数据，需要对它们的管理员和团队进行协同管理、连接和发现。</p>
+<p><a href="https://www.amundsen.io/amundsen/" target="_blank" rel="noopener noreferrer">Linux Foundation Amundsen</a> 是我认为可以解决这个问题的最佳项目之一。</p>
+<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/172801018-ecd67fa9-2743-451f-8734-b14f2a814199.png" title="https://user-images.githubusercontent.com/1651790/172801018-ecd67fa9-2743-451f-8734-b14f2a814199.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/172801018-ecd67fa9-2743-451f-8734-b14f2a814199.png">
+        <img
+            class="lazyload"
+            data-src="https://user-images.githubusercontent.com/1651790/172801018-ecd67fa9-2743-451f-8734-b14f2a814199.png"
+            data-srcset="https://user-images.githubusercontent.com/1651790/172801018-ecd67fa9-2743-451f-8734-b14f2a814199.png, https://user-images.githubusercontent.com/1651790/172801018-ecd67fa9-2743-451f-8734-b14f2a814199.png 1.5x, https://user-images.githubusercontent.com/1651790/172801018-ecd67fa9-2743-451f-8734-b14f2a814199.png 2x"
+            data-sizes="auto"
+            alt="https://user-images.githubusercontent.com/1651790/172801018-ecd67fa9-2743-451f-8734-b14f2a814199.png">
+    </a></p>
+<p>✅ - 数据发现：Linux Foundation Amundsen <a href="https://www.amundsen.io/amundsen/" target="_blank" rel="noopener noreferrer">https://www.amundsen.io/amundsen/</a></p>
+<p>Amundsen 用图数据库为事实源（single source of truth）以加速多跳查询，Elastic Search 为全文搜索引擎，它能对所有元数据及其血缘进行了顺滑的处理还提供了优雅的 UI 和 API。</p>
+<p>Amundsen 支持多种图数据库为后端，这里咱们用 <a href="https://nebula-graph.com.cn" target="_blank" rel="noopener noreferrer">NebulaGraph</a>。</p>
+<p>✅ - 全文搜索：Elastic Search</p>
+<p>✅ - 图数据库：NebulaGraph</p>
+<p>现在，所有组件都齐活了，开始组装它们吧。</p>
+<h2 id="环境搭建与各组件初识" class="headerLink">
+    <a href="#%e7%8e%af%e5%a2%83%e6%90%ad%e5%bb%ba%e4%b8%8e%e5%90%84%e7%bb%84%e4%bb%b6%e5%88%9d%e8%af%86" class="header-mark"></a>3 环境搭建与各组件初识</h2><p>The reference runnable project is open-source and you could find it here:</p>
+<ul>
+<li><a href="https://github.com/wey-gu/data-lineage-ref-solution" target="_blank" rel="noopener noreferrer">https://github.com/wey-gu/data-lineage-ref-solution</a></li>
+</ul>
+<p>I will try my best to make things clean and isolated. It&rsquo;s assumed you are running on a UNIX-like system with internet and Docker Compose being installed.</p>
+<blockquote>
+<p>Please refer <a href="https://docs.docker.com/compose/install/" target="_blank" rel="noopener noreferrer">here</a> to install Docker and Docker Compose before moving forward.</p>
+</blockquote>
+<p>I am running it on Ubuntu 20.04 LTS X86_64, but there shouldn&rsquo;t be issues on other distros or versions of Linux.</p>
+<p>整个项目方案都是开源的，大家可以在这里找到它的所有细节：</p>
+<ul>
+<li><a href="https://github.com/wey-gu/data-lineage-ref-solution" target="_blank" rel="noopener noreferrer">https://github.com/wey-gu/data-lineage-ref-solution</a></li>
+</ul>
+<p>整个项目大家的实验中我遵循尽量干净、鼓励的原则，需要假设在一个 unix-like 的系统上运行，有互联网和 Docker-Compose。</p>
+<blockquote>
+<p>注：参考 <a href="https://docs.docker.com/compose/install/" target="_blank" rel="noopener noreferrer">https://docs.docker.com/compose/install/</a> 在继续之前安装 Docker 和 Docker Compose。</p>
+</blockquote>
+<p>这里我们在 Ubuntu 20.04 LTS X86_64 上运行它，但在其他发行版或 Linux 版本上应该也没有问题。</p>
+<h3 id="运行一个数仓数据库" class="headerLink">
+    <a href="#%e8%bf%90%e8%a1%8c%e4%b8%80%e4%b8%aa%e6%95%b0%e4%bb%93%e6%95%b0%e6%8d%ae%e5%ba%93" class="header-mark"></a>3.1 运行一个数仓、数据库</h3><p>首先，安装 Postgres 作为我们的数仓。</p>
+<p>这个单行命令会创建一个使用 docker 在后台运行的 Postgres，进程关闭之后容器不会残留而是被清理掉（因为参数<code>--rm</code>）。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker run --rm --name postgres <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    -e <span class="nv">POSTGRES_PASSWORD</span><span class="o">=</span>lineage_ref <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    -e <span class="nv">POSTGRES_USER</span><span class="o">=</span>lineage_ref <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    -e <span class="nv">POSTGRES_DB</span><span class="o">=</span>warehouse -d <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    -p 5432:5432 postgres
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Then we could verify it with Postgres CLI or GUI clients.</p>
+<blockquote>
+<p>Hint: You could use VS Code extension: <a href="https://marketplace.visualstudio.com/items?itemName=mtxr.sqltools" target="_blank" rel="noopener noreferrer">SQL tools</a> to quickly connect to multiple RDBMS(MariaDB, Postgres, etc.) or even Non-SQL DBMS like Cassandra in a GUI fashion.</p>
+</blockquote>
+<p>然后我们可以使用 Postgres CLI 或 GUI 客户端来验证它。</p>
+<blockquote>
+<p>提示：可以用 VS Code 插件：<a href="https://marketplace.visualstudio.com/items?itemName=mtxr.sqltools" target="_blank" rel="noopener noreferrer">SQL TOOLS</a> 快速以 GUI 方式连接到数据库（支持 MariaDB、Postgres 、Cassandra 等）</p>
+<p><a href="https://marketplace.visualstudio.com/items?itemName=mtxr.sqltools" target="_blank" rel="noopener noreferrer">https://marketplace.visualstudio.com/items?itemName=mtxr.sqltools</a></p>
+</blockquote>
+<h3 id="dataops-工具链部署" class="headerLink">
+    <a href="#dataops-%e5%b7%a5%e5%85%b7%e9%93%be%e9%83%a8%e7%bd%b2" class="header-mark"></a>3.2 DataOps 工具链部署</h3><p>然后，安装有机结合了 Singler 和 dbt 的 Meltano。</p>
+<p>Meltano 帮助我们管理 ETL 工具（作为插件）及其所有配置和 pipeline。 这些元信息位于 meltano 配置及其系统数据库（https://docs.meltano.com/concepts/project#system-database）中，其中配置是基于文件的（可以使用 GitOps 管理），它的默认系统数据库是 SQLite。</p>
+<h4 id="安装-meltano" class="headerLink">
+    <a href="#%e5%ae%89%e8%a3%85-meltano" class="header-mark"></a>3.2.1 安装 Meltano</h4><p>使用 Meltano 的工作流是启动一个“meltano 项目”并开始将 E、L 和 T 添加到配置文件中。 项目的启动只需要一个 CLI 命令调用：<code>meltano init yourprojectname</code>，在那之前，可以先用 Python 的包管理器：pip 或者 Docker 镜像安装 Meltano：</p>
+<ul>
+<li>在 python 虚拟环境中使用 pip 安装 Meltano：</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">mkdir .venv
+</span></span><span class="line"><span class="cl"><span class="c1"># example in a debian flavor Linux distro</span>
+</span></span><span class="line"><span class="cl">sudo apt-get install python3-dev python3-pip python3-venv python3-wheel -y
+</span></span><span class="line"><span class="cl">python3 -m venv .venv/meltano
+</span></span><span class="line"><span class="cl"><span class="nb">source</span> .venv/meltano/bin/activate
+</span></span><span class="line"><span class="cl">python3 -m pip install wheel
+</span></span><span class="line"><span class="cl">python3 -m pip install meltano
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># init a project</span>
+</span></span><span class="line"><span class="cl">mkdir meltano_projects <span class="o">&amp;&amp;</span> <span class="nb">cd</span> meltano_projects
+</span></span><span class="line"><span class="cl"><span class="c1"># replace &lt;yourprojectname&gt; with your own one</span>
+</span></span><span class="line"><span class="cl">touch .env
+</span></span><span class="line"><span class="cl">meltano init &lt;yourprojectname&gt;
+</span></span></code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>或者用容器安装 Meltano：</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker pull meltano/meltano:latest
+</span></span><span class="line"><span class="cl">docker run --rm meltano/meltano --version
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># init a project</span>
+</span></span><span class="line"><span class="cl">mkdir meltano_projects <span class="o">&amp;&amp;</span> <span class="nb">cd</span> meltano_projects
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># replace &lt;yourprojectname&gt; with your own one</span>
+</span></span><span class="line"><span class="cl">touch .env
+</span></span><span class="line"><span class="cl">docker run --rm -v <span class="s2">&#34;</span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span><span class="s2">&#34;</span>:/projects <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>             -w /projects --env-file .env <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>             meltano/meltano init &lt;yourprojectname&gt;
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>除了 <code>meltano init</code>，还有一些其他命令，例如 <code>meltano etl</code> 表示 ETL 的执行，还有 <code>meltano invoke &lt;plugin&gt;</code> 来调用插件命令，详细可以参考它的速查表（https://docs.meltano.com/reference/command-line-interface）。</p>
+<h4 id="meltano-gui-界面" class="headerLink">
+    <a href="#meltano-gui-%e7%95%8c%e9%9d%a2" class="header-mark"></a>3.2.2 Meltano GUI 界面</h4><p>Meltano 还带有一个基于 Web 的 UI，执行 <code>ui</code> 子命令就是启动它：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">meltano ui
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>默认他会跑在 http://localhost:5000 上。</p>
+<p>对于 Docker 运行的情况，只需要在暴露 5000 端口的情况下运行容器即可，由于容器的默认命令已经是 <code>meltano ui</code>，所以 <code>run</code> 的命令只需：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker run -v <span class="s2">&#34;</span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span><span class="s2">&#34;</span>:/project <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>             -w /project <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>             -p 5000:5000 <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>             meltano/meltano
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="meltano-项目示例" class="headerLink">
+    <a href="#meltano-%e9%a1%b9%e7%9b%ae%e7%a4%ba%e4%be%8b" class="header-mark"></a>3.2.3 Meltano 项目示例</h4><p>写到这里的时候，我注意到 <a href="https://github.com/pnadolny13" target="_blank" rel="noopener noreferrer">Pat Nadolny</a> 创建了很好的示例项目在 <a href="https://github.com/pnadolny13/meltano_example_implementations/tree/main/meltano_projects/singer_dbt_jaffle" target="_blank" rel="noopener noreferrer">https://github.com/pnadolny13/meltano_example_implementations/tree/main/meltano_projects/singer_dbt_jaffle</a>，它利用 dbt 的 Meltano 示例数据集，采用 Airflow 编排 ETL 任务（https://github.com/pnadolny13/meltano_example_implementations/tree/main/meltano_projects/dbt_orchestration，还有利用 Superset 的例子（https://github.com/pnadolny13/meltano_example_implementations/tree/main/meltano_projects/jaffle_superset）。</p>
+<p>这里，我就不重复造轮子了，直接利用他的例子吧。</p>
+<p>咱们可以参照 <a href="https://github.com/pnadolny13/meltano_example_implementations/tree/main/meltano_projects/singer_dbt_jaffle" target="_blank" rel="noopener noreferrer">https://github.com/pnadolny13/meltano_example_implementations/tree/main/meltano_projects/singer_dbt_jaffle</a>，运行这样的数据管道（pipeline）：</p>
+<ul>
+<li><a href="https://hub.meltano.com/taps/csv" target="_blank" rel="noopener noreferrer">tap-CSV</a>(Singer)，从 CSV 文件中提取数据</li>
+<li><a href="https://hub.meltano.com/targets/postgres" target="_blank" rel="noopener noreferrer">target-postgres</a>(Singer)，将数据加载到 Postgres</li>
+<li><a href="https://hub.meltano.com/transformers/dbt" target="_blank" rel="noopener noreferrer">dbt</a>，将数据转换为聚合表或视图</li>
+</ul>
+<blockquote>
+<p>注意，前边我们已经启动了 postgres，那一步可以跳过。</p>
+</blockquote>
+<p>操作过程是：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">git clone https://github.com/pnadolny13/meltano_example_implementations.git
+</span></span><span class="line"><span class="cl"><span class="nb">cd</span> meltano_example_implementations/meltano_projects/singer_dbt_jaffle/
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">meltano install
+</span></span><span class="line"><span class="cl">touch .env
+</span></span><span class="line"><span class="cl"><span class="nb">echo</span> <span class="nv">PG_PASSWORD</span><span class="o">=</span><span class="s2">&#34;lineage_ref&#34;</span> &gt;&gt; .env
+</span></span><span class="line"><span class="cl"><span class="nb">echo</span> <span class="nv">PG_USERNAME</span><span class="o">=</span><span class="s2">&#34;lineage_ref&#34;</span> &gt;&gt; .env
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Extract and Load(with Singer)</span>
+</span></span><span class="line"><span class="cl">meltano run tap-csv target-postgres
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Trasnform(with dbt)</span>
+</span></span><span class="line"><span class="cl">meltano run dbt:run
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Generate dbt docs</span>
+</span></span><span class="line"><span class="cl">meltano invoke dbt docs generate
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Serve generated dbt docs</span>
+</span></span><span class="line"><span class="cl">meltano invoke dbt docs to serve
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Then visit http://localhost:8080</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>现在，我们可以连接到 Postgres 来查看 加载和转换后的数据预览如下，截图来自 VS Code 的 SQLTool：</p>
+<p>Payments 表里长这样子：</p>
+<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png" title="https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png">
+        <img
+            class="lazyload"
+            data-src="https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png"
+            data-srcset="https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png, https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png 1.5x, https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png 2x"
+            data-sizes="auto"
+            alt="https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png">
+    </a></p>
+<h3 id="搭一个-bi-dashboard-系统" class="headerLink">
+    <a href="#%e6%90%ad%e4%b8%80%e4%b8%aa-bi-dashboard-%e7%b3%bb%e7%bb%9f" class="header-mark"></a>3.3 搭一个 BI Dashboard 系统</h3><p>Now, we have the data in data warehouses, with ETL toolchains to pipe different data sources into it. How could those data be consumed?</p>
+<p>BI tools like the dashboard could be one way to help us get insights from the data.</p>
+<p>With Apache Superset, dashboards, and charts based on those data sources could be created and managed smoothly and beautifully.</p>
+<p>The focus of this project was not on Apache Superset itself, thus, we simply reuse examples that <a href="https://github.com/pnadolny13" target="_blank" rel="noopener noreferrer">Pat Nadolny</a> had created in <a href="https://github.com/pnadolny13/meltano_example_implementations/tree/main/meltano_projects/jaffle_superset" target="_blank" rel="noopener noreferrer">Superset as a utility if meltano Example</a>.</p>
+<p>现在，我们有了数据仓库中的一些数据，用 ETL 工具链将不同的数据源导了进去，接下来可以试着用一下这些数据了。</p>
+<p>像仪表大盘 Dashbaord 这样的 BI 工具能帮助我们从数据中获得有用的洞察，使用 Apache Superset，可以很容易地创建和管理基于这些数据源的 Dashboard 和各式各样的图表。</p>
+<p>本章的重点不在于 Apache Superset 本身，所以，咱们还是复用 <a href="https://github.com/pnadolny13" target="_blank" rel="noopener noreferrer">Pat Nadolny</a> 在的例子 <a href="https://github.com/pnadolny13/meltano_example_implementations/tree/main/meltano_projects/jaffle_superset" target="_blank" rel="noopener noreferrer">https://github.com/pnadolny13/meltano_example_implementations/tree/main/meltano_projects/jaffle_superset</a>。</p>
+<h4 id="bootstrap-meltano-和-superset" class="headerLink">
+    <a href="#bootstrap-meltano-%e5%92%8c-superset" class="header-mark"></a>3.3.1 Bootstrap Meltano 和 Superset</h4><p>创建一个安装了 Meltano 的 python venv：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">mkdir .venv
+</span></span><span class="line"><span class="cl">python3 -m venv .venv/meltano
+</span></span><span class="line"><span class="cl"><span class="nb">source</span> .venv/meltano/bin/activate
+</span></span><span class="line"><span class="cl">python3 -m pip install wheel
+</span></span><span class="line"><span class="cl">python3 -m pip install meltano
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Following <a href="https://github.com/pnadolny13/meltano_example_implementations/tree/main/meltano_projects/jaffle_superset" target="_blank" rel="noopener noreferrer">Pat&rsquo;s guide</a>, with tiny modifications:</p>
+<ul>
+<li>Clone the repo, enter the <code>jaffle_superset</code> project</li>
+</ul>
+<p>参考 Pat 的 Guide（https://github.com/pnadolny13/meltano_example_implementations/tree/main/meltano_projects/jaffle_superset），稍微做一些修改：</p>
+<ul>
+<li>克隆 repo，进入 <code>jaffle_superset</code> 项目</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">git clone https://github.com/pnadolny13/meltano_example_implementations.git
+</span></span><span class="line"><span class="cl"><span class="nb">cd</span> meltano_example_implementations/meltano_projects/jaffle_superset/
+</span></span></code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>修改meltano配置文件，让 Superset 连接到我们创建的 Postgres：</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">vim meltano_projects/jaffle_superset/meltano.yml
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>这里，我将主机名更改为“10.1.1.111”，这是我当前主机的 IP，而如果读者在 Windows 或者 macOS 机器的 Docker Desktop 上跑的话，这里不要修改，否则要参考我去改成自己实际的地址：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-diff" data-lang="diff"><span class="line"><span class="cl"><span class="gd">--- a/meltano_projects/jaffle_superset/meltano.yml
+</span></span></span><span class="line"><span class="cl"><span class="gd"></span><span class="gi">+++ b/meltano_projects/jaffle_superset/meltano.yml
+</span></span></span><span class="line"><span class="cl"><span class="gi"></span><span class="gu">@@ -71,7 +71,7 @@ plugins:
+</span></span></span><span class="line"><span class="cl"><span class="gu"></span>               A list of database driver dependencies can be found here https://superset.apache.org/docs/databases/installing-database-drivers
+</span></span><span class="line"><span class="cl">     config:
+</span></span><span class="line"><span class="cl">       database_name: my_postgres
+</span></span><span class="line"><span class="cl"><span class="gd">-      sqlalchemy_uri: postgresql+psycopg2://${PG_USERNAME}:${PG_PASSWORD}@host.docker.internal:${PG_PORT}/${PG_DATABASE}
+</span></span></span><span class="line"><span class="cl"><span class="gd"></span><span class="gi">+      sqlalchemy_uri: postgresql+psycopg2://${PG_USERNAME}:${PG_PASSWORD}@10.1.1.168:${PG_PORT}/${PG_DATABASE}
+</span></span></span><span class="line"><span class="cl"><span class="gi"></span>       tables:
+</span></span><span class="line"><span class="cl">       - model.my_meltano_project.customers
+</span></span><span class="line"><span class="cl">       - model.my_meltano_project.orders
+</span></span></code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>添加 Postgres 登录的信息到  <code>.env</code> 文件：</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nb">echo</span> <span class="nv">PG_USERNAME</span><span class="o">=</span>lineage_ref &gt;&gt; .env
+</span></span><span class="line"><span class="cl"><span class="nb">echo</span> <span class="nv">PG_PASSWORD</span><span class="o">=</span>lineage_ref &gt;&gt; .env
+</span></span></code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>安装 Meltano 项目，运行 ETL 任务</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">meltano install
+</span></span><span class="line"><span class="cl">meltano run tap-csv target-postgres dbt:run
+</span></span></code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>调用、启动 superset，这里注意 <code>ui</code> 不是 meltano 的内部命令，而是一个配置进去的自定义行为（user-defined action）</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">meltano invoke superset:ui
+</span></span></code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>在另一个命令行终端，执行另一个自定义的命令 <code>load_datasources</code></li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">meltano invoke superset:load_datasources
+</span></span></code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>通过浏览器访问 http://localhost:8088/ 就是Superset 的图形界面了：</li>
+</ul>
+<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168570300-186b56a5-58e8-4ff1-bc06-89fd77d74166.png" title="https://user-images.githubusercontent.com/1651790/168570300-186b56a5-58e8-4ff1-bc06-89fd77d74166.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168570300-186b56a5-58e8-4ff1-bc06-89fd77d74166.png">
+        <img
+            class="lazyload"
+            data-src="https://user-images.githubusercontent.com/1651790/168570300-186b56a5-58e8-4ff1-bc06-89fd77d74166.png"
+            data-srcset="https://user-images.githubusercontent.com/1651790/168570300-186b56a5-58e8-4ff1-bc06-89fd77d74166.png, https://user-images.githubusercontent.com/1651790/168570300-186b56a5-58e8-4ff1-bc06-89fd77d74166.png 1.5x, https://user-images.githubusercontent.com/1651790/168570300-186b56a5-58e8-4ff1-bc06-89fd77d74166.png 2x"
+            data-sizes="auto"
+            alt="https://user-images.githubusercontent.com/1651790/168570300-186b56a5-58e8-4ff1-bc06-89fd77d74166.png">
+    </a></p>
+<h4 id="创建一个-dashboard" class="headerLink">
+    <a href="#%e5%88%9b%e5%bb%ba%e4%b8%80%e4%b8%aa-dashboard" class="header-mark"></a>3.3.2 创建一个 Dashboard</h4><p>试一下在这个 Meltano 项目中定义的 Postgres 中的 ETL 数据上创建一个 Dashboard 吧</p>
+<ul>
+<li>点击 <code>+ DASHBOARD</code>，填写仪表盘名称，然后点击 <code>SAVE</code>，然后点击 <code>+ CREATE A NEW CHART</code></li>
+</ul>
+<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168570363-c6b4f929-2aad-4f03-8e3e-b1b61f560ce5.png" title="https://user-images.githubusercontent.com/1651790/168570363-c6b4f929-2aad-4f03-8e3e-b1b61f560ce5.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168570363-c6b4f929-2aad-4f03-8e3e-b1b61f560ce5.png">
+        <img
+            class="lazyload"
+            data-src="https://user-images.githubusercontent.com/1651790/168570363-c6b4f929-2aad-4f03-8e3e-b1b61f560ce5.png"
+            data-srcset="https://user-images.githubusercontent.com/1651790/168570363-c6b4f929-2aad-4f03-8e3e-b1b61f560ce5.png, https://user-images.githubusercontent.com/1651790/168570363-c6b4f929-2aad-4f03-8e3e-b1b61f560ce5.png 1.5x, https://user-images.githubusercontent.com/1651790/168570363-c6b4f929-2aad-4f03-8e3e-b1b61f560ce5.png 2x"
+            data-sizes="auto"
+            alt="https://user-images.githubusercontent.com/1651790/168570363-c6b4f929-2aad-4f03-8e3e-b1b61f560ce5.png">
+    </a></p>
+<ul>
+<li>在新图表（Create a new chart）视图中，我们应该选择图表类型和数据集。 在这里，我选择了 <code>orders</code> 表作为数据源和 <code>Pie Chart</code> 图表类型：</li>
+</ul>
+<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168570927-9559a2a1-fed7-43be-9f6a-f6fb3c263830.png" title="https://user-images.githubusercontent.com/1651790/168570927-9559a2a1-fed7-43be-9f6a-f6fb3c263830.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168570927-9559a2a1-fed7-43be-9f6a-f6fb3c263830.png">
+        <img
+            class="lazyload"
+            data-src="https://user-images.githubusercontent.com/1651790/168570927-9559a2a1-fed7-43be-9f6a-f6fb3c263830.png"
+            data-srcset="https://user-images.githubusercontent.com/1651790/168570927-9559a2a1-fed7-43be-9f6a-f6fb3c263830.png, https://user-images.githubusercontent.com/1651790/168570927-9559a2a1-fed7-43be-9f6a-f6fb3c263830.png 1.5x, https://user-images.githubusercontent.com/1651790/168570927-9559a2a1-fed7-43be-9f6a-f6fb3c263830.png 2x"
+            data-sizes="auto"
+            alt="https://user-images.githubusercontent.com/1651790/168570927-9559a2a1-fed7-43be-9f6a-f6fb3c263830.png">
+    </a></p>
+<ul>
+<li>点击“CREATE NEW CHART”后，我们在图表定义视图中，我选择了“status”的“Query”为“DIMENSIONS”，“COUNT(amount)”为“METRIC”。 至此，咱们就可以看到每个订单状态分布的饼图了。</li>
+</ul>
+<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168571130-a65ba88e-1ebe-4699-8783-08e5ecf54a0c.png" title="https://user-images.githubusercontent.com/1651790/168571130-a65ba88e-1ebe-4699-8783-08e5ecf54a0c.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168571130-a65ba88e-1ebe-4699-8783-08e5ecf54a0c.png">
+        <img
+            class="lazyload"
+            data-src="https://user-images.githubusercontent.com/1651790/168571130-a65ba88e-1ebe-4699-8783-08e5ecf54a0c.png"
+            data-srcset="https://user-images.githubusercontent.com/1651790/168571130-a65ba88e-1ebe-4699-8783-08e5ecf54a0c.png, https://user-images.githubusercontent.com/1651790/168571130-a65ba88e-1ebe-4699-8783-08e5ecf54a0c.png 1.5x, https://user-images.githubusercontent.com/1651790/168571130-a65ba88e-1ebe-4699-8783-08e5ecf54a0c.png 2x"
+            data-sizes="auto"
+            alt="https://user-images.githubusercontent.com/1651790/168571130-a65ba88e-1ebe-4699-8783-08e5ecf54a0c.png">
+    </a></p>
+<ul>
+<li>点击 <code>SAVE</code> ，它会询问应该将此图表添加到哪个 Dashboard，选择后，单击 <code>SAVE &amp; GO TO DASHBOARD</code>。</li>
+</ul>
+<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168571301-8ae69983-eda8-4e75-99cf-6904f583fc7c.png" title="https://user-images.githubusercontent.com/1651790/168571301-8ae69983-eda8-4e75-99cf-6904f583fc7c.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168571301-8ae69983-eda8-4e75-99cf-6904f583fc7c.png">
+        <img
+            class="lazyload"
+            data-src="https://user-images.githubusercontent.com/1651790/168571301-8ae69983-eda8-4e75-99cf-6904f583fc7c.png"
+            data-srcset="https://user-images.githubusercontent.com/1651790/168571301-8ae69983-eda8-4e75-99cf-6904f583fc7c.png, https://user-images.githubusercontent.com/1651790/168571301-8ae69983-eda8-4e75-99cf-6904f583fc7c.png 1.5x, https://user-images.githubusercontent.com/1651790/168571301-8ae69983-eda8-4e75-99cf-6904f583fc7c.png 2x"
+            data-sizes="auto"
+            alt="https://user-images.githubusercontent.com/1651790/168571301-8ae69983-eda8-4e75-99cf-6904f583fc7c.png">
+    </a></p>
+<ul>
+<li>然后，在 Dashboard 中，我们可以看到那里的所有图表。 您可以看到我还添加了另一个图表来显示客户订单数量分布：</li>
+</ul>
+<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168571878-30a77057-1f66-448a-9bbd-0dedcee24cc9.png" title="https://user-images.githubusercontent.com/1651790/168571878-30a77057-1f66-448a-9bbd-0dedcee24cc9.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168571878-30a77057-1f66-448a-9bbd-0dedcee24cc9.png">
+        <img
+            class="lazyload"
+            data-src="https://user-images.githubusercontent.com/1651790/168571878-30a77057-1f66-448a-9bbd-0dedcee24cc9.png"
+            data-srcset="https://user-images.githubusercontent.com/1651790/168571878-30a77057-1f66-448a-9bbd-0dedcee24cc9.png, https://user-images.githubusercontent.com/1651790/168571878-30a77057-1f66-448a-9bbd-0dedcee24cc9.png 1.5x, https://user-images.githubusercontent.com/1651790/168571878-30a77057-1f66-448a-9bbd-0dedcee24cc9.png 2x"
+            data-sizes="auto"
+            alt="https://user-images.githubusercontent.com/1651790/168571878-30a77057-1f66-448a-9bbd-0dedcee24cc9.png">
+    </a></p>
+<ul>
+<li>点  <code>···</code> 的话，还能看到刷新率设置、下载渲染图等其他的功能。</li>
+</ul>
+<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168573874-b5d57919-2866-4b3c-a4e5-55b6e6ef342e.png" title="https://user-images.githubusercontent.com/1651790/168573874-b5d57919-2866-4b3c-a4e5-55b6e6ef342e.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168573874-b5d57919-2866-4b3c-a4e5-55b6e6ef342e.png">
+        <img
+            class="lazyload"
+            data-src="https://user-images.githubusercontent.com/1651790/168573874-b5d57919-2866-4b3c-a4e5-55b6e6ef342e.png"
+            data-srcset="https://user-images.githubusercontent.com/1651790/168573874-b5d57919-2866-4b3c-a4e5-55b6e6ef342e.png, https://user-images.githubusercontent.com/1651790/168573874-b5d57919-2866-4b3c-a4e5-55b6e6ef342e.png 1.5x, https://user-images.githubusercontent.com/1651790/168573874-b5d57919-2866-4b3c-a4e5-55b6e6ef342e.png 2x"
+            data-sizes="auto"
+            alt="https://user-images.githubusercontent.com/1651790/168573874-b5d57919-2866-4b3c-a4e5-55b6e6ef342e.png">
+    </a></p>
+<p>It&rsquo;s quite cool, ah? For now, we have a simple but typical data stack like any hobby data lab with everything open-source!</p>
+<p>Imagine we have 100 datasets in CSV, 200 tables in Data warehouse and a couple of data engineers running different projects that consume, generate different application, dashboard, and databases. When someone would like to discovery some of those table, dataset, dashboard and pipelines running across them, and then even modify some of them, it&rsquo;s proven to be quite costly in both communicationand engineering.</p>
+<p>Here comes the main part of our reference project: Metadata Discovery.</p>
+<p>目前，我们有一个简单但典型的 homelab 数据技术栈了，并且所有东西都是开源的！</p>
+<p>想象一下，我们在 CSV 中有 100 个数据集，在数据仓库中有 200 个表，并且有几个数据工程师在运行不同的项目，这些项目使用、生成不同的应用与服务、Dashbaord 和数据库。 当有人想要查找、发现或者修改其中的一些表、数据集、Dashbaord 和管道，在沟通和工程方面可能都是非常不好管理的。</p>
+<p>如前边提到的，我们需要这个示例项目的主要部分：元数据发现系统。</p>
+<h3 id="元数据发现系统" class="headerLink">
+    <a href="#%e5%85%83%e6%95%b0%e6%8d%ae%e5%8f%91%e7%8e%b0%e7%b3%bb%e7%bb%9f" class="header-mark"></a>3.4 元数据发现系统</h3><p>Then, we are stepping to deploy the Amundsen with Nebula Graph and Elasticsearch.</p>
+<blockquote>
+<p>Note: For the time being, the <a href="https://github.com/amundsen-io/amundsen/pull/1817" target="_blank" rel="noopener noreferrer">PR Nebula Graph as the Amundsen backend</a> is not yet merged, I am <a href="https://github.com/amundsen-io/rfcs/pull/48" target="_blank" rel="noopener noreferrer">working with the Amundsen team</a> to make it happen.</p>
+</blockquote>
+<p>With Amundsen, we could have all metadata of the whole data stack being discovered and managed in one place. And there are mainly two parts of Amundsen:</p>
+<p>然后，我们部署一个带有 NebulaGraph 和 Elasticsearch 的 Amundsen。</p>
+<blockquote>
+<p>注：目前【NebulaGraph 作为 Amundsen 后端的 PR】（https://github.com/amundsen-io/amundsen/pull/1817）尚未合并，我还在与 Amundsen 团队合作（https://github.com/amundsen-io/rfcs/pull/48）来实现它。</p>
+</blockquote>
+<p>有了 Amundsen，我们可以在一个地方发现和管理整个数据栈中的所有元数据。</p>
+<p>Amundsen 主要有两个部分组成：</p>
+<ul>
+<li>元数据导入 Metadata Ingestion
+<ul>
+<li><a href="https://www.amundsen.io/amundsen/databuilder/" target="_blank" rel="noopener noreferrer">Amundsen Data builder</a></li>
+</ul>
+</li>
+<li>元数据目录服务 Metadata Catalog
+<ul>
+<li><a href="https://www.amundsen.io/amundsen/frontend/" target="_blank" rel="noopener noreferrer">Amundsen Frontend service</a></li>
+<li><a href="https://www.amundsen.io/amundsen/metadata/" target="_blank" rel="noopener noreferrer">Amundsen Metadata service</a></li>
+<li><a href="https://www.amundsen.io/amundsen/search/" target="_blank" rel="noopener noreferrer">Amundsen Search service</a></li>
+</ul>
+</li>
+</ul>
+<p>它的工作原理是：利用 <code>Data builder</code> 从不同来源提取元数据，并将元数据持久化到 <code>Meta service</code> 的后端存储和 <code>Search service</code> 的后端存储中，用户从 <code>Froent service</code> 或通过 <code>Meta Service</code> 的API。</p>
+<h4 id="部署-amundsen" class="headerLink">
+    <a href="#%e9%83%a8%e7%bd%b2-amundsen" class="header-mark"></a>3.4.1 部署 Amundsen</h4><h5 id="元数据服务-metadata-service" class="headerLink">
+    <a href="#%e5%85%83%e6%95%b0%e6%8d%ae%e6%9c%8d%e5%8a%a1-metadata-service" class="header-mark"></a>3.4.1.1 元数据服务 Metadata service</h5><p>We are going to deploy a cluster of Amundsen with its docker-compose file. As the Nebula Graph backend support is not yet merged, we are referring to my fork.</p>
+<p>First, let&rsquo;s clone the repo with all submodules:</p>
+<p>我们用 docker-compose 文件部署一个 Amundsen 集群。 由于 NebulaGraph 后端支持尚未合并，还不能用官方的代码，先用我自己的分叉版本。</p>
+<p>首先，让我们克隆包含所有子模块的 repo：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">git clone -b amundsen_nebula_graph --recursive git@github.com:wey-gu/amundsen.git
+</span></span><span class="line"><span class="cl"><span class="nb">cd</span> amundsen
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>然后，启动所有目录服务（catalog services）及其后端存储：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker-compose -f docker-amundsen-nebula.yml up
+</span></span></code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>注：可以添加 <code>-d</code> 来让容器在后台运行：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker-compose -f docker-amundsen-nebula.yml up -d
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>关闭后台运行的集群</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker-compose -f docker-amundsen-nebula.yml stop
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>删除后台运行的集群</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker-compose -f docker-amundsen-nebula.yml down
+</span></span></code></pre></td></tr></table>
+</div>
+</div></blockquote>
+<p>由于这个 docker-compose 文件是供开发人员试玩、调试 Amundsen 用的，而不是给生产部署准备的，它在启动的时候会从代码库构建镜像，第一次跑的时候启动会慢一些。</p>
+<p>部署好了之后，我们使用 Data builder 将一些示例、虚构的数据加载存储里。</p>
+<h5 id="抓取元数据-data-builder" class="headerLink">
+    <a href="#%e6%8a%93%e5%8f%96%e5%85%83%e6%95%b0%e6%8d%ae-data-builder" class="header-mark"></a>3.4.1.2 抓取元数据 Data builder</h5><p>Amundsen Data builder is just like a Meltano but for ETL of Metadata to <code>Metadata service</code> and <code>Search service</code>‘s backend storage: Nebula Graph and Elasticsearch. The Data builder here is only a python module and the ETL job could be either run as a script or orchestrated with a DAG platform like Apache Airflow.</p>
+<p>With <a href="https://github.com/amundsen-io/amundsen/tree/main/databuilder" target="_blank" rel="noopener noreferrer">Amundsen Data builder</a> being installed:</p>
+<p>Amundsen Data builder 就像 Meltano 系统一样，只不过是用在元数据的上的 ETL ，它把元数据加载到“Meta service”和“Search service”的后端存储：NebulaGraph 和 Elasticsearch 里。 这里的 Data builder 只是一个 python 模块，所有的元数据 ETL 作业可以作为脚本运行，也可以用 Apache Airflow 等 DAG 平台进行编排。</p>
+<p>安装 <a href="https://github.com/amundsen-io/amundsen/tree/main/databuilder" target="_blank" rel="noopener noreferrer">Amundsen Data builder</a>：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nb">cd</span> databuilder
+</span></span><span class="line"><span class="cl">python3 -m venv .venv
+</span></span><span class="line"><span class="cl"><span class="nb">source</span> .venv/bin/activate
+</span></span><span class="line"><span class="cl">python3 -m pip install wheel
+</span></span><span class="line"><span class="cl">python3 -m pip install -r requirements.txt
+</span></span><span class="line"><span class="cl">python3 setup.py install
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>调用这个示例数据构建器 ETL 脚本来把示例的虚拟数据导进去。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">python3 example/scripts/sample_data_loader_nebula.py
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h5 id="验证一下-amundsen" class="headerLink">
+    <a href="#%e9%aa%8c%e8%af%81%e4%b8%80%e4%b8%8b-amundsen" class="header-mark"></a>3.4.1.3 验证一下 Amundsen</h5><p>在访问 Amundsen 之前，我们需要创建一个测试用户：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># run a container with curl attached to amundsenfrontend</span>
+</span></span><span class="line"><span class="cl">docker run -it --rm --net container:amundsenfrontend nicolaka/netshoot
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Create a user with id test_user_id</span>
+</span></span><span class="line"><span class="cl">curl -X PUT -v http://amundsenmetadata:5002/user <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    -H <span class="s2">&#34;Content-Type: application/json&#34;</span> <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    --data <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    <span class="s1">&#39;{&#34;user_id&#34;:&#34;test_user_id&#34;,&#34;first_name&#34;:&#34;test&#34;,&#34;last_name&#34;:&#34;user&#34;, &#34;email&#34;:&#34;test_user_id@mail.com&#34;}&#39;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nb">exit</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>然后我们可以在 <a href="http://localhost:5000/" target="_blank" rel="noopener noreferrer">http://localhost:5000</a> 查看 UI 并尝试搜索 <code>test</code>，它应该会返回一些结果。</p>
+<p><a class="lightgallery" href="https://github.com/amundsen-io/amundsen/raw/master/docs/img/search-page.png" title="https://github.com/amundsen-io/amundsen/raw/master/docs/img/search-page.png" data-thumbnail="https://github.com/amundsen-io/amundsen/raw/master/docs/img/search-page.png">
+        <img
+            class="lazyload"
+            data-src="https://github.com/amundsen-io/amundsen/raw/master/docs/img/search-page.png"
+            data-srcset="https://github.com/amundsen-io/amundsen/raw/master/docs/img/search-page.png, https://github.com/amundsen-io/amundsen/raw/master/docs/img/search-page.png 1.5x, https://github.com/amundsen-io/amundsen/raw/master/docs/img/search-page.png 2x"
+            data-sizes="auto"
+            alt="https://github.com/amundsen-io/amundsen/raw/master/docs/img/search-page.png">
+    </a></p>
+<p>然后，可以单击并浏览在“sample_data_loader_nebula.py”期间加载到 Amundsen 的那些示例元数据。</p>
+<p>此外，我们还可以通过 NebulaStudio(http://localhost:7001) 访问 NebulaGraph 里的这些数据。</p>
+<blockquote>
+<p>注意在 Nebula Studio 中，默认登录字段为：</p>
+<ul>
+<li>主机：<code>graphd:9669</code></li>
+<li>用户：<code>root</code></li>
+<li>密码：<code>nebula</code></li>
+</ul>
+</blockquote>
+<p>下图显示了有关 Amundsen 组件的更多详细信息：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">       ┌────────────────────────┐ ┌────────────────────────────────────────┐
+</span></span><span class="line"><span class="cl">       │ Frontend:5000          │ │ Metadata Sources                       │
+</span></span><span class="line"><span class="cl">       ├────────────────────────┤ │ ┌────────┐ ┌─────────┐ ┌─────────────┐ │
+</span></span><span class="line"><span class="cl">       │ Metaservice:5001       │ │ │        │ │         │ │             │ │
+</span></span><span class="line"><span class="cl">       │ ┌──────────────┐       │ │ │ Foo DB │ │ Bar App │ │ X Dashboard │ │
+</span></span><span class="line"><span class="cl">  ┌────┼─┤ Nebula Proxy │       │ │ │        │ │         │ │             │ │
+</span></span><span class="line"><span class="cl">  │    │ └──────────────┘       │ │ │        │ │         │ │             │ │
+</span></span><span class="line"><span class="cl">  │    ├────────────────────────┤ │ └────────┘ └─────┬───┘ └─────────────┘ │
+</span></span><span class="line"><span class="cl">┌─┼────┤ Search searvice:5002   │ │                  │                     │
+</span></span><span class="line"><span class="cl">│ │    └────────────────────────┘ └──────────────────┼─────────────────────┘
+</span></span><span class="line"><span class="cl">│ │    ┌─────────────────────────────────────────────┼───────────────────────┐
+</span></span><span class="line"><span class="cl">│ │    │                                             │                       │
+</span></span><span class="line"><span class="cl">│ │    │ Databuilder     ┌───────────────────────────┘                       │
+</span></span><span class="line"><span class="cl">│ │    │                 │                                                   │
+</span></span><span class="line"><span class="cl">│ │    │ ┌───────────────▼────────────────┐ ┌──────────────────────────────┐ │
+</span></span><span class="line"><span class="cl">│ │ ┌──┼─► Extractor of Sources           ├─► nebula_search_data_extractor │ │
+</span></span><span class="line"><span class="cl">│ │ │  │ └───────────────┬────────────────┘ └──────────────┬───────────────┘ │
+</span></span><span class="line"><span class="cl">│ │ │  │ ┌───────────────▼────────────────┐ ┌──────────────▼───────────────┐ │
+</span></span><span class="line"><span class="cl">│ │ │  │ │ Loader filesystem_csv_nebula   │ │ Loader Elastic FS loader     │ │
+</span></span><span class="line"><span class="cl">│ │ │  │ └───────────────┬────────────────┘ └──────────────┬───────────────┘ │
+</span></span><span class="line"><span class="cl">│ │ │  │ ┌───────────────▼────────────────┐ ┌──────────────▼───────────────┐ │
+</span></span><span class="line"><span class="cl">│ │ │  │ │ Publisher nebula_csv_publisher │ │ Publisher Elasticsearch      │ │
+</span></span><span class="line"><span class="cl">│ │ │  │ └───────────────┬────────────────┘ └──────────────┬───────────────┘ │
+</span></span><span class="line"><span class="cl">│ │ │  └─────────────────┼─────────────────────────────────┼─────────────────┘
+</span></span><span class="line"><span class="cl">│ │ └────────────────┐   │                                 │
+</span></span><span class="line"><span class="cl">│ │    ┌─────────────┼───►─────────────────────────┐ ┌─────▼─────┐
+</span></span><span class="line"><span class="cl">│ │    │ Nebula Graph│   │                         │ │           │
+</span></span><span class="line"><span class="cl">│ └────┼─────┬───────┴───┼───────────┐     ┌─────┐ │ │           │
+</span></span><span class="line"><span class="cl">│      │     │           │           │     │MetaD│ │ │           │
+</span></span><span class="line"><span class="cl">│      │ ┌───▼──┐    ┌───▼──┐    ┌───▼──┐  └─────┘ │ │           │
+</span></span><span class="line"><span class="cl">│ ┌────┼─►GraphD│    │GraphD│    │GraphD│          │ │           │
+</span></span><span class="line"><span class="cl">│ │    │ └──────┘    └──────┘    └──────┘  ┌─────┐ │ │           │
+</span></span><span class="line"><span class="cl">│ │    │ :9669                             │MetaD│ │ │  Elastic  │
+</span></span><span class="line"><span class="cl">│ │    │ ┌────────┐ ┌────────┐ ┌────────┐  └─────┘ │ │  Search   │
+</span></span><span class="line"><span class="cl">│ │    │ │        │ │        │ │        │          │ │  Cluster  │
+</span></span><span class="line"><span class="cl">│ │    │ │StorageD│ │StorageD│ │StorageD│  ┌─────┐ │ │  :9200    │
+</span></span><span class="line"><span class="cl">│ │    │ │        │ │        │ │        │  │MetaD│ │ │           │
+</span></span><span class="line"><span class="cl">│ │    │ └────────┘ └────────┘ └────────┘  └─────┘ │ │           │
+</span></span><span class="line"><span class="cl">│ │    ├───────────────────────────────────────────┤ │           │
+</span></span><span class="line"><span class="cl">│ └────┤ Nebula Studio:7001                        │ │           │
+</span></span><span class="line"><span class="cl">│      └───────────────────────────────────────────┘ └─────▲─────┘
+</span></span><span class="line"><span class="cl">└──────────────────────────────────────────────────────────┘
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="穿针引线元数据发现" class="headerLink">
+    <a href="#%e7%a9%bf%e9%92%88%e5%bc%95%e7%ba%bf%e5%85%83%e6%95%b0%e6%8d%ae%e5%8f%91%e7%8e%b0" class="header-mark"></a>4 穿针引线：元数据发现</h2><p>设置好基本环境后，让我们把所有东西穿起来。还记得我们有 ELT 一些数据到 PostgreSQL 吗？</p>
+<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png" title="https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png">
+        <img
+            class="lazyload"
+            data-src="https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png"
+            data-srcset="https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png, https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png 1.5x, https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png 2x"
+            data-sizes="auto"
+            alt="https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png">
+    </a></p>
+<p>那么，我们如何让 Amundsen 发现有关这些数据和 ETL 的元数据呢？</p>
+<h3 id="提取-postgres-元数据" class="headerLink">
+    <a href="#%e6%8f%90%e5%8f%96-postgres-%e5%85%83%e6%95%b0%e6%8d%ae" class="header-mark"></a>4.1 提取 Postgres 元数据</h3><p>我们从数据源开始：首先是 Postgres。</p>
+<p>我们为 python3 安装 Postgres 客户端：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sudo apt-get install libpq-dev
+</span></span><span class="line"><span class="cl">pip3 install Psycopg2
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="执行-postgres-元数据-etl" class="headerLink">
+    <a href="#%e6%89%a7%e8%a1%8c-postgres-%e5%85%83%e6%95%b0%e6%8d%ae-etl" class="header-mark"></a>4.1.1 执行 Postgres 元数据 ETL</h4><p>运行一个脚本来解析 Postgres 元数据：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">CREDENTIALS_POSTGRES_USER</span><span class="o">=</span>lineage_ref
+</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">CREDENTIALS_POSTGRES_PASSWORD</span><span class="o">=</span>lineage_ref
+</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">CREDENTIALS_POSTGRES_DATABASE</span><span class="o">=</span>warehouse
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">python3 example/scripts/sample_postgres_loader_nebula.py
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>If you look into the code of the sample script for loading Postgres metadata to Nebula, the main lines are quite straightforward:</p>
+<p>我们看看把 Postgres 元数据加载到 NebulaGraph 的示例脚本的代码，非常简单直接：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="c1"># part 1: PostgressMetadata --&gt; CSV --&gt; Nebula Graph</span>
+</span></span><span class="line"><span class="cl"><span class="n">job</span> <span class="o">=</span> <span class="n">DefaultJob</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">      <span class="n">conf</span><span class="o">=</span><span class="n">job_config</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="n">task</span><span class="o">=</span><span class="n">DefaultTask</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">          <span class="n">extractor</span><span class="o">=</span><span class="n">PostgresMetadataExtractor</span><span class="p">(),</span>
+</span></span><span class="line"><span class="cl">          <span class="n">loader</span><span class="o">=</span><span class="n">FsNebulaCSVLoader</span><span class="p">()),</span>
+</span></span><span class="line"><span class="cl">      <span class="n">publisher</span><span class="o">=</span><span class="n">NebulaCsvPublisher</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="o">...</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># part 2: Metadata stored in NebulaGraph --&gt; Elasticsearch</span>
+</span></span><span class="line"><span class="cl"><span class="n">extractor</span> <span class="o">=</span> <span class="n">NebulaSearchDataExtractor</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="n">task</span> <span class="o">=</span> <span class="n">SearchMetadatatoElasticasearchTask</span><span class="p">(</span><span class="n">extractor</span><span class="o">=</span><span class="n">extractor</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">job</span> <span class="o">=</span> <span class="n">DefaultJob</span><span class="p">(</span><span class="n">conf</span><span class="o">=</span><span class="n">job_config</span><span class="p">,</span> <span class="n">task</span><span class="o">=</span><span class="n">task</span><span class="p">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>第一个工作路径是：<code>PostgressMetadata --&gt; CSV --&gt; Nebula Graph</code></p>
+<ul>
+<li><code>PostgresMetadataExtractor</code> 用于从 Postgres 中提取/提取元数据，可以参考文档（https://www.amundsen.io/amundsen/databuilder/#postgresmetadataextractor）。</li>
+<li><code>FsNebulaCSVLoader</code> 用于将提取的数据中间放置为 CSV 文件</li>
+<li><code>NebulaCsvPublisher</code> 用于将元数据以 CSV 的形式发布到 NebulaGraph</li>
+</ul>
+<p>第二个工作路径是：<code>Metadata stored in NebulaGraph --&gt; Elasticsearch</code></p>
+<ul>
+<li><code>NebulaSearchDataExtractor</code> 用于获取存储在 Nebula Graph 中的元数据</li>
+<li><code>SearchMetadatatoElasticasearchTask</code> 用于使 Elasticsearch 对元数据进行索引。</li>
+</ul>
+<blockquote>
+<p>请注意，在生产环境中，我们可以在脚本中或使用 Apache Airflow 等编排平台触发这些作业。</p>
+</blockquote>
+<h4 id="验证-postgres-中元数据的获取" class="headerLink">
+    <a href="#%e9%aa%8c%e8%af%81-postgres-%e4%b8%ad%e5%85%83%e6%95%b0%e6%8d%ae%e7%9a%84%e8%8e%b7%e5%8f%96" class="header-mark"></a>4.1.2 验证 Postgres 中元数据的获取</h4><p>搜索<code>payments</code>或者直接访问http://localhost:5000/table_detail/warehouse/postgres/public/payments，你可以看到我们 Postgres 的元数据，比如：</p>
+<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168475180-ebfaa188-268c-4fbe-a614-135d56d07e5d.png" title="https://user-images.githubusercontent.com/1651790/168475180-ebfaa188-268c-4fbe-a614-135d56d07e5d.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168475180-ebfaa188-268c-4fbe-a614-135d56d07e5d.png">
+        <img
+            class="lazyload"
+            data-src="https://user-images.githubusercontent.com/1651790/168475180-ebfaa188-268c-4fbe-a614-135d56d07e5d.png"
+            data-srcset="https://user-images.githubusercontent.com/1651790/168475180-ebfaa188-268c-4fbe-a614-135d56d07e5d.png, https://user-images.githubusercontent.com/1651790/168475180-ebfaa188-268c-4fbe-a614-135d56d07e5d.png 1.5x, https://user-images.githubusercontent.com/1651790/168475180-ebfaa188-268c-4fbe-a614-135d56d07e5d.png 2x"
+            data-sizes="auto"
+            alt="https://user-images.githubusercontent.com/1651790/168475180-ebfaa188-268c-4fbe-a614-135d56d07e5d.png">
+    </a></p>
+<p>然后，像上面的屏幕截图一样，可以轻松完成元数据管理操作，如添加标签、所有者和描述。</p>
+<h3 id="提取-dbt-元数据" class="headerLink">
+    <a href="#%e6%8f%90%e5%8f%96-dbt-%e5%85%83%e6%95%b0%e6%8d%ae" class="header-mark"></a>4.2 提取 dbt 元数据</h3><p>实际上，我们也可以从 <a href="https://www.getdbt.com/" target="_blank" rel="noopener noreferrer">dbt</a> 本身提取元数据。</p>
+<p>Amundsen <a href="https://www.amundsen.io/amundsen/databuilder/#dbtextractor" target="_blank" rel="noopener noreferrer">DbtExtractor</a> 会解析 <code>catalog.json</code> 或 <code>manifest.json</code> 文件以将元数据加载到 Amundsen 存储（NebulaGraph 和 Elasticsearch )。</p>
+<p>在上面的 meltano 章节中，我们已经使用 <code>meltano invoke dbt docs generate</code> 生成了这个文件：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">14:23:15  Done.
+</span></span><span class="line"><span class="cl">14:23:15  Building catalog
+</span></span><span class="line"><span class="cl">14:23:15  Catalog written to /home/ubuntu/ref-data-lineage/meltano_example_implementations/meltano_projects/singer_dbt_jaffle/.meltano/transformers/dbt/target/catalog.json
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="dbt-元数据-etl-的执行" class="headerLink">
+    <a href="#dbt-%e5%85%83%e6%95%b0%e6%8d%ae-etl-%e7%9a%84%e6%89%a7%e8%a1%8c" class="header-mark"></a>4.2.1 dbt 元数据 ETL 的执行</h4><p>我们试着解析示例 dbt 文件中的元数据吧：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ ls -l example/sample_data/dbt/
+</span></span><span class="line"><span class="cl">total <span class="m">184</span>
+</span></span><span class="line"><span class="cl">-rw-rw-r-- <span class="m">1</span> w w   <span class="m">5320</span> May <span class="m">15</span> 07:17 catalog.json
+</span></span><span class="line"><span class="cl">-rw-rw-r-- <span class="m">1</span> w w <span class="m">177163</span> May <span class="m">15</span> 07:17 manifest.json
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>我写的这个示例的加载例子如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">python3 example/scripts/sample_dbt_loader_nebula.py
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>其中主要的代码如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="c1"># part 1: Dbt manifest --&gt; CSV --&gt; Nebula Graph</span>
+</span></span><span class="line"><span class="cl"><span class="n">job</span> <span class="o">=</span> <span class="n">DefaultJob</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">      <span class="n">conf</span><span class="o">=</span><span class="n">job_config</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="n">task</span><span class="o">=</span><span class="n">DefaultTask</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">          <span class="n">extractor</span><span class="o">=</span><span class="n">DbtExtractor</span><span class="p">(),</span>
+</span></span><span class="line"><span class="cl">          <span class="n">loader</span><span class="o">=</span><span class="n">FsNebulaCSVLoader</span><span class="p">()),</span>
+</span></span><span class="line"><span class="cl">      <span class="n">publisher</span><span class="o">=</span><span class="n">NebulaCsvPublisher</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="o">...</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># part 2: Metadata stored in NebulaGraph --&gt; Elasticsearch</span>
+</span></span><span class="line"><span class="cl"><span class="n">extractor</span> <span class="o">=</span> <span class="n">NebulaSearchDataExtractor</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="n">task</span> <span class="o">=</span> <span class="n">SearchMetadatatoElasticasearchTask</span><span class="p">(</span><span class="n">extractor</span><span class="o">=</span><span class="n">extractor</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">job</span> <span class="o">=</span> <span class="n">DefaultJob</span><span class="p">(</span><span class="n">conf</span><span class="o">=</span><span class="n">job_config</span><span class="p">,</span> <span class="n">task</span><span class="o">=</span><span class="n">task</span><span class="p">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>它和 Postgres 元数据 ETL 的唯一区别是 <code>extractor=DbtExtractor()</code>，它带有以下配置以获取有关 dbt 项目的以下信息：</p>
+<ul>
+<li>数据库名称</li>
+<li>目录_json</li>
+<li>manifest_json</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">job_config</span> <span class="o">=</span> <span class="n">ConfigFactory</span><span class="o">.</span><span class="n">from_dict</span><span class="p">({</span>
+</span></span><span class="line"><span class="cl">  <span class="s1">&#39;extractor.dbt.database_name&#39;</span><span class="p">:</span> <span class="n">database_name</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s1">&#39;extractor.dbt.catalog_json&#39;</span><span class="p">:</span> <span class="n">catalog_file_loc</span><span class="p">,</span>  <span class="c1"># File</span>
+</span></span><span class="line"><span class="cl">  <span class="s1">&#39;extractor.dbt.manifest_json&#39;</span><span class="p">:</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">manifest_data</span><span class="p">),</span>  <span class="c1"># JSON Dumped objecy</span>
+</span></span><span class="line"><span class="cl">  <span class="s1">&#39;extractor.dbt.source_url&#39;</span><span class="p">:</span> <span class="n">source_url</span><span class="p">})</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="验证-dbt-抓取结果" class="headerLink">
+    <a href="#%e9%aa%8c%e8%af%81-dbt-%e6%8a%93%e5%8f%96%e7%bb%93%e6%9e%9c" class="header-mark"></a>4.2.2 验证 dbt 抓取结果</h4><p>搜索 <code>dbt_demo</code> 或者直接访问 http://localhost:5000/table_detail/dbt_demo/snowflake/public/raw_inventory_value，可以看到</p>
+<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168479864-2f73ea73-265f-4cd2-999f-e7effbaf3ec1.png" title="https://user-images.githubusercontent.com/1651790/168479864-2f73ea73-265f-4cd2-999f-e7effbaf3ec1.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168479864-2f73ea73-265f-4cd2-999f-e7effbaf3ec1.png">
+        <img
+            class="lazyload"
+            data-src="https://user-images.githubusercontent.com/1651790/168479864-2f73ea73-265f-4cd2-999f-e7effbaf3ec1.png"
+            data-srcset="https://user-images.githubusercontent.com/1651790/168479864-2f73ea73-265f-4cd2-999f-e7effbaf3ec1.png, https://user-images.githubusercontent.com/1651790/168479864-2f73ea73-265f-4cd2-999f-e7effbaf3ec1.png 1.5x, https://user-images.githubusercontent.com/1651790/168479864-2f73ea73-265f-4cd2-999f-e7effbaf3ec1.png 2x"
+            data-sizes="auto"
+            alt="https://user-images.githubusercontent.com/1651790/168479864-2f73ea73-265f-4cd2-999f-e7effbaf3ec1.png">
+    </a></p>
+<blockquote>
+<p>小提示：我们可以选择启用 DEBUG log 级别去看已发送到 Elasticsearch 和 NebulaGraph 的内容。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-diff" data-lang="diff"><span class="line"><span class="cl"><span class="gd">- logging.basicConfig(level=logging.INFO)
+</span></span></span><span class="line"><span class="cl"><span class="gd"></span><span class="gi">+ logging.basicConfig(level=logging.DEBUG)
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div></blockquote>
+<p>或者，在 NebulaStudio 中探索导入的数据：</p>
+<p>首先，点击 “Start with Vertices”，填写顶点 vid：<code>snowflake://dbt_demo.public/fact_warehouse_inventory</code></p>
+<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168480047-26c28cde-5df8-40af-8da4-6ab0203094e2.png" title="https://user-images.githubusercontent.com/1651790/168480047-26c28cde-5df8-40af-8da4-6ab0203094e2.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168480047-26c28cde-5df8-40af-8da4-6ab0203094e2.png">
+        <img
+            class="lazyload"
+            data-src="https://user-images.githubusercontent.com/1651790/168480047-26c28cde-5df8-40af-8da4-6ab0203094e2.png"
+            data-srcset="https://user-images.githubusercontent.com/1651790/168480047-26c28cde-5df8-40af-8da4-6ab0203094e2.png, https://user-images.githubusercontent.com/1651790/168480047-26c28cde-5df8-40af-8da4-6ab0203094e2.png 1.5x, https://user-images.githubusercontent.com/1651790/168480047-26c28cde-5df8-40af-8da4-6ab0203094e2.png 2x"
+            data-sizes="auto"
+            alt="https://user-images.githubusercontent.com/1651790/168480047-26c28cde-5df8-40af-8da4-6ab0203094e2.png">
+    </a></p>
+<p>然后，我们可以看到顶点显示为粉红色的点。 让我们修改 <code>Expand</code> / ”拓展“选项：</p>
+<ul>
+<li>方向：双向</li>
+<li>步数：单向、三步</li>
+</ul>
+<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168480101-7b7b5824-06d9-4155-87c9-798db0dc7612.png" title="https://user-images.githubusercontent.com/1651790/168480101-7b7b5824-06d9-4155-87c9-798db0dc7612.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168480101-7b7b5824-06d9-4155-87c9-798db0dc7612.png">
+        <img
+            class="lazyload"
+            data-src="https://user-images.githubusercontent.com/1651790/168480101-7b7b5824-06d9-4155-87c9-798db0dc7612.png"
+            data-srcset="https://user-images.githubusercontent.com/1651790/168480101-7b7b5824-06d9-4155-87c9-798db0dc7612.png, https://user-images.githubusercontent.com/1651790/168480101-7b7b5824-06d9-4155-87c9-798db0dc7612.png 1.5x, https://user-images.githubusercontent.com/1651790/168480101-7b7b5824-06d9-4155-87c9-798db0dc7612.png 2x"
+            data-sizes="auto"
+            alt="https://user-images.githubusercontent.com/1651790/168480101-7b7b5824-06d9-4155-87c9-798db0dc7612.png">
+    </a></p>
+<p>并双击顶点（点），它将双向拓展 3 步：</p>
+<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168480280-1dc88d1b-1f1e-48fd-9997-972965522ef5.png" title="https://user-images.githubusercontent.com/1651790/168480280-1dc88d1b-1f1e-48fd-9997-972965522ef5.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168480280-1dc88d1b-1f1e-48fd-9997-972965522ef5.png">
+        <img
+            class="lazyload"
+            data-src="https://user-images.githubusercontent.com/1651790/168480280-1dc88d1b-1f1e-48fd-9997-972965522ef5.png"
+            data-srcset="https://user-images.githubusercontent.com/1651790/168480280-1dc88d1b-1f1e-48fd-9997-972965522ef5.png, https://user-images.githubusercontent.com/1651790/168480280-1dc88d1b-1f1e-48fd-9997-972965522ef5.png 1.5x, https://user-images.githubusercontent.com/1651790/168480280-1dc88d1b-1f1e-48fd-9997-972965522ef5.png 2x"
+            data-sizes="auto"
+            alt="https://user-images.githubusercontent.com/1651790/168480280-1dc88d1b-1f1e-48fd-9997-972965522ef5.png">
+    </a></p>
+<p>从上边这个截图里我们可以发现，在可视化之后的图数据库中，这些元数据可以很容易被查看、分析，并从中获得洞察。</p>
+<blockquote>
+<p>小贴士，您可以点击 👁 图标选择一些要显示的属性，我在截图之前就是通过它让一些信息显示出来的。</p>
+</blockquote>
+<p>而且，我们在 NebulaStudio 中看到的也与 Amundsen 元数据服务的数据模型相呼应：</p>
+<p><a class="lightgallery" href="https://www.amundsen.io/amundsen/img/graph_model.png" title="https://www.amundsen.io/amundsen/img/graph_model.png" data-thumbnail="https://www.amundsen.io/amundsen/img/graph_model.png">
+        <img
+            class="lazyload"
+            data-src="https://www.amundsen.io/amundsen/img/graph_model.png"
+            data-srcset="https://www.amundsen.io/amundsen/img/graph_model.png, https://www.amundsen.io/amundsen/img/graph_model.png 1.5x, https://www.amundsen.io/amundsen/img/graph_model.png 2x"
+            data-sizes="auto"
+            alt="https://www.amundsen.io/amundsen/img/graph_model.png">
+    </a></p>
+<p>最后，请记住我们曾利用 dbt 来转换meltano 中的一些数据，并且清单文件路径是<code>.meltano/transformers/dbt/target/catalog.json</code>，您可以尝试创建一个数据构建器作业来导入它。</p>
+<h3 id="提取-superset-中的元数据" class="headerLink">
+    <a href="#%e6%8f%90%e5%8f%96-superset-%e4%b8%ad%e7%9a%84%e5%85%83%e6%95%b0%e6%8d%ae" class="header-mark"></a>4.3 提取 Superset 中的元数据</h3><p>Amundsen 的 Superset extractor 可以获取</p>
+<ul>
+<li>Dashboard 元数据抽取 <a href="https://www.amundsen.io/amundsen/databuilder/databuilder/extractor/dashboard/apache_superset/apache_superset_metadata_extractor.py" target="_blank" rel="noopener noreferrer">https://www.amundsen.io/amundsen/databuilder/databuilder/extractor/dashboard/apache_superset/apache_superset_metadata_extractor.py</a></li>
+<li>图表元数据抽取 <a href="https://www.amundsen.io/amundsen/databuilder/databuilder" target="_blank" rel="noopener noreferrer">https://www.amundsen.io/amundsen/databuilder/databuilder</a> /extractor/dashboard/apache_superset/apache_superset_chart_extractor.py</li>
+<li>Superset 元素与数据源（表）的关系抽取 <a href="https://www.amundsen.io/amundsen/databuilder/databuilder/extractor/dashboard/apache_superset/apache_superset_table_extractor.py" target="_blank" rel="noopener noreferrer">https://www.amundsen.io/amundsen/databuilder/databuilder/extractor/dashboard/apache_superset/apache_superset_table_extractor.py</a></li>
+</ul>
+<p>咱们现在就尝试摄取之前创建的 Superset Dashboard 的元数据。</p>
+<h4 id="superset-元数据-etl-的执行" class="headerLink">
+    <a href="#superset-%e5%85%83%e6%95%b0%e6%8d%ae-etl-%e7%9a%84%e6%89%a7%e8%a1%8c" class="header-mark"></a>4.3.1 Superset 元数据 ETL 的执行</h4><p>下边执行的示例 Superset 提取脚本可以从中获取数据并将元数据加载到 NebulaGraph 和 Elasticsearch 中。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">python3</span> <span class="n">sample_superset_data_loader_nebula</span><span class="o">.</span><span class="n">py</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>如果我们将日志记录级别设置为“DEBUG”，我们实际上可以看到这些中间的过程日志：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="c1"># fetching metadata from superset</span>
+</span></span><span class="line"><span class="cl"><span class="n">DEBUG</span><span class="p">:</span><span class="n">urllib3</span><span class="o">.</span><span class="n">connectionpool</span><span class="p">:</span><span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">localhost</span><span class="p">:</span><span class="mi">8088</span> <span class="s2">&#34;POST /api/v1/security/login HTTP/1.1&#34;</span> <span class="mi">200</span> <span class="mi">280</span>
+</span></span><span class="line"><span class="cl"><span class="n">INFO</span><span class="p">:</span><span class="n">databuilder</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">task</span><span class="p">:</span><span class="n">Running</span> <span class="n">a</span> <span class="n">task</span>
+</span></span><span class="line"><span class="cl"><span class="n">DEBUG</span><span class="p">:</span><span class="n">urllib3</span><span class="o">.</span><span class="n">connectionpool</span><span class="p">:</span><span class="n">Starting</span> <span class="n">new</span> <span class="n">HTTP</span> <span class="n">connection</span> <span class="p">(</span><span class="mi">1</span><span class="p">):</span> <span class="n">localhost</span><span class="p">:</span><span class="mi">8088</span>
+</span></span><span class="line"><span class="cl"><span class="n">DEBUG</span><span class="p">:</span><span class="n">urllib3</span><span class="o">.</span><span class="n">connectionpool</span><span class="p">:</span><span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">localhost</span><span class="p">:</span><span class="mi">8088</span> <span class="s2">&#34;GET /api/v1/dashboard?q=(page_size:20,page:0,order_direction:desc) HTTP/1.1&#34;</span> <span class="mi">308</span> <span class="mi">374</span>
+</span></span><span class="line"><span class="cl"><span class="n">DEBUG</span><span class="p">:</span><span class="n">urllib3</span><span class="o">.</span><span class="n">connectionpool</span><span class="p">:</span><span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">localhost</span><span class="p">:</span><span class="mi">8088</span> <span class="s2">&#34;GET /api/v1/dashboard/?q=(page_size:20,page:0,order_direction:desc) HTTP/1.1&#34;</span> <span class="mi">200</span> <span class="mi">1058</span>
+</span></span><span class="line"><span class="cl"><span class="o">...</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># insert Dashboard</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">DEBUG</span><span class="p">:</span><span class="n">databuilder</span><span class="o">.</span><span class="n">publisher</span><span class="o">.</span><span class="n">nebula_csv_publisher</span><span class="p">:</span><span class="n">Query</span><span class="p">:</span> <span class="n">INSERT</span> <span class="n">VERTEX</span> <span class="err">`</span><span class="n">Dashboard</span><span class="err">`</span> <span class="p">(</span><span class="err">`</span><span class="n">dashboard_url</span><span class="err">`</span><span class="p">,</span> <span class="err">`</span><span class="n">name</span><span class="err">`</span><span class="p">,</span> <span class="n">published_tag</span><span class="p">,</span> <span class="n">publisher_last_updated_epoch_ms</span><span class="p">)</span> <span class="n">VALUES</span>  <span class="s2">&#34;superset_dashboard://my_cluster.1/3&#34;</span><span class="p">:(</span><span class="s2">&#34;http://localhost:8088/superset/dashboard/3/&#34;</span><span class="p">,</span><span class="s2">&#34;my_dashboard&#34;</span><span class="p">,</span><span class="s2">&#34;unique_tag&#34;</span><span class="p">,</span><span class="n">timestamp</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl"><span class="o">...</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># insert a DASHBOARD_WITH_TABLE relationship/edge</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">INFO</span><span class="p">:</span><span class="n">databuilder</span><span class="o">.</span><span class="n">publisher</span><span class="o">.</span><span class="n">nebula_csv_publisher</span><span class="p">:</span><span class="n">Importing</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">edge</span> <span class="n">files</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;/tmp/amundsen/dashboard/relationships/Dashboard_Table_DASHBOARD_WITH_TABLE.csv&#39;</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl"><span class="n">DEBUG</span><span class="p">:</span><span class="n">databuilder</span><span class="o">.</span><span class="n">publisher</span><span class="o">.</span><span class="n">nebula_csv_publisher</span><span class="p">:</span><span class="n">Query</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl"><span class="n">INSERT</span> <span class="n">edge</span> <span class="err">`</span><span class="n">DASHBOARD_WITH_TABLE</span><span class="err">`</span> <span class="p">(</span><span class="err">`</span><span class="n">END_LABEL</span><span class="err">`</span><span class="p">,</span> <span class="err">`</span><span class="n">START_LABEL</span><span class="err">`</span><span class="p">,</span> <span class="n">published_tag</span><span class="p">,</span> <span class="n">publisher_last_updated_epoch_ms</span><span class="p">)</span> <span class="n">VALUES</span> <span class="s2">&#34;superset_dashboard://my_cluster.1/3&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;postgresql+psycopg2://my_cluster.warehouse/orders&#34;</span><span class="p">:(</span><span class="s2">&#34;Table&#34;</span><span class="p">,</span><span class="s2">&#34;Dashboard&#34;</span><span class="p">,</span><span class="s2">&#34;unique_tag&#34;</span><span class="p">,</span> <span class="n">timestamp</span><span class="p">()),</span> <span class="s2">&#34;superset_dashboard://my_cluster.1/3&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;postgresql+psycopg2://my_cluster.warehouse/customers&#34;</span><span class="p">:(</span><span class="s2">&#34;Table&#34;</span><span class="p">,</span><span class="s2">&#34;Dashboard&#34;</span><span class="p">,</span><span class="s2">&#34;unique_tag&#34;</span><span class="p">,</span> <span class="n">timestamp</span><span class="p">());</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="验证-superset-dashboard-元数据" class="headerLink">
+    <a href="#%e9%aa%8c%e8%af%81-superset-dashboard-%e5%85%83%e6%95%b0%e6%8d%ae" class="header-mark"></a>4.3.2 验证 Superset Dashboard 元数据</h4><p>通过在 Amundsen 中搜索它，我们现在可以获得 Dashboard 信息。</p>
+<p>我们也可以从 NebulaStudio 进行验证。</p>
+<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168719624-738323dd-4c6e-475f-a370-f149181c6184.png" title="https://user-images.githubusercontent.com/1651790/168719624-738323dd-4c6e-475f-a370-f149181c6184.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168719624-738323dd-4c6e-475f-a370-f149181c6184.png">
+        <img
+            class="lazyload"
+            data-src="https://user-images.githubusercontent.com/1651790/168719624-738323dd-4c6e-475f-a370-f149181c6184.png"
+            data-srcset="https://user-images.githubusercontent.com/1651790/168719624-738323dd-4c6e-475f-a370-f149181c6184.png, https://user-images.githubusercontent.com/1651790/168719624-738323dd-4c6e-475f-a370-f149181c6184.png 1.5x, https://user-images.githubusercontent.com/1651790/168719624-738323dd-4c6e-475f-a370-f149181c6184.png 2x"
+            data-sizes="auto"
+            alt="https://user-images.githubusercontent.com/1651790/168719624-738323dd-4c6e-475f-a370-f149181c6184.png">
+    </a></p>
+<blockquote>
+<p>注：可以参阅 <a href="https://www.amundsen.io/amundsen/databuilder/docs/dashboard_ingestion_guide/" target="_blank" rel="noopener noreferrer">Dashboard 抓取指南</a> 中的 Amundsen Dashboard 图建模：</p>
+<p><a class="lightgallery" href="https://www.amundsen.io/amundsen/databuilder/docs/assets/dashboard_graph_modeling.png?raw=true" title="dashboard_graph_modeling" data-thumbnail="https://www.amundsen.io/amundsen/databuilder/docs/assets/dashboard_graph_modeling.png?raw=true">
+        <img
+            class="lazyload"
+            data-src="https://www.amundsen.io/amundsen/databuilder/docs/assets/dashboard_graph_modeling.png?raw=true"
+            data-srcset="https://www.amundsen.io/amundsen/databuilder/docs/assets/dashboard_graph_modeling.png?raw=true, https://www.amundsen.io/amundsen/databuilder/docs/assets/dashboard_graph_modeling.png?raw=true 1.5x, https://www.amundsen.io/amundsen/databuilder/docs/assets/dashboard_graph_modeling.png?raw=true 2x"
+            data-sizes="auto"
+            alt="https://www.amundsen.io/amundsen/databuilder/docs/assets/dashboard_graph_modeling.png?raw=true">
+    </a></p>
+</blockquote>
+<h3 id="用-superset-预览数据" class="headerLink">
+    <a href="#%e7%94%a8-superset-%e9%a2%84%e8%a7%88%e6%95%b0%e6%8d%ae" class="header-mark"></a>4.4 用 Superset 预览数据</h3><p>Superset could be used to preview Table Data like this. Corresponding documentation could be referred <a href="https://www.amundsen.io/amundsen/frontend/docs/configuration/#preview-client" target="_blank" rel="noopener noreferrer">here</a>, where the API of <code>/superset/sql_json/</code> will be called by Amundsen Frontend.</p>
+<p>Superset可以用来预览这样的表格数据。 相应的文档可以参考 <a href="https://www.amundsen.io/amundsen/frontend/docs/configuration/#preview-client" target="_blank" rel="noopener noreferrer">https://www.amundsen.io/amundsen/frontend/docs/configuration/#preview-client</a> ，其中 <code>/superset/sql_json/</code> 的 API 被 Amundsen Frontend service 调用，取得预览信息。</p>
+<p><a class="lightgallery" href="https://github.com/amundsen-io/amundsenfrontendlibrary/blob/master/docs/img/data_preview.png?raw=true" title="https://github.com/amundsen-io/amundsenfrontendlibrary/blob/master/docs/img/data_preview.png?raw=true" data-thumbnail="https://github.com/amundsen-io/amundsenfrontendlibrary/blob/master/docs/img/data_preview.png?raw=true">
+        <img
+            class="lazyload"
+            data-src="https://github.com/amundsen-io/amundsenfrontendlibrary/blob/master/docs/img/data_preview.png?raw=true"
+            data-srcset="https://github.com/amundsen-io/amundsenfrontendlibrary/blob/master/docs/img/data_preview.png?raw=true, https://github.com/amundsen-io/amundsenfrontendlibrary/blob/master/docs/img/data_preview.png?raw=true 1.5x, https://github.com/amundsen-io/amundsenfrontendlibrary/blob/master/docs/img/data_preview.png?raw=true 2x"
+            data-sizes="auto"
+            alt="https://github.com/amundsen-io/amundsenfrontendlibrary/blob/master/docs/img/data_preview.png?raw=true">
+    </a></p>
+<h3 id="开启数据血缘信息" class="headerLink">
+    <a href="#%e5%bc%80%e5%90%af%e6%95%b0%e6%8d%ae%e8%a1%80%e7%bc%98%e4%bf%a1%e6%81%af" class="header-mark"></a>4.5 开启数据血缘信息</h3><p>默认情况下，数据血缘是关闭的，我们可以通过以下方式启用它：</p>
+<ol start="0">
+<li><code>cd</code> 到 Amundsen 代码仓库下，这也是我们运行 <code>docker-compose -f docker-amundsen-nebula.yml up</code> 命令的地方</li>
+</ol>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nb">cd</span> amundsen
+</span></span></code></pre></td></tr></table>
+</div>
+</div><ol>
+<li>修改 frontend 下的 typescript 配置</li>
+</ol>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-diff" data-lang="diff"><span class="line"><span class="cl"><span class="gd">--- a/frontend/amundsen_application/static/js/config/config-default.ts
+</span></span></span><span class="line"><span class="cl"><span class="gd"></span><span class="gi">+++ b/frontend/amundsen_application/static/js/config/config-default.ts
+</span></span></span><span class="line"><span class="cl"><span class="gi"></span>   tableLineage: {
+</span></span><span class="line"><span class="cl"><span class="gd">-    inAppListEnabled: false,
+</span></span></span><span class="line"><span class="cl"><span class="gd">-    inAppPageEnabled: false,
+</span></span></span><span class="line"><span class="cl"><span class="gd"></span><span class="gi">+    inAppListEnabled: true,
+</span></span></span><span class="line"><span class="cl"><span class="gi">+    inAppPageEnabled: true,
+</span></span></span><span class="line"><span class="cl"><span class="gi"></span>     externalEnabled: false,
+</span></span><span class="line"><span class="cl">     iconPath: &#39;PATH_TO_ICON&#39;,
+</span></span><span class="line"><span class="cl">     isBeta: false,
+</span></span></code></pre></td></tr></table>
+</div>
+</div><ol start="2">
+<li>重新构建 docker 镜像，其中将重建前端图像。</li>
+</ol>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker-compose -f docker-amundsen-nebula.yml build
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>然后，重新运行 <code>up -d</code> 以确保前端用新的配置：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker-compose -f docker-amundsen-nebula.yml up -d
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>结果大概长这样子：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ docker-compose -f docker-amundsen-nebula.yml up -d
+</span></span><span class="line"><span class="cl">...
+</span></span><span class="line"><span class="cl">Recreating amundsenfrontend           ... <span class="k">done</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>之后，我们可以访问 http://localhost:5000/lineage/table/gold/hive/test_schema/test_table1 看到 <code>Lineage （beta）</code> 血缘按钮已经显示出来了：</p>
+<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168838731-79d0e3bc-439e-4f6b-8ef7-83b37e9bcb12.png" title="https://user-images.githubusercontent.com/1651790/168838731-79d0e3bc-439e-4f6b-8ef7-83b37e9bcb12.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168838731-79d0e3bc-439e-4f6b-8ef7-83b37e9bcb12.png">
+        <img
+            class="lazyload"
+            data-src="https://user-images.githubusercontent.com/1651790/168838731-79d0e3bc-439e-4f6b-8ef7-83b37e9bcb12.png"
+            data-srcset="https://user-images.githubusercontent.com/1651790/168838731-79d0e3bc-439e-4f6b-8ef7-83b37e9bcb12.png, https://user-images.githubusercontent.com/1651790/168838731-79d0e3bc-439e-4f6b-8ef7-83b37e9bcb12.png 1.5x, https://user-images.githubusercontent.com/1651790/168838731-79d0e3bc-439e-4f6b-8ef7-83b37e9bcb12.png 2x"
+            data-sizes="auto"
+            alt="https://user-images.githubusercontent.com/1651790/168838731-79d0e3bc-439e-4f6b-8ef7-83b37e9bcb12.png">
+    </a></p>
+<p>我们可以点击 <code>Downstream</code> 在存在的时候查看该表的下游资源：</p>
+<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168839251-efd523af-d729-44cf-a40b-fa83a0852654.png" title="https://user-images.githubusercontent.com/1651790/168839251-efd523af-d729-44cf-a40b-fa83a0852654.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168839251-efd523af-d729-44cf-a40b-fa83a0852654.png">
+        <img
+            class="lazyload"
+            data-src="https://user-images.githubusercontent.com/1651790/168839251-efd523af-d729-44cf-a40b-fa83a0852654.png"
+            data-srcset="https://user-images.githubusercontent.com/1651790/168839251-efd523af-d729-44cf-a40b-fa83a0852654.png, https://user-images.githubusercontent.com/1651790/168839251-efd523af-d729-44cf-a40b-fa83a0852654.png 1.5x, https://user-images.githubusercontent.com/1651790/168839251-efd523af-d729-44cf-a40b-fa83a0852654.png 2x"
+            data-sizes="auto"
+            alt="https://user-images.githubusercontent.com/1651790/168839251-efd523af-d729-44cf-a40b-fa83a0852654.png">
+    </a></p>
+<p>或者点血缘按钮查看血缘的图表式：</p>
+<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168838814-e6ff5152-c24b-470e-a46a-48f183ba7201.png" title="https://user-images.githubusercontent.com/1651790/168838814-e6ff5152-c24b-470e-a46a-48f183ba7201.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168838814-e6ff5152-c24b-470e-a46a-48f183ba7201.png">
+        <img
+            class="lazyload"
+            data-src="https://user-images.githubusercontent.com/1651790/168838814-e6ff5152-c24b-470e-a46a-48f183ba7201.png"
+            data-srcset="https://user-images.githubusercontent.com/1651790/168838814-e6ff5152-c24b-470e-a46a-48f183ba7201.png, https://user-images.githubusercontent.com/1651790/168838814-e6ff5152-c24b-470e-a46a-48f183ba7201.png 1.5x, https://user-images.githubusercontent.com/1651790/168838814-e6ff5152-c24b-470e-a46a-48f183ba7201.png 2x"
+            data-sizes="auto"
+            alt="https://user-images.githubusercontent.com/1651790/168838814-e6ff5152-c24b-470e-a46a-48f183ba7201.png">
+    </a></p>
+<p>也有用于血缘查询的 API。 这个例子中我们用 cURL 调用下这个 API：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker run -it --rm --net container:amundsenfrontend nicolaka/netshoot
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">curl <span class="s2">&#34;http://amundsenmetadata:5002/table/snowflake://dbt_demo.public/raw_inventory_value/lineage?depth=3&amp;direction=both&#34;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>上面的 API 调用是查询上游和下游方向的 linage，表 <code>snowflake://dbt_demo.public/raw_inventory_value</code> 的深度为 3。</p>
+<p>结果应该是这样的：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;depth&#34;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;downstream_entities&#34;</span><span class="p">:</span> <span class="p">[</span>
+</span></span><span class="line"><span class="cl">        <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&#34;level&#34;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&#34;usage&#34;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&#34;key&#34;</span><span class="p">:</span> <span class="s2">&#34;snowflake://dbt_demo.public/fact_daily_expenses&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&#34;parent&#34;</span><span class="p">:</span> <span class="s2">&#34;snowflake://dbt_demo.public/fact_warehouse_inventory&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&#34;badges&#34;</span><span class="p">:</span> <span class="p">[],</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&#34;source&#34;</span><span class="p">:</span> <span class="s2">&#34;snowflake&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="p">},</span>
+</span></span><span class="line"><span class="cl">        <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&#34;level&#34;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&#34;usage&#34;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&#34;key&#34;</span><span class="p">:</span> <span class="s2">&#34;snowflake://dbt_demo.public/fact_warehouse_inventory&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&#34;parent&#34;</span><span class="p">:</span> <span class="s2">&#34;snowflake://dbt_demo.public/raw_inventory_value&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&#34;badges&#34;</span><span class="p">:</span> <span class="p">[],</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&#34;source&#34;</span><span class="p">:</span> <span class="s2">&#34;snowflake&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">],</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;key&#34;</span><span class="p">:</span> <span class="s2">&#34;snowflake://dbt_demo.public/raw_inventory_value&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;direction&#34;</span><span class="p">:</span> <span class="s2">&#34;both&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;upstream_entities&#34;</span><span class="p">:</span> <span class="p">[]</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>实际上，这个血缘数据就是在我们的 <a href="https://github.com/amundsen-io/amundsen/blob/main/databuilder/databuilder/extractor/dbt_extractor.py" target="_blank" rel="noopener noreferrer">DbtExtractor</a> 执行期间提取和加载的，其中 <code>extractor .dbt.{DbtExtractor.EXTRACT_LINEAGE}</code> 默认为 <code>True</code>，因此创建了血缘元数据并将其加载到了 Amundsen。</p>
+<h4 id="在-nebulagraph-中洞察血缘" class="headerLink">
+    <a href="#%e5%9c%a8-nebulagraph-%e4%b8%ad%e6%b4%9e%e5%af%9f%e8%a1%80%e7%bc%98" class="header-mark"></a>4.5.1 在 NebulaGraph 中洞察血缘</h4><p>使用图数据库作为元数据存储的两个优点是：</p>
+<ul>
+<li>图查询本身是一个灵活的 DSL for lineage API，例如，这个查询帮助我们执行 Amundsen 元数据 API 的等价的查询：</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="line"><span class="cl"><span class="k">MATCH</span><span class="w"> </span><span class="n">p</span><span class="o">=</span><span class="p">(</span><span class="n">t</span><span class="p">:</span><span class="o">`</span><span class="k">Table</span><span class="o">`</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="p">[:</span><span class="o">`</span><span class="n">HAS_UPSTREAM</span><span class="o">`|</span><span class="p">:</span><span class="o">`</span><span class="n">HAS_DOWNSTREAM</span><span class="o">`</span><span class="w"> </span><span class="o">*</span><span class="mi">1</span><span class="p">..</span><span class="mi">3</span><span class="p">]</span><span class="o">-&gt;</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">WHERE</span><span class="w"> </span><span class="nf">id</span><span class="p">(</span><span class="n">t</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&#34;snowflake://dbt_demo.public/raw_inventory_value&#34;</span><span class="w"> </span><span class="k">RETURN</span><span class="w"> </span><span class="n">p</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>我们现在甚至可以在 NebulaGraph Studio 或者 Explorer 的控制台中查询它</li>
+</ul>
+<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168844882-ca3d0587-7946-4e17-8264-9dc973a44673.png" title="https://user-images.githubusercontent.com/1651790/168844882-ca3d0587-7946-4e17-8264-9dc973a44673.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168844882-ca3d0587-7946-4e17-8264-9dc973a44673.png">
+        <img
+            class="lazyload"
+            data-src="https://user-images.githubusercontent.com/1651790/168844882-ca3d0587-7946-4e17-8264-9dc973a44673.png"
+            data-srcset="https://user-images.githubusercontent.com/1651790/168844882-ca3d0587-7946-4e17-8264-9dc973a44673.png, https://user-images.githubusercontent.com/1651790/168844882-ca3d0587-7946-4e17-8264-9dc973a44673.png 1.5x, https://user-images.githubusercontent.com/1651790/168844882-ca3d0587-7946-4e17-8264-9dc973a44673.png 2x"
+            data-sizes="auto"
+            alt="https://user-images.githubusercontent.com/1651790/168844882-ca3d0587-7946-4e17-8264-9dc973a44673.png">
+    </a></p>
+<p>​    然后渲染这个结果：</p>
+<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168845155-b0e7a5ce-3ddf-4cc9-89a3-aaf1bbb0f5ec.png" title="https://user-images.githubusercontent.com/1651790/168845155-b0e7a5ce-3ddf-4cc9-89a3-aaf1bbb0f5ec.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168845155-b0e7a5ce-3ddf-4cc9-89a3-aaf1bbb0f5ec.png">
+        <img
+            class="lazyload"
+            data-src="https://user-images.githubusercontent.com/1651790/168845155-b0e7a5ce-3ddf-4cc9-89a3-aaf1bbb0f5ec.png"
+            data-srcset="https://user-images.githubusercontent.com/1651790/168845155-b0e7a5ce-3ddf-4cc9-89a3-aaf1bbb0f5ec.png, https://user-images.githubusercontent.com/1651790/168845155-b0e7a5ce-3ddf-4cc9-89a3-aaf1bbb0f5ec.png 1.5x, https://user-images.githubusercontent.com/1651790/168845155-b0e7a5ce-3ddf-4cc9-89a3-aaf1bbb0f5ec.png 2x"
+            data-sizes="auto"
+            alt="https://user-images.githubusercontent.com/1651790/168845155-b0e7a5ce-3ddf-4cc9-89a3-aaf1bbb0f5ec.png">
+    </a></p>
+<h4 id="提取数据血缘" class="headerLink">
+    <a href="#%e6%8f%90%e5%8f%96%e6%95%b0%e6%8d%ae%e8%a1%80%e7%bc%98" class="header-mark"></a>4.5.2 提取数据血缘</h4><p>这些血缘信息是需要我们明确指定、获取的，获取的方式可以是自己写的 extractor，也可以是一些已经有的方式。比如 dbt 的 extractor和 Open Lineage 项目的 Amundsen extractor。</p>
+<h5 id="通过-dbt" class="headerLink">
+    <a href="#%e9%80%9a%e8%bf%87-dbt" class="header-mark"></a>4.5.2.1 通过 dbt</h5><p>这个在刚才已经展示过了，Dbt 的 Extractor 会从表级别获取血缘和其他 dbt 中产生的元数据信息一起被拿到。</p>
+<h5 id="通过-open-lineage" class="headerLink">
+    <a href="#%e9%80%9a%e8%bf%87-open-lineage" class="header-mark"></a>4.5.2.2 通过 Open Lineage</h5><p>Amundsen 中的另一个开箱即用的血缘 Extractor 是 <a href="https://www.amundsen.io/amundsen/databuilder/#openlineagetablelineageextractor" target="_blank" rel="noopener noreferrer">OpenLineageTableLineageExtractor</a>。</p>
+<p><a href="https://openlineage.io/" target="_blank" rel="noopener noreferrer">Open Lineage</a> 是一个开放的框架，可以将不同来源的血统数据收集到一个地方，它可以将血统信息输出为 JSON 文件：https://www.amundsen.io/amundsen/databuilder/#openlineagetablelineageextractor</p>
+<p>下边是它的 Amundsen data builder 例子：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">dict_config</span> <span class="o">=</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># ...</span>
+</span></span><span class="line"><span class="cl">    <span class="sa">f</span><span class="s1">&#39;extractor.openlineage_tablelineage.</span><span class="si">{</span><span class="n">OpenLineageTableLineageExtractor</span><span class="o">.</span><span class="n">CLUSTER_NAME</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">:</span> <span class="s1">&#39;datalab&#39;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="sa">f</span><span class="s1">&#39;extractor.openlineage_tablelineage.</span><span class="si">{</span><span class="n">OpenLineageTableLineageExtractor</span><span class="o">.</span><span class="n">OL_DATASET_NAMESPACE_OVERRIDE</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">:</span> <span class="s1">&#39;hive_table&#39;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="sa">f</span><span class="s1">&#39;extractor.openlineage_tablelineage.</span><span class="si">{</span><span class="n">OpenLineageTableLineageExtractor</span><span class="o">.</span><span class="n">TABLE_LINEAGE_FILE_LOCATION</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">:</span> <span class="s1">&#39;input_dir/openlineage_nd.json&#39;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">...</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">task</span> <span class="o">=</span> <span class="n">DefaultTask</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">extractor</span><span class="o">=</span><span class="n">OpenLineageTableLineageExtractor</span><span class="p">(),</span>
+</span></span><span class="line"><span class="cl">    <span class="n">loader</span><span class="o">=</span><span class="n">FsNebulaCSVLoader</span><span class="p">())</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="回顾" class="headerLink">
+    <a href="#%e5%9b%9e%e9%a1%be" class="header-mark"></a>5 回顾</h2><p>整套元数据治理/发现的方案思路如下：</p>
+<ul>
+<li>将整个数据技术栈中的组件作为元数据源（从任何数据库、数仓，到 dbt、Airflow、Openlineage、Superset 等各级项目）</li>
+<li>使用 Databuilder（作为脚本或 DAG）运行元数据 ETL，以使用 NebulaGraph 和 Elasticsearch 存储和索引</li>
+<li>从前端 UI（使用 Superset 预览）或 API 去使用、消费、管理和发现元数据</li>
+<li>通过查询和 UI 对 NebulaGraph，我们可以获得更多的可能性、灵活性和数据、血缘的洞察</li>
+</ul>
+<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg" title="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg" data-thumbnail="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg">
+        <img
+            class="lazyload"
+            data-src="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg"
+            data-srcset="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg, https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg 1.5x, https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg 2x"
+            data-sizes="auto"
+            alt="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg">
+    </a></p>
+<h3 id="涉及到的开源" class="headerLink">
+    <a href="#%e6%b6%89%e5%8f%8a%e5%88%b0%e7%9a%84%e5%bc%80%e6%ba%90" class="header-mark"></a>5.1 涉及到的开源</h3><p>此参考项目中使用的所有项目都按字典顺序在下面列出。</p>
+<ul>
+<li>Amundsen</li>
+<li>Apache Airflow</li>
+<li>Apache Superset</li>
+<li>dbt</li>
+<li>Elasticsearch</li>
+<li>meltano</li>
+<li>Nebula Graph</li>
+<li>Open Lineage</li>
+<li>singer</li>
+</ul>
+<blockquote>
+<p>Feature Image credit to <a href="https://unsplash.com/photos/PhnJhjH9Y9s" target="_blank" rel="noopener noreferrer">Phil Hearing</a></p>
+</blockquote></div>
+
+        
+
+
+<h2>相关内容</h2>
+<div class="related-container">
+    <div class="related-item-container">
+            <div class="related-image">
+                <a href="/apisix-and-nebulagraph/"><img
+        class="lazyload"
+        data-src="/apisix-and-nebulagraph/featured-image.webp"
+        data-srcset="/apisix-and-nebulagraph/featured-image.webp, /apisix-and-nebulagraph/featured-image.webp 1.5x, /apisix-and-nebulagraph/featured-image.webp 2x"
+        data-sizes="auto"
+        alt="/apisix-and-nebulagraph/featured-image.webp"
+        title="也许我们没有必要从头在 NebulaGraph 上搭建自己的数据血缘项目，本文分享如何用开源、现代的 DataOps、ETL、Dashboard、元数据、数据血缘管理系统构建大数据治理基础设施" height="200" width="400"></a>
+            </div><h2 class="related-title">
+                <a href="/apisix-and-nebulagraph/">NebulaGraph 的云原生 API 网关最佳实践</a>
+            </h2>
+        </div>
+    <div class="related-item-container">
+            <div class="related-image">
+                <a href="/nebulagraph-etl-dbt/"><img
+        class="lazyload"
+        data-src="/nebulagraph-etl-dbt/featured-image.webp"
+        data-srcset="/nebulagraph-etl-dbt/featured-image.webp, /nebulagraph-etl-dbt/featured-image.webp 1.5x, /nebulagraph-etl-dbt/featured-image.webp 2x"
+        data-sizes="auto"
+        alt="/nebulagraph-etl-dbt/featured-image.webp"
+        title="也许我们没有必要从头在 NebulaGraph 上搭建自己的数据血缘项目，本文分享如何用开源、现代的 DataOps、ETL、Dashboard、元数据、数据血缘管理系统构建大数据治理基础设施" height="200" width="400"></a>
+            </div><h2 class="related-title">
+                <a href="/nebulagraph-etl-dbt/">利用 dbt，基于表结构的 Nebulagraph 图建模与 ETL</a>
+            </h2>
+        </div>
+    <div class="related-item-container">
+            <div class="related-image">
+                <a href="/recommendation-system-with-graphdb/"><img
+        class="lazyload"
+        data-src="/recommendation-system-with-graphdb/featured-image.webp"
+        data-srcset="/recommendation-system-with-graphdb/featured-image.webp, /recommendation-system-with-graphdb/featured-image.webp 1.5x, /recommendation-system-with-graphdb/featured-image.webp 2x"
+        data-sizes="auto"
+        alt="/recommendation-system-with-graphdb/featured-image.webp"
+        title="也许我们没有必要从头在 NebulaGraph 上搭建自己的数据血缘项目，本文分享如何用开源、现代的 DataOps、ETL、Dashboard、元数据、数据血缘管理系统构建大数据治理基础设施" height="200" width="400"></a>
+            </div><h2 class="related-title">
+                <a href="/recommendation-system-with-graphdb/">基于图数据库的推荐系统</a>
+            </h2>
+        </div>
+    <div class="related-item-container">
+            <div class="related-image">
+                <a href="/identity-resolution/"><img
+        class="lazyload"
+        data-src="/identity-resolution/featured-image.webp"
+        data-srcset="/identity-resolution/featured-image.webp, /identity-resolution/featured-image.webp 1.5x, /identity-resolution/featured-image.webp 2x"
+        data-sizes="auto"
+        alt="/identity-resolution/featured-image.webp"
+        title="也许我们没有必要从头在 NebulaGraph 上搭建自己的数据血缘项目，本文分享如何用开源、现代的 DataOps、ETL、Dashboard、元数据、数据血缘管理系统构建大数据治理基础设施" height="200" width="400"></a>
+            </div><h2 class="related-title">
+                <a href="/identity-resolution/">基于 NebulaGraph 图数据库的 ID Resolution 方法与代码示例</a>
+            </h2>
+        </div>
+    <div class="related-item-container">
+            <div class="related-image">
+                <a href="/fraud-detection-with-nebulagraph/"><img
+        class="lazyload"
+        data-src="/fraud-detection-with-nebulagraph/featured-image.webp"
+        data-srcset="/fraud-detection-with-nebulagraph/featured-image.webp, /fraud-detection-with-nebulagraph/featured-image.webp 1.5x, /fraud-detection-with-nebulagraph/featured-image.webp 2x"
+        data-sizes="auto"
+        alt="/fraud-detection-with-nebulagraph/featured-image.webp"
+        title="也许我们没有必要从头在 NebulaGraph 上搭建自己的数据血缘项目，本文分享如何用开源、现代的 DataOps、ETL、Dashboard、元数据、数据血缘管理系统构建大数据治理基础设施" height="200" width="400"></a>
+            </div><h2 class="related-title">
+                <a href="/fraud-detection-with-nebulagraph/">基于 NebulaGraph 图数据库的欺诈检测方法与代码示例</a>
+            </h2>
+        </div>
+    
+
+</div>
+
+<div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>更新于 2022-11-25</span>
+            </div>
+            <div class="post-info-license"></div>
+        </div>
+        <div class="post-info-line">
+            <div class="post-info-md"><span><a class="link-to-mardown" href=/data-lineage-oss-ref-solution/index.md target="_blank" rel="noopener noreferrer">阅读原始文档</a>
+                    </span></div>
+            <div class="post-info-share">
+                <span><a href="#" onclick="return false;" title="分享到 Twitter" data-sharer="twitter" data-url="https://siwei.io/data-lineage-oss-ref-solution/" data-title="基于开源技术栈的数据血缘、治理参考解决方案" data-via="wey_gu" data-hashtags="Nebula Graph,Amundsen,数据血缘,数据治理"><i class="fab fa-twitter fa-fw"></i></a><a href="#" onclick="return false;" title="分享到 Facebook" data-sharer="facebook" data-url="https://siwei.io/data-lineage-oss-ref-solution/" data-hashtag="Nebula Graph"><i class="fab fa-facebook-square fa-fw"></i></a><a href="#" onclick="return false;" title="分享到 WhatsApp" data-sharer="whatsapp" data-url="https://siwei.io/data-lineage-oss-ref-solution/" data-title="基于开源技术栈的数据血缘、治理参考解决方案" data-web><i class="fab fa-whatsapp fa-fw"></i></a><a href="#" onclick="return false;" title="分享到 Line" data-sharer="line" data-url="https://siwei.io/data-lineage-oss-ref-solution/" data-title="基于开源技术栈的数据血缘、治理参考解决方案"><i data-svg-src="/lib/simple-icons/icons/line.min.svg"></i></a><a href="#" onclick="return false;" title="分享到 微博" data-sharer="weibo" data-url="https://siwei.io/data-lineage-oss-ref-solution/" data-title="基于开源技术栈的数据血缘、治理参考解决方案" data-image="featured-image.webp" data-ralateuid="siweigu"><i class="fab fa-weibo fa-fw"></i></a><a href="#" onclick="return false;" title="分享到 Myspace" data-sharer="myspace" data-url="https://siwei.io/data-lineage-oss-ref-solution/" data-title="基于开源技术栈的数据血缘、治理参考解决方案" data-description="也许我们没有必要从头在 NebulaGraph 上搭建自己的数据血缘项目，本文分享如何用开源、现代的 DataOps、ETL、Dashboard、元数据、数据血缘管理系统构建大数据治理基础设施"><i data-svg-src="/lib/simple-icons/icons/myspace.min.svg"></i></a><a href="#" onclick="return false;" title="分享到 Blogger" data-sharer="blogger" data-url="https://siwei.io/data-lineage-oss-ref-solution/" data-title="基于开源技术栈的数据血缘、治理参考解决方案" data-description="也许我们没有必要从头在 NebulaGraph 上搭建自己的数据血缘项目，本文分享如何用开源、现代的 DataOps、ETL、Dashboard、元数据、数据血缘管理系统构建大数据治理基础设施"><i class="fab fa-blogger fa-fw"></i></a><a href="#" onclick="return false;" title="分享到 Evernote" data-sharer="evernote" data-url="https://siwei.io/data-lineage-oss-ref-solution/" data-title="基于开源技术栈的数据血缘、治理参考解决方案"><i class="fab fa-evernote fa-fw"></i></a></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section class="post-tags"><i class="fas fa-tags fa-fw"></i>&nbsp;<a href="/tags/nebula-graph/">Nebula Graph</a>,&nbsp;<a href="/tags/amundsen/">Amundsen</a>,&nbsp;<a href="/tags/%E6%95%B0%E6%8D%AE%E8%A1%80%E7%BC%98/">数据血缘</a>,&nbsp;<a href="/tags/%E6%95%B0%E6%8D%AE%E6%B2%BB%E7%90%86/">数据治理</a></section>
+        <section>
+            <span><a href="javascript:void(0);" onclick="window.history.back();">返回</a></span>&nbsp;|&nbsp;<span><a href="/">主页</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/apisix-and-nebulagraph/" class="prev" rel="prev" title="NebulaGraph 的云原生 API 网关最佳实践"><i class="fas fa-angle-left fa-fw"></i>NebulaGraph 的云原生 API 网关最佳实践</a></div>
+</div>
+<div id="comments"><div id="giscus"></div><noscript>
+                Please enable JavaScript to view the comments powered by <a href="https://giscus.app/">giscus</a>.
+            </noscript></div></article></div>
+        </main><footer class="footer">
+        <div class="footer-container"><div class="footer-line">
+                    由 <a href="https://gohugo.io/" target="_blank" rel="noopener noreferrer" title="Hugo 0.107.0">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreferrer" title="DoIt 0.2.13"><i class="far fa-edit fa-fw"></i> DoIt</a>
+                </div><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2018 - 2022</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="https://siwei.io" target="_blank" rel="noopener noreferrer">Wey Gu</a></span>&nbsp;|&nbsp;<span class="license"><a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">CC BY-NC 4.0</a></span></div>
+            <div class="footer-line"></div>
+            <div class="footer-line">
+            </div>
+        </div><script>
+                    if('serviceWorker' in navigator) {
+                        navigator.serviceWorker
+                            .register('/sw.min.js', { scope: '/' })
+                            .then(function(registration) {
+                            });
+                
+                        navigator.serviceWorker
+                            .ready
+                            .then(function(registration) {
+                            });
+                    }
+                </script></footer></div>
+
+    <div id="fixed-buttons"><a href="#back-to-top" id="back-to-top-button" class="fixed-button" title="回到顶部">
+            <i class="fas fa-arrow-up fa-fw"></i>
+        </a><a href="#" id="view-comments" class="fixed-button" title="查看评论">
+            <i class="fas fa-comment fa-fw"></i>
+        </a>
+    </div><div class="assets"><script type="text/javascript" src="/lib/autocomplete/autocomplete.min.js"></script><script type="text/javascript" src="/lib/fuse/fuse.min.js"></script><script type="text/javascript" src="/lib/lazysizes/lazysizes.min.js"></script><script type="text/javascript" src="/lib/tablesort/tablesort.min.js"></script><script type="text/javascript" src="/lib/topbar/topbar.min.js"></script><script type="text/javascript" src="/lib/pjax/pjax.min.js"></script><script type="text/javascript" src="/js/theme.min.js" defer></script><script type="text/javascript">
+            window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());
+            gtag('config', 'UA-659952-4', { 'anonymize_ip': true });
+        </script><script type="text/javascript" src="https://www.googletagmanager.com/gtag/js?id=UA-659952-4" async></script></div>
+
+<div class="pjax-assets"><script type="text/javascript">window.config={"code":{"copyTitle":"复制到剪贴板","maxShownLines":10},"comment":{"giscus":{"darkTheme":"dark","dataCategory":"Comments","dataCategoryId":"DIC_kwDOFhiy8c4CQeuu","dataEmitMetadata":"1","dataInputPosition":"bottom","dataLang":"en","dataMapping":"title","dataReactionsEnabled":"1","dataRepo":"siwei-io/siwei-io.github.io","dataRepoId":"MDEwOlJlcG9zaXRvcnkzNzA3MTc0MjU=","dataStrict":"1","lightTheme":"light"}},"math":{"delimiters":[{"display":true,"left":"$$","right":"$$"},{"display":true,"left":"\\[","right":"\\]"},{"display":false,"left":"$","right":"$"},{"display":false,"left":"\\(","right":"\\)"}],"strict":false},"search":{"distance":100,"findAllMatches":true,"fuseIndexURL":"/index.json","highlightTag":"em","ignoreFieldNorm":false,"ignoreLocation":false,"isCaseSensitive":false,"location":0,"maxResultLength":10,"minMatchCharLength":2,"noResultsFound":"没有找到结果","snippetLength":50,"threshold":0.3,"type":"fuse","useExtendedSearch":false},"sharerjs":true,"table":{"sort":true}};</script><script type="text/javascript" src="/js/giscus.min.js" defer></script><script type="text/javascript" src="/lib/clipboard/clipboard.min.js"></script><script type="text/javascript" src="/lib/sharer/sharer.min.js"></script><script type="text/javascript" src="/lib/katex/katex.min.js" defer></script><script type="text/javascript" src="/lib/katex/auto-render.min.js" defer></script><script type="text/javascript" src="/lib/katex/copy-tex.min.js" defer></script><script type="text/javascript" src="/lib/katex/mhchem.min.js" defer></script><script type="text/javascript" src="/js/katex.min.js" defer></script><link rel="stylesheet" href="/lib/katex/katex.min.css"><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/katex/copy-tex.min.css">
+        <noscript><link rel="stylesheet" href="/lib/katex/copy-tex.min.css"></noscript></div>
+</body>
+
+</html>
