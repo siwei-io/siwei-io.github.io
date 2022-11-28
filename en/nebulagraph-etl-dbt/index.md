@@ -687,7 +687,6 @@ The result should be like:
 Got 10 rows (time spent 1693/15136 us)
 ```
 
-通过 Nebula-Studio，我们也可以在可视化界面探索这个图谱，比如在其中执行这个查询，看一下给用户 u_124 推荐电影 1891 的理由可能是什么？
 With Nebula-Studio, we can also explore this graph in the visual interface, for example, by executing this query, we could see the reason why it recommended the movie with id 1891 to the user with id u_124?
 
 ```SQL
