@@ -1,7 +1,7 @@
 # Tabular Data ETL to NebulaGraph with dbt
 
 
-> How could we model data in Tabular sources and ETL it to NebulaGraph? This article demostrate us an end-to-end example doing so with dbt.
+> How could we model data in Tabular sources and ETL it to NebulaGraph? This article demonstrates an end-to-end example of doing so with dbt.
 
 <!--more-->
 
@@ -47,7 +47,7 @@ We were building this Graph for a recommendation system and talked about some ba
 
 In the Content-Base Filter method(CBF), the relationship of user-> movie, movie-> category, movie-> actor, and movie-> director are concerned.
 
-And the collaborative filtering approach is concerned with the relationship for user-> movie.
+And the collaborative filtering approach is concerned with the relationship between the user and -> movie.
 
 The recommendation reasoning service is concerned with all the above relationships.
 
@@ -58,7 +58,7 @@ To summarize, we need the following edges:
 - directed_by
 - acted_by
 
-Accordingly, for the vertex types will be:
+Accordingly, the vertex types will be:
 
 - user(user_id)
 - movie(name)
@@ -69,7 +69,7 @@ Accordingly, for the vertex types will be:
 
 ## Data Transform
 
-With the source date being finalized, let's see how they could be mapped and transformed into the graph from.
+With the source date finalized, let's see how they could be mapped and transformed into the graph.
 
 ### From OMDB
 
@@ -98,7 +98,7 @@ But the name and other information of each person here, as well as the position 
 
 - `job_names`
 
-  For example, 1 stands for writer and 2 stands for producer. Interestingly, like movie id and name, job_id to name is a one-to-many relationship, because the data in OMDB is multilingual.
+  For example, 1 stands for writer, and 2 stands for producer. Interestingly, like movie id and name, job_id to name is a one-to-many relationship, because the data in OMDB is multilingual.
 
 | job_id | name                      | language_iso_639_1 |
 | ------ | ------------------------- | ------------------ |
@@ -134,15 +134,15 @@ This is a typical case in RDBMS where the data source is a table structure, so f
   - movie_id in all_casts
   - Name, birthday in all_people
 
-Till now, all tables we cared in OMDB are:
+Till now, all tables we cared about in OMDB are:
 
 ![modeling_omdb](modeling_omdb.webp)
 
 ### From MovieLens dataset
 
-While the above is just about one source of data, in real scenarios, we also need to collect data from other sources and aggregate them. For example, now also need to extract knowledge from the MovieLens dataset.
+While the above is just about one data source, in real scenarios, we also need to collect and aggregate data from other sources. For example, now also need to extract knowledge from the MovieLens dataset.
 
-Here, the only relationship we utilize is: user -> movie.
+Here, the only relationship we utilize is `user -> movie`.
 
 - `movies.csv`
 
@@ -170,14 +170,14 @@ From the preview of the data in the two tables, naturally, we need one type of r
 - user
   - With userId from `ratings.csv`
 
-However, you must have noticed that movieId in the MovieLens dataset and movie id in OMDB are two different systems, if we need to associate them, we need to convert movieId in MovieLens to movie id in OMDB, and the condition of association between them is movie title.
+However, you must have noticed that movieId in the MovieLens dataset and movie id in OMDB are two different systems, if we need to associate them, we need to convert movieId in MovieLens to movie id in OMDB, and the condition of association between them is a movie title.
 
 However, by observation, we know that:
 
 1. the titles in OMDB movies are multilingual
 2. the titles in MovieLens have the year information like `(1995)` at the end of the title
 
-So our final conclusion is
+So our conclusion is
 
 - watched
   - Starting from the userId in `ratings.csv`
@@ -215,11 +215,10 @@ Where, in each row, three variables exist to construct the graph structure:
 
 - `user` vertex id
 - `movie` vertex id
-- the rating value of as the property of the `watched` edge
+- the rating value as the property of the `watched` edge
 
 
 ## Tooling
-e
 At this point, we have completed the data analysis and graph modeling design, before we start the "extract correlations, import graph database", let's introduce the tools we will use.
 
 "Extracting relationships" can be simply considered as Extract and Transform in ETL, which is essentially the engineering of data mapping and transformation, and there are many different tools and open-source projects available on the market. Here we use one of my personal favorite tools: dbt.
@@ -236,7 +235,7 @@ dbt not only has many integrated subprojects but also can be combined with many 
 
 In short, dbt is a command line tool written in python, and we can create a project folder, which contains a YAML formatted configuration file, to specify where the source information for the data transformation is and where the target is (where the processed data is stored, maybe Postgres, Big Query, Spark, etc.). In the data source, we use the YAML file along with the `.SQL` file to describe the information about "what data to fetch from, how to do the transformation, and what to output".
 
-! [starter-project-dbt-cli](starter-project-dbt-cli.webp)
+![starter-project-dbt-cli](starter-project-dbt-cli.webp)
 
 You can see that the information in the models/example is the core data transformation rules, and all the other data is metadata related to this transformation. DataOps.
 
@@ -263,7 +262,7 @@ Nebula-Importer is an open-source tool written in Golang that compiles into a si
 > Nebula-Importer documentation: https://docs.nebula-graph.io/master/nebula-importer/use-importer/
 
 
-## dbt + Nebula-Importer in
+## dbt + Nebula-Importer in Actions
 
 Now let's use dbt + Nebula-Importer to end-to-end demonstrate how to extract, transform and import multiple data sources into NebulaGraph, the whole project code has been open-sourced, the repository is at https://github.com/wey-gu/movie-recommendation-dataset, feel free to check for details there.
 
@@ -281,7 +280,7 @@ dbt is a python project, we install dbt and dbt-postgres in a virtual python3 en
 
 ### Setup env with dbt
 
-dbt is written in python, we could install it in a python virtual env, together with dbt-postgres, as we will use Postgres as the DW in this sample project.
+dbt is written in python, we could install it in a python virtual env, together with dbt-Postgres, as we will use Postgres as the DW in this sample project.
 
 ```bash
 python3 -m venv .venv
@@ -317,7 +316,7 @@ $ tree .
 7 directories, 5 files
 ```
 
-Finally, let's boostrap a Postgress as the DW, if you already have one, you may skip this step, please ensure the configurations and dbt-plugins are aligned if you chose to use your own DW.
+Finally, let's bootstrap a Postgress as the DW, if you already have one, you may skip this step, please ensure the configurations and dbt-plugins are aligned if you chose to use your own DW.
 
 ```bash
 docker run --rm --name postgres \
@@ -329,14 +328,14 @@ docker run --rm --name postgres \
 
 ### Data download and preprocess
 
-Let's create a folder named `raw_data` and change directory to it.
+Let's create a folder named `raw_data` and change the directory to it.
 
 ```bash
 mkdir -p raw_data
 cd raw_data
 ```
 
-And we asummed it's under our dbt project:
+And we assumed it was under our dbt project:
 
 ```bash
 tree ..
@@ -358,7 +357,7 @@ tree ..
 8 directories, 5 files
 ```
 
-Download and decompress the omdb data:
+Download and decompress the OMDB data:
 
 ```bash
 wget www.omdb.org/data/all_people.csv.bz2
@@ -375,7 +374,7 @@ wget www.omdb.org/data/all_movie_aliases_iso.csv.bz2
 bunzip2 *.bz2
 ```
 
-Then for then MovieLens dataset:
+Then for the MovieLens dataset:
 
 ```bash
 wget https://files.grouplens.org/datasets/movielens/ml-latest-small.zip
@@ -399,15 +398,15 @@ cp raw_data/ml-latest-small/ratings.csv seeds/movielens_ratings.csv
 cp raw_data/ml-latest-small/movies.csv seeds/movielens_movies.csv
 ```
 
-With above files being placed, we could load them into DW in one command:
+With the above files being placed, we could load them into DW in one command:
 
-> Refer to the documentations of dbt `seeds` https://docs.getdbt.com/docs/build/seeds
+> Refer to the documentation of dbt `seeds` https://docs.getdbt.com/docs/build/seeds
 
 ```bash
 dbt seed
 ```
 
-It may take a while if you like me are using a local postgres, and it should be faster in produection level case(i.e. load to Big Query from file in Cloud Storage), it should be like this:
+It may take a while if you like me are using a local Postgres, and it should be faster in production-level cases (i.e. load to Big Query from the file in Cloud Storage), it should be like this:
 
 ```bash
 $ dbt seed
@@ -437,7 +436,7 @@ touch models/movie_recommedation/user_watched_movies.sql
 touch models/movie_recommedation/schema.yml
 ```
 
-The files are like:
+The files are like this:
 
 ```bash
 $ tree models
@@ -449,7 +448,7 @@ models
 
 Now there is only one transform rule under this model: to handle the edge of `user_watched_movies` in the `user_watched_movies.sql`
 
-As we planned to ouput three columns: user_id, movie_id, rating, thus the `schema.yml` is like:
+As we planned to output three columns: user_id, movie_id, rating, thus the `schema.yml` is like:
 
 ```yaml
 version: 2
@@ -472,7 +471,7 @@ models:
           - not_null
 ```
 
-Please be noted the `tests` is about the validation and constraint of the data, with which, we could control the data quality quite easy. And here `not_null` ensures there is no NULL if tests are performed.
+Please be noted the `tests` are about the validation and constraint of the data, with which, we could control the data quality quite easily. And here `not_null` ensures there is no NULL if tests are performed.
 
 Then, let's compose the `user_watched_movies.sql`:
 
@@ -507,10 +506,10 @@ FROM user_watched_movies
 
 And what this SQL does is the part marked by the green circle:
 
-- Select user id, movie id, rating, movie title (remove the year part) from `moveielens_ratings` and save as the intermediate table of `user_watched_movies`
+- Select the user id, movie id, rating, and movie title (remove the year part) from `moveielens_ratings` and save it as the intermediate table of `user_watched_movies`
    - movie title is `JOIN`ed from `moveielens_movies`, obtained by the same matching condition as `movie_id`
 - Select user id (prefix `u_`), rating, title, OMDB_movie_id from `user_watched_movies`
-   - OMDB_movie_id is `JOIN`ed from `all_movie_aliases_iso`, obtained by matching the Chinese and English titles of OMDB movies by similar movie names
+   - OMDB_movie_id is `JOIN`ed from `all_movie_aliases_iso`, obtained by matching the Chinese and English titles of OMDB movies with similar movie names
    - output the final fields
 
 ![transform_select_joins_user_watched_movies](transform_select_joins_user_watched_movies.webp)
@@ -554,7 +553,7 @@ dbt run -m movies
 
 ### Export data to CSV
 
-In fact, NebulaGraph Exchange itself supports directly importing many data sources (Postgres, Clickhouse, MySQL, Hive, etc.) into NebulaGraph, but in this example, the amount of data we process is very small for NebulaGraph, so we just go with the most lightweight one: Nebula-Importer. Nebula-Importer can only CSV files, so we are doing so.
+NebulaGraph Exchange itself supports directly importing many data sources (Postgres, Clickhouse, MySQL, Hive, etc.) into NebulaGraph, but in this example, the amount of data we process is very small for NebulaGraph, so we just go with the most lightweight one: Nebula-Importer. Nebula-Importer can only CSV files, so we are doing so.
 
 First, we enter the Postgres console and execute the `COPY` command
 
@@ -599,13 +598,13 @@ curl -fsSL nebula-up.siwei.io/install.sh | bash
 
 First, we need to create a graph space, and then create tag(type of vertex) and edge type on it:
 
-Access the the Nebula-Console(CLI client for NebulaGraph):
+Access the Nebula-Console(CLI client for NebulaGraph):
 
 ```bash
 ~/.nebula-up/console.sh
 ```
 
-Run the following DDL(Data Definiation Language):
+Run the following DDL(Data Definition Language):
 
 ```sql
 CREATE SPACE moviegraph(partition_num=10,replica_factor=1,vid_type=fixed_string(32));
@@ -666,7 +665,7 @@ USE moviegraph;
 SHOW STATS;
 ```
 
-The result should be like:
+The result should be like this:
 
 ```SQL
 (root@nebula) [moviegraph]> SHOW STATS;
@@ -687,7 +686,7 @@ The result should be like:
 Got 10 rows (time spent 1693/15136 us)
 ```
 
-With Nebula-Studio, we can also explore this graph in the visual interface, for example, by executing this query, we could see the reason why it recommended the movie with id 1891 to the user with id u_124?
+With Nebula-Studio, we can also explore this graph in the visual interface, for example, by executing this query, we could see the reason why it recommended the movie with id 1891 to the user with id u_124.
 
 ```SQL
 FIND NOLOOP PATH FROM "u_124" TO "1891" over * BIDIRECT UPTO 4 STEPS yield path as `p` | LIMIT 20
@@ -697,13 +696,13 @@ The result could be: Most of the cast and crew of the once-favorite Star Wars mo
 
 ![reasoning_movie](reasoning_movie.webp)
 
-> In another article, I used the same graph to demostrate the application of more graph databases and graph algorithms in recommendation systems. If you are interested, please read: https://siwei.io/recommendation-system-with-graphdb/.
+> In another article, I used the same graph to demonstrate the application of more graph databases and graph algorithms in recommendation systems. If you are interested, please read https://siwei.io/recommendation-system-with-graphdb/.
 
 
 
 ## Summary
 
-When we plan to leverage graph databases for massive data to transform knowledge and analyze insights, the first step is often to transform, process, and model multiple data sources into graph data. For beginners who have no idea where to start, a feasible idea is to start from all relevant information, to picture the most concerned relationship, and then to list the vertices that can be obtained, as well as the required perpertices attached. After determining the initial modeling, you can use the ETL tool to clean the original data, ETL into table structure which will be mapped to the graph, and finally, use the import tool to import NebulaGraph for further model iterations.
+When we plan to leverage graph databases for massive data to transform knowledge and analyze insights, the first step is often to transform, process, and model multiple data sources into graph data. For beginners who have no idea where to start, a feasible idea is to start from all relevant information, picture the most concerning relationship, and then list the vertices that can be obtained and the required properties attached. After determining the initial modeling, you can use the ETL tool to clean the original data, ETL into table structure which will be mapped to the graph, and finally, use the import tool to import NebulaGraph for further model iterations.
 
 With the help of dbt, we can version control, test, iterate our modeling and data transformation, and gradually evolve and enrich the constructed knowledge graph with grace.
 

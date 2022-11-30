@@ -15,7 +15,7 @@
     <description><![CDATA[<div class="featured-image">
                 <img src="/en/nebulagraph-etl-dbt/featured-image.webp" referrerpolicy="no-referrer">
             </div><blockquote>
-<p>How could we model data in Tabular sources and ETL it to NebulaGraph? This article demostrate us an end-to-end example doing so with dbt.</p>
+<p>How could we model data in Tabular sources and ETL it to NebulaGraph? This article demonstrates an end-to-end example of doing so with dbt.</p>
 </blockquote>
 <!--
 
@@ -49,7 +49,7 @@
 <h2 id="graph-modeling" class="headerLink">
     <a href="#graph-modeling" class="header-mark"></a>3 Graph Modeling</h2><p>We were building this Graph for a recommendation system and talked about some basic methods in <a href="siwei.io/recommendation-system-with-graphdb/" rel="">this</a> article, which:</p>
 <p>In the Content-Base Filter method(CBF), the relationship of user-&gt; movie, movie-&gt; category, movie-&gt; actor, and movie-&gt; director are concerned.</p>
-<p>And the collaborative filtering approach is concerned with the relationship for user-&gt; movie.</p>
+<p>And the collaborative filtering approach is concerned with the relationship between the user and -&gt; movie.</p>
 <p>The recommendation reasoning service is concerned with all the above relationships.</p>
 <p>To summarize, we need the following edges:</p>
 <ul>
@@ -58,7 +58,7 @@
 <li>directed_by</li>
 <li>acted_by</li>
 </ul>
-<p>Accordingly, for the vertex types will be:</p>
+<p>Accordingly, the vertex types will be:</p>
 <ul>
 <li>user(user_id)</li>
 <li>movie(name)</li>
@@ -69,7 +69,7 @@
         
     </a></p>
 <h2 id="data-transform" class="headerLink">
-    <a href="#data-transform" class="header-mark"></a>4 Data Transform</h2><p>With the source date being finalized, let&rsquo;s see how they could be mapped and transformed into the graph from.</p>
+    <a href="#data-transform" class="header-mark"></a>4 Data Transform</h2><p>With the source date finalized, let&rsquo;s see how they could be mapped and transformed into the graph.</p>
 <h3 id="from-omdb" class="headerLink">
     <a href="#from-omdb" class="header-mark"></a>4.1 From OMDB</h3><p>First, there is the data in OMDB, which consists of many tables, such as the table <code>all_movies</code>, which stores all the movies and their names in different languages.</p>
 <table>
@@ -173,7 +173,7 @@
 <ul>
 <li>
 <p><code>job_names</code></p>
-<p>For example, 1 stands for writer and 2 stands for producer. Interestingly, like movie id and name, job_id to name is a one-to-many relationship, because the data in OMDB is multilingual.</p>
+<p>For example, 1 stands for writer, and 2 stands for producer. Interestingly, like movie id and name, job_id to name is a one-to-many relationship, because the data in OMDB is multilingual.</p>
 </li>
 </ul>
 <table>
@@ -305,13 +305,13 @@
 </ul>
 </li>
 </ul>
-<p>Till now, all tables we cared in OMDB are:</p>
+<p>Till now, all tables we cared about in OMDB are:</p>
 <p><a class="lightgallery" href="/en/nebulagraph-etl-dbt/modeling_omdb.webp" title="modeling_omdb" data-thumbnail="/en/nebulagraph-etl-dbt/modeling_omdb.webp">
         
     </a></p>
 <h3 id="from-movielens-dataset" class="headerLink">
-    <a href="#from-movielens-dataset" class="header-mark"></a>4.2 From MovieLens dataset</h3><p>While the above is just about one source of data, in real scenarios, we also need to collect data from other sources and aggregate them. For example, now also need to extract knowledge from the MovieLens dataset.</p>
-<p>Here, the only relationship we utilize is: user -&gt; movie.</p>
+    <a href="#from-movielens-dataset" class="header-mark"></a>4.2 From MovieLens dataset</h3><p>While the above is just about one data source, in real scenarios, we also need to collect and aggregate data from other sources. For example, now also need to extract knowledge from the MovieLens dataset.</p>
+<p>Here, the only relationship we utilize is <code>user -&gt; movie</code>.</p>
 <ul>
 <li><code>movies.csv</code></li>
 </ul>
@@ -394,13 +394,13 @@
 </ul>
 </li>
 </ul>
-<p>However, you must have noticed that movieId in the MovieLens dataset and movie id in OMDB are two different systems, if we need to associate them, we need to convert movieId in MovieLens to movie id in OMDB, and the condition of association between them is movie title.</p>
+<p>However, you must have noticed that movieId in the MovieLens dataset and movie id in OMDB are two different systems, if we need to associate them, we need to convert movieId in MovieLens to movie id in OMDB, and the condition of association between them is a movie title.</p>
 <p>However, by observation, we know that:</p>
 <ol>
 <li>the titles in OMDB movies are multilingual</li>
 <li>the titles in MovieLens have the year information like <code>(1995)</code> at the end of the title</li>
 </ol>
-<p>So our final conclusion is</p>
+<p>So our conclusion is</p>
 <ul>
 <li>watched
 <ul>
@@ -480,11 +480,10 @@
 <ul>
 <li><code>user</code> vertex id</li>
 <li><code>movie</code> vertex id</li>
-<li>the rating value of as the property of the <code>watched</code> edge</li>
+<li>the rating value as the property of the <code>watched</code> edge</li>
 </ul>
 <h2 id="tooling" class="headerLink">
-    <a href="#tooling" class="header-mark"></a>5 Tooling</h2><p>e
-At this point, we have completed the data analysis and graph modeling design, before we start the &ldquo;extract correlations, import graph database&rdquo;, let&rsquo;s introduce the tools we will use.</p>
+    <a href="#tooling" class="header-mark"></a>5 Tooling</h2><p>At this point, we have completed the data analysis and graph modeling design, before we start the &ldquo;extract correlations, import graph database&rdquo;, let&rsquo;s introduce the tools we will use.</p>
 <p>&ldquo;Extracting relationships&rdquo; can be simply considered as Extract and Transform in ETL, which is essentially the engineering of data mapping and transformation, and there are many different tools and open-source projects available on the market. Here we use one of my personal favorite tools: dbt.</p>
 <h3 id="dbt" class="headerLink">
     <a href="#dbt" class="header-mark"></a>5.1 dbt</h3><p>dbt is an open-source data conversion tool with a very mature community and ecology, which can perform efficient, controlled, and high-quality data conversion work in most of the mainstream data warehouses, whether it is for ad-hoc tasks or complex orchestration, dbt can be very competent.</p>
@@ -494,7 +493,9 @@ At this point, we have completed the data analysis and graph modeling design, be
         
     </a></p>
 <p>In short, dbt is a command line tool written in python, and we can create a project folder, which contains a YAML formatted configuration file, to specify where the source information for the data transformation is and where the target is (where the processed data is stored, maybe Postgres, Big Query, Spark, etc.). In the data source, we use the YAML file along with the <code>.SQL</code> file to describe the information about &ldquo;what data to fetch from, how to do the transformation, and what to output&rdquo;.</p>
-<p>! <a href="/en/nebulagraph-etl-dbt/starter-project-dbt-cli.webp" rel="">starter-project-dbt-cli</a></p>
+<p><a class="lightgallery" href="/en/nebulagraph-etl-dbt/starter-project-dbt-cli.webp" title="starter-project-dbt-cli" data-thumbnail="/en/nebulagraph-etl-dbt/starter-project-dbt-cli.webp">
+        
+    </a></p>
 <p>You can see that the information in the models/example is the core data transformation rules, and all the other data is metadata related to this transformation. DataOps.</p>
 <blockquote>
 <p>Notes.</p>
@@ -513,8 +514,8 @@ At this point, we have completed the data analysis and graph modeling design, be
 <p>Nebula-Importer code: <a href="https://github.com/vesoft-inc/nebula-importer/" target="_blank" rel="noopener noreferrer">https://github.com/vesoft-inc/nebula-importer/</a></p>
 <p>Nebula-Importer documentation: <a href="https://docs.nebula-graph.io/master/nebula-importer/use-importer/" target="_blank" rel="noopener noreferrer">https://docs.nebula-graph.io/master/nebula-importer/use-importer/</a></p>
 </blockquote>
-<h2 id="dbt--nebula-importer-in" class="headerLink">
-    <a href="#dbt--nebula-importer-in" class="header-mark"></a>6 dbt + Nebula-Importer in</h2><p>Now let&rsquo;s use dbt + Nebula-Importer to end-to-end demonstrate how to extract, transform and import multiple data sources into NebulaGraph, the whole project code has been open-sourced, the repository is at <a href="https://github.com/wey-gu/movie-recommendation-dataset" target="_blank" rel="noopener noreferrer">https://github.com/wey-gu/movie-recommendation-dataset</a>, feel free to check for details there.</p>
+<h2 id="dbt--nebula-importer-in-actions" class="headerLink">
+    <a href="#dbt--nebula-importer-in-actions" class="header-mark"></a>6 dbt + Nebula-Importer in Actions</h2><p>Now let&rsquo;s use dbt + Nebula-Importer to end-to-end demonstrate how to extract, transform and import multiple data sources into NebulaGraph, the whole project code has been open-sourced, the repository is at <a href="https://github.com/wey-gu/movie-recommendation-dataset" target="_blank" rel="noopener noreferrer">https://github.com/wey-gu/movie-recommendation-dataset</a>, feel free to check for details there.</p>
 <p>The whole process is as follows.</p>
 <ul>
 <li>Preprocess and import raw data into the data warehouse(EL)</li>
@@ -527,7 +528,7 @@ At this point, we have completed the data analysis and graph modeling design, be
 <h3 id="preparing-the-dbt-environment" class="headerLink">
     <a href="#preparing-the-dbt-environment" class="header-mark"></a>6.1 Preparing the dbt environment</h3><p>dbt is a python project, we install dbt and dbt-postgres in a virtual python3 environment.</p>
 <h3 id="setup-env-with-dbt" class="headerLink">
-    <a href="#setup-env-with-dbt" class="header-mark"></a>6.2 Setup env with dbt</h3><p>dbt is written in python, we could install it in a python virtual env, together with dbt-postgres, as we will use Postgres as the DW in this sample project.</p>
+    <a href="#setup-env-with-dbt" class="header-mark"></a>6.2 Setup env with dbt</h3><p>dbt is written in python, we could install it in a python virtual env, together with dbt-Postgres, as we will use Postgres as the DW in this sample project.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
@@ -590,7 +591,7 @@ At this point, we have completed the data analysis and graph modeling design, be
 </span></span><span class="line"><span class="cl"><span class="m">7</span> directories, <span class="m">5</span> files
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>Finally, let&rsquo;s boostrap a Postgress as the DW, if you already have one, you may skip this step, please ensure the configurations and dbt-plugins are aligned if you chose to use your own DW.</p>
+</div><p>Finally, let&rsquo;s bootstrap a Postgress as the DW, if you already have one, you may skip this step, please ensure the configurations and dbt-plugins are aligned if you chose to use your own DW.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
@@ -608,7 +609,7 @@ At this point, we have completed the data analysis and graph modeling design, be
 </span></span></code></pre></td></tr></table>
 </div>
 </div><h3 id="data-download-and-preprocess" class="headerLink">
-    <a href="#data-download-and-preprocess" class="header-mark"></a>6.3 Data download and preprocess</h3><p>Let&rsquo;s create a folder named <code>raw_data</code> and change directory to it.</p>
+    <a href="#data-download-and-preprocess" class="header-mark"></a>6.3 Data download and preprocess</h3><p>Let&rsquo;s create a folder named <code>raw_data</code> and change the directory to it.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
@@ -619,7 +620,7 @@ At this point, we have completed the data analysis and graph modeling design, be
 </span></span><span class="line"><span class="cl"><span class="nb">cd</span> raw_data
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>And we asummed it&rsquo;s under our dbt project:</p>
+</div><p>And we assumed it was under our dbt project:</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -660,7 +661,7 @@ At this point, we have completed the data analysis and graph modeling design, be
 </span></span><span class="line"><span class="cl"><span class="m">8</span> directories, <span class="m">5</span> files
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>Download and decompress the omdb data:</p>
+</div><p>Download and decompress the OMDB data:</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -691,7 +692,7 @@ At this point, we have completed the data analysis and graph modeling design, be
 </span></span><span class="line"><span class="cl">bunzip2 *.bz2
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>Then for then MovieLens dataset:</p>
+</div><p>Then for the MovieLens dataset:</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
@@ -733,9 +734,9 @@ At this point, we have completed the data analysis and graph modeling design, be
 </span></span><span class="line"><span class="cl">cp raw_data/ml-latest-small/movies.csv seeds/movielens_movies.csv
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>With above files being placed, we could load them into DW in one command:</p>
+</div><p>With the above files being placed, we could load them into DW in one command:</p>
 <blockquote>
-<p>Refer to the documentations of dbt <code>seeds</code> <a href="https://docs.getdbt.com/docs/build/seeds" target="_blank" rel="noopener noreferrer">https://docs.getdbt.com/docs/build/seeds</a></p>
+<p>Refer to the documentation of dbt <code>seeds</code> <a href="https://docs.getdbt.com/docs/build/seeds" target="_blank" rel="noopener noreferrer">https://docs.getdbt.com/docs/build/seeds</a></p>
 </blockquote>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
@@ -745,7 +746,7 @@ At this point, we have completed the data analysis and graph modeling design, be
 <pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">dbt seed
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>It may take a while if you like me are using a local postgres, and it should be faster in produection level case(i.e. load to Big Query from file in Cloud Storage), it should be like this:</p>
+</div><p>It may take a while if you like me are using a local Postgres, and it should be faster in production-level cases (i.e. load to Big Query from the file in Cloud Storage), it should be like this:</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -796,7 +797,7 @@ At this point, we have completed the data analysis and graph modeling design, be
 </span></span><span class="line"><span class="cl">touch models/movie_recommedation/schema.yml
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>The files are like:</p>
+</div><p>The files are like this:</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
@@ -814,7 +815,7 @@ At this point, we have completed the data analysis and graph modeling design, be
 </span></span></code></pre></td></tr></table>
 </div>
 </div><p>Now there is only one transform rule under this model: to handle the edge of <code>user_watched_movies</code> in the <code>user_watched_movies.sql</code></p>
-<p>As we planned to ouput three columns: user_id, movie_id, rating, thus the <code>schema.yml</code> is like:</p>
+<p>As we planned to output three columns: user_id, movie_id, rating, thus the <code>schema.yml</code> is like:</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -857,7 +858,7 @@ At this point, we have completed the data analysis and graph modeling design, be
 </span></span></span><span class="line"><span class="cl"><span class="w">          </span>- <span class="l">not_null</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
-</div><p>Please be noted the <code>tests</code> is about the validation and constraint of the data, with which, we could control the data quality quite easy. And here <code>not_null</code> ensures there is no NULL if tests are performed.</p>
+</div><p>Please be noted the <code>tests</code> are about the validation and constraint of the data, with which, we could control the data quality quite easily. And here <code>not_null</code> ensures there is no NULL if tests are performed.</p>
 <p>Then, let&rsquo;s compose the <code>user_watched_movies.sql</code>:</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
@@ -919,14 +920,14 @@ At this point, we have completed the data analysis and graph modeling design, be
 </div>
 </div><p>And what this SQL does is the part marked by the green circle:</p>
 <ul>
-<li>Select user id, movie id, rating, movie title (remove the year part) from <code>moveielens_ratings</code> and save as the intermediate table of <code>user_watched_movies</code>
+<li>Select the user id, movie id, rating, and movie title (remove the year part) from <code>moveielens_ratings</code> and save it as the intermediate table of <code>user_watched_movies</code>
 <ul>
 <li>movie title is <code>JOIN</code>ed from <code>moveielens_movies</code>, obtained by the same matching condition as <code>movie_id</code></li>
 </ul>
 </li>
 <li>Select user id (prefix <code>u_</code>), rating, title, OMDB_movie_id from <code>user_watched_movies</code>
 <ul>
-<li>OMDB_movie_id is <code>JOIN</code>ed from <code>all_movie_aliases_iso</code>, obtained by matching the Chinese and English titles of OMDB movies by similar movie names</li>
+<li>OMDB_movie_id is <code>JOIN</code>ed from <code>all_movie_aliases_iso</code>, obtained by matching the Chinese and English titles of OMDB movies with similar movie names</li>
 <li>output the final fields</li>
 </ul>
 </li>
@@ -996,7 +997,7 @@ At this point, we have completed the data analysis and graph modeling design, be
 </span></span></code></pre></td></tr></table>
 </div>
 </div><h3 id="export-data-to-csv" class="headerLink">
-    <a href="#export-data-to-csv" class="header-mark"></a>6.5 Export data to CSV</h3><p>In fact, NebulaGraph Exchange itself supports directly importing many data sources (Postgres, Clickhouse, MySQL, Hive, etc.) into NebulaGraph, but in this example, the amount of data we process is very small for NebulaGraph, so we just go with the most lightweight one: Nebula-Importer. Nebula-Importer can only CSV files, so we are doing so.</p>
+    <a href="#export-data-to-csv" class="header-mark"></a>6.5 Export data to CSV</h3><p>NebulaGraph Exchange itself supports directly importing many data sources (Postgres, Clickhouse, MySQL, Hive, etc.) into NebulaGraph, but in this example, the amount of data we process is very small for NebulaGraph, so we just go with the most lightweight one: Nebula-Importer. Nebula-Importer can only CSV files, so we are doing so.</p>
 <p>First, we enter the Postgres console and execute the <code>COPY</code> command</p>
 <blockquote>
 <p>Refer to Postgres documentation: <a href="https://www.postgresql.org/docs/current/sql-copy.html" target="_blank" rel="noopener noreferrer">https://www.postgresql.org/docs/current/sql-copy.html</a></p>
@@ -1058,7 +1059,7 @@ At this point, we have completed the data analysis and graph modeling design, be
 </div>
 </div><h4 id="define-the-data-schema" class="headerLink">
     <a href="#define-the-data-schema" class="header-mark"></a>6.6.2 Define the Data Schema</h4><p>First, we need to create a graph space, and then create tag(type of vertex) and edge type on it:</p>
-<p>Access the the Nebula-Console(CLI client for NebulaGraph):</p>
+<p>Access the Nebula-Console(CLI client for NebulaGraph):</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
@@ -1067,7 +1068,7 @@ At this point, we have completed the data analysis and graph modeling design, be
 <pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">~/.nebula-up/console.sh
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>Run the following DDL(Data Definiation Language):</p>
+</div><p>Run the following DDL(Data Definition Language):</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -1157,7 +1158,7 @@ At this point, we have completed the data analysis and graph modeling design, be
 </span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">SHOW</span><span class="w"> </span><span class="n">STATS</span><span class="p">;</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
-</div><p>The result should be like:</p>
+</div><p>The result should be like this:</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -1196,7 +1197,7 @@ At this point, we have completed the data analysis and graph modeling design, be
 </span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">Got</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="k">rows</span><span class="w"> </span><span class="p">(</span><span class="n">time</span><span class="w"> </span><span class="n">spent</span><span class="w"> </span><span class="mi">1693</span><span class="o">/</span><span class="mi">15136</span><span class="w"> </span><span class="n">us</span><span class="p">)</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
-</div><p>With Nebula-Studio, we can also explore this graph in the visual interface, for example, by executing this query, we could see the reason why it recommended the movie with id 1891 to the user with id u_124?</p>
+</div><p>With Nebula-Studio, we can also explore this graph in the visual interface, for example, by executing this query, we could see the reason why it recommended the movie with id 1891 to the user with id u_124.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
@@ -1210,10 +1211,10 @@ At this point, we have completed the data analysis and graph modeling design, be
         
     </a></p>
 <blockquote>
-<p>In another article, I used the same graph to demostrate the application of more graph databases and graph algorithms in recommendation systems. If you are interested, please read: <a href="https://siwei.io/recommendation-system-with-graphdb/" target="_blank" rel="noopener noreferrer">https://siwei.io/recommendation-system-with-graphdb/</a>.</p>
+<p>In another article, I used the same graph to demonstrate the application of more graph databases and graph algorithms in recommendation systems. If you are interested, please read <a href="https://siwei.io/recommendation-system-with-graphdb/" target="_blank" rel="noopener noreferrer">https://siwei.io/recommendation-system-with-graphdb/</a>.</p>
 </blockquote>
 <h2 id="summary" class="headerLink">
-    <a href="#summary" class="header-mark"></a>7 Summary</h2><p>When we plan to leverage graph databases for massive data to transform knowledge and analyze insights, the first step is often to transform, process, and model multiple data sources into graph data. For beginners who have no idea where to start, a feasible idea is to start from all relevant information, to picture the most concerned relationship, and then to list the vertices that can be obtained, as well as the required perpertices attached. After determining the initial modeling, you can use the ETL tool to clean the original data, ETL into table structure which will be mapped to the graph, and finally, use the import tool to import NebulaGraph for further model iterations.</p>
+    <a href="#summary" class="header-mark"></a>7 Summary</h2><p>When we plan to leverage graph databases for massive data to transform knowledge and analyze insights, the first step is often to transform, process, and model multiple data sources into graph data. For beginners who have no idea where to start, a feasible idea is to start from all relevant information, picture the most concerning relationship, and then list the vertices that can be obtained and the required properties attached. After determining the initial modeling, you can use the ETL tool to clean the original data, ETL into table structure which will be mapped to the graph, and finally, use the import tool to import NebulaGraph for further model iterations.</p>
 <p>With the help of dbt, we can version control, test, iterate our modeling and data transformation, and gradually evolve and enrich the constructed knowledge graph with grace.</p>
 <blockquote>
 <p>Feature image credit: <a href="https://unsplash.com/photos/Bu4lHKIHr-E" target="_blank" rel="noopener noreferrer">Claudio</a></p>
