@@ -4,7 +4,308 @@
         <link>https://siwei.io/en/categories/nebula-graph/</link>
         <description>Nebula Graph - Category - siwei.io</description>
         <generator>Hugo -- gohugo.io</generator><language>en</language><managingEditor>weyl.gu@gmail.com (Wey Gu)</managingEditor>
-            <webMaster>weyl.gu@gmail.com (Wey Gu)</webMaster><lastBuildDate>Wed, 23 Nov 2022 19:01:45 &#43;0800</lastBuildDate><atom:link href="https://siwei.io/en/categories/nebula-graph/" rel="self" type="application/rss+xml" /><item>
+            <webMaster>weyl.gu@gmail.com (Wey Gu)</webMaster><lastBuildDate>Wed, 07 Dec 2022 14:01:55 &#43;0800</lastBuildDate><atom:link href="https://siwei.io/en/categories/nebula-graph/" rel="self" type="application/rss+xml" /><item>
+    <title>Use ChatGPT and Nebulagraph to Predict Fifa World Cup</title>
+    <link>https://siwei.io/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/</link>
+    <pubDate>Wed, 07 Dec 2022 14:01:55 &#43;0800</pubDate><author>
+        <name>Wey Gu</name>
+    </author><guid>https://siwei.io/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/</guid>
+    <description><![CDATA[<div class="featured-image">
+                <img src="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.webp" referrerpolicy="no-referrer">
+            </div><blockquote>
+<p>An attempt to use ChatGPT to generate code for a data scraper to predict sports events with the help of the NebulaGraph graph database and graph algorithms.</p>
+</blockquote>
+<blockquote>
+<p>This post was initially published in <a href="https://www.nebula-graph.io/posts/predict-fifa-world-cup-with-chatgpt-and-nebulagraph" target="_blank" rel="noopener noreferrer">https://www.nebula-graph.io/posts/predict-fifa-world-cup-with-chatgpt-and-nebulagraph</a></p>
+</blockquote>
+<!--
+
+> ChatGPT and Nebulagraph Predict Fifa World Cup
+
+[TOC]
+
+-->
+<h2 id="the-hype" class="headerLink">
+    <a href="#the-hype" class="header-mark"></a>1 The Hype</h2><p>In the hype for FIFA 2022 World Cup, when I saw <a href="https://cambridge-intelligence.com/fifa-world-cup-2022-prediction/" target="_blank" rel="noopener noreferrer">a blog post from Cambridge Intelligence</a>, where they leveraged limited information and correlations among players, teams, and clubs to predict the final winner team, I always would like to try similar things with NebulaGraph to share the ideas of graph algorithm to extract hidden information from the overall connections in a graph in the community.</p>
+<p>The initial attempt was to make it done in like 2 hours, but I noticed the dataset need to be parsed carefully from <a href="https://en.wikipedia.org/wiki/2022_FIFA_World_Cup_squads" target="_blank" rel="noopener noreferrer">Wikipedia</a> and I happened to be not good at doing this job, so I put the idea on hold for a couple of days.</p>
+<p>In the meantime, another hype, the OpenAI ChatGPT was announced, as I had been a user of DALL-E 2 already(to generate feature images of my blog posts), I gave it a try very quickly, too. And I witnessed how other guys(via Twitter, blogs, hacker news) tried to convince ChatGPT to do so many things that are hard to believe they could do:</p>
+<ul>
+<li>Help to implement a piece of code at any time</li>
+<li>Simulate any prompt interface: shell, python, virtual machine, or even a language you create</li>
+<li>Act out almost any given persona, and chat with you</li>
+<li>Write poetry, rap, prose</li>
+<li>Find a bug in a piece of code</li>
+<li>Explain the meaning of a complex regular expression/Open Cypher Query</li>
+</ul>
+<p>ChatGPT&rsquo;s ability to contextualize and understand has never been greater before, so much so that everyone is talking about a new way of working: how to master asking/convincing/triggering machines to help us do our jobs, better and faster.</p>
+<blockquote>
+<p>I commented on this tweet, where they taught ChatGPT how to draw and render basic SVGs, then they started to ask him/her to draw any other complex things just after him/her learned in one second, that it&rsquo;s just like Kame-sennin(human) teaches Sun Wukong kung fu as a young <strong>Saiyan</strong>.</p>
+<p>Be sure to check this Twitter thread, it&rsquo;s really interesting!</p>
+<blockquote class="twitter-tweet" data-dnt="true"><p lang="en" dir="ltr">Hey, cool, directly rendering SVGs in <a href="https://twitter.com/hashtag/ChatGPT?src=hash&amp;ref_src=twsrc%5Etfw">#ChatGPT</a> ! <a href="https://t.co/VQX9kYIrxT">pic.twitter.com/VQX9kYIrxT</a></p>&mdash; Br⍼d Skᔱggs (@brdskggs) <a href="https://twitter.com/brdskggs/status/1599533975357095936?ref_src=twsrc%5Etfw">December 4, 2022</a></blockquote>
+<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+
+</blockquote>
+<!--
+
+https://twitter.com/brdskggs/status/1599533975357095936
+
+-->
+<p>So, after trying to get ChatGPT to help me write complex graph database query statements, explain the meaning of complex graph query statements, and explain the meaning of a large chunk of Bison code, and he/she had done them WELL, I realized: why not let ChatGPT write the code that extracts the data for me?</p>
+<h2 id="grabbing-data" class="headerLink">
+    <a href="#grabbing-data" class="header-mark"></a>2 Grabbing data</h2><p>I really tried it and the result is&hellip; good enough.</p>
+<p>The whole process was basically like a coding interviewer, or a product manager, presenting my requirements, and ChatGPT giving me the code implementation. I then try to run the code, find the things that don&rsquo;t make sense in the code, point them out, and give suggestions, and ChatGPT really understands the points I point out and makes the appropriate corrections, like:</p>
+<p><a class="lightgallery" href="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/chatGPT-correction-process.webp" title="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/chatGPT-correction-process.webp" data-thumbnail="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/chatGPT-correction-process.webp">
+        
+    </a></p>
+<p>I won&rsquo;t list this whole process, but I share the generated code and the whole discussion <a href="https://gist.github.com/wey-gu/78cb28bee130966e7d6e9d573b51deff" target="_blank" rel="noopener noreferrer">here</a>.</p>
+<p>The final generated data is a CSV file.</p>
+<ul>
+<li>
+<p>Raw version <a href="https://github.com/siwei-io/talks/files/10152775/world_cup_squads.csv" target="_blank" rel="noopener noreferrer">world_cup_squads.csv</a></p>
+</li>
+<li>
+<p>Manually modified, separated columns for birthday and age <a href="https://github.com/siwei-io/talks/files/10152923/world_cup_squads.csv" target="_blank" rel="noopener noreferrer">world_cup_squads_v0.csv</a></p>
+<p>It contains information/columns of team, group, number, position, player name, birthday, age, number of international matches played, number of goals scored, and club served.</p>
+</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">Team,Group,No.,Pos.,Player,DOB,Age,Caps,Goals,Club
+</span></span><span class="line"><span class="cl">Ecuador,A,1,1GK,Hernán Galíndez,(1987-03-30)30 March 1987,35,12,0,Aucas
+</span></span><span class="line"><span class="cl">Ecuador,A,2,2DF,Félix Torres,(1997-01-11)11 January 1997,25,17,2,Santos Laguna
+</span></span><span class="line"><span class="cl">Ecuador,A,3,2DF,Piero Hincapié,(2002-01-09)9 January 2002,20,21,1,Bayer Leverkusen
+</span></span><span class="line"><span class="cl">Ecuador,A,4,2DF,Robert Arboleda,(1991-10-22)22 October 1991,31,33,2,São Paulo
+</span></span><span class="line"><span class="cl">Ecuador,A,5,3MF,José Cifuentes,(1999-03-12)12 March 1999,23,11,0,Los Angeles FC
+</span></span></code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>Final version with header removed <a href="https://github.com/siwei-io/talks/files/10152974/world_cup_squads_no_headers.csv" target="_blank" rel="noopener noreferrer">world_cup_squads_no_headers.csv</a></li>
+</ul>
+<h2 id="graph-algorithm-to-predict-the-2022-world-cup" class="headerLink">
+    <a href="#graph-algorithm-to-predict-the-2022-world-cup" class="header-mark"></a>3 Graph algorithm to predict the 2022 World Cup</h2><p>With the help of ChatGPT, I could finally try to predict the winner of the game with Graph Magic, before that, I need to map the data into the graph view.</p>
+<p>If you don&rsquo;t care about the process, just go to the <a href="#Result" rel="">predicted result</a> directly.</p>
+<h3 id="graph-modeling" class="headerLink">
+    <a href="#graph-modeling" class="header-mark"></a>3.1 Graph modeling</h3><blockquote>
+<p>Prerequisites: This article uses <a href="https://github.com/vesoft-inc/nebula" target="_blank" rel="noopener noreferrer">NebulaGraph</a>(Open-Source) and <a href="https://docs.nebula-graph.io/3.3.0/nebula-explorer/about-explorer/ex-ug-what-is-explorer/" target="_blank" rel="noopener noreferrer">NebulaGraph Explorer</a>(Proprietary), which you can request a trial of on <a href="https://go.aws/3VZay2I" target="_blank" rel="noopener noreferrer">AWS</a>.</p>
+</blockquote>
+<p>Graph Modeling is the abstraction and representation of real-world information in the form of a &ldquo;vertex-&gt; edge&rdquo; graph, in our case, we will project the information parsed from Wikipedia as:</p>
+<p>Vertices:</p>
+<ul>
+<li>player</li>
+<li>team</li>
+<li>group</li>
+<li>club</li>
+</ul>
+<p>Edges:</p>
+<ul>
+<li>groupedin (the team belongs to which group)</li>
+<li>belongto (players belong to the national team)</li>
+<li>serve (players serve in the club)</li>
+</ul>
+<p>The age of the players, the number of international caps, and the number of goals scored are naturally fit as properties for the player tag(type of vertex).</p>
+<p>The following is a screenshot of this schema in NebulaGraph Explorer (will just call it Explorer later).</p>
+<p><a class="lightgallery" href="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/schema_fifa.webp" title="schema_fifa" data-thumbnail="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/schema_fifa.webp">
+        
+    </a></p>
+<p>Then, we can click the save icon in the upper right corner and the button: <code>Apply to Space</code>  to actually create a graph space with the defined schema</p>
+<blockquote>
+<p>Note: Refer to the document <a href="https://docs.nebula-graph.io/3.3.0/nebula-explorer/db-management/draft/" target="_blank" rel="noopener noreferrer">https://docs.nebula-graph.io/3.3.0/nebula-explorer/db-management/draft/</a></p>
+</blockquote>
+<h3 id="ingesting-into-nebulagraph" class="headerLink">
+    <a href="#ingesting-into-nebulagraph" class="header-mark"></a>3.2 Ingesting into NebulaGraph</h3><p>With the graph modeling, we can upload the <a href="https://github.com/siwei-io/talks/files/10152974/world_cup_squads_no_headers.csv" target="_blank" rel="noopener noreferrer">CSV file</a> (the no-header version) into Explorer, by pointing and selecting the vid and properties that map the different columns to the vertices and edges.</p>
+<p><a class="lightgallery" href="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_config_mapping.webp" title="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_config_mapping.webp" data-thumbnail="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_config_mapping.webp">
+        
+    </a></p>
+<p>Click Import, we then import the whole graph to NebulaGraph, and after it succeeded, we could also get the whole CSV &ndash;&gt; Nebula Importer configuration file: [nebula_importer_config_fifa.yml](<a href="https://github.com/siwei-io/talks/files/10164014/config" target="_blank" rel="noopener noreferrer">https://github.com/siwei-io/talks/files/10164014/config</a> _fifa.yml.txt), so that you reuse it in the future whenever to re-import the same data or share it with others.</p>
+<p><a class="lightgallery" href="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_log.webp" title="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_log.webp" data-thumbnail="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_log.webp">
+        
+    </a></p>
+<blockquote>
+<p>Note: Refer to the document <a href="https://docs.nebula-graph.io/3.3.0/nebula-explorer/db-management/11.import-data/" target="_blank" rel="noopener noreferrer">https://docs.nebula-graph.io/3.3.0/nebula-explorer/db-management/11.import-data/</a></p>
+</blockquote>
+<p>After importing, we can view the statistics on the schema view page, which will show us that 831 players participated in the 2022 Qatar World Cup, serving in 295 different clubs.</p>
+<p><a class="lightgallery" href="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/data_stats.webp" title="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/data_stats.webp" data-thumbnail="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/data_stats.webp">
+        
+    </a></p>
+<blockquote>
+<p>Note: refer to the documentation: <a href="https://docs.nebula-graph.io/3.3.0/nebula-explorer/db-management/10.create-schema/#view_statistics" target="_blank" rel="noopener noreferrer">https://docs.nebula-graph.io/3.3.0/nebula-explorer/db-management/10.create-schema/#view_statistics</a></p>
+</blockquote>
+<h3 id="explore-the-graph" class="headerLink">
+    <a href="#explore-the-graph" class="header-mark"></a>3.3 Explore the graph</h3><p>Let&rsquo;s see what insights we could get from the information/ knowledge in form of a graph.</p>
+<h4 id="querying-the-data" class="headerLink">
+    <a href="#querying-the-data" class="header-mark"></a>3.3.1 Querying the data</h4><p>We could start by showing all the data and see what we will get.</p>
+<p>First, with the help of NebulaGraph Explorer, I simply did drag and drop to draw any type of vertex type (TAG) and any type of edge between vertex types (TAG), here we know that all the vertices are connected with others, so no isolated vertices will be missed by this query pattern:</p>
+<p><a class="lightgallery" href="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-0.webp" title="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-0.webp" data-thumbnail="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-0.webp">
+        
+    </a></p>
+<p>Let it generate the query statement for me. Here, it defaults to <code>LIMIT 100</code>, so let&rsquo;s change it to something larger (LIMIT 10000) and let it execute in the Console.</p>
+<p><a class="lightgallery" href="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-1.webp" title="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-1.webp" data-thumbnail="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-1.webp">
+        
+    </a></p>
+<h4 id="initial-observation" class="headerLink">
+    <a href="#initial-observation" class="header-mark"></a>3.3.2 Initial observation</h4><p>The result renders out like this, and you can see that it naturally forms a pattern of clusters.</p>
+<p><a class="lightgallery" href="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/bird_view.webp" title="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/bird_view.webp" data-thumbnail="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/bird_view.webp">
+        
+    </a></p>
+<p>These peripheral clusters are mostly made up of players from clubs that are not traditionally strong ones (now we learned that they could win, though, who knows!), and many of those clubs have only one or two players and yet concentrated in one national team or region, so they are kind of isolated from other clusters.</p>
+<p><a class="lightgallery" href="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/edge_teams.webp" title="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/edge_teams.webp" data-thumbnail="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/edge_teams.webp">
+        
+    </a></p>
+<h4 id="graph-algorithm-based-analysis" class="headerLink">
+    <a href="#graph-algorithm-based-analysis" class="header-mark"></a>3.3.3 Graph algorithm based analysis</h4><p>After I clicked on the two buttons(Sized by Degrees, Colored by Louvain Algorithm) in Explorer (refer to the <a href="https://docs.nebula-graph.com.cn/3.3.0/nebula-explorer/graph-explorer/graph-algorithm/" target="_blank" rel="noopener noreferrer">document</a> for details), in the browser, we can see that the entire graph has become something like this:</p>
+<p><a class="lightgallery" href="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/Barcelona.webp" title="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/Barcelona.webp" data-thumbnail="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/Barcelona.webp">
+        
+    </a></p>
+<p>Here, two graph algorithms are utilized to analyze the insights here.</p>
+<ol>
+<li>change the display size of vertices to highlight importance using their degrees</li>
+<li>using Louvain&rsquo;s algorithm to distinguish the community of the vertices</li>
+</ol>
+<p>You can see that the big red circle is the famous Barcelona, and its players are marked in red, too.</p>
+<h3 id="winner-prediction-algorithm" class="headerLink">
+    <a href="#winner-prediction-algorithm" class="header-mark"></a>3.4 Winner Prediction Algorithm</h3><p>In order to be able to make full use of the graph magic(with the implied conditions, and information on the graph), my idea(<a href="https://cambridge-intelligence.com/fifa-world-cup-2022-prediction/" target="_blank" rel="noopener noreferrer">stolen/inspired from this post</a>) is to choose a graph algorithm that considers edges for node importance analysis, to find out the vertices that have higher importance, iterate and rank them globally, and thus get the top team rankings.</p>
+<p>These methods actually reflect the fact that awesome players have greater community, and connectivity at the same time, and at the same time, to increase the differentiation between traditionally strong teams, I am going to take into account the information of appearances and goals scored.</p>
+<p>Ultimately, my algorithm is.</p>
+<ul>
+<li>Take all the <code>(player)-serve-&gt;(club)</code> relationships and filter them for players with too few goals and too few goals per game (to balance out the disproportionate impact of older players from some weaker teams)</li>
+<li>Explore outwards from all filtered players to get national teams</li>
+<li>Run the Betweenness Centrality algorithm on the above subgraph to calculate the node importance scores</li>
+</ul>
+<blockquote>
+<p>Note, <a href="https://en.wikipedia.org/wiki/Betweenness_centrality" target="_blank" rel="noopener noreferrer">Betweenness Centrality</a> is an algorithm to measure how a node is important in sense of bridging other nodes in the graph.</p>
+</blockquote>
+<h3 id="process-of-the-prediction" class="headerLink">
+    <a href="#process-of-the-prediction" class="header-mark"></a>3.5 Process of the Prediction</h3><p>首先，我们取出所有进球数超过 10，场均进球超过 0.2 的 (球员)-服役-&gt;(俱乐部) 的子图：</p>
+<p>First, we take out the subgraph in the pattern of <code>(player)-serve-&gt;(club)</code> for those who have scored more than 10 goals and have an average of more than 0.2 goals per game.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">MATCH ()-[e]-&gt;()
+</span></span><span class="line"><span class="cl">WITH e LIMIT 10000
+</span></span><span class="line"><span class="cl">WITH e AS e WHERE e.goals &gt; 10 AND toFloat(e.goals)/e.caps &gt; 0.2
+</span></span><span class="line"><span class="cl">RETURN e
+</span></span></code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>Note: For convenience, I have included the number of goals and caps as properties in the serve edge, too.</p>
+</blockquote>
+<p><a class="lightgallery" href="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query_step0.webp" title="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query_step0.webp" data-thumbnail="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query_step0.webp">
+        
+    </a></p>
+<p>Then, we select all the vertices on the graph, in the left toolbar, select the <code>belongto</code> edge of the outgoing direction, expand the graph outwards (traverse), and select the icon that marks the newly expanded vertices as flags.</p>
+<p><a class="lightgallery" href="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/treversal_step1.webp" title="treversal_step1" data-thumbnail="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/treversal_step1.webp">
+        
+    </a></p>
+<p>Now that we have the final subgraph, we use the graph algorithm function within the browser to execute BNC (Betweenness Centrality):</p>
+<p><a class="lightgallery" href="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_step2.webp" title="bnc_step2" data-thumbnail="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_step2.webp">
+        
+    </a></p>
+<p>The graph canvas then looks like this:</p>
+<p><a class="lightgallery" href="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_predict.webp" title="bnc_predict" data-thumbnail="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_predict.webp">
+        
+    </a></p>
+<h2 id="result" class="headerLink">
+    <a href="#result" class="header-mark"></a>4 Result</h2><p>In the end, we sorted according to the value of Betweenness Centrality to get the final winning team: Brazil! 🇧🇷, followed by Belgium, Germany, England, France, and Argentina, so let&rsquo;s wait two weeks to come back and see if the prediction is accurate :D.</p>
+<p>The sorted data is as follows:</p>
+<table>
+<thead>
+<tr>
+<th>Vertex</th>
+<th><strong>Betweenness Centrality</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Brazil</strong>🇧🇷</td>
+<td>3499</td>
+</tr>
+<tr>
+<td><strong>Paris Saint-Germain</strong></td>
+<td>3073.3333333333300</td>
+</tr>
+<tr>
+<td><strong>Neymar</strong></td>
+<td>3000</td>
+</tr>
+<tr>
+<td><strong>Tottenham Hotspur</strong></td>
+<td>2740</td>
+</tr>
+<tr>
+<td><strong>Belgium</strong>🇧🇪</td>
+<td>2587.833333333330</td>
+</tr>
+<tr>
+<td><strong>Richarlison</strong></td>
+<td>2541</td>
+</tr>
+<tr>
+<td><strong>Kevin De Bruyne</strong></td>
+<td>2184</td>
+</tr>
+<tr>
+<td><strong>Manchester City</strong></td>
+<td>2125</td>
+</tr>
+<tr>
+<td><strong>İlkay Gündoğan</strong></td>
+<td>2064</td>
+</tr>
+<tr>
+<td><strong>Germany</strong>🇩🇪</td>
+<td>2046</td>
+</tr>
+<tr>
+<td><strong>Harry Kane (captain</strong></td>
+<td>1869</td>
+</tr>
+<tr>
+<td><strong>England</strong>🏴󠁧󠁢󠁥󠁮󠁧󠁿</td>
+<td>1864</td>
+</tr>
+<tr>
+<td><strong>France</strong>🇫🇷</td>
+<td>1858.6666666666700</td>
+</tr>
+<tr>
+<td><strong>Argentina</strong>🇦🇷</td>
+<td>1834.6666666666700</td>
+</tr>
+<tr>
+<td><strong>Bayern Munich</strong></td>
+<td>1567</td>
+</tr>
+<tr>
+<td><strong>Kylian Mbappé</strong></td>
+<td>1535.3333333333300</td>
+</tr>
+<tr>
+<td><strong>Lionel Messi (captain</strong></td>
+<td>1535.3333333333300</td>
+</tr>
+<tr>
+<td><strong>Gabriel Jesus</strong></td>
+<td>1344</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>Feature Image Credit: The image was also generated with OpenAI, through the DALL-E 2 model &amp; DALL-E 2 Outpainting, see the <a href="https://user-images.githubusercontent.com/1651790/205881462-ff007725-e270-4b1e-9062-7702f01021c1.png" target="_blank" rel="noopener noreferrer">original image</a>.</p>
+</blockquote>]]></description>
+</item><item>
     <title>Tabular Data ETL to NebulaGraph with dbt</title>
     <link>https://siwei.io/en/nebulagraph-etl-dbt/</link>
     <pubDate>Wed, 23 Nov 2022 19:01:45 &#43;0800</pubDate><author>
@@ -8086,362 +8387,6 @@ GraphSAGE 是针对同构图，且边无 feature 的算法，而我们当下的 
 </ul>
 <blockquote>
 <p>Image credit goes to <a href="https://unsplash.com/photos/0E_vhMVqL9g" target="_blank" rel="noopener noreferrer">https://unsplash.com/photos/0E_vhMVqL9g</a></p>
-</blockquote>]]></description>
-</item><item>
-    <title>Nebula CLion: Setup Nebula Graph Dev Env with CLion and Docker</title>
-    <link>https://siwei.io/en/nebula-clion/</link>
-    <pubDate>Sat, 18 Sep 2021 10:00:05 &#43;0800</pubDate><author>
-        <name>Wey Gu</name>
-    </author><guid>https://siwei.io/en/nebula-clion/</guid>
-    <description><![CDATA[<div class="featured-image">
-                <img src="/en/nebula-clion/featured-image.webp" referrerpolicy="no-referrer">
-            </div><blockquote>
-<p>之前卡比同学向我咨询搭建 CLion 环境，开发 Nebula 的一些问题，我做了一些工作方便利用 Docker 在本地搭建这样一个环境，相关的东西放在：https://github.com/wey-gu/nebula-dev-CLion 。</p>
-</blockquote>
-<p>Related GitHub Repo: <a href="https://github.com/wey-gu/nebula-dev-CLion" target="_blank" rel="noopener noreferrer">https://github.com/wey-gu/nebula-dev-CLion</a></p>
-<h2 id="run-docker-env-for-nebula-graph-with-clion" class="headerLink">
-    <a href="#run-docker-env-for-nebula-graph-with-clion" class="header-mark"></a>1 Run Docker Env for Nebula-Graph with CLion</h2><p>Build Docker Image</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">git clone https://github.com/wey-gu/nebula-dev-CLion.git
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="nb">cd</span> nebula-dev-CLion
-</span></span><span class="line"><span class="cl">docker build -t wey/nebula-dev-clion:v2.0 .
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>Run Docker Container for Nebula-Dev with CLion Integration Readiness(actually mostly Rsync &amp; SSH).</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span><span class="lnt">7
-</span><span class="lnt">8
-</span><span class="lnt">9
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nb">cd</span> &lt;nebula-graph-repo-you-worked-on&gt;
-</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">DOCKER_DEFAULT_PLATFORM</span><span class="o">=</span>linux/amd64
-</span></span><span class="line"><span class="cl">docker run --rm -d <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>  --name nebula-dev <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>  --security-opt <span class="nv">seccomp</span><span class="o">=</span>unconfined <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>  -p 2222:22 -p 2873:873 --cap-add<span class="o">=</span>ALL <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>  -v <span class="nv">$PWD</span>:/home/nebula <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>  -w /home/nebula <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>  wey/nebula-dev-clion:v2.0
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>Verify cmake with SSH.</p>
-<blockquote>
-<p>The default password is <code>password</code></p>
-</blockquote>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">ssh -o <span class="nv">StrictHostKeyChecking</span><span class="o">=</span>no root@localhost -p <span class="m">2222</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="c1"># in docker</span>
-</span></span><span class="line"><span class="cl"><span class="nb">cd</span> /home/nebula
-</span></span><span class="line"><span class="cl">mkdir build <span class="o">&amp;&amp;</span> <span class="nb">cd</span> build
-</span></span><span class="line"><span class="cl">cmake -DENABLE_TESTING<span class="o">=</span>OFF -DCMAKE_BUILD_TYPE<span class="o">=</span>Release ..
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>Access container w/o SSH.</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker <span class="nb">exec</span> -it nebula-dev bash
-</span></span><span class="line"><span class="cl">mkdir -p build <span class="o">&amp;&amp;</span> <span class="nb">cd</span> build
-</span></span><span class="line"><span class="cl">cmake -DENABLE_TESTING<span class="o">=</span>OFF -DCMAKE_BUILD_TYPE<span class="o">=</span>Release ..
-</span></span></code></pre></td></tr></table>
-</div>
-</div><h2 id="configurations-in-clion" class="headerLink">
-    <a href="#configurations-in-clion" class="header-mark"></a>2 Configurations in CLion</h2><blockquote>
-<p>Ref: <a href="https://www.jetbrains.com/help/clion/clion-toolchains-in-docker.html#build-and-run" target="_blank" rel="noopener noreferrer">https://www.jetbrains.com/help/clion/clion-toolchains-in-docker.html#build-and-run</a></p>
-</blockquote>
-<p><strong>Toolchains</strong></p>
-<ul>
-<li>Add a remote host
-<ul>
-<li><code>root@localhost:2222</code></li>
-<li><code>password</code></li>
-</ul>
-</li>
-<li>Put <code>/opt/vesoft/toolset/cmake/bin/cmake</code> as CMake</li>
-</ul>
-<p><a class="lightgallery" href="https://raw.githubusercontent.com/wey-gu/nebula-dev-CLion/main/images/preferences_toolchains.png" title="preferences_toolchains" data-thumbnail="https://raw.githubusercontent.com/wey-gu/nebula-dev-CLion/main/images/preferences_toolchains.png">
-        
-    </a></p>
-<p><strong>CMake</strong></p>
-<ul>
-<li>Toochain:
-<ul>
-<li>Select the one created in last step</li>
-</ul>
-</li>
-<li>Build directory:
-<ul>
-<li><code>/home/nebula/build</code></li>
-</ul>
-</li>
-</ul>
-<p><a class="lightgallery" href="https://raw.githubusercontent.com/wey-gu/nebula-dev-CLion/main/images/preferences_CMake.png" title="preferences_CMake" data-thumbnail="https://raw.githubusercontent.com/wey-gu/nebula-dev-CLion/main/images/preferences_CMake.png">
-        
-    </a></p>
-<h2 id="the-appendix" class="headerLink">
-    <a href="#the-appendix" class="header-mark"></a>3 The appendix</h2><h3 id="references-of-cmake-output" class="headerLink">
-    <a href="#references-of-cmake-output" class="header-mark"></a>3.1 References of CMake output:</h3><div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">  1
-</span><span class="lnt">  2
-</span><span class="lnt">  3
-</span><span class="lnt">  4
-</span><span class="lnt">  5
-</span><span class="lnt">  6
-</span><span class="lnt">  7
-</span><span class="lnt">  8
-</span><span class="lnt">  9
-</span><span class="lnt"> 10
-</span><span class="lnt"> 11
-</span><span class="lnt"> 12
-</span><span class="lnt"> 13
-</span><span class="lnt"> 14
-</span><span class="lnt"> 15
-</span><span class="lnt"> 16
-</span><span class="lnt"> 17
-</span><span class="lnt"> 18
-</span><span class="lnt"> 19
-</span><span class="lnt"> 20
-</span><span class="lnt"> 21
-</span><span class="lnt"> 22
-</span><span class="lnt"> 23
-</span><span class="lnt"> 24
-</span><span class="lnt"> 25
-</span><span class="lnt"> 26
-</span><span class="lnt"> 27
-</span><span class="lnt"> 28
-</span><span class="lnt"> 29
-</span><span class="lnt"> 30
-</span><span class="lnt"> 31
-</span><span class="lnt"> 32
-</span><span class="lnt"> 33
-</span><span class="lnt"> 34
-</span><span class="lnt"> 35
-</span><span class="lnt"> 36
-</span><span class="lnt"> 37
-</span><span class="lnt"> 38
-</span><span class="lnt"> 39
-</span><span class="lnt"> 40
-</span><span class="lnt"> 41
-</span><span class="lnt"> 42
-</span><span class="lnt"> 43
-</span><span class="lnt"> 44
-</span><span class="lnt"> 45
-</span><span class="lnt"> 46
-</span><span class="lnt"> 47
-</span><span class="lnt"> 48
-</span><span class="lnt"> 49
-</span><span class="lnt"> 50
-</span><span class="lnt"> 51
-</span><span class="lnt"> 52
-</span><span class="lnt"> 53
-</span><span class="lnt"> 54
-</span><span class="lnt"> 55
-</span><span class="lnt"> 56
-</span><span class="lnt"> 57
-</span><span class="lnt"> 58
-</span><span class="lnt"> 59
-</span><span class="lnt"> 60
-</span><span class="lnt"> 61
-</span><span class="lnt"> 62
-</span><span class="lnt"> 63
-</span><span class="lnt"> 64
-</span><span class="lnt"> 65
-</span><span class="lnt"> 66
-</span><span class="lnt"> 67
-</span><span class="lnt"> 68
-</span><span class="lnt"> 69
-</span><span class="lnt"> 70
-</span><span class="lnt"> 71
-</span><span class="lnt"> 72
-</span><span class="lnt"> 73
-</span><span class="lnt"> 74
-</span><span class="lnt"> 75
-</span><span class="lnt"> 76
-</span><span class="lnt"> 77
-</span><span class="lnt"> 78
-</span><span class="lnt"> 79
-</span><span class="lnt"> 80
-</span><span class="lnt"> 81
-</span><span class="lnt"> 82
-</span><span class="lnt"> 83
-</span><span class="lnt"> 84
-</span><span class="lnt"> 85
-</span><span class="lnt"> 86
-</span><span class="lnt"> 87
-</span><span class="lnt"> 88
-</span><span class="lnt"> 89
-</span><span class="lnt"> 90
-</span><span class="lnt"> 91
-</span><span class="lnt"> 92
-</span><span class="lnt"> 93
-</span><span class="lnt"> 94
-</span><span class="lnt"> 95
-</span><span class="lnt"> 96
-</span><span class="lnt"> 97
-</span><span class="lnt"> 98
-</span><span class="lnt"> 99
-</span><span class="lnt">100
-</span><span class="lnt">101
-</span><span class="lnt">102
-</span><span class="lnt">103
-</span><span class="lnt">104
-</span><span class="lnt">105
-</span><span class="lnt">106
-</span><span class="lnt">107
-</span><span class="lnt">108
-</span><span class="lnt">109
-</span><span class="lnt">110
-</span><span class="lnt">111
-</span><span class="lnt">112
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="o">[</span>root@4c98e3f77ce8 build<span class="o">]</span><span class="c1"># cmake -DENABLE_TESTING=OFF -DCMAKE_BUILD_TYPE=Release ..</span>
-</span></span><span class="line"><span class="cl">&gt;&gt;&gt;&gt; Options of Nebula Graph <span class="o">&lt;&lt;&lt;</span>&lt;
-</span></span><span class="line"><span class="cl">-- ENABLE_ASAN                     : OFF <span class="o">(</span>Build with AddressSanitizer<span class="o">)</span>
-</span></span><span class="line"><span class="cl">-- ENABLE_BUILD_STORAGE            : OFF <span class="o">(</span>Whether to build storage<span class="o">)</span>
-</span></span><span class="line"><span class="cl">-- ENABLE_CCACHE                   : ON <span class="o">(</span>Use ccache to speed up compiling<span class="o">)</span>
-</span></span><span class="line"><span class="cl">-- ENABLE_CLANG_TIDY               : OFF <span class="o">(</span>Enable clang-tidy <span class="k">if</span> present<span class="o">)</span>
-</span></span><span class="line"><span class="cl">-- ENABLE_COMPRESSED_DEBUG_INFO    : ON <span class="o">(</span>Compress debug info to reduce binary size<span class="o">)</span>
-</span></span><span class="line"><span class="cl">-- ENABLE_COVERAGE                 : OFF <span class="o">(</span>Build with coverage report<span class="o">)</span>
-</span></span><span class="line"><span class="cl">-- ENABLE_FRAME_POINTER            : OFF <span class="o">(</span>Build with frame pointer<span class="o">)</span>
-</span></span><span class="line"><span class="cl">-- ENABLE_FUZZY_TESTING            : OFF <span class="o">(</span>Enable Fuzzy tests<span class="o">)</span>
-</span></span><span class="line"><span class="cl">-- ENABLE_GDB_SCRIPT_SECTION       : OFF <span class="o">(</span>Add .debug_gdb_scripts section<span class="o">)</span>
-</span></span><span class="line"><span class="cl">-- ENABLE_JEMALLOC                 : ON <span class="o">(</span>Use jemalloc as memory allocator<span class="o">)</span>
-</span></span><span class="line"><span class="cl">-- ENABLE_MODULE_FORCE_CHECKOUT    : ON <span class="o">(</span>Whether checkout branch of module to same as graph.<span class="o">)</span>
-</span></span><span class="line"><span class="cl">-- ENABLE_MODULE_UPDATE            : OFF <span class="o">(</span>Automatically update module<span class="o">)</span>
-</span></span><span class="line"><span class="cl">-- ENABLE_PACK_ONE                 : ON <span class="o">(</span>Whether to package into one<span class="o">)</span>
-</span></span><span class="line"><span class="cl">-- ENABLE_PIC                      : OFF <span class="o">(</span>Build with -fPIC<span class="o">)</span>
-</span></span><span class="line"><span class="cl">-- ENABLE_STATIC_ASAN              : OFF <span class="o">(</span>Statically link against libasan<span class="o">)</span>
-</span></span><span class="line"><span class="cl">-- ENABLE_STATIC_UBSAN             : OFF <span class="o">(</span>Statically link against libubsan<span class="o">)</span>
-</span></span><span class="line"><span class="cl">-- ENABLE_STRICT_ALIASING          : OFF <span class="o">(</span>Build with -fstrict-aliasing<span class="o">)</span>
-</span></span><span class="line"><span class="cl">-- ENABLE_TESTING                  : OFF <span class="o">(</span>Build unit tests<span class="o">)</span>
-</span></span><span class="line"><span class="cl">-- ENABLE_TSAN                     : OFF <span class="o">(</span>Build with ThreadSanitizer<span class="o">)</span>
-</span></span><span class="line"><span class="cl">-- ENABLE_UBSAN                    : OFF <span class="o">(</span>Build with UndefinedBehaviourSanitizer<span class="o">)</span>
-</span></span><span class="line"><span class="cl">-- ENABLE_VERBOSE_BISON            : OFF <span class="o">(</span>Enable Bison to report state<span class="o">)</span>
-</span></span><span class="line"><span class="cl">-- ENABLE_WERROR                   : ON <span class="o">(</span>Regard warnings as errors<span class="o">)</span>
-</span></span><span class="line"><span class="cl">-- CMAKE_BUILD_TYPE                : Release <span class="o">(</span>Choose the <span class="nb">type</span> of build, options are: None Debug Release RelWithDebInfo MinSizeRel ...<span class="o">)</span>
-</span></span><span class="line"><span class="cl">-- CMAKE_INSTALL_PREFIX            : /usr/local/nebula <span class="o">(</span>Install path prefix, prepended onto install directories.<span class="o">)</span>
-</span></span><span class="line"><span class="cl">-- CMAKE_CXX_STANDARD              : <span class="m">17</span>
-</span></span><span class="line"><span class="cl">-- CMAKE_CXX_COMPILER              : /opt/vesoft/toolset/clang/9.0.0/bin/c++ <span class="o">(</span>CXX compiler<span class="o">)</span>
-</span></span><span class="line"><span class="cl">-- CMAKE_CXX_COMPILER_ID           : GNU
-</span></span><span class="line"><span class="cl">-- NEBULA_USE_LINKER               : bfd
-</span></span><span class="line"><span class="cl">-- CCACHE_DIR                      : /root/.ccache
-</span></span><span class="line"><span class="cl">&gt;&gt;&gt;&gt; Configuring third party <span class="k">for</span> <span class="s1">&#39;Nebula Graph&#39;</span> <span class="o">&lt;&lt;&lt;</span>&lt;
-</span></span><span class="line"><span class="cl">-- NEBULA_THIRDPARTY_ROOT          : /opt/vesoft/third-party/2.0
-</span></span><span class="line"><span class="cl">-- Build info of nebula third party:
-</span></span><span class="line"><span class="cl">Package         : Nebula Third Party
-</span></span><span class="line"><span class="cl">Version         : 2.0
-</span></span><span class="line"><span class="cl">Date            : Mon Jun <span class="m">28</span> 15:07:38 UTC <span class="m">2021</span>
-</span></span><span class="line"><span class="cl">glibc           : 2.17
-</span></span><span class="line"><span class="cl">Arch            : x86_64
-</span></span><span class="line"><span class="cl">Compiler        : GCC 9.2.0
-</span></span><span class="line"><span class="cl">C++ ABI         : <span class="m">11</span>
-</span></span><span class="line"><span class="cl">Vendor          : VEsoft Inc.
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">-- CMAKE_INCLUDE_PATH              : /opt/vesoft/third-party/2.0/include
-</span></span><span class="line"><span class="cl">-- CMAKE_LIBRARY_PATH              : /opt/vesoft/third-party/2.0/lib64<span class="p">;</span>/opt/vesoft/third-party/2.0/lib
-</span></span><span class="line"><span class="cl">-- CMAKE_PROGRAM_PATH              : /opt/vesoft/third-party/2.0/bin
-</span></span><span class="line"><span class="cl">-- GLIBC_VERSION                   : 2.17
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">-- found krb5-config here /opt/vesoft/third-party/2.0/bin/krb5-config
-</span></span><span class="line"><span class="cl">-- Found kerberos <span class="m">5</span> headers: /opt/vesoft/third-party/2.0/include
-</span></span><span class="line"><span class="cl">-- Found kerberos <span class="m">5</span> libs:    /opt/vesoft/third-party/2.0/lib/libgssapi_krb5.a<span class="p">;</span>/opt/vesoft/third-party/2.0/lib/libkrb5.a<span class="p">;</span>/opt/vesoft/third-party/2.0/lib/libk5crypto.a<span class="p">;</span>/opt/vesoft/third-party/2.0/lib/libcom_err.a<span class="p">;</span>/opt/vesoft/third-party/2.0/lib/libkrb5support.a
-</span></span><span class="line"><span class="cl">&gt;&gt;&gt;&gt; Configuring third party <span class="k">for</span> <span class="s1">&#39;Nebula Graph&#39;</span> <span class="k">done</span> <span class="o">&lt;&lt;&lt;</span>&lt;
-</span></span><span class="line"><span class="cl">-- Create the pre-commit hook
-</span></span><span class="line"><span class="cl">-- Creating pre-commit hook <span class="k">done</span>
-</span></span><span class="line"><span class="cl">&gt;&gt;&gt;&gt; Configuring Nebula Common <span class="o">&lt;&lt;&lt;</span>&lt;
-</span></span><span class="line"><span class="cl">&gt;&gt;&gt;&gt; Options of Nebula Common <span class="o">&lt;&lt;&lt;</span>&lt;
-</span></span><span class="line"><span class="cl">-- ENABLE_ASAN                     : OFF <span class="o">(</span>Build with AddressSanitizer<span class="o">)</span>
-</span></span><span class="line"><span class="cl">-- ENABLE_CCACHE                   : ON <span class="o">(</span>Use ccache to speed up compiling<span class="o">)</span>
-</span></span><span class="line"><span class="cl">-- ENABLE_CLANG_TIDY               : OFF <span class="o">(</span>Enable clang-tidy <span class="k">if</span> present<span class="o">)</span>
-</span></span><span class="line"><span class="cl">-- ENABLE_COMPRESSED_DEBUG_INFO    : ON <span class="o">(</span>Compress debug info to reduce binary size<span class="o">)</span>
-</span></span><span class="line"><span class="cl">-- ENABLE_COVERAGE                 : OFF <span class="o">(</span>Build with coverage report<span class="o">)</span>
-</span></span><span class="line"><span class="cl">-- ENABLE_FRAME_POINTER            : OFF <span class="o">(</span>Build with frame pointer<span class="o">)</span>
-</span></span><span class="line"><span class="cl">-- ENABLE_FUZZY_TESTING            : OFF <span class="o">(</span>Enable Fuzzy tests<span class="o">)</span>
-</span></span><span class="line"><span class="cl">-- ENABLE_GDB_SCRIPT_SECTION       : OFF <span class="o">(</span>Add .debug_gdb_scripts section<span class="o">)</span>
-</span></span><span class="line"><span class="cl">-- ENABLE_JEMALLOC                 : ON <span class="o">(</span>Use jemalloc as memory allocator<span class="o">)</span>
-</span></span><span class="line"><span class="cl">-- ENABLE_PIC                      : OFF <span class="o">(</span>Build with -fPIC<span class="o">)</span>
-</span></span><span class="line"><span class="cl">-- ENABLE_STATIC_ASAN              : OFF <span class="o">(</span>Statically link against libasan<span class="o">)</span>
-</span></span><span class="line"><span class="cl">-- ENABLE_STATIC_UBSAN             : OFF <span class="o">(</span>Statically link against libubsan<span class="o">)</span>
-</span></span><span class="line"><span class="cl">-- ENABLE_STRICT_ALIASING          : OFF <span class="o">(</span>Build with -fstrict-aliasing<span class="o">)</span>
-</span></span><span class="line"><span class="cl">-- ENABLE_TESTING                  : OFF <span class="o">(</span>Build unit tests<span class="o">)</span>
-</span></span><span class="line"><span class="cl">-- ENABLE_TSAN                     : OFF <span class="o">(</span>Build with ThreadSanitizer<span class="o">)</span>
-</span></span><span class="line"><span class="cl">-- ENABLE_UBSAN                    : OFF <span class="o">(</span>Build with UndefinedBehaviourSanitizer<span class="o">)</span>
-</span></span><span class="line"><span class="cl">-- ENABLE_WERROR                   : ON <span class="o">(</span>Regard warnings as errors<span class="o">)</span>
-</span></span><span class="line"><span class="cl">-- Set D_GLIBCXX_USE_CXX11_ABI to <span class="m">1</span>
-</span></span><span class="line"><span class="cl">-- CMAKE_BUILD_TYPE                : Release <span class="o">(</span>Choose the <span class="nb">type</span> of build, options are: None Debug Release RelWithDebInfo MinSizeRel ...<span class="o">)</span>
-</span></span><span class="line"><span class="cl">-- CMAKE_INSTALL_PREFIX            : /usr/local/nebula <span class="o">(</span>Install path prefix, prepended onto install directories.<span class="o">)</span>
-</span></span><span class="line"><span class="cl">-- CMAKE_CXX_STANDARD              : <span class="m">17</span>
-</span></span><span class="line"><span class="cl">-- CMAKE_CXX_COMPILER              : /opt/vesoft/toolset/clang/9.0.0/bin/c++
-</span></span><span class="line"><span class="cl">-- CMAKE_CXX_COMPILER_ID           : GNU
-</span></span><span class="line"><span class="cl">-- NEBULA_USE_LINKER               : bfd
-</span></span><span class="line"><span class="cl">-- CCACHE_DIR                      : /root/.ccache
-</span></span><span class="line"><span class="cl">&gt;&gt;&gt;&gt; Configuring third party <span class="k">for</span> <span class="s1">&#39;Nebula Common&#39;</span> <span class="o">&lt;&lt;&lt;</span>&lt;
-</span></span><span class="line"><span class="cl">-- NEBULA_THIRDPARTY_ROOT          : /opt/vesoft/third-party/2.0
-</span></span><span class="line"><span class="cl">-- Build info of nebula third party:
-</span></span><span class="line"><span class="cl">Package         : Nebula Third Party
-</span></span><span class="line"><span class="cl">Version         : 2.0
-</span></span><span class="line"><span class="cl">Date            : Mon Jun <span class="m">28</span> 15:07:38 UTC <span class="m">2021</span>
-</span></span><span class="line"><span class="cl">glibc           : 2.17
-</span></span><span class="line"><span class="cl">Arch            : x86_64
-</span></span><span class="line"><span class="cl">Compiler        : GCC 9.2.0
-</span></span><span class="line"><span class="cl">C++ ABI         : <span class="m">11</span>
-</span></span><span class="line"><span class="cl">Vendor          : VEsoft Inc.
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">-- CMAKE_INCLUDE_PATH              : /opt/vesoft/third-party/2.0/include
-</span></span><span class="line"><span class="cl">-- CMAKE_LIBRARY_PATH              : /opt/vesoft/third-party/2.0/lib64<span class="p">;</span>/opt/vesoft/third-party/2.0/lib
-</span></span><span class="line"><span class="cl">-- CMAKE_PROGRAM_PATH              : /opt/vesoft/third-party/2.0/bin
-</span></span><span class="line"><span class="cl">-- GLIBC_VERSION                   : 2.17
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">-- found krb5-config here /opt/vesoft/third-party/2.0/bin/krb5-config
-</span></span><span class="line"><span class="cl">-- Found kerberos <span class="m">5</span> headers: /opt/vesoft/third-party/2.0/include
-</span></span><span class="line"><span class="cl">-- Found kerberos <span class="m">5</span> libs:    /opt/vesoft/third-party/2.0/lib/libgssapi_krb5.a<span class="p">;</span>/opt/vesoft/third-party/2.0/lib/libkrb5.a<span class="p">;</span>/opt/vesoft/third-party/2.0/lib/libk5crypto.a<span class="p">;</span>/opt/vesoft/third-party/2.0/lib/libcom_err.a<span class="p">;</span>/opt/vesoft/third-party/2.0/lib/libkrb5support.a
-</span></span><span class="line"><span class="cl">&gt;&gt;&gt;&gt; Configuring third party <span class="k">for</span> <span class="s1">&#39;Nebula Common&#39;</span> <span class="k">done</span> <span class="o">&lt;&lt;&lt;</span>&lt;
-</span></span><span class="line"><span class="cl">-- Create the pre-commit hook
-</span></span><span class="line"><span class="cl">-- Creating pre-commit hook <span class="k">done</span>
-</span></span><span class="line"><span class="cl">-- Configuring <span class="k">done</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">-- Generating <span class="k">done</span>
-</span></span><span class="line"><span class="cl">-- Build files have been written to: /home/nebula/build/modules/common
-</span></span><span class="line"><span class="cl">&gt;&gt;&gt;&gt; Configuring Nebula Common <span class="k">done</span> <span class="o">&lt;&lt;&lt;</span>&lt;
-</span></span><span class="line"><span class="cl">-- Configuring <span class="k">done</span>
-</span></span><span class="line"><span class="cl">-- Generating <span class="k">done</span>
-</span></span><span class="line"><span class="cl">-- Build files have been written to: /home/nebula/build
-</span></span></code></pre></td></tr></table>
-</div>
-</div><blockquote>
-<p>题图版权：<a href="https://unsplash.com/@glencarrie" target="_blank" rel="noopener noreferrer">@glencarrie</a></p>
 </blockquote>]]></description>
 </item></channel>
 </rss>

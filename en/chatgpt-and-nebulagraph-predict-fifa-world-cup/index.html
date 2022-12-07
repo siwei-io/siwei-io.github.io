@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noodp" />
+    <title class="pjax-title">Use ChatGPT and Nebulagraph to Predict Fifa World Cup - siwei.io</title><meta name="Description" content="An attempt to use ChatGPT to generate code for a data scraper to predict sports events with the help of the NebulaGraph graph database and graph algorithms."><meta property="og:title" content="Use ChatGPT and Nebulagraph to Predict Fifa World Cup" />
+<meta property="og:description" content="An attempt to use ChatGPT to generate code for a data scraper to predict sports events with the help of the NebulaGraph graph database and graph algorithms." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://siwei.io/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/" /><meta property="og:image" content="https://siwei.io/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.png"/><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2022-12-07T14:01:55+08:00" />
+<meta property="article:modified_time" content="2022-12-07T14:01:55+08:00" /><meta property="og:site_name" content="siwei.io" />
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://siwei.io/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.png"/>
+<meta name="twitter:title" content="Use ChatGPT and Nebulagraph to Predict Fifa World Cup"/>
+<meta name="twitter:description" content="An attempt to use ChatGPT to generate code for a data scraper to predict sports events with the help of the NebulaGraph graph database and graph algorithms."/>
+<meta name="application-name" content="siwei.io">
+<meta name="apple-mobile-web-app-title" content="siwei.io">
+
+<meta name="theme-color" content="#f8f8f8"><meta name="msapplication-TileColor" content="#da532c"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="manifest" href="/site.webmanifest"><link rel="canonical" href="https://siwei.io/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/" /><link rel="prev" href="https://siwei.io/en/nebulagraph-etl-dbt/" /><link rel="stylesheet" href="/lib/normalize/normalize.min.css"><link rel="stylesheet" href="/css/style.min.css"><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/fontawesome-free/all.min.css">
+        <noscript><link rel="stylesheet" href="/lib/fontawesome-free/all.min.css"></noscript><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/animate/animate.min.css">
+        <noscript><link rel="stylesheet" href="/lib/animate/animate.min.css"></noscript>
+    
+    
+    
+    <meta name="baidu-site-verification" content="code-4R67zl7SwH" /><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "Use ChatGPT and Nebulagraph to Predict Fifa World Cup",
+        "inLanguage": "en",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "https:\/\/siwei.io\/en\/chatgpt-and-nebulagraph-predict-fifa-world-cup\/"
+        },"image": ["https:\/\/siwei.io\/images\/site-feature-image.webp"],"genre": "posts","keywords": "Nebula Graph, FIFA 2022, Graph Modeling, OpenAI, chatGPT, Graph Algorithm","wordcount":  1942 ,
+        "url": "https:\/\/siwei.io\/en\/chatgpt-and-nebulagraph-predict-fifa-world-cup\/","datePublished": "2022-12-07T14:01:55+08:00","dateModified": "2022-12-07T14:01:55+08:00","publisher": {
+            "@type": "Organization",
+            "name": "Wey Gu","logo": "https:\/\/siwei.io\/images\/site-feature-image.webp"},"author": {
+                "@type": "Person",
+                "name": "Wey Gu"
+            },"description": "An attempt to use ChatGPT to generate code for a data scraper to predict sports events with the help of the NebulaGraph graph database and graph algorithms."
+    }
+    </script></head>
+
+<body header-desktop="fixed" header-mobile="auto"><script type="text/javascript">
+        function setTheme(theme) {document.body.setAttribute('theme', theme); document.documentElement.style.setProperty('color-scheme', theme === 'light' ? 'light' : 'dark');}
+        function saveTheme(theme) {window.localStorage && localStorage.setItem('theme', theme);}
+        function getMeta(metaName) {const metas = document.getElementsByTagName('meta'); for (let i = 0; i < metas.length; i++) if (metas[i].getAttribute('name') === metaName) return metas[i]; return '';}
+        if (window.localStorage && localStorage.getItem('theme')) {let theme = localStorage.getItem('theme');theme === 'light' || theme === 'dark' || theme === 'black' ? setTheme(theme) : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light')); } else { if ('auto' === 'light' || 'auto' === 'dark' || 'auto' === 'black') setTheme('auto'), saveTheme('auto'); else saveTheme('auto'), window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light');}
+        let metaColors = {'light': '#f8f8f8','dark': '#252627','black': '#000000'}
+        getMeta('theme-color').content = metaColors[document.body.getAttribute('theme')];
+    </script>
+    <div id="back-to-top"></div>
+    <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/en/" title="siwei.io"><span class="header-title-pre"><i class="fas fa-code-branch"></i></span>siwei.io</a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="/en/about/"> About </a><a class="menu-item" href="/en/projects/"> Project </a><a class="menu-item" href="/en/sketch-notes/"> Sketches </a><a class="menu-item" href="/en/posts/"> Blog </a><a class="menu-item" href="/en/cources/"> Hands-on </a><a class="menu-item" href="/en/talk/"> Talks </a><a class="menu-item" href="https://vesoft.com/en/careers/" rel="noopener noreferrer" target="_blank"> Hire </a><a class="menu-item" href="/en/about/#contact"> Contact </a><span class="menu-item delimiter"></span><a href="#" onclick="return false;" class="menu-item language" title="Select Language">🌏 English<i class="fas fa-chevron-right fa-fw"></i>
+                        <select class="language-select" title="Select Language" id="language-select-desktop" onchange="location = this.value;"><option value="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/" selected>🌏 English</option><option value="/chatgpt-and-nebulagraph-predict-fifa-world-cup/">🌏 Chinese</option></select>
+                    </a><span class="menu-item search" id="search-desktop">
+                        <input type="text" placeholder="Search titles or contents..." id="search-input-desktop">
+                        <a href="#" onclick="return false;" class="search-button search-toggle" id="search-toggle-desktop" title="Search">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="#" onclick="return false;" class="search-button search-clear" id="search-clear-desktop" title="Clear">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-desktop">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </span><a href="#" onclick="return false;" class="menu-item theme-select" title="Switch Theme">
+                    <i class="fas fa-adjust fa-fw"></i>
+                    <select class="color-theme-select" id="theme-select-desktop" title="Switch Theme">
+                        <option value="light">Light</option>
+                        <option value="dark">Dark</option>
+                        <option value="black">Black</option>
+                        <option value="auto">Auto</option>
+                    </select>
+                </a></div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="/en/" title="siwei.io"><span class="header-title-pre"><i class="fas fa-code-branch"></i></span>siwei.io</a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><div class="search-wrapper">
+                    <div class="search mobile" id="search-mobile">
+                        <input type="text" placeholder="Search titles or contents..." id="search-input-mobile">
+                        <a href="#" onclick="return false;" class="search-button search-toggle" id="search-toggle-mobile" title="Search">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="#" onclick="return false;" class="search-button search-clear" id="search-clear-mobile" title="Clear">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-mobile">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </div>
+                    <a href="#" onclick="return false;" class="search-cancel" id="search-cancel-mobile">
+                        Cancel
+                    </a>
+                </div><a class="menu-item" href="/en/about/" title="">About</a><a class="menu-item" href="/en/projects/" title="">Project</a><a class="menu-item" href="/en/sketch-notes/" title="">Sketches</a><a class="menu-item" href="/en/posts/" title="">Blog</a><a class="menu-item" href="/en/cources/" title="">Hands-on</a><a class="menu-item" href="/en/talk/" title="">Talks</a><a class="menu-item" href="https://vesoft.com/en/careers/" title="" rel="noopener noreferrer" target="_blank">Hire</a><a class="menu-item" href="/en/about/#contact" title="">Contact</a><a href="#" onclick="return false;" class="menu-item theme-select" title="Switch Theme">
+                <i class="fas fa-adjust fa-fw"></i>
+                <select class="color-theme-select" id="theme-select-mobile" title="Switch Theme">
+                    <option value="light">Light</option>
+                    <option value="dark">Dark</option>
+                    <option value="black">Black</option>
+                    <option value="auto">Auto</option>
+                </select>
+            </a><a href="#" onclick="return false;" class="menu-item" title="Select Language">🌏 English<i class="fas fa-chevron-right fa-fw"></i>
+                    <select class="language-select" title="Select Language" onchange="location = this.value;"><option value="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/" selected>🌏 English</option><option value="/chatgpt-and-nebulagraph-predict-fifa-world-cup/">🌏 Chinese</option></select>
+                </a></div>
+    </div>
+</header>
+<div class="search-dropdown desktop">
+    <div id="search-dropdown-desktop"></div>
+</div>
+<div class="search-dropdown mobile">
+    <div id="search-dropdown-mobile"></div>
+</div>
+<main class="main">
+            <div class="container"><div class="toc" id="toc-auto">
+        <h2 class="toc-title">Contents</h2>
+        <div class="toc-content always-active" id="toc-content-auto"><nav id="TableOfContents">
+  <ol>
+    <li><a href="#the-hype">The Hype</a></li>
+    <li><a href="#grabbing-data">Grabbing data</a></li>
+    <li><a href="#graph-algorithm-to-predict-the-2022-world-cup">Graph algorithm to predict the 2022 World Cup</a>
+      <ol>
+        <li><a href="#graph-modeling">Graph modeling</a></li>
+        <li><a href="#ingesting-into-nebulagraph">Ingesting into NebulaGraph</a></li>
+        <li><a href="#explore-the-graph">Explore the graph</a>
+          <ol>
+            <li><a href="#querying-the-data">Querying the data</a></li>
+            <li><a href="#initial-observation">Initial observation</a></li>
+            <li><a href="#graph-algorithm-based-analysis">Graph algorithm based analysis</a></li>
+          </ol>
+        </li>
+        <li><a href="#winner-prediction-algorithm">Winner Prediction Algorithm</a></li>
+        <li><a href="#process-of-the-prediction">Process of the Prediction</a></li>
+      </ol>
+    </li>
+    <li><a href="#result">Result</a></li>
+  </ol>
+</nav></div>
+    </div><script>document.getElementsByTagName("main")[0].setAttribute("pageStyle", "normal")</script><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC", "true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Use ChatGPT and Nebulagraph to Predict Fifa World Cup</h1><div class="post-meta">
+            <div class="post-meta-line">
+                <span class="post-author"><i class="author fas fa-user-circle fa-fw"></i><a href="https://siwei.io" title="Author" target="_blank" rel="noopener noreferrer author" class="author">Wey Gu</a>
+                </span>&nbsp;<span class="post-category">included in </span>&nbsp;<span class="post-category">category <a href="/en/categories/nebula-graph/"><i class="far fa-folder fa-fw"></i>Nebula Graph</a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime="2022-12-07">2022-12-07</time>&nbsp;<i class="far fa-edit fa-fw"></i>&nbsp;<time datetime="2022-12-07">2022-12-07</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;1942 words&nbsp;
+                <i class="far fa-clock fa-fw"></i>&nbsp;4 minutes&nbsp;</div>
+        </div><div class="featured-image"><img
+        class="lazyload"
+        data-src="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.webp"
+        data-srcset="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.webp, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.webp 1.5x, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.webp 2x"
+        data-sizes="auto"
+        alt="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.webp"
+        title="An attempt to use ChatGPT to generate code for a data scraper to predict sports events with the help of the NebulaGraph graph database and graph algorithms." height="884" width="1744"></div><div class="details toc" id="toc-static"  kept="">
+                <div class="details-summary toc-title">
+                    <span>Contents</span>
+                    <span><i class="details-icon fas fa-angle-right"></i></span>
+                </div>
+                <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ol>
+    <li><a href="#the-hype">The Hype</a></li>
+    <li><a href="#grabbing-data">Grabbing data</a></li>
+    <li><a href="#graph-algorithm-to-predict-the-2022-world-cup">Graph algorithm to predict the 2022 World Cup</a>
+      <ol>
+        <li><a href="#graph-modeling">Graph modeling</a></li>
+        <li><a href="#ingesting-into-nebulagraph">Ingesting into NebulaGraph</a></li>
+        <li><a href="#explore-the-graph">Explore the graph</a>
+          <ol>
+            <li><a href="#querying-the-data">Querying the data</a></li>
+            <li><a href="#initial-observation">Initial observation</a></li>
+            <li><a href="#graph-algorithm-based-analysis">Graph algorithm based analysis</a></li>
+          </ol>
+        </li>
+        <li><a href="#winner-prediction-algorithm">Winner Prediction Algorithm</a></li>
+        <li><a href="#process-of-the-prediction">Process of the Prediction</a></li>
+      </ol>
+    </li>
+    <li><a href="#result">Result</a></li>
+  </ol>
+</nav></div>
+            </div><div class="content" id="content"><blockquote>
+<p>An attempt to use ChatGPT to generate code for a data scraper to predict sports events with the help of the NebulaGraph graph database and graph algorithms.</p>
+</blockquote>
+<blockquote>
+<p>This post was initially published in <a href="https://www.nebula-graph.io/posts/predict-fifa-world-cup-with-chatgpt-and-nebulagraph" target="_blank" rel="noopener noreferrer">https://www.nebula-graph.io/posts/predict-fifa-world-cup-with-chatgpt-and-nebulagraph</a></p>
+</blockquote>
+<!--
+
+> ChatGPT and Nebulagraph Predict Fifa World Cup
+
+[TOC]
+
+-->
+<h2 id="the-hype" class="headerLink">
+    <a href="#the-hype" class="header-mark"></a>1 The Hype</h2><p>In the hype for FIFA 2022 World Cup, when I saw <a href="https://cambridge-intelligence.com/fifa-world-cup-2022-prediction/" target="_blank" rel="noopener noreferrer">a blog post from Cambridge Intelligence</a>, where they leveraged limited information and correlations among players, teams, and clubs to predict the final winner team, I always would like to try similar things with NebulaGraph to share the ideas of graph algorithm to extract hidden information from the overall connections in a graph in the community.</p>
+<p>The initial attempt was to make it done in like 2 hours, but I noticed the dataset need to be parsed carefully from <a href="https://en.wikipedia.org/wiki/2022_FIFA_World_Cup_squads" target="_blank" rel="noopener noreferrer">Wikipedia</a> and I happened to be not good at doing this job, so I put the idea on hold for a couple of days.</p>
+<p>In the meantime, another hype, the OpenAI ChatGPT was announced, as I had been a user of DALL-E 2 already(to generate feature images of my blog posts), I gave it a try very quickly, too. And I witnessed how other guys(via Twitter, blogs, hacker news) tried to convince ChatGPT to do so many things that are hard to believe they could do:</p>
+<ul>
+<li>Help to implement a piece of code at any time</li>
+<li>Simulate any prompt interface: shell, python, virtual machine, or even a language you create</li>
+<li>Act out almost any given persona, and chat with you</li>
+<li>Write poetry, rap, prose</li>
+<li>Find a bug in a piece of code</li>
+<li>Explain the meaning of a complex regular expression/Open Cypher Query</li>
+</ul>
+<p>ChatGPT&rsquo;s ability to contextualize and understand has never been greater before, so much so that everyone is talking about a new way of working: how to master asking/convincing/triggering machines to help us do our jobs, better and faster.</p>
+<blockquote>
+<p>I commented on this tweet, where they taught ChatGPT how to draw and render basic SVGs, then they started to ask him/her to draw any other complex things just after him/her learned in one second, that it&rsquo;s just like Kame-sennin(human) teaches Sun Wukong kung fu as a young <strong>Saiyan</strong>.</p>
+<p>Be sure to check this Twitter thread, it&rsquo;s really interesting!</p>
+<blockquote class="twitter-tweet" data-dnt="true"><p lang="en" dir="ltr">Hey, cool, directly rendering SVGs in <a href="https://twitter.com/hashtag/ChatGPT?src=hash&amp;ref_src=twsrc%5Etfw">#ChatGPT</a> ! <a href="https://t.co/VQX9kYIrxT">pic.twitter.com/VQX9kYIrxT</a></p>&mdash; Br⍼d Skᔱggs (@brdskggs) <a href="https://twitter.com/brdskggs/status/1599533975357095936?ref_src=twsrc%5Etfw">December 4, 2022</a></blockquote>
+<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+
+</blockquote>
+<!--
+
+https://twitter.com/brdskggs/status/1599533975357095936
+
+-->
+<p>So, after trying to get ChatGPT to help me write complex graph database query statements, explain the meaning of complex graph query statements, and explain the meaning of a large chunk of Bison code, and he/she had done them WELL, I realized: why not let ChatGPT write the code that extracts the data for me?</p>
+<h2 id="grabbing-data" class="headerLink">
+    <a href="#grabbing-data" class="header-mark"></a>2 Grabbing data</h2><p>I really tried it and the result is&hellip; good enough.</p>
+<p>The whole process was basically like a coding interviewer, or a product manager, presenting my requirements, and ChatGPT giving me the code implementation. I then try to run the code, find the things that don&rsquo;t make sense in the code, point them out, and give suggestions, and ChatGPT really understands the points I point out and makes the appropriate corrections, like:</p>
+<p><a class="lightgallery" href="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/chatGPT-correction-process.webp" title="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/chatGPT-correction-process.webp" data-thumbnail="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/chatGPT-correction-process.webp">
+        <img
+            class="lazyload"
+            data-src="chatGPT-correction-process.webp"
+            data-srcset="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/chatGPT-correction-process.webp, chatGPT-correction-process.webp 1.5x, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/chatGPT-correction-process.webp 2x"
+            data-sizes="auto"
+            alt="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/chatGPT-correction-process.webp">
+    </a></p>
+<p>I won&rsquo;t list this whole process, but I share the generated code and the whole discussion <a href="https://gist.github.com/wey-gu/78cb28bee130966e7d6e9d573b51deff" target="_blank" rel="noopener noreferrer">here</a>.</p>
+<p>The final generated data is a CSV file.</p>
+<ul>
+<li>
+<p>Raw version <a href="https://github.com/siwei-io/talks/files/10152775/world_cup_squads.csv" target="_blank" rel="noopener noreferrer">world_cup_squads.csv</a></p>
+</li>
+<li>
+<p>Manually modified, separated columns for birthday and age <a href="https://github.com/siwei-io/talks/files/10152923/world_cup_squads.csv" target="_blank" rel="noopener noreferrer">world_cup_squads_v0.csv</a></p>
+<p>It contains information/columns of team, group, number, position, player name, birthday, age, number of international matches played, number of goals scored, and club served.</p>
+</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">Team,Group,No.,Pos.,Player,DOB,Age,Caps,Goals,Club
+</span></span><span class="line"><span class="cl">Ecuador,A,1,1GK,Hernán Galíndez,(1987-03-30)30 March 1987,35,12,0,Aucas
+</span></span><span class="line"><span class="cl">Ecuador,A,2,2DF,Félix Torres,(1997-01-11)11 January 1997,25,17,2,Santos Laguna
+</span></span><span class="line"><span class="cl">Ecuador,A,3,2DF,Piero Hincapié,(2002-01-09)9 January 2002,20,21,1,Bayer Leverkusen
+</span></span><span class="line"><span class="cl">Ecuador,A,4,2DF,Robert Arboleda,(1991-10-22)22 October 1991,31,33,2,São Paulo
+</span></span><span class="line"><span class="cl">Ecuador,A,5,3MF,José Cifuentes,(1999-03-12)12 March 1999,23,11,0,Los Angeles FC
+</span></span></code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>Final version with header removed <a href="https://github.com/siwei-io/talks/files/10152974/world_cup_squads_no_headers.csv" target="_blank" rel="noopener noreferrer">world_cup_squads_no_headers.csv</a></li>
+</ul>
+<h2 id="graph-algorithm-to-predict-the-2022-world-cup" class="headerLink">
+    <a href="#graph-algorithm-to-predict-the-2022-world-cup" class="header-mark"></a>3 Graph algorithm to predict the 2022 World Cup</h2><p>With the help of ChatGPT, I could finally try to predict the winner of the game with Graph Magic, before that, I need to map the data into the graph view.</p>
+<p>If you don&rsquo;t care about the process, just go to the <a href="#Result" rel="">predicted result</a> directly.</p>
+<h3 id="graph-modeling" class="headerLink">
+    <a href="#graph-modeling" class="header-mark"></a>3.1 Graph modeling</h3><blockquote>
+<p>Prerequisites: This article uses <a href="https://github.com/vesoft-inc/nebula" target="_blank" rel="noopener noreferrer">NebulaGraph</a>(Open-Source) and <a href="https://docs.nebula-graph.io/3.3.0/nebula-explorer/about-explorer/ex-ug-what-is-explorer/" target="_blank" rel="noopener noreferrer">NebulaGraph Explorer</a>(Proprietary), which you can request a trial of on <a href="https://go.aws/3VZay2I" target="_blank" rel="noopener noreferrer">AWS</a>.</p>
+</blockquote>
+<p>Graph Modeling is the abstraction and representation of real-world information in the form of a &ldquo;vertex-&gt; edge&rdquo; graph, in our case, we will project the information parsed from Wikipedia as:</p>
+<p>Vertices:</p>
+<ul>
+<li>player</li>
+<li>team</li>
+<li>group</li>
+<li>club</li>
+</ul>
+<p>Edges:</p>
+<ul>
+<li>groupedin (the team belongs to which group)</li>
+<li>belongto (players belong to the national team)</li>
+<li>serve (players serve in the club)</li>
+</ul>
+<p>The age of the players, the number of international caps, and the number of goals scored are naturally fit as properties for the player tag(type of vertex).</p>
+<p>The following is a screenshot of this schema in NebulaGraph Explorer (will just call it Explorer later).</p>
+<p><a class="lightgallery" href="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/schema_fifa.webp" title="schema_fifa" data-thumbnail="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/schema_fifa.webp">
+        <img
+            class="lazyload"
+            data-src="schema_fifa.webp"
+            data-srcset="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/schema_fifa.webp, schema_fifa.webp 1.5x, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/schema_fifa.webp 2x"
+            data-sizes="auto"
+            alt="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/schema_fifa.webp">
+    </a></p>
+<p>Then, we can click the save icon in the upper right corner and the button: <code>Apply to Space</code>  to actually create a graph space with the defined schema</p>
+<blockquote>
+<p>Note: Refer to the document <a href="https://docs.nebula-graph.io/3.3.0/nebula-explorer/db-management/draft/" target="_blank" rel="noopener noreferrer">https://docs.nebula-graph.io/3.3.0/nebula-explorer/db-management/draft/</a></p>
+</blockquote>
+<h3 id="ingesting-into-nebulagraph" class="headerLink">
+    <a href="#ingesting-into-nebulagraph" class="header-mark"></a>3.2 Ingesting into NebulaGraph</h3><p>With the graph modeling, we can upload the <a href="https://github.com/siwei-io/talks/files/10152974/world_cup_squads_no_headers.csv" target="_blank" rel="noopener noreferrer">CSV file</a> (the no-header version) into Explorer, by pointing and selecting the vid and properties that map the different columns to the vertices and edges.</p>
+<p><a class="lightgallery" href="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_config_mapping.webp" title="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_config_mapping.webp" data-thumbnail="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_config_mapping.webp">
+        <img
+            class="lazyload"
+            data-src="importer_config_mapping.webp"
+            data-srcset="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_config_mapping.webp, importer_config_mapping.webp 1.5x, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_config_mapping.webp 2x"
+            data-sizes="auto"
+            alt="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_config_mapping.webp">
+    </a></p>
+<p>Click Import, we then import the whole graph to NebulaGraph, and after it succeeded, we could also get the whole CSV &ndash;&gt; Nebula Importer configuration file: [nebula_importer_config_fifa.yml](<a href="https://github.com/siwei-io/talks/files/10164014/config" target="_blank" rel="noopener noreferrer">https://github.com/siwei-io/talks/files/10164014/config</a> _fifa.yml.txt), so that you reuse it in the future whenever to re-import the same data or share it with others.</p>
+<p><a class="lightgallery" href="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_log.webp" title="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_log.webp" data-thumbnail="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_log.webp">
+        <img
+            class="lazyload"
+            data-src="importer_log.webp"
+            data-srcset="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_log.webp, importer_log.webp 1.5x, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_log.webp 2x"
+            data-sizes="auto"
+            alt="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_log.webp">
+    </a></p>
+<blockquote>
+<p>Note: Refer to the document <a href="https://docs.nebula-graph.io/3.3.0/nebula-explorer/db-management/11.import-data/" target="_blank" rel="noopener noreferrer">https://docs.nebula-graph.io/3.3.0/nebula-explorer/db-management/11.import-data/</a></p>
+</blockquote>
+<p>After importing, we can view the statistics on the schema view page, which will show us that 831 players participated in the 2022 Qatar World Cup, serving in 295 different clubs.</p>
+<p><a class="lightgallery" href="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/data_stats.webp" title="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/data_stats.webp" data-thumbnail="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/data_stats.webp">
+        <img
+            class="lazyload"
+            data-src="data_stats.webp"
+            data-srcset="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/data_stats.webp, data_stats.webp 1.5x, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/data_stats.webp 2x"
+            data-sizes="auto"
+            alt="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/data_stats.webp">
+    </a></p>
+<blockquote>
+<p>Note: refer to the documentation: <a href="https://docs.nebula-graph.io/3.3.0/nebula-explorer/db-management/10.create-schema/#view_statistics" target="_blank" rel="noopener noreferrer">https://docs.nebula-graph.io/3.3.0/nebula-explorer/db-management/10.create-schema/#view_statistics</a></p>
+</blockquote>
+<h3 id="explore-the-graph" class="headerLink">
+    <a href="#explore-the-graph" class="header-mark"></a>3.3 Explore the graph</h3><p>Let&rsquo;s see what insights we could get from the information/ knowledge in form of a graph.</p>
+<h4 id="querying-the-data" class="headerLink">
+    <a href="#querying-the-data" class="header-mark"></a>3.3.1 Querying the data</h4><p>We could start by showing all the data and see what we will get.</p>
+<p>First, with the help of NebulaGraph Explorer, I simply did drag and drop to draw any type of vertex type (TAG) and any type of edge between vertex types (TAG), here we know that all the vertices are connected with others, so no isolated vertices will be missed by this query pattern:</p>
+<p><a class="lightgallery" href="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-0.webp" title="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-0.webp" data-thumbnail="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-0.webp">
+        <img
+            class="lazyload"
+            data-src="query-builder-0.webp"
+            data-srcset="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-0.webp, query-builder-0.webp 1.5x, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-0.webp 2x"
+            data-sizes="auto"
+            alt="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-0.webp">
+    </a></p>
+<p>Let it generate the query statement for me. Here, it defaults to <code>LIMIT 100</code>, so let&rsquo;s change it to something larger (LIMIT 10000) and let it execute in the Console.</p>
+<p><a class="lightgallery" href="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-1.webp" title="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-1.webp" data-thumbnail="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-1.webp">
+        <img
+            class="lazyload"
+            data-src="query-builder-1.webp"
+            data-srcset="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-1.webp, query-builder-1.webp 1.5x, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-1.webp 2x"
+            data-sizes="auto"
+            alt="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-1.webp">
+    </a></p>
+<h4 id="initial-observation" class="headerLink">
+    <a href="#initial-observation" class="header-mark"></a>3.3.2 Initial observation</h4><p>The result renders out like this, and you can see that it naturally forms a pattern of clusters.</p>
+<p><a class="lightgallery" href="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/bird_view.webp" title="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/bird_view.webp" data-thumbnail="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/bird_view.webp">
+        <img
+            class="lazyload"
+            data-src="bird_view.webp"
+            data-srcset="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/bird_view.webp, bird_view.webp 1.5x, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/bird_view.webp 2x"
+            data-sizes="auto"
+            alt="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/bird_view.webp">
+    </a></p>
+<p>These peripheral clusters are mostly made up of players from clubs that are not traditionally strong ones (now we learned that they could win, though, who knows!), and many of those clubs have only one or two players and yet concentrated in one national team or region, so they are kind of isolated from other clusters.</p>
+<p><a class="lightgallery" href="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/edge_teams.webp" title="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/edge_teams.webp" data-thumbnail="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/edge_teams.webp">
+        <img
+            class="lazyload"
+            data-src="edge_teams.webp"
+            data-srcset="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/edge_teams.webp, edge_teams.webp 1.5x, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/edge_teams.webp 2x"
+            data-sizes="auto"
+            alt="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/edge_teams.webp">
+    </a></p>
+<h4 id="graph-algorithm-based-analysis" class="headerLink">
+    <a href="#graph-algorithm-based-analysis" class="header-mark"></a>3.3.3 Graph algorithm based analysis</h4><p>After I clicked on the two buttons(Sized by Degrees, Colored by Louvain Algorithm) in Explorer (refer to the <a href="https://docs.nebula-graph.com.cn/3.3.0/nebula-explorer/graph-explorer/graph-algorithm/" target="_blank" rel="noopener noreferrer">document</a> for details), in the browser, we can see that the entire graph has become something like this:</p>
+<p><a class="lightgallery" href="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/Barcelona.webp" title="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/Barcelona.webp" data-thumbnail="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/Barcelona.webp">
+        <img
+            class="lazyload"
+            data-src="Barcelona.webp"
+            data-srcset="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/Barcelona.webp, Barcelona.webp 1.5x, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/Barcelona.webp 2x"
+            data-sizes="auto"
+            alt="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/Barcelona.webp">
+    </a></p>
+<p>Here, two graph algorithms are utilized to analyze the insights here.</p>
+<ol>
+<li>change the display size of vertices to highlight importance using their degrees</li>
+<li>using Louvain&rsquo;s algorithm to distinguish the community of the vertices</li>
+</ol>
+<p>You can see that the big red circle is the famous Barcelona, and its players are marked in red, too.</p>
+<h3 id="winner-prediction-algorithm" class="headerLink">
+    <a href="#winner-prediction-algorithm" class="header-mark"></a>3.4 Winner Prediction Algorithm</h3><p>In order to be able to make full use of the graph magic(with the implied conditions, and information on the graph), my idea(<a href="https://cambridge-intelligence.com/fifa-world-cup-2022-prediction/" target="_blank" rel="noopener noreferrer">stolen/inspired from this post</a>) is to choose a graph algorithm that considers edges for node importance analysis, to find out the vertices that have higher importance, iterate and rank them globally, and thus get the top team rankings.</p>
+<p>These methods actually reflect the fact that awesome players have greater community, and connectivity at the same time, and at the same time, to increase the differentiation between traditionally strong teams, I am going to take into account the information of appearances and goals scored.</p>
+<p>Ultimately, my algorithm is.</p>
+<ul>
+<li>Take all the <code>(player)-serve-&gt;(club)</code> relationships and filter them for players with too few goals and too few goals per game (to balance out the disproportionate impact of older players from some weaker teams)</li>
+<li>Explore outwards from all filtered players to get national teams</li>
+<li>Run the Betweenness Centrality algorithm on the above subgraph to calculate the node importance scores</li>
+</ul>
+<blockquote>
+<p>Note, <a href="https://en.wikipedia.org/wiki/Betweenness_centrality" target="_blank" rel="noopener noreferrer">Betweenness Centrality</a> is an algorithm to measure how a node is important in sense of bridging other nodes in the graph.</p>
+</blockquote>
+<h3 id="process-of-the-prediction" class="headerLink">
+    <a href="#process-of-the-prediction" class="header-mark"></a>3.5 Process of the Prediction</h3><p>首先，我们取出所有进球数超过 10，场均进球超过 0.2 的 (球员)-服役-&gt;(俱乐部) 的子图：</p>
+<p>First, we take out the subgraph in the pattern of <code>(player)-serve-&gt;(club)</code> for those who have scored more than 10 goals and have an average of more than 0.2 goals per game.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">MATCH ()-[e]-&gt;()
+</span></span><span class="line"><span class="cl">WITH e LIMIT 10000
+</span></span><span class="line"><span class="cl">WITH e AS e WHERE e.goals &gt; 10 AND toFloat(e.goals)/e.caps &gt; 0.2
+</span></span><span class="line"><span class="cl">RETURN e
+</span></span></code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>Note: For convenience, I have included the number of goals and caps as properties in the serve edge, too.</p>
+</blockquote>
+<p><a class="lightgallery" href="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query_step0.webp" title="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query_step0.webp" data-thumbnail="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query_step0.webp">
+        <img
+            class="lazyload"
+            data-src="query_step0.webp"
+            data-srcset="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query_step0.webp, query_step0.webp 1.5x, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query_step0.webp 2x"
+            data-sizes="auto"
+            alt="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query_step0.webp">
+    </a></p>
+<p>Then, we select all the vertices on the graph, in the left toolbar, select the <code>belongto</code> edge of the outgoing direction, expand the graph outwards (traverse), and select the icon that marks the newly expanded vertices as flags.</p>
+<p><a class="lightgallery" href="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/treversal_step1.webp" title="treversal_step1" data-thumbnail="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/treversal_step1.webp">
+        <img
+            class="lazyload"
+            data-src="treversal_step1.webp"
+            data-srcset="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/treversal_step1.webp, treversal_step1.webp 1.5x, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/treversal_step1.webp 2x"
+            data-sizes="auto"
+            alt="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/treversal_step1.webp">
+    </a></p>
+<p>Now that we have the final subgraph, we use the graph algorithm function within the browser to execute BNC (Betweenness Centrality):</p>
+<p><a class="lightgallery" href="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_step2.webp" title="bnc_step2" data-thumbnail="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_step2.webp">
+        <img
+            class="lazyload"
+            data-src="bnc_step2.webp"
+            data-srcset="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_step2.webp, bnc_step2.webp 1.5x, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_step2.webp 2x"
+            data-sizes="auto"
+            alt="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_step2.webp">
+    </a></p>
+<p>The graph canvas then looks like this:</p>
+<p><a class="lightgallery" href="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_predict.webp" title="bnc_predict" data-thumbnail="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_predict.webp">
+        <img
+            class="lazyload"
+            data-src="bnc_predict.webp"
+            data-srcset="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_predict.webp, bnc_predict.webp 1.5x, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_predict.webp 2x"
+            data-sizes="auto"
+            alt="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_predict.webp">
+    </a></p>
+<h2 id="result" class="headerLink">
+    <a href="#result" class="header-mark"></a>4 Result</h2><p>In the end, we sorted according to the value of Betweenness Centrality to get the final winning team: Brazil! 🇧🇷, followed by Belgium, Germany, England, France, and Argentina, so let&rsquo;s wait two weeks to come back and see if the prediction is accurate :D.</p>
+<p>The sorted data is as follows:</p>
+<table>
+<thead>
+<tr>
+<th>Vertex</th>
+<th><strong>Betweenness Centrality</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Brazil</strong>🇧🇷</td>
+<td>3499</td>
+</tr>
+<tr>
+<td><strong>Paris Saint-Germain</strong></td>
+<td>3073.3333333333300</td>
+</tr>
+<tr>
+<td><strong>Neymar</strong></td>
+<td>3000</td>
+</tr>
+<tr>
+<td><strong>Tottenham Hotspur</strong></td>
+<td>2740</td>
+</tr>
+<tr>
+<td><strong>Belgium</strong>🇧🇪</td>
+<td>2587.833333333330</td>
+</tr>
+<tr>
+<td><strong>Richarlison</strong></td>
+<td>2541</td>
+</tr>
+<tr>
+<td><strong>Kevin De Bruyne</strong></td>
+<td>2184</td>
+</tr>
+<tr>
+<td><strong>Manchester City</strong></td>
+<td>2125</td>
+</tr>
+<tr>
+<td><strong>İlkay Gündoğan</strong></td>
+<td>2064</td>
+</tr>
+<tr>
+<td><strong>Germany</strong>🇩🇪</td>
+<td>2046</td>
+</tr>
+<tr>
+<td><strong>Harry Kane (captain</strong></td>
+<td>1869</td>
+</tr>
+<tr>
+<td><strong>England</strong>🏴󠁧󠁢󠁥󠁮󠁧󠁿</td>
+<td>1864</td>
+</tr>
+<tr>
+<td><strong>France</strong>🇫🇷</td>
+<td>1858.6666666666700</td>
+</tr>
+<tr>
+<td><strong>Argentina</strong>🇦🇷</td>
+<td>1834.6666666666700</td>
+</tr>
+<tr>
+<td><strong>Bayern Munich</strong></td>
+<td>1567</td>
+</tr>
+<tr>
+<td><strong>Kylian Mbappé</strong></td>
+<td>1535.3333333333300</td>
+</tr>
+<tr>
+<td><strong>Lionel Messi (captain</strong></td>
+<td>1535.3333333333300</td>
+</tr>
+<tr>
+<td><strong>Gabriel Jesus</strong></td>
+<td>1344</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>Feature Image Credit: The image was also generated with OpenAI, through the DALL-E 2 model &amp; DALL-E 2 Outpainting, see the <a href="https://user-images.githubusercontent.com/1651790/205881462-ff007725-e270-4b1e-9062-7702f01021c1.png" target="_blank" rel="noopener noreferrer">original image</a>.</p>
+</blockquote></div>
+
+        
+
+
+<h2>Related Content</h2>
+<div class="related-container">
+    <div class="related-item-container">
+            <div class="related-image">
+                <a href="/en/nebulagraph-etl-dbt/"><img
+        class="lazyload"
+        data-src="/en/nebulagraph-etl-dbt/featured-image.webp"
+        data-srcset="/en/nebulagraph-etl-dbt/featured-image.webp, /en/nebulagraph-etl-dbt/featured-image.webp 1.5x, /en/nebulagraph-etl-dbt/featured-image.webp 2x"
+        data-sizes="auto"
+        alt="/en/nebulagraph-etl-dbt/featured-image.webp"
+        title="An attempt to use ChatGPT to generate code for a data scraper to predict sports events with the help of the NebulaGraph graph database and graph algorithms." height="200" width="400"></a>
+            </div><h2 class="related-title">
+                <a href="/en/nebulagraph-etl-dbt/">Tabular Data ETL to NebulaGraph with dbt</a>
+            </h2>
+        </div>
+    <div class="related-item-container">
+            <div class="related-image">
+                <a href="/en/fraud-detection-with-nebulagraph/"><img
+        class="lazyload"
+        data-src="/en/fraud-detection-with-nebulagraph/featured-image.webp"
+        data-srcset="/en/fraud-detection-with-nebulagraph/featured-image.webp, /en/fraud-detection-with-nebulagraph/featured-image.webp 1.5x, /en/fraud-detection-with-nebulagraph/featured-image.webp 2x"
+        data-sizes="auto"
+        alt="/en/fraud-detection-with-nebulagraph/featured-image.webp"
+        title="An attempt to use ChatGPT to generate code for a data scraper to predict sports events with the help of the NebulaGraph graph database and graph algorithms." height="200" width="400"></a>
+            </div><h2 class="related-title">
+                <a href="/en/fraud-detection-with-nebulagraph/">Fraud Detection with NebulaGraph GraphDatabase in action</a>
+            </h2>
+        </div>
+    <div class="related-item-container">
+            <div class="related-image">
+                <a href="/en/data-lineage-oss-ref-solution/"><img
+        class="lazyload"
+        data-src="/en/data-lineage-oss-ref-solution/featured-image.webp"
+        data-srcset="/en/data-lineage-oss-ref-solution/featured-image.webp, /en/data-lineage-oss-ref-solution/featured-image.webp 1.5x, /en/data-lineage-oss-ref-solution/featured-image.webp 2x"
+        data-sizes="auto"
+        alt="/en/data-lineage-oss-ref-solution/featured-image.webp"
+        title="An attempt to use ChatGPT to generate code for a data scraper to predict sports events with the help of the NebulaGraph graph database and graph algorithms." height="200" width="400"></a>
+            </div><h2 class="related-title">
+                <a href="/en/data-lineage-oss-ref-solution/">A Data Lineage OSS Reference Solution</a>
+            </h2>
+        </div>
+    <div class="related-item-container">
+            <div class="related-image">
+                <a href="/en/spark-on-nebula-graph/"><img
+        class="lazyload"
+        data-src="/en/spark-on-nebula-graph/featured-image.webp"
+        data-srcset="/en/spark-on-nebula-graph/featured-image.webp, /en/spark-on-nebula-graph/featured-image.webp 1.5x, /en/spark-on-nebula-graph/featured-image.webp 2x"
+        data-sizes="auto"
+        alt="/en/spark-on-nebula-graph/featured-image.webp"
+        title="An attempt to use ChatGPT to generate code for a data scraper to predict sports events with the help of the NebulaGraph graph database and graph algorithms." height="200" width="400"></a>
+            </div><h2 class="related-title">
+                <a href="/en/spark-on-nebula-graph/">Spark on Nebula Graph</a>
+            </h2>
+        </div>
+    <div class="related-item-container">
+            <div class="related-image">
+                <a href="/en/nebula-graph-on-pi/"><img
+        class="lazyload"
+        data-src="/en/nebula-graph-on-pi/featured-image.webp"
+        data-srcset="/en/nebula-graph-on-pi/featured-image.webp, /en/nebula-graph-on-pi/featured-image.webp 1.5x, /en/nebula-graph-on-pi/featured-image.webp 2x"
+        data-sizes="auto"
+        alt="/en/nebula-graph-on-pi/featured-image.webp"
+        title="An attempt to use ChatGPT to generate code for a data scraper to predict sports events with the help of the NebulaGraph graph database and graph algorithms." height="200" width="400"></a>
+            </div><h2 class="related-title">
+                <a href="/en/nebula-graph-on-pi/">Nebula Graph on Pi</a>
+            </h2>
+        </div>
+    
+
+</div>
+
+<div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>Updated on 2022-12-07</span>
+            </div>
+            <div class="post-info-license"></div>
+        </div>
+        <div class="post-info-line">
+            <div class="post-info-md"><span><a class="link-to-mardown" href=/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/index.md target="_blank" rel="noopener noreferrer">Read markdown</a>
+                    </span></div>
+            <div class="post-info-share">
+                <span><a href="#" onclick="return false;" title="Share on Twitter" data-sharer="twitter" data-url="https://siwei.io/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/" data-title="Use ChatGPT and Nebulagraph to Predict Fifa World Cup" data-via="wey_gu" data-hashtags="Nebula Graph,FIFA 2022,Graph Modeling,OpenAI,chatGPT,Graph Algorithm"><i class="fab fa-twitter fa-fw"></i></a><a href="#" onclick="return false;" title="Share on Facebook" data-sharer="facebook" data-url="https://siwei.io/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/" data-hashtag="Nebula Graph"><i class="fab fa-facebook-square fa-fw"></i></a><a href="#" onclick="return false;" title="Share on WhatsApp" data-sharer="whatsapp" data-url="https://siwei.io/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/" data-title="Use ChatGPT and Nebulagraph to Predict Fifa World Cup" data-web><i class="fab fa-whatsapp fa-fw"></i></a><a href="#" onclick="return false;" title="Share on Line" data-sharer="line" data-url="https://siwei.io/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/" data-title="Use ChatGPT and Nebulagraph to Predict Fifa World Cup"><i data-svg-src="/lib/simple-icons/icons/line.min.svg"></i></a><a href="#" onclick="return false;" title="Share on 微博" data-sharer="weibo" data-url="https://siwei.io/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/" data-title="Use ChatGPT and Nebulagraph to Predict Fifa World Cup" data-image="featured-image.webp" data-ralateuid="siweigu"><i class="fab fa-weibo fa-fw"></i></a><a href="#" onclick="return false;" title="Share on Myspace" data-sharer="myspace" data-url="https://siwei.io/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/" data-title="Use ChatGPT and Nebulagraph to Predict Fifa World Cup" data-description="An attempt to use ChatGPT to generate code for a data scraper to predict sports events with the help of the NebulaGraph graph database and graph algorithms."><i data-svg-src="/lib/simple-icons/icons/myspace.min.svg"></i></a><a href="#" onclick="return false;" title="Share on Blogger" data-sharer="blogger" data-url="https://siwei.io/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/" data-title="Use ChatGPT and Nebulagraph to Predict Fifa World Cup" data-description="An attempt to use ChatGPT to generate code for a data scraper to predict sports events with the help of the NebulaGraph graph database and graph algorithms."><i class="fab fa-blogger fa-fw"></i></a><a href="#" onclick="return false;" title="Share on Evernote" data-sharer="evernote" data-url="https://siwei.io/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/" data-title="Use ChatGPT and Nebulagraph to Predict Fifa World Cup"><i class="fab fa-evernote fa-fw"></i></a></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section class="post-tags"><i class="fas fa-tags fa-fw"></i>&nbsp;<a href="/en/tags/nebula-graph/">Nebula Graph</a>,&nbsp;<a href="/en/tags/fifa-2022/">FIFA 2022</a>,&nbsp;<a href="/en/tags/graph-modeling/">Graph Modeling</a>,&nbsp;<a href="/en/tags/openai/">OpenAI</a>,&nbsp;<a href="/en/tags/chatgpt/">chatGPT</a>,&nbsp;<a href="/en/tags/graph-algorithm/">Graph Algorithm</a></section>
+        <section>
+            <span><a href="javascript:void(0);" onclick="window.history.back();">Back</a></span>&nbsp;|&nbsp;<span><a href="/en/">Home</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/en/nebulagraph-etl-dbt/" class="prev" rel="prev" title="Tabular Data ETL to NebulaGraph with dbt"><i class="fas fa-angle-left fa-fw"></i>Tabular Data ETL to NebulaGraph with dbt</a></div>
+</div>
+<div id="comments"><div id="giscus"></div><noscript>
+                Please enable JavaScript to view the comments powered by <a href="https://giscus.app/">giscus</a>.
+            </noscript></div></article></div>
+        </main><footer class="footer">
+        <div class="footer-container"><div class="footer-line">
+                    Powered by <a href="https://gohugo.io/" target="_blank" rel="noopener noreferrer" title="Hugo 0.107.0">Hugo</a>&nbsp;|&nbsp;Theme - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreferrer" title="DoIt 0.2.13"><i class="far fa-edit fa-fw"></i> DoIt</a>
+                </div><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2018 - 2022</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="https://siwei.io" target="_blank" rel="noopener noreferrer">Wey Gu</a></span>&nbsp;|&nbsp;<span class="license"><a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">CC BY-NC 4.0</a></span></div>
+            <div class="footer-line"></div>
+            <div class="footer-line">
+            </div>
+        </div><script>
+                    if('serviceWorker' in navigator) {
+                        navigator.serviceWorker
+                            .register('/sw.min.js', { scope: '/' })
+                            .then(function(registration) {
+                            });
+                
+                        navigator.serviceWorker
+                            .ready
+                            .then(function(registration) {
+                            });
+                    }
+                </script></footer></div>
+
+    <div id="fixed-buttons"><a href="#back-to-top" id="back-to-top-button" class="fixed-button" title="Back to Top">
+            <i class="fas fa-arrow-up fa-fw"></i>
+        </a><a href="#" id="view-comments" class="fixed-button" title="View Comments">
+            <i class="fas fa-comment fa-fw"></i>
+        </a>
+    </div><div class="assets"><script type="text/javascript" src="/lib/autocomplete/autocomplete.min.js"></script><script type="text/javascript" src="/lib/fuse/fuse.min.js"></script><script type="text/javascript" src="/lib/lazysizes/lazysizes.min.js"></script><script type="text/javascript" src="/lib/tablesort/tablesort.min.js"></script><script type="text/javascript" src="/lib/topbar/topbar.min.js"></script><script type="text/javascript" src="/lib/pjax/pjax.min.js"></script><script type="text/javascript" src="/js/theme.min.js" defer></script><script type="text/javascript">
+            window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());
+            gtag('config', 'UA-659952-4', { 'anonymize_ip': true });
+        </script><script type="text/javascript" src="https://www.googletagmanager.com/gtag/js?id=UA-659952-4" async></script></div>
+
+<div class="pjax-assets"><script type="text/javascript">window.config={"code":{"copyTitle":"Copy to clipboard","maxShownLines":10},"comment":{"giscus":{"darkTheme":"dark","dataCategory":"Comments","dataCategoryId":"DIC_kwDOFhiy8c4CQeuu","dataEmitMetadata":"1","dataInputPosition":"bottom","dataLang":"en","dataMapping":"title","dataReactionsEnabled":"1","dataRepo":"siwei-io/siwei-io.github.io","dataRepoId":"MDEwOlJlcG9zaXRvcnkzNzA3MTc0MjU=","dataStrict":"1","lightTheme":"light"}},"math":{"delimiters":[{"display":true,"left":"$$","right":"$$"},{"display":true,"left":"\\[","right":"\\]"},{"display":false,"left":"$","right":"$"},{"display":false,"left":"\\(","right":"\\)"}],"strict":false},"search":{"distance":100,"findAllMatches":true,"fuseIndexURL":"/en/index.json","highlightTag":"em","ignoreFieldNorm":false,"ignoreLocation":false,"isCaseSensitive":false,"location":0,"maxResultLength":10,"minMatchCharLength":2,"noResultsFound":"No results found","snippetLength":50,"threshold":0.3,"type":"fuse","useExtendedSearch":false},"sharerjs":true,"table":{"sort":true}};</script><script type="text/javascript" src="/js/giscus.min.js" defer></script><script type="text/javascript" src="/lib/clipboard/clipboard.min.js"></script><script type="text/javascript" src="/lib/sharer/sharer.min.js"></script><script type="text/javascript" src="/lib/katex/katex.min.js" defer></script><script type="text/javascript" src="/lib/katex/auto-render.min.js" defer></script><script type="text/javascript" src="/lib/katex/copy-tex.min.js" defer></script><script type="text/javascript" src="/lib/katex/mhchem.min.js" defer></script><script type="text/javascript" src="/js/katex.min.js" defer></script><link rel="stylesheet" href="/lib/katex/katex.min.css"><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/katex/copy-tex.min.css">
+        <noscript><link rel="stylesheet" href="/lib/katex/copy-tex.min.css"></noscript></div>
+</body>
+
+</html>
