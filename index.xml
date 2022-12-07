@@ -25,8 +25,8 @@
 
 -->
 <h2 id="蹭热度" class="headerLink">
-    <a href="#%e8%b9%ad%e7%83%ad%e5%ba%a6" class="header-mark"></a>1 蹭热度</h2><p>最近因为世界杯进行时，被这篇 Cambridge Intelligence 的文章启发（仅仅利用有限的信息量和条件，借助图算法的方法做合理的冠军预测），讨论到也可以试着用 NebulaGraph 玩玩冠军预测，还能顺道科普一波图库技术和图算法。</p>
-<p>本来想着几个小时撸出来一个方案，被数据集的收集劝退了，我是是在懒得去 <a href="https://en.wikipedia.org/wiki/2022_FIFA_World_Cup_squads" target="_blank" rel="noopener noreferrer">https://en.wikipedia.org/wiki/2022_FIFA_World_Cup_squads</a> 里抓取出来需要的数据，索性就按下放了几天。</p>
+    <a href="#%e8%b9%ad%e7%83%ad%e5%ba%a6" class="header-mark"></a>1 蹭热度</h2><p>最近因为世界杯进行时，被这篇 <a href="https://cambridge-intelligence.com/fifa-world-cup-2022-prediction/" target="_blank" rel="noopener noreferrer">Cambridge Intelligence</a> 的文章启发（仅仅利用有限的信息量和条件，借助图算法的方法做合理的冠军预测），讨论到也可以试着用 NebulaGraph 玩玩冠军预测，还能顺道科普一波图库技术和图算法。</p>
+<p>本来想着几个小时撸出来一个方案，被数据集的收集劝退了，我是是在懒得去 <a href="https://en.wikipedia.org/wiki/2022_FIFA_World_Cup_squads" target="_blank" rel="noopener noreferrer">wikepedia</a> 里抓取出来需要的数据，索性就按下放了几天。</p>
 <p>同时，另一个热潮是最近 OpenAI 发布了 chatGPT 服务，它可以实现各种语言可是实现的复杂任务设计包括：</p>
 <ul>
 <li>随时帮你实现一段什么样的代码</li>
@@ -110,7 +110,7 @@
 <p><a class="lightgallery" href="/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_config_mapping.webp" title="/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_config_mapping.webp" data-thumbnail="/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_config_mapping.webp">
         
     </a></p>
-<p>之后点击导入，就把整个图导入到 NebulaGraph 了，成功之后，我们还得到了整个csv &ndash;&gt; Nebula Importer 的关联配置文件：<a href="https://github.com/siwei-io/talks/files/10164014/config_fifa.yml.txt" target="_blank" rel="noopener noreferrer">nebula_importer_config_fifa.yml</a>，你可以字节拖拽整个配置，不用自己去配置它了。</p>
+<p>之后点击导入，就把整个图导入到 NebulaGraph 了，成功之后，我们还得到了整个csv &ndash;&gt; Nebula Importer 的关联配置文件：<a href="https://github.com/siwei-io/talks/files/10164014/config_fifa.yml.txt" target="_blank" rel="noopener noreferrer">nebula_importer_config_fifa.yml</a>，你可以直接拖拽整个配置，不用自己去配置它了。</p>
 <p><a class="lightgallery" href="/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_log.webp" title="/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_log.webp" data-thumbnail="/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_log.webp">
         
     </a></p>
@@ -139,7 +139,7 @@
 <p><a class="lightgallery" href="/chatgpt-and-nebulagraph-predict-fifa-world-cup/bird_view.webp" title="/chatgpt-and-nebulagraph-predict-fifa-world-cup/bird_view.webp" data-thumbnail="/chatgpt-and-nebulagraph-predict-fifa-world-cup/bird_view.webp">
         
     </a></p>
-<p>这些外围、形成的簇多是一些由非传统意义上的有全球影响力的俱乐部，和非传统的足球厉害的国家队的球员组成，因为通常这些俱乐部只有一两个球员，而且他们还集中在一个国家队、地区，所以没有和很多其他球员、国家队产链接。</p>
+<p>这些外围、形成的簇多是一些由非传统意义上的有全球影响力的俱乐部，和非传统的足球厉害的国家队的球员组成，因为通常这些俱乐部只有一两个球员，而且他们还集中在一个国家队、地区，所以没有和很多其他球员、国家队产生连接。</p>
 <p><a class="lightgallery" href="/chatgpt-and-nebulagraph-predict-fifa-world-cup/edge_teams.webp" title="/chatgpt-and-nebulagraph-predict-fifa-world-cup/edge_teams.webp" data-thumbnail="/chatgpt-and-nebulagraph-predict-fifa-world-cup/edge_teams.webp">
         
     </a></p>
@@ -157,17 +157,17 @@
 <li>利用 Louvain 算法区分点的社区分割</li>
 </ol>
 <p>可以看到红色的大点是鼎鼎大名的巴塞罗那，而它的球员们也被红色标记了。</p>
-<h4 id="预测冠军算法" class="headerLink">
-    <a href="#%e9%a2%84%e6%b5%8b%e5%86%a0%e5%86%9b%e7%ae%97%e6%b3%95" class="header-mark"></a>3.3.4 预测冠军算法</h4><p>为了能充分利用图的魔法（与图上的隐含条件、信息），我的思路是选择一种利用链接进行节点重要程度分析的图算法，找出拥有更高重要性的点，对他们全局迭代、排序，从而获得前几名的国家队排名。</p>
+<h3 id="预测冠军算法" class="headerLink">
+    <a href="#%e9%a2%84%e6%b5%8b%e5%86%a0%e5%86%9b%e7%ae%97%e6%b3%95" class="header-mark"></a>3.4 预测冠军算法</h3><p>为了能充分利用图的魔法（与图上的隐含条件、信息），我的思路是选择一种利用链接进行节点重要程度分析的图算法，找出拥有更高重要性的点，对他们全局迭代、排序，从而获得前几名的国家队排名。</p>
 <p>这些方法其实就体现在厉害的球员同时拥有更大的社区、连接度，同时，为了增加传统强队之间的区分度，我准备把出场率、进球数的信息也考虑进来。</p>
 <p>最终，我的算法是：</p>
 <ul>
 <li>取出所有的 (球员)-服役-&gt;(俱乐部) 的关系，过滤其中进球数过少、单场进球过少的球员（以平衡一些弱队的老球员带来的过大影响）</li>
 <li>从所有过滤之后的球员中向外探索，获得国家队</li>
-<li>在以上的自图上运行 Betweenness Centrality 算法，计算节点重要度评分</li>
+<li>在以上的子图上运行 Betweenness Centrality 算法，计算节点重要度评分</li>
 </ul>
 <h4 id="算法过程" class="headerLink">
-    <a href="#%e7%ae%97%e6%b3%95%e8%bf%87%e7%a8%8b" class="header-mark"></a>3.3.5 算法过程</h4><p>首先，我们取出所有进球数超过 10，场均进球超过 0.2 的 (球员)-服役-&gt;(俱乐部) 的子图：</p>
+    <a href="#%e7%ae%97%e6%b3%95%e8%bf%87%e7%a8%8b" class="header-mark"></a>3.4.1 算法过程</h4><p>首先，我们取出所有进球数超过 10，场均进球超过 0.2 的 (球员)-服役-&gt;(俱乐部) 的子图：</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">1

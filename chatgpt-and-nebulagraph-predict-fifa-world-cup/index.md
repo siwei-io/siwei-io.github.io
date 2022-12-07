@@ -15,9 +15,9 @@
 
 ## 蹭热度
 
-最近因为世界杯进行时，被这篇 Cambridge Intelligence 的文章启发（仅仅利用有限的信息量和条件，借助图算法的方法做合理的冠军预测），讨论到也可以试着用 NebulaGraph 玩玩冠军预测，还能顺道科普一波图库技术和图算法。
+最近因为世界杯进行时，被这篇 [Cambridge Intelligence](https://cambridge-intelligence.com/fifa-world-cup-2022-prediction/) 的文章启发（仅仅利用有限的信息量和条件，借助图算法的方法做合理的冠军预测），讨论到也可以试着用 NebulaGraph 玩玩冠军预测，还能顺道科普一波图库技术和图算法。
 
-本来想着几个小时撸出来一个方案，被数据集的收集劝退了，我是是在懒得去 https://en.wikipedia.org/wiki/2022_FIFA_World_Cup_squads 里抓取出来需要的数据，索性就按下放了几天。
+本来想着几个小时撸出来一个方案，被数据集的收集劝退了，我是是在懒得去 [wikepedia](https://en.wikipedia.org/wiki/2022_FIFA_World_Cup_squads) 里抓取出来需要的数据，索性就按下放了几天。
 
 同时，另一个热潮是最近 OpenAI 发布了 chatGPT 服务，它可以实现各种语言可是实现的复杂任务设计包括：
 
@@ -100,7 +100,7 @@ Ecuador,A,5,3MF,José Cifuentes,(1999-03-12)12 March 1999,23,11,0,Los Angeles FC
 
 ![](importer_config_mapping.webp)
 
-之后点击导入，就把整个图导入到 NebulaGraph 了，成功之后，我们还得到了整个csv --> Nebula Importer 的关联配置文件：[nebula_importer_config_fifa.yml](https://github.com/siwei-io/talks/files/10164014/config_fifa.yml.txt)，你可以字节拖拽整个配置，不用自己去配置它了。
+之后点击导入，就把整个图导入到 NebulaGraph 了，成功之后，我们还得到了整个csv --> Nebula Importer 的关联配置文件：[nebula_importer_config_fifa.yml](https://github.com/siwei-io/talks/files/10164014/config_fifa.yml.txt)，你可以直接拖拽整个配置，不用自己去配置它了。
 
 ![](importer_log.webp)
 
@@ -130,7 +130,7 @@ Ecuador,A,5,3MF,José Cifuentes,(1999-03-12)12 March 1999,23,11,0,Los Angeles FC
 
 ![](bird_view.webp)
 
-这些外围、形成的簇多是一些由非传统意义上的有全球影响力的俱乐部，和非传统的足球厉害的国家队的球员组成，因为通常这些俱乐部只有一两个球员，而且他们还集中在一个国家队、地区，所以没有和很多其他球员、国家队产链接。
+这些外围、形成的簇多是一些由非传统意义上的有全球影响力的俱乐部，和非传统的足球厉害的国家队的球员组成，因为通常这些俱乐部只有一两个球员，而且他们还集中在一个国家队、地区，所以没有和很多其他球员、国家队产生连接。
 
 ![](edge_teams.webp)
 
@@ -149,7 +149,7 @@ Ecuador,A,5,3MF,José Cifuentes,(1999-03-12)12 March 1999,23,11,0,Los Angeles FC
 
 可以看到红色的大点是鼎鼎大名的巴塞罗那，而它的球员们也被红色标记了。
 
-#### 预测冠军算法
+### 预测冠军算法
 
 为了能充分利用图的魔法（与图上的隐含条件、信息），我的思路是选择一种利用链接进行节点重要程度分析的图算法，找出拥有更高重要性的点，对他们全局迭代、排序，从而获得前几名的国家队排名。
 
@@ -159,7 +159,7 @@ Ecuador,A,5,3MF,José Cifuentes,(1999-03-12)12 March 1999,23,11,0,Los Angeles FC
 
 - 取出所有的 (球员)-服役->(俱乐部) 的关系，过滤其中进球数过少、单场进球过少的球员（以平衡一些弱队的老球员带来的过大影响）
 - 从所有过滤之后的球员中向外探索，获得国家队
-- 在以上的自图上运行 Betweenness Centrality 算法，计算节点重要度评分
+- 在以上的子图上运行 Betweenness Centrality 算法，计算节点重要度评分
 
 #### 算法过程
 
