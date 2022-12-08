@@ -5,6 +5,1342 @@
         <description>所有文章 | siwei.io</description>
         <generator>Hugo -- gohugo.io</generator><language>zh-CN</language><managingEditor>weyl.gu@gmail.com (Wey Gu)</managingEditor>
             <webMaster>weyl.gu@gmail.com (Wey Gu)</webMaster><lastBuildDate>Thu, 08 Dec 2022 15:30:33 &#43;0800</lastBuildDate><atom:link href="https://siwei.io/posts/" rel="self" type="application/rss+xml" /><item>
+    <title>图数据库的社交网络应用</title>
+    <link>https://siwei.io/nebulagraph-sns/</link>
+    <pubDate>Thu, 08 Dec 2022 15:30:33 &#43;0800</pubDate><author>
+        <name>Wey Gu</name>
+    </author><guid>https://siwei.io/nebulagraph-sns/</guid>
+    <description><![CDATA[<div class="featured-image">
+                <img src="/nebulagraph-sns/featured-image.webp" referrerpolicy="no-referrer">
+            </div><h1 id="图数据库的社交网络应用" class="headerLink">
+    <a href="#%e5%9b%be%e6%95%b0%e6%8d%ae%e5%ba%93%e7%9a%84%e7%a4%be%e4%ba%a4%e7%bd%91%e7%bb%9c%e5%ba%94%e7%94%a8" class="header-mark"></a>图数据库的社交网络应用</h1><blockquote>
+<p>本文是一个基于 NebulaGraph 上解决社交网络问题的常规方法综述。其中介绍的方法提供都了 Playground 供大家学习、玩耍。</p>
+</blockquote>
+<!--
+
+[TOC]
+
+-->
+<p>社交网络大家都不陌生，无论是微信、微博、B 站还是大众点评、知乎、陌陌等服务，其本质上的用户都形成了社交网络。</p>
+<p>在一个社交网络系统中，我们可以用图数据库来表示用户和他们的连接关系。图数据库能允许对用户之间的关系进行有效的查询，使得各种基于连接查找、统计、分析的社交网络上的业务实现变得可行、高效。</p>
+<p>例如，图形数据库可以用来识别网络中的“有影响力用户”，或者根据用户之间的共同点对新的连接（好友关系、关心的内容）进行推荐，再或者寻找社群中相聚集的不同人群、社区，进行用户画像。图形数据库因为在能支撑复杂多跳查询的同时也能支持实时写入、更新，使其非常适合应用在用户关系不断变化的社交网络系统之上。</p>
+<h2 id="图建模" class="headerLink">
+    <a href="#%e5%9b%be%e5%bb%ba%e6%a8%a1" class="header-mark"></a>1 图建模</h2><p>为了给出一些常见社交场景的应用示例，我会把大多数例子建立在一个典型的小型社交网络上，社交网络天然就是一张网络、图的形态。</p>
+<p>为此，我在 NebulaGraph 官方示例数据集：篮球运动员之上，增加了三种点：</p>
+<ul>
+<li>地址</li>
+<li>地点</li>
+<li>文章</li>
+</ul>
+<p>五种边：</p>
+<ul>
+<li>发文</li>
+<li>评论</li>
+<li>住在</li>
+<li>属于（地点）</li>
+</ul>
+<p>它的建模非常自然：</p>
+<p><a class="lightgallery" href="/nebulagraph-sns/schema_sketch.webp" title="schema_sketch" data-thumbnail="/nebulagraph-sns/schema_sketch.webp">
+        
+    </a></p>
+<h2 id="数据导入" class="headerLink">
+    <a href="#%e6%95%b0%e6%8d%ae%e5%af%bc%e5%85%a5" class="header-mark"></a>2 数据导入</h2><h3 id="加载默认数据集" class="headerLink">
+    <a href="#%e5%8a%a0%e8%bd%bd%e9%bb%98%e8%ae%a4%e6%95%b0%e6%8d%ae%e9%9b%86" class="header-mark"></a>2.1 加载默认数据集</h3><p>首先，我们加载默认的 basketballplayer 数据集。</p>
+<ul>
+<li>
+<p>在命令行 console 之中，我们只需要执行 <code>:play basketballplayer</code> 就可以。</p>
+</li>
+<li>
+<p>而在 NebulaGraph Studio/Explorer 之中，我们可以在欢迎页点击下载就部署这份基础数据集。</p>
+<p><a class="lightgallery" href="/nebulagraph-sns/baskertballplayer_studio_starter.webp" title="baskertballplayer_studio_starter" data-thumbnail="/nebulagraph-sns/baskertballplayer_studio_starter.webp">
+        
+    </a></p>
+</li>
+</ul>
+<h3 id="加载社交网络-schema" class="headerLink">
+    <a href="#%e5%8a%a0%e8%bd%bd%e7%a4%be%e4%ba%a4%e7%bd%91%e7%bb%9c-schema" class="header-mark"></a>2.2 加载社交网络 schema</h3><p>其次我们执行下边的语句，首先是 Schema 定义的语句：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">CREATE</span><span class="w"> </span><span class="n">TAG</span><span class="w"> </span><span class="k">IF</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">EXISTS</span><span class="w"> </span><span class="n">post</span><span class="p">(</span><span class="n">title</span><span class="w"> </span><span class="n">string</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">CREATE</span><span class="w"> </span><span class="n">EDGE</span><span class="w"> </span><span class="n">created_post</span><span class="p">(</span><span class="n">post_time</span><span class="w"> </span><span class="k">timestamp</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">CREATE</span><span class="w"> </span><span class="n">EDGE</span><span class="w"> </span><span class="n">commented_at</span><span class="p">(</span><span class="n">post_time</span><span class="w"> </span><span class="k">timestamp</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">CREATE</span><span class="w"> </span><span class="n">TAG</span><span class="w"> </span><span class="n">address</span><span class="p">(</span><span class="n">address</span><span class="w"> </span><span class="n">string</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span><span class="w"> </span><span class="o">`</span><span class="n">geo_point</span><span class="o">`</span><span class="w"> </span><span class="n">geography</span><span class="p">(</span><span class="n">point</span><span class="p">));</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">CREATE</span><span class="w"> </span><span class="n">TAG</span><span class="w"> </span><span class="n">place</span><span class="p">(</span><span class="n">name</span><span class="w"> </span><span class="n">string</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span><span class="w"> </span><span class="o">`</span><span class="n">geo_point</span><span class="o">`</span><span class="w"> </span><span class="n">geography</span><span class="p">(</span><span class="n">point</span><span class="p">));</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">CREATE</span><span class="w"> </span><span class="n">EDGE</span><span class="w"> </span><span class="n">belong_to</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">CREATE</span><span class="w"> </span><span class="n">EDGE</span><span class="w"> </span><span class="n">lived_in</span><span class="p">();</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="加载数据" class="headerLink">
+    <a href="#%e5%8a%a0%e8%bd%bd%e6%95%b0%e6%8d%ae" class="header-mark"></a>2.3 加载数据</h3><p>然后，在等两个心跳时间以上之后（20秒），我们可以执行数据插入：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">  1
+</span><span class="lnt">  2
+</span><span class="lnt">  3
+</span><span class="lnt">  4
+</span><span class="lnt">  5
+</span><span class="lnt">  6
+</span><span class="lnt">  7
+</span><span class="lnt">  8
+</span><span class="lnt">  9
+</span><span class="lnt"> 10
+</span><span class="lnt"> 11
+</span><span class="lnt"> 12
+</span><span class="lnt"> 13
+</span><span class="lnt"> 14
+</span><span class="lnt"> 15
+</span><span class="lnt"> 16
+</span><span class="lnt"> 17
+</span><span class="lnt"> 18
+</span><span class="lnt"> 19
+</span><span class="lnt"> 20
+</span><span class="lnt"> 21
+</span><span class="lnt"> 22
+</span><span class="lnt"> 23
+</span><span class="lnt"> 24
+</span><span class="lnt"> 25
+</span><span class="lnt"> 26
+</span><span class="lnt"> 27
+</span><span class="lnt"> 28
+</span><span class="lnt"> 29
+</span><span class="lnt"> 30
+</span><span class="lnt"> 31
+</span><span class="lnt"> 32
+</span><span class="lnt"> 33
+</span><span class="lnt"> 34
+</span><span class="lnt"> 35
+</span><span class="lnt"> 36
+</span><span class="lnt"> 37
+</span><span class="lnt"> 38
+</span><span class="lnt"> 39
+</span><span class="lnt"> 40
+</span><span class="lnt"> 41
+</span><span class="lnt"> 42
+</span><span class="lnt"> 43
+</span><span class="lnt"> 44
+</span><span class="lnt"> 45
+</span><span class="lnt"> 46
+</span><span class="lnt"> 47
+</span><span class="lnt"> 48
+</span><span class="lnt"> 49
+</span><span class="lnt"> 50
+</span><span class="lnt"> 51
+</span><span class="lnt"> 52
+</span><span class="lnt"> 53
+</span><span class="lnt"> 54
+</span><span class="lnt"> 55
+</span><span class="lnt"> 56
+</span><span class="lnt"> 57
+</span><span class="lnt"> 58
+</span><span class="lnt"> 59
+</span><span class="lnt"> 60
+</span><span class="lnt"> 61
+</span><span class="lnt"> 62
+</span><span class="lnt"> 63
+</span><span class="lnt"> 64
+</span><span class="lnt"> 65
+</span><span class="lnt"> 66
+</span><span class="lnt"> 67
+</span><span class="lnt"> 68
+</span><span class="lnt"> 69
+</span><span class="lnt"> 70
+</span><span class="lnt"> 71
+</span><span class="lnt"> 72
+</span><span class="lnt"> 73
+</span><span class="lnt"> 74
+</span><span class="lnt"> 75
+</span><span class="lnt"> 76
+</span><span class="lnt"> 77
+</span><span class="lnt"> 78
+</span><span class="lnt"> 79
+</span><span class="lnt"> 80
+</span><span class="lnt"> 81
+</span><span class="lnt"> 82
+</span><span class="lnt"> 83
+</span><span class="lnt"> 84
+</span><span class="lnt"> 85
+</span><span class="lnt"> 86
+</span><span class="lnt"> 87
+</span><span class="lnt"> 88
+</span><span class="lnt"> 89
+</span><span class="lnt"> 90
+</span><span class="lnt"> 91
+</span><span class="lnt"> 92
+</span><span class="lnt"> 93
+</span><span class="lnt"> 94
+</span><span class="lnt"> 95
+</span><span class="lnt"> 96
+</span><span class="lnt"> 97
+</span><span class="lnt"> 98
+</span><span class="lnt"> 99
+</span><span class="lnt">100
+</span><span class="lnt">101
+</span><span class="lnt">102
+</span><span class="lnt">103
+</span><span class="lnt">104
+</span><span class="lnt">105
+</span><span class="lnt">106
+</span><span class="lnt">107
+</span><span class="lnt">108
+</span><span class="lnt">109
+</span><span class="lnt">110
+</span><span class="lnt">111
+</span><span class="lnt">112
+</span><span class="lnt">113
+</span><span class="lnt">114
+</span><span class="lnt">115
+</span><span class="lnt">116
+</span><span class="lnt">117
+</span><span class="lnt">118
+</span><span class="lnt">119
+</span><span class="lnt">120
+</span><span class="lnt">121
+</span><span class="lnt">122
+</span><span class="lnt">123
+</span><span class="lnt">124
+</span><span class="lnt">125
+</span><span class="lnt">126
+</span><span class="lnt">127
+</span><span class="lnt">128
+</span><span class="lnt">129
+</span><span class="lnt">130
+</span><span class="lnt">131
+</span><span class="lnt">132
+</span><span class="lnt">133
+</span><span class="lnt">134
+</span><span class="lnt">135
+</span><span class="lnt">136
+</span><span class="lnt">137
+</span><span class="lnt">138
+</span><span class="lnt">139
+</span><span class="lnt">140
+</span><span class="lnt">141
+</span><span class="lnt">142
+</span><span class="lnt">143
+</span><span class="lnt">144
+</span><span class="lnt">145
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">INSERT</span><span class="w"> </span><span class="n">VERTEX</span><span class="w"> </span><span class="n">post</span><span class="p">(</span><span class="n">title</span><span class="p">)</span><span class="w"> </span><span class="k">values</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;post1&#34;</span><span class="p">:(</span><span class="s2">&#34;a beautify flower&#34;</span><span class="p">),</span><span class="w"> </span><span class="s2">&#34;post2&#34;</span><span class="p">:(</span><span class="s2">&#34;my first bike&#34;</span><span class="p">),</span><span class="w"> </span><span class="s2">&#34;post3&#34;</span><span class="p">:(</span><span class="s2">&#34;I can swim&#34;</span><span class="p">),</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;post4&#34;</span><span class="p">:(</span><span class="s2">&#34;I love you, Dad&#34;</span><span class="p">),</span><span class="w"> </span><span class="s2">&#34;post5&#34;</span><span class="p">:(</span><span class="s2">&#34;I hate coriander&#34;</span><span class="p">),</span><span class="w"> </span><span class="s2">&#34;post6&#34;</span><span class="p">:(</span><span class="s2">&#34;my best friend, tom&#34;</span><span class="p">),</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;post7&#34;</span><span class="p">:(</span><span class="s2">&#34;my best friend, jerry&#34;</span><span class="p">),</span><span class="w"> </span><span class="s2">&#34;post8&#34;</span><span class="p">:(</span><span class="s2">&#34;Frank, the cat&#34;</span><span class="p">),</span><span class="w"> </span><span class="s2">&#34;post9&#34;</span><span class="p">:(</span><span class="s2">&#34;sushi rocks&#34;</span><span class="p">),</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;post10&#34;</span><span class="p">:(</span><span class="s2">&#34;I love you, Mom&#34;</span><span class="p">),</span><span class="w"> </span><span class="s2">&#34;post11&#34;</span><span class="p">:(</span><span class="s2">&#34;Let&#39;s have a party!&#34;</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">INSERT</span><span class="w"> </span><span class="n">EDGE</span><span class="w"> </span><span class="n">created_post</span><span class="p">(</span><span class="n">post_time</span><span class="p">)</span><span class="w"> </span><span class="k">values</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player100&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;post1&#34;</span><span class="p">:(</span><span class="k">timestamp</span><span class="p">(</span><span class="s2">&#34;2019-01-01 00:30:06&#34;</span><span class="p">)),</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player111&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;post2&#34;</span><span class="p">:(</span><span class="k">timestamp</span><span class="p">(</span><span class="s2">&#34;2016-11-23 10:04:50&#34;</span><span class="p">)),</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player101&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;post3&#34;</span><span class="p">:(</span><span class="k">timestamp</span><span class="p">(</span><span class="s2">&#34;2019-11-11 10:44:06&#34;</span><span class="p">)),</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player103&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;post4&#34;</span><span class="p">:(</span><span class="k">timestamp</span><span class="p">(</span><span class="s2">&#34;2014-12-01 20:45:11&#34;</span><span class="p">)),</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player102&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;post5&#34;</span><span class="p">:(</span><span class="k">timestamp</span><span class="p">(</span><span class="s2">&#34;2015-03-01 00:30:06&#34;</span><span class="p">)),</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player104&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;post6&#34;</span><span class="p">:(</span><span class="k">timestamp</span><span class="p">(</span><span class="s2">&#34;2017-09-21 23:30:06&#34;</span><span class="p">)),</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player125&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;post7&#34;</span><span class="p">:(</span><span class="k">timestamp</span><span class="p">(</span><span class="s2">&#34;2018-01-01 00:44:23&#34;</span><span class="p">)),</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player106&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;post8&#34;</span><span class="p">:(</span><span class="k">timestamp</span><span class="p">(</span><span class="s2">&#34;2019-01-01 00:30:06&#34;</span><span class="p">)),</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player117&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;post9&#34;</span><span class="p">:(</span><span class="k">timestamp</span><span class="p">(</span><span class="s2">&#34;2022-01-01 22:23:30&#34;</span><span class="p">)),</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player108&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;post10&#34;</span><span class="p">:(</span><span class="k">timestamp</span><span class="p">(</span><span class="s2">&#34;2011-01-01 10:00:30&#34;</span><span class="p">)),</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player100&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;post11&#34;</span><span class="p">:(</span><span class="k">timestamp</span><span class="p">(</span><span class="s2">&#34;2021-11-01 11:10:30&#34;</span><span class="p">));</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">INSERT</span><span class="w"> </span><span class="n">EDGE</span><span class="w"> </span><span class="n">commented_at</span><span class="p">(</span><span class="n">post_time</span><span class="p">)</span><span class="w"> </span><span class="k">values</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player105&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;post1&#34;</span><span class="p">:(</span><span class="k">timestamp</span><span class="p">(</span><span class="s2">&#34;2019-01-02 00:30:06&#34;</span><span class="p">)),</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player109&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;post1&#34;</span><span class="p">:(</span><span class="k">timestamp</span><span class="p">(</span><span class="s2">&#34;2016-11-24 10:04:50&#34;</span><span class="p">)),</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player113&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;post3&#34;</span><span class="p">:(</span><span class="k">timestamp</span><span class="p">(</span><span class="s2">&#34;2019-11-13 10:44:06&#34;</span><span class="p">)),</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player101&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;post4&#34;</span><span class="p">:(</span><span class="k">timestamp</span><span class="p">(</span><span class="s2">&#34;2014-12-04 20:45:11&#34;</span><span class="p">)),</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player102&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;post1&#34;</span><span class="p">:(</span><span class="k">timestamp</span><span class="p">(</span><span class="s2">&#34;2015-03-03 00:30:06&#34;</span><span class="p">)),</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player103&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;post1&#34;</span><span class="p">:(</span><span class="k">timestamp</span><span class="p">(</span><span class="s2">&#34;2017-09-23 23:30:06&#34;</span><span class="p">)),</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player102&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;post7&#34;</span><span class="p">:(</span><span class="k">timestamp</span><span class="p">(</span><span class="s2">&#34;2018-01-04 00:44:23&#34;</span><span class="p">)),</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player101&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;post8&#34;</span><span class="p">:(</span><span class="k">timestamp</span><span class="p">(</span><span class="s2">&#34;2019-01-04 00:30:06&#34;</span><span class="p">)),</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player106&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;post9&#34;</span><span class="p">:(</span><span class="k">timestamp</span><span class="p">(</span><span class="s2">&#34;2022-01-02 22:23:30&#34;</span><span class="p">)),</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player105&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;post10&#34;</span><span class="p">:(</span><span class="k">timestamp</span><span class="p">(</span><span class="s2">&#34;2011-01-11 10:00:30&#34;</span><span class="p">)),</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player130&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;post1&#34;</span><span class="p">:(</span><span class="k">timestamp</span><span class="p">(</span><span class="s2">&#34;2019-01-02 00:30:06&#34;</span><span class="p">)),</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player131&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;post2&#34;</span><span class="p">:(</span><span class="k">timestamp</span><span class="p">(</span><span class="s2">&#34;2016-11-24 10:04:50&#34;</span><span class="p">)),</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player131&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;post3&#34;</span><span class="p">:(</span><span class="k">timestamp</span><span class="p">(</span><span class="s2">&#34;2019-11-13 10:44:06&#34;</span><span class="p">)),</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player133&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;post4&#34;</span><span class="p">:(</span><span class="k">timestamp</span><span class="p">(</span><span class="s2">&#34;2014-12-04 20:45:11&#34;</span><span class="p">)),</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player132&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;post5&#34;</span><span class="p">:(</span><span class="k">timestamp</span><span class="p">(</span><span class="s2">&#34;2015-03-03 00:30:06&#34;</span><span class="p">)),</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player134&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;post6&#34;</span><span class="p">:(</span><span class="k">timestamp</span><span class="p">(</span><span class="s2">&#34;2017-09-23 23:30:06&#34;</span><span class="p">)),</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player135&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;post7&#34;</span><span class="p">:(</span><span class="k">timestamp</span><span class="p">(</span><span class="s2">&#34;2018-01-04 00:44:23&#34;</span><span class="p">)),</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player136&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;post8&#34;</span><span class="p">:(</span><span class="k">timestamp</span><span class="p">(</span><span class="s2">&#34;2019-01-04 00:30:06&#34;</span><span class="p">)),</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player137&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;post9&#34;</span><span class="p">:(</span><span class="k">timestamp</span><span class="p">(</span><span class="s2">&#34;2022-01-02 22:23:30&#34;</span><span class="p">)),</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player138&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;post10&#34;</span><span class="p">:(</span><span class="k">timestamp</span><span class="p">(</span><span class="s2">&#34;2011-01-11 10:00:30&#34;</span><span class="p">)),</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player141&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;post1&#34;</span><span class="p">:(</span><span class="k">timestamp</span><span class="p">(</span><span class="s2">&#34;2019-01-03 00:30:06&#34;</span><span class="p">)),</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player142&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;post2&#34;</span><span class="p">:(</span><span class="k">timestamp</span><span class="p">(</span><span class="s2">&#34;2016-11-25 10:04:50&#34;</span><span class="p">)),</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player143&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;post3&#34;</span><span class="p">:(</span><span class="k">timestamp</span><span class="p">(</span><span class="s2">&#34;2019-11-14 10:44:06&#34;</span><span class="p">)),</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player144&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;post4&#34;</span><span class="p">:(</span><span class="k">timestamp</span><span class="p">(</span><span class="s2">&#34;2014-12-05 20:45:11&#34;</span><span class="p">)),</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player145&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;post5&#34;</span><span class="p">:(</span><span class="k">timestamp</span><span class="p">(</span><span class="s2">&#34;2015-03-04 00:30:06&#34;</span><span class="p">)),</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player146&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;post6&#34;</span><span class="p">:(</span><span class="k">timestamp</span><span class="p">(</span><span class="s2">&#34;2017-09-24 23:30:06&#34;</span><span class="p">)),</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player147&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;post7&#34;</span><span class="p">:(</span><span class="k">timestamp</span><span class="p">(</span><span class="s2">&#34;2018-01-05 00:44:23&#34;</span><span class="p">)),</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player148&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;post8&#34;</span><span class="p">:(</span><span class="k">timestamp</span><span class="p">(</span><span class="s2">&#34;2019-01-05 00:30:06&#34;</span><span class="p">)),</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player139&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;post9&#34;</span><span class="p">:(</span><span class="k">timestamp</span><span class="p">(</span><span class="s2">&#34;2022-01-03 22:23:30&#34;</span><span class="p">)),</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player140&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;post10&#34;</span><span class="p">:(</span><span class="k">timestamp</span><span class="p">(</span><span class="s2">&#34;2011-01-12 10:01:30&#34;</span><span class="p">)),</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player141&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;post1&#34;</span><span class="p">:(</span><span class="k">timestamp</span><span class="p">(</span><span class="s2">&#34;2019-01-04 00:34:06&#34;</span><span class="p">)),</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player102&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;post2&#34;</span><span class="p">:(</span><span class="k">timestamp</span><span class="p">(</span><span class="s2">&#34;2016-11-26 10:06:50&#34;</span><span class="p">)),</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player103&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;post3&#34;</span><span class="p">:(</span><span class="k">timestamp</span><span class="p">(</span><span class="s2">&#34;2019-11-15 10:45:06&#34;</span><span class="p">)),</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player104&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;post4&#34;</span><span class="p">:(</span><span class="k">timestamp</span><span class="p">(</span><span class="s2">&#34;2014-12-06 20:47:11&#34;</span><span class="p">)),</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player105&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;post5&#34;</span><span class="p">:(</span><span class="k">timestamp</span><span class="p">(</span><span class="s2">&#34;2015-03-05 00:32:06&#34;</span><span class="p">)),</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player106&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;post6&#34;</span><span class="p">:(</span><span class="k">timestamp</span><span class="p">(</span><span class="s2">&#34;2017-09-25 23:31:06&#34;</span><span class="p">)),</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player107&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;post7&#34;</span><span class="p">:(</span><span class="k">timestamp</span><span class="p">(</span><span class="s2">&#34;2018-01-06 00:46:23&#34;</span><span class="p">)),</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player118&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;post8&#34;</span><span class="p">:(</span><span class="k">timestamp</span><span class="p">(</span><span class="s2">&#34;2019-01-06 00:35:06&#34;</span><span class="p">)),</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player119&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;post9&#34;</span><span class="p">:(</span><span class="k">timestamp</span><span class="p">(</span><span class="s2">&#34;2022-01-04 22:26:30&#34;</span><span class="p">)),</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player110&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;post10&#34;</span><span class="p">:(</span><span class="k">timestamp</span><span class="p">(</span><span class="s2">&#34;2011-01-15 10:00:30&#34;</span><span class="p">)),</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player111&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;post1&#34;</span><span class="p">:(</span><span class="k">timestamp</span><span class="p">(</span><span class="s2">&#34;2019-01-06 00:30:06&#34;</span><span class="p">)),</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player104&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;post11&#34;</span><span class="p">:(</span><span class="k">timestamp</span><span class="p">(</span><span class="s2">&#34;2022-01-15 10:00:30&#34;</span><span class="p">)),</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player125&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;post11&#34;</span><span class="p">:(</span><span class="k">timestamp</span><span class="p">(</span><span class="s2">&#34;2022-02-15 10:00:30&#34;</span><span class="p">)),</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player113&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;post11&#34;</span><span class="p">:(</span><span class="k">timestamp</span><span class="p">(</span><span class="s2">&#34;2022-03-15 10:00:30&#34;</span><span class="p">)),</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player102&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;post11&#34;</span><span class="p">:(</span><span class="k">timestamp</span><span class="p">(</span><span class="s2">&#34;2022-04-15 10:00:30&#34;</span><span class="p">)),</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player108&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;post11&#34;</span><span class="p">:(</span><span class="k">timestamp</span><span class="p">(</span><span class="s2">&#34;2022-05-15 10:00:30&#34;</span><span class="p">));</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">INSERT</span><span class="w"> </span><span class="n">VERTEX</span><span class="w"> </span><span class="o">`</span><span class="n">address</span><span class="o">`</span><span class="w"> </span><span class="p">(</span><span class="o">`</span><span class="n">address</span><span class="o">`</span><span class="p">,</span><span class="w"> </span><span class="o">`</span><span class="n">geo_point</span><span class="o">`</span><span class="p">)</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;addr_0&#34;</span><span class="p">:(</span><span class="s2">&#34;Brittany Forge Apt. 718 East Eric  WV 97881&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">ST_Point</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">)),</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;addr_1&#34;</span><span class="p">:(</span><span class="s2">&#34;Richard Curve Kingstad  AZ 05660&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">ST_Point</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">)),</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;addr_2&#34;</span><span class="p">:(</span><span class="s2">&#34;Schmidt Key Lake Charles  AL 36174&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">ST_Point</span><span class="p">(</span><span class="mi">13</span><span class="p">.</span><span class="mi">13</span><span class="p">,</span><span class="o">-</span><span class="mi">87</span><span class="p">.</span><span class="mi">65</span><span class="p">)),</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;addr_3&#34;</span><span class="p">:(</span><span class="s2">&#34;5 Joanna Key Suite 704 Frankshire  OK 03035&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">ST_Point</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">)),</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;addr_4&#34;</span><span class="p">:(</span><span class="s2">&#34;1 Payne Circle Mitchellfort  LA 73053&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">ST_Point</span><span class="p">(</span><span class="mi">7</span><span class="p">,</span><span class="mi">8</span><span class="p">)),</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;addr_5&#34;</span><span class="p">:(</span><span class="s2">&#34;2 Klein Mission New Annetteton  HI 05775&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">ST_Point</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span><span class="mi">10</span><span class="p">)),</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;addr_6&#34;</span><span class="p">:(</span><span class="s2">&#34;1 Vanessa Stravenue Suite 184 Baileyville  NY 46381&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">ST_Point</span><span class="p">(</span><span class="mi">11</span><span class="p">,</span><span class="mi">12</span><span class="p">)),</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;addr_7&#34;</span><span class="p">:(</span><span class="s2">&#34;John Garden Port John  LA 54602&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">ST_Point</span><span class="p">(</span><span class="mi">13</span><span class="p">,</span><span class="mi">14</span><span class="p">)),</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;addr_8&#34;</span><span class="p">:(</span><span class="s2">&#34;11 Webb Groves Tiffanyside  MN 14566&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">ST_Point</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span><span class="mi">16</span><span class="p">)),</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;addr_9&#34;</span><span class="p">:(</span><span class="s2">&#34;70 Robinson Locks Suite 113 East Veronica  ND 87845&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">ST_Point</span><span class="p">(</span><span class="mi">17</span><span class="p">,</span><span class="mi">18</span><span class="p">)),</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;addr_10&#34;</span><span class="p">:(</span><span class="s2">&#34;24 Mcknight Port Apt. 028 Sarahborough  MD 38195&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">ST_Point</span><span class="p">(</span><span class="mi">19</span><span class="p">,</span><span class="mi">20</span><span class="p">)),</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;addr_11&#34;</span><span class="p">:(</span><span class="s2">&#34;0337 Mason Corner Apt. 900 Toddmouth  FL 61464&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">ST_Point</span><span class="p">(</span><span class="mi">21</span><span class="p">,</span><span class="mi">22</span><span class="p">)),</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;addr_12&#34;</span><span class="p">:(</span><span class="s2">&#34;7 Davis Station Apt. 691 Pittmanfort  HI 29746&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">ST_Point</span><span class="p">(</span><span class="mi">23</span><span class="p">,</span><span class="mi">24</span><span class="p">)),</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;addr_13&#34;</span><span class="p">:(</span><span class="s2">&#34;1 Southport Street Apt. 098 Westport  KY 85907&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">ST_Point</span><span class="p">(</span><span class="mi">120</span><span class="p">.</span><span class="mi">12</span><span class="p">,</span><span class="mi">30</span><span class="p">.</span><span class="mi">16</span><span class="p">)),</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;addr_14&#34;</span><span class="p">:(</span><span class="s2">&#34;Weber Unions Eddieland  MT 64619&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">ST_Point</span><span class="p">(</span><span class="mi">25</span><span class="p">,</span><span class="mi">26</span><span class="p">)),</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;addr_15&#34;</span><span class="p">:(</span><span class="s2">&#34;1 Amanda Freeway Lisaland  NJ 94933&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">ST_Point</span><span class="p">(</span><span class="mi">27</span><span class="p">,</span><span class="mi">28</span><span class="p">)),</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;addr_16&#34;</span><span class="p">:(</span><span class="s2">&#34;2 Klein HI 05775&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">ST_Point</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span><span class="mi">10</span><span class="p">)),</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;addr_17&#34;</span><span class="p">:(</span><span class="s2">&#34;Schmidt Key Lake Charles AL 13617&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">ST_Point</span><span class="p">(</span><span class="mi">13</span><span class="p">.</span><span class="mi">12</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="mi">87</span><span class="p">.</span><span class="mi">60</span><span class="p">)),</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;addr_18&#34;</span><span class="p">:(</span><span class="s2">&#34;Rodriguez Track East Connorfort  NC 63144&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">ST_Point</span><span class="p">(</span><span class="mi">29</span><span class="p">,</span><span class="mi">30</span><span class="p">));</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">INSERT</span><span class="w"> </span><span class="n">VERTEX</span><span class="w"> </span><span class="o">`</span><span class="n">place</span><span class="o">`</span><span class="w"> </span><span class="p">(</span><span class="o">`</span><span class="n">name</span><span class="o">`</span><span class="p">,</span><span class="w"> </span><span class="o">`</span><span class="n">geo_point</span><span class="o">`</span><span class="p">)</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;WV&#34;</span><span class="p">:(</span><span class="s2">&#34;West Virginia&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">ST_Point</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">.</span><span class="mi">5</span><span class="p">)),</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;AZ&#34;</span><span class="p">:(</span><span class="s2">&#34;Arizona&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">ST_Point</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">.</span><span class="mi">5</span><span class="p">)),</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;AL&#34;</span><span class="p">:(</span><span class="s2">&#34;Alabama&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">ST_Point</span><span class="p">(</span><span class="mi">13</span><span class="p">.</span><span class="mi">13</span><span class="p">,</span><span class="o">-</span><span class="mi">87</span><span class="p">)),</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;OK&#34;</span><span class="p">:(</span><span class="s2">&#34;Oklahoma&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">ST_Point</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">.</span><span class="mi">1</span><span class="p">)),</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;LA&#34;</span><span class="p">:(</span><span class="s2">&#34;Louisiana&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">ST_Point</span><span class="p">(</span><span class="mi">7</span><span class="p">,</span><span class="mi">8</span><span class="p">.</span><span class="mi">1</span><span class="p">)),</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;HI&#34;</span><span class="p">:(</span><span class="s2">&#34;Hawaii&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">ST_Point</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span><span class="mi">10</span><span class="p">.</span><span class="mi">1</span><span class="p">)),</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;NY&#34;</span><span class="p">:(</span><span class="s2">&#34;New York&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">ST_Point</span><span class="p">(</span><span class="mi">11</span><span class="p">,</span><span class="mi">12</span><span class="p">.</span><span class="mi">1</span><span class="p">)),</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;MN&#34;</span><span class="p">:(</span><span class="s2">&#34;Minnesota&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">ST_Point</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span><span class="mi">16</span><span class="p">.</span><span class="mi">1</span><span class="p">)),</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;ND&#34;</span><span class="p">:(</span><span class="s2">&#34;North Dakota&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">ST_Point</span><span class="p">(</span><span class="mi">17</span><span class="p">,</span><span class="mi">18</span><span class="p">.</span><span class="mi">1</span><span class="p">)),</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;FL&#34;</span><span class="p">:(</span><span class="s2">&#34;Florida&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">ST_Point</span><span class="p">(</span><span class="mi">21</span><span class="p">,</span><span class="mi">22</span><span class="p">.</span><span class="mi">1</span><span class="p">)),</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;KY&#34;</span><span class="p">:(</span><span class="s2">&#34;Kentucky&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">ST_Point</span><span class="p">(</span><span class="mi">120</span><span class="p">.</span><span class="mi">12</span><span class="p">,</span><span class="mi">30</span><span class="p">)),</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;MT&#34;</span><span class="p">:(</span><span class="s2">&#34;Montana&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">ST_Point</span><span class="p">(</span><span class="mi">25</span><span class="p">,</span><span class="mi">26</span><span class="p">.</span><span class="mi">1</span><span class="p">)),</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;NJ&#34;</span><span class="p">:(</span><span class="s2">&#34;New Jersey&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">ST_Point</span><span class="p">(</span><span class="mi">27</span><span class="p">,</span><span class="mi">28</span><span class="p">.</span><span class="mi">1</span><span class="p">)),</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;NC&#34;</span><span class="p">:(</span><span class="s2">&#34;North Carolina&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">ST_Point</span><span class="p">(</span><span class="mi">29</span><span class="p">,</span><span class="mi">30</span><span class="p">.</span><span class="mi">1</span><span class="p">));</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">INSERT</span><span class="w"> </span><span class="n">EDGE</span><span class="w"> </span><span class="o">`</span><span class="n">belong_to</span><span class="o">`</span><span class="p">()</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;addr_0&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;WV&#34;</span><span class="p">:(),</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;addr_1&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;AZ&#34;</span><span class="p">:(),</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;addr_2&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;AL&#34;</span><span class="p">:(),</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;addr_3&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;OK&#34;</span><span class="p">:(),</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;addr_4&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;LA&#34;</span><span class="p">:(),</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;addr_5&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;HI&#34;</span><span class="p">:(),</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;addr_6&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;NY&#34;</span><span class="p">:(),</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;addr_7&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;LA&#34;</span><span class="p">:(),</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;addr_8&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;MN&#34;</span><span class="p">:(),</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;addr_9&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;ND&#34;</span><span class="p">:(),</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;addr_10&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;MD&#34;</span><span class="p">:(),</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;addr_11&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;FL&#34;</span><span class="p">:(),</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;addr_12&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;HI&#34;</span><span class="p">:(),</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;addr_13&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;KY&#34;</span><span class="p">:(),</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;addr_14&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;MT&#34;</span><span class="p">:(),</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;addr_15&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;NJ&#34;</span><span class="p">:(),</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;addr_16&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;HI&#34;</span><span class="p">:(),</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;addr_17&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;AL&#34;</span><span class="p">:(),</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;addr_18&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;NC&#34;</span><span class="p">:();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">INSERT</span><span class="w"> </span><span class="n">EDGE</span><span class="w"> </span><span class="o">`</span><span class="n">lived_in</span><span class="o">`</span><span class="p">()</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player100&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;addr_4&#34;</span><span class="p">:(),</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player101&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;addr_7&#34;</span><span class="p">:(),</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player102&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;addr_2&#34;</span><span class="p">:(),</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player103&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;addr_3&#34;</span><span class="p">:(),</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player104&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;addr_0&#34;</span><span class="p">:(),</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player105&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;addr_5&#34;</span><span class="p">:(),</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player106&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;addr_6&#34;</span><span class="p">:(),</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player107&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;addr_1&#34;</span><span class="p">:(),</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player108&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;addr_8&#34;</span><span class="p">:(),</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player109&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;addr_9&#34;</span><span class="p">:(),</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player110&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;addr_10&#34;</span><span class="p">:(),</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player111&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;addr_11&#34;</span><span class="p">:(),</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player112&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;addr_12&#34;</span><span class="p">:(),</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player113&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;addr_13&#34;</span><span class="p">:(),</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player114&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;addr_14&#34;</span><span class="p">:(),</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player115&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;addr_15&#34;</span><span class="p">:(),</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player116&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;addr_16&#34;</span><span class="p">:(),</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player117&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;addr_17&#34;</span><span class="p">:(),</span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="s2">&#34;player118&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;addr_18&#34;</span><span class="p">:();</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="数据初探" class="headerLink">
+    <a href="#%e6%95%b0%e6%8d%ae%e5%88%9d%e6%8e%a2" class="header-mark"></a>2.4 数据初探</h3><p>首先，我们看看数据统计</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="p">[</span><span class="n">basketballplayer</span><span class="p">]</span><span class="o">&gt;</span><span class="w"> </span><span class="n">SUBMIT</span><span class="w"> </span><span class="n">JOB</span><span class="w"> </span><span class="n">STATS</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">+</span><span class="c1">------------+
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="o">|</span><span class="w"> </span><span class="k">New</span><span class="w"> </span><span class="n">Job</span><span class="w"> </span><span class="n">Id</span><span class="w"> </span><span class="o">|</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">+</span><span class="c1">------------+
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="o">|</span><span class="w"> </span><span class="mi">10</span><span class="w">         </span><span class="o">|</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">+</span><span class="c1">------------+
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">[</span><span class="n">basketballplayer</span><span class="p">]</span><span class="o">&gt;</span><span class="w"> </span><span class="k">SHOW</span><span class="w"> </span><span class="n">STATS</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">+</span><span class="c1">---------+----------------+-------+
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="o">|</span><span class="w"> </span><span class="k">Type</span><span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">Name</span><span class="w">           </span><span class="o">|</span><span class="w"> </span><span class="k">Count</span><span class="w"> </span><span class="o">|</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">+</span><span class="c1">---------+----------------+-------+
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;Tag&#34;</span><span class="w">   </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;address&#34;</span><span class="w">      </span><span class="o">|</span><span class="w"> </span><span class="mi">19</span><span class="w">    </span><span class="o">|</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;Tag&#34;</span><span class="w">   </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;place&#34;</span><span class="w">        </span><span class="o">|</span><span class="w"> </span><span class="mi">14</span><span class="w">    </span><span class="o">|</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;Tag&#34;</span><span class="w">   </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;player&#34;</span><span class="w">       </span><span class="o">|</span><span class="w"> </span><span class="mi">51</span><span class="w">    </span><span class="o">|</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;Tag&#34;</span><span class="w">   </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;post&#34;</span><span class="w">         </span><span class="o">|</span><span class="w"> </span><span class="mi">10</span><span class="w">    </span><span class="o">|</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;Tag&#34;</span><span class="w">   </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;team&#34;</span><span class="w">         </span><span class="o">|</span><span class="w"> </span><span class="mi">30</span><span class="w">    </span><span class="o">|</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;Edge&#34;</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;belong_to&#34;</span><span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="mi">19</span><span class="w">    </span><span class="o">|</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;Edge&#34;</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;commented_at&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="mi">40</span><span class="w">    </span><span class="o">|</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;Edge&#34;</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;created_post&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="mi">10</span><span class="w">    </span><span class="o">|</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;Edge&#34;</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;follow&#34;</span><span class="w">       </span><span class="o">|</span><span class="w"> </span><span class="mi">81</span><span class="w">    </span><span class="o">|</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;Edge&#34;</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;lived_in&#34;</span><span class="w">     </span><span class="o">|</span><span class="w"> </span><span class="mi">19</span><span class="w">    </span><span class="o">|</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;Edge&#34;</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;serve&#34;</span><span class="w">        </span><span class="o">|</span><span class="w"> </span><span class="mi">152</span><span class="w">   </span><span class="o">|</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;Space&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;vertices&#34;</span><span class="w">     </span><span class="o">|</span><span class="w"> </span><span class="mi">124</span><span class="w">   </span><span class="o">|</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;Space&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;edges&#34;</span><span class="w">        </span><span class="o">|</span><span class="w"> </span><span class="mi">321</span><span class="w">   </span><span class="o">|</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">+</span><span class="c1">---------+----------------+-------+
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">Got</span><span class="w"> </span><span class="mi">13</span><span class="w"> </span><span class="k">rows</span><span class="w"> </span><span class="p">(</span><span class="n">time</span><span class="w"> </span><span class="n">spent</span><span class="w"> </span><span class="mi">1038</span><span class="o">/</span><span class="mi">51372</span><span class="w"> </span><span class="n">us</span><span class="p">)</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>查一下所有的数据</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">MATCH</span><span class="w"> </span><span class="p">()</span><span class="o">-</span><span class="p">[</span><span class="n">e</span><span class="p">]</span><span class="o">-&gt;</span><span class="p">()</span><span class="w"> </span><span class="k">RETURN</span><span class="w"> </span><span class="n">e</span><span class="w"> </span><span class="k">LIMIT</span><span class="w"> </span><span class="mi">10000</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>因为数据量太小了，所以可以把所有数据在 NebulaGraph Explorer 中渲染出来：</p>
+<p><a class="lightgallery" href="/nebulagraph-sns/match_all.webp" title="match_all" data-thumbnail="/nebulagraph-sns/match_all.webp">
+        
+    </a></p>
+<h2 id="找出网络中的关键人物" class="headerLink">
+    <a href="#%e6%89%be%e5%87%ba%e7%bd%91%e7%bb%9c%e4%b8%ad%e7%9a%84%e5%85%b3%e9%94%ae%e4%ba%ba%e7%89%a9" class="header-mark"></a>3 找出网络中的关键人物</h2><p>识别社交网络中的有影响的关键人物们（influencers）涉及使用各种指标和方法来识别在特定网络中拥有大量影响力的个人。这对很多业务场景都有帮助都很有用，比如用于营销或研究网络中的信息传播。</p>
+<p>识别他们的方法有很多，具体的方法和考量的信息、关系、角度也取决于这些关键人物的类型、和获取他们的目的。</p>
+<p>一些常见的方法包括看一个人拥有的粉丝或内容被消费的数量，他们在其帖子、视频上读者的参与度，以及他们的内容的影响力（转发、引用）。这些方法在图上也是可以做的，但是比较平凡，我就不举例了，在这里，我们可以试着用评估、计算节点重要性的图算法，在图上得出这些关键人物。</p>
+<h3 id="pagerank" class="headerLink">
+    <a href="#pagerank" class="header-mark"></a>3.1 PageRank</h3><p>PageRank 是一个非常“古老的”图算法，它通过考虑图上点之间的关系数量去迭代，得到每一个点的得分（Rank），最初由 Google 的创始人 Larry Page 和 Sergey Brin 提出并应用在早期的 Google 搜索引擎中，用来排序搜索结果，这里的 Page 可以是 Larry Page 的姓和 Web Page 的双关了。</p>
+<p>在现代、复杂的搜索引擎中，PageRank 早就因为其过于简单而被弃用，但是在其他图结构网络场景中，PageRank 仍然在发光发热，社交网络中我们可以粗略地认为所有链接的重要程度类似，去运行这个算法找出那些关键的用户。</p>
+<p>在 NebulaGraph 中，我们可以利用 NebulaGraph Algorithm、NebulaGraph Analytics 去在大的全图上运行 PageRank，而在日常的分析、验证、设计截断，我们不需要在全量数据上跑结果，而在很小的子图上（最多上万），我们可以轻松地在浏览器里边运行各种图算法去得出线上业务可以用的方法。</p>
+<p>今天，我们就用 NebulaGraph Explorer 内置的浏览器内图算法功能执行一下 PageRank 看看（具体方法这里略去，可以参考<a href="https://docs.nebula-graph.com.cn/3.3.0/nebula-explorer/graph-explorer/graph-algorithm/" target="_blank" rel="noopener noreferrer">文档</a>，不过其实就是点一下鼠标的事儿）：</p>
+<p><a class="lightgallery" href="/nebulagraph-sns/PageRank.webp" title="PageRank" data-thumbnail="/nebulagraph-sns/PageRank.webp">
+        
+    </a></p>
+<p>我们可以从上边看到，PageRank 计算之后所有绿色的 player（人）中，&ldquo;player.name: Tim Duncan&rdquo; 是最大的一个点，与之相关联的关系看起来的确不少，我们在图上选择他，再右键反选，选择除了 Tim Duncan 之外的所有点，用退格键删除所有其他的点，然后在他作为起点双向探索出1到5步，可以得到 Tim Duncan 的子图：</p>
+<p><a class="lightgallery" href="/nebulagraph-sns/TimDuncan.webp" title="TimDuncan" data-thumbnail="/nebulagraph-sns/TimDuncan.webp">
+        
+    </a></p>
+<p>从自图中可以看到 Tim Duncan 和非常多其他球员有关注的关系的同时，一些其他很受欢迎的队员和他一起一样服役过非常热门的热刺（Spurs）队，这些都印证了 PageRank 的评估方式。</p>
+<p>现在我们再看看其他判定维度下的算法会不会得出一样的结论呢？</p>
+<h3 id="betweenness-centrality" class="headerLink">
+    <a href="#betweenness-centrality" class="header-mark"></a>3.2 Betweenness Centrality</h3><p>作为另一个流行的节点重要性算法，通过计算一个节点对于图中的中介、桥梁作用来衡量节点的重要性，这里的桥梁作用是有数学定义的量化算法，这里就不展开说了，不过从感官上可以看出它是另一个角度很符合直觉地去评估重要性的方法。</p>
+<p>我们重新在画布上查询所有的点边之后，在浏览器里运行 Betweenness Centrality 算法，这次的结果是：</p>
+<p><a class="lightgallery" href="/nebulagraph-sns/Betweeness_centrality.webp" title="Betweeness_centrality" data-thumbnail="/nebulagraph-sns/Betweeness_centrality.webp">
+        
+    </a></p>
+<p>从它的五跳内子图可以看出，与之前 PageRank 所得的关键人物 Tim Duncan 呈现的星星状态不同，Dejounte Murray 的子图呈现簇状，在感官、直觉上可以想象 Dejounte Murray 真的在很多节点之间的最小路径的必经之路上，而 Tim Duncan 则似乎和更多的重要连接者产生了关联。</p>
+<p><a class="lightgallery" href="/nebulagraph-sns/DejounteMurray.webp" title="DejounteMurray" data-thumbnail="/nebulagraph-sns/DejounteMurray.webp">
+        
+    </a></p>
+<p>在实际的应用场景中，我们通常要通过不同方式的定义的理解、不同执行结果的试验、分析去找到我们关注的关键人物产生影响的结构特征，用来针对不同需求选择不同的算法。</p>
+<h2 id="找出社区聚集群体" class="headerLink">
+    <a href="#%e6%89%be%e5%87%ba%e7%a4%be%e5%8c%ba%e8%81%9a%e9%9b%86%e7%be%a4%e4%bd%93" class="header-mark"></a>4 找出社区、聚集群体</h2><p>社交网络中的社区检测是一种通过分析社交关系来发现社区结构的技术。社区结构是指在社交网络、图谱中相互联系密切的一组节点，这些节点通常具有相似的特征或兴趣。例如，社区结构可能表现为用户根据共同的话题或兴趣聚集在一起的一组用户。</p>
+<p>社区检测的目的是通过对社交网络进行分析，找出不同社区的边界，并确定每个社区中的节点。这一过程可以通过使用各种算法来完成，例如标签传播算法、弱联通分量算法和 Louvain 算法等。通过发现社区结构，可以更好地了解社交网络的结构和特征，并有助于社交网络服务提供方更好地推断和预测社交网络中的行为，帮助做好社交网络的治理、广告投放、市场营销等。</p>
+<p>由于我们的数据集是非真实的，我在不同的算法之下得出的结果并不能展现出真实的意涵，所以本章只是展示一下利用几个图算法进行社区识别之后的结果，在真实世界的案例中，我们还应该在此基础之上利用领域知识或者其他技术手段协同给出不同群体、社区的画像、标签。</p>
+<p>标签传播算法效果：</p>
+<p><a class="lightgallery" href="/nebulagraph-sns/LPA.webp" title="LPA" data-thumbnail="/nebulagraph-sns/LPA.webp">
+        
+    </a></p>
+<p>Louvain 算法效果：</p>
+<p><a class="lightgallery" href="/nebulagraph-sns/Louvain.webp" title="Louvain" data-thumbnail="/nebulagraph-sns/Louvain.webp">
+        
+    </a></p>
+<p>弱联通分量算法效果：</p>
+<p><a class="lightgallery" href="/nebulagraph-sns/WCC.webp" title="WCC" data-thumbnail="/nebulagraph-sns/WCC.webp">
+        
+    </a></p>
+<p>在后边的章节，我们有机会可以在更小、更简单的子图上再次验证这几个算法，结果会更有可解释性一些。</p>
+<h2 id="好友亲密度" class="headerLink">
+    <a href="#%e5%a5%bd%e5%8f%8b%e4%ba%b2%e5%af%86%e5%ba%a6" class="header-mark"></a>5 好友亲密度</h2><p>通过社区识别算法，其实是能够在一定程度上，在全局计算获得兴趣相近、关联紧密的好友的。那么如何获得一个给定用户的其他亲密好友呢？我们可以通过计算这个用户的好友中，和他共同好友的个数来排序获得这一信息！</p>
+<p>我们拿 &ldquo;Tim Duncan&rdquo; 举例，我们知道，他的两度好友（好友的好友：<code>(:player{name: &quot;Tim Duncan&quot;})-[:follow]-(f:player)-[:follow]-(fof:player)</code>）如果同时也是他的好友的话，那么他们这个中间的好友就是他和这个朋友的共同好友（Mutual Friend），那么有理由相信那些和 Tim Duncan 有更多共同好友的人可能跟他有更高亲密度：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="line"><span class="cl"><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">start</span><span class="p">:</span><span class="o">`</span><span class="n">player</span><span class="o">`</span><span class="err">{</span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;Tim Duncan&#34;</span><span class="err">}</span><span class="p">)</span><span class="o">-</span><span class="p">[:</span><span class="o">`</span><span class="n">follow</span><span class="o">`</span><span class="p">]</span><span class="o">-</span><span class="p">(</span><span class="n">f</span><span class="p">:</span><span class="o">`</span><span class="n">player</span><span class="o">`</span><span class="p">)</span><span class="o">-</span><span class="p">[:</span><span class="o">`</span><span class="n">follow</span><span class="o">`</span><span class="p">]</span><span class="o">-</span><span class="p">(</span><span class="n">fof</span><span class="p">:</span><span class="o">`</span><span class="n">player</span><span class="o">`</span><span class="p">),</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">(</span><span class="n">start</span><span class="p">:</span><span class="o">`</span><span class="n">player</span><span class="o">`</span><span class="p">)</span><span class="o">-</span><span class="p">[:</span><span class="o">`</span><span class="n">follow</span><span class="o">`</span><span class="p">]</span><span class="o">-</span><span class="p">(</span><span class="n">fof</span><span class="p">:</span><span class="o">`</span><span class="n">player</span><span class="o">`</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">RETURN</span><span class="w"> </span><span class="n">fof</span><span class="p">.</span><span class="o">`</span><span class="n">player</span><span class="o">`</span><span class="p">.</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="nf">count</span><span class="p">(</span><span class="k">DISTINCT</span><span class="w"> </span><span class="n">f</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">NrOfMutualF</span><span class="w"> </span><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">NrOfMutualF</span><span class="w"> </span><span class="k">DESC</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>这个计算结果是，&ldquo;Tony Parker&rdquo; 和 Tim 有 5 个共同好友，最为亲密。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">fof.player.name</th>
+<th style="text-align:left">NrOfMutualF</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">Tony Parker</td>
+<td style="text-align:left">5</td>
+</tr>
+<tr>
+<td style="text-align:left">Dejounte Murray</td>
+<td style="text-align:left">4</td>
+</tr>
+<tr>
+<td style="text-align:left">Manu Ginobili</td>
+<td style="text-align:left">3</td>
+</tr>
+<tr>
+<td style="text-align:left">Marco Belinelli</td>
+<td style="text-align:left">3</td>
+</tr>
+<tr>
+<td style="text-align:left">Danny Green</td>
+<td style="text-align:left">2</td>
+</tr>
+<tr>
+<td style="text-align:left">Boris Diaw</td>
+<td style="text-align:left">1</td>
+</tr>
+<tr>
+<td style="text-align:left">LaMarcus Aldridge</td>
+<td style="text-align:left">1</td>
+</tr>
+<tr>
+<td style="text-align:left">Tiago Splitter</td>
+<td style="text-align:left">1</td>
+</tr>
+</tbody>
+</table>
+<p>下面，咱们通过可视化来验证一下这个结果吧！</p>
+<p>先看看每一个好友的共同好友(f:)都是谁？</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="line"><span class="cl"><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">start</span><span class="p">:</span><span class="n">player</span><span class="err">{</span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;Tim Duncan&#34;</span><span class="err">}</span><span class="p">)</span><span class="o">-</span><span class="p">[:</span><span class="o">`</span><span class="n">follow</span><span class="o">`</span><span class="p">]</span><span class="o">-</span><span class="p">(</span><span class="n">f</span><span class="p">:</span><span class="n">player</span><span class="p">)</span><span class="o">-</span><span class="p">[:</span><span class="o">`</span><span class="n">follow</span><span class="o">`</span><span class="p">]</span><span class="o">-</span><span class="p">(</span><span class="n">fof</span><span class="p">:</span><span class="n">player</span><span class="p">),</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">(</span><span class="n">start</span><span class="p">:</span><span class="n">player</span><span class="p">)</span><span class="o">-</span><span class="p">[:</span><span class="o">`</span><span class="n">follow</span><span class="o">`</span><span class="p">]</span><span class="o">-</span><span class="p">(</span><span class="n">fof</span><span class="p">:</span><span class="n">player</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">RETURN</span><span class="w"> </span><span class="n">fof</span><span class="p">.</span><span class="n">player</span><span class="p">.</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="nf">collect</span><span class="p">(</span><span class="k">DISTINCT</span><span class="w"> </span><span class="n">f</span><span class="p">.</span><span class="n">player</span><span class="p">.</span><span class="n">name</span><span class="p">);</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>结果如下：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">fof.player.name</th>
+<th style="text-align:left">collect(distinct f.player.name)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">Boris Diaw</td>
+<td style="text-align:left">[&ldquo;Tony Parker&rdquo;]</td>
+</tr>
+<tr>
+<td style="text-align:left">Manu Ginobili</td>
+<td style="text-align:left">[&ldquo;Dejounte Murray&rdquo;, &ldquo;Tiago Splitter&rdquo;, &ldquo;Tony Parker&rdquo;]</td>
+</tr>
+<tr>
+<td style="text-align:left">LaMarcus Aldridge</td>
+<td style="text-align:left">[&ldquo;Tony Parker&rdquo;]</td>
+</tr>
+<tr>
+<td style="text-align:left">Tiago Splitter</td>
+<td style="text-align:left">[&ldquo;Manu Ginobili&rdquo;]</td>
+</tr>
+<tr>
+<td style="text-align:left">Tony Parker</td>
+<td style="text-align:left">[&ldquo;Dejounte Murray&rdquo;, &ldquo;Boris Diaw&rdquo;, &ldquo;Manu Ginobili&rdquo;, &ldquo;Marco Belinelli&rdquo;, &ldquo;LaMarcus Aldridge&rdquo;]</td>
+</tr>
+<tr>
+<td style="text-align:left">Dejounte Murray</td>
+<td style="text-align:left">[&ldquo;Danny Green&rdquo;, &ldquo;Tony Parker&rdquo;, &ldquo;Manu Ginobili&rdquo;, &ldquo;Marco Belinelli&rdquo;]</td>
+</tr>
+<tr>
+<td style="text-align:left">Danny Green</td>
+<td style="text-align:left">[&ldquo;Dejounte Murray&rdquo;, &ldquo;Marco Belinelli&rdquo;]</td>
+</tr>
+<tr>
+<td style="text-align:left">Marco Belinelli</td>
+<td style="text-align:left">[&ldquo;Dejounte Murray&rdquo;, &ldquo;Danny Green&rdquo;, &ldquo;Tony Parker&rdquo;]</td>
+</tr>
+</tbody>
+</table>
+<p>然后我们在 Explorer 上可视化一下这个结果：</p>
+<ul>
+<li>首先，我们把 Tim 的量度好友路径全查出来</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="line"><span class="cl"><span class="k">MATCH</span><span class="w"> </span><span class="n">p</span><span class="o">=</span><span class="p">(</span><span class="n">start</span><span class="p">:</span><span class="n">player</span><span class="err">{</span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;Tim Duncan&#34;</span><span class="err">}</span><span class="p">)</span><span class="o">-</span><span class="p">[:</span><span class="o">`</span><span class="n">follow</span><span class="o">`</span><span class="p">]</span><span class="o">-</span><span class="p">(</span><span class="n">f</span><span class="p">:</span><span class="n">player</span><span class="p">)</span><span class="o">-</span><span class="p">[:</span><span class="n">follow</span><span class="p">]</span><span class="o">-</span><span class="p">(</span><span class="n">fof</span><span class="p">:</span><span class="n">player</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">RETURN</span><span class="w"> </span><span class="n">p</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>然后我们在其中按照度去渲染节点大小，并选中 Tim 和 Tony，并在两者之间查询 follow 类型边、双向、最多 2 跳的全部路径：</li>
+</ul>
+<p>可以看出他们之间是最亲密的朋友没跑了，而且他们的共同好友也在路径之中：</p>
+<p><code>[&quot;Dejounte Murray&quot;, &quot;Boris Diaw&quot;, &quot;Manu Ginobili&quot;, &quot;Marco Belinelli&quot;, &quot;LaMarcus Aldridge&quot;]</code></p>
+<p><a class="lightgallery" href="/nebulagraph-sns/closest_friend.webp" title="closest_friend" data-thumbnail="/nebulagraph-sns/closest_friend.webp">
+        
+    </a></p>
+<h3 id="朋友圈子里的小群体" class="headerLink">
+    <a href="#%e6%9c%8b%e5%8f%8b%e5%9c%88%e5%ad%90%e9%87%8c%e7%9a%84%e5%b0%8f%e7%be%a4%e4%bd%93" class="header-mark"></a>5.1 朋友圈子里的小群体</h3><p>这时候，如前边提到，这份数据集本身的非真实性，使得社区发现算法的结果不能得到其中洞察的内涵，现在我们可以接着这个小的子图，看看 Tim 的好友中可以如何区分群组、社区呢，咱们跑一个 Louvain 、弱联通分量、标签传播看看：</p>
+<ul>
+<li>弱联通分量，可以把 Tim 等朋友们大体分割出两三个相互不连通的部分，非常符合连通分量的直观理解和定义。</li>
+</ul>
+<p><a class="lightgallery" href="/nebulagraph-sns/Tim_wcc.webp" title="Tim_wcc" data-thumbnail="/nebulagraph-sns/Tim_wcc.webp">
+        
+    </a></p>
+<ul>
+<li>
+<p>标签传播，我们可以通过控制迭代次数按需去通过随机的传播划定出不同的划分度，结果可以有一定的区分度：</p>
+<p>20 次迭代</p>
+<p><a class="lightgallery" href="/nebulagraph-sns/Tim_LPA.webp" title="Tim_LPA" data-thumbnail="/nebulagraph-sns/Tim_LPA.webp">
+        
+    </a></p>
+<p>1000 次迭代</p>
+<p><a class="lightgallery" href="/nebulagraph-sns/Tim_LPA_1000.webp" title="Tim_LPA_1000" data-thumbnail="/nebulagraph-sns/Tim_LPA_1000.webp">
+        
+    </a></p>
+</li>
+<li>
+<p>Louvain，是一个比较高效、稳定的算法，基本上在这个子图下我们可以在很小的迭代次数下得到很符合直觉的划分：</p>
+</li>
+</ul>
+<p><a class="lightgallery" href="/nebulagraph-sns/Tim_Louvain.webp" title="Tim_Louvain" data-thumbnail="/nebulagraph-sns/Tim_Louvain.webp">
+        
+    </a></p>
+<h2 id="新朋友推荐" class="headerLink">
+    <a href="#%e6%96%b0%e6%9c%8b%e5%8f%8b%e6%8e%a8%e8%8d%90" class="header-mark"></a>6 新朋友推荐</h2><p>接着前边二度朋友（朋友的朋友）的思路，我们可以很容易把那些还不是朋友的二度朋友作为推荐添加的好友，而排序规则则是他们之间的共同好友数量：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="line"><span class="cl"><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">start</span><span class="p">:</span><span class="n">player</span><span class="err">{</span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;Tim Duncan&#34;</span><span class="err">}</span><span class="p">)</span><span class="o">-</span><span class="p">[:</span><span class="o">`</span><span class="n">follow</span><span class="o">`</span><span class="p">]</span><span class="o">-</span><span class="p">(</span><span class="n">f</span><span class="p">:</span><span class="n">player</span><span class="p">)</span><span class="o">-</span><span class="p">[:</span><span class="o">`</span><span class="n">follow</span><span class="o">`</span><span class="p">]</span><span class="o">-</span><span class="p">(</span><span class="n">fof</span><span class="p">:</span><span class="n">player</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">WHERE</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="p">(</span><span class="n">start</span><span class="p">:</span><span class="n">player</span><span class="p">)</span><span class="o">-</span><span class="p">[:</span><span class="o">`</span><span class="n">follow</span><span class="o">`</span><span class="p">]</span><span class="o">-</span><span class="p">(</span><span class="n">fof</span><span class="p">:</span><span class="n">player</span><span class="p">)</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">fof</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">start</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">RETURN</span><span class="w"> </span><span class="n">fof</span><span class="p">.</span><span class="n">player</span><span class="p">.</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="nf">count</span><span class="p">(</span><span class="k">DISTINCT</span><span class="w"> </span><span class="n">f</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">NrOfMutualF</span><span class="w"> </span><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">NrOfMutualF</span><span class="w"> </span><span class="k">DESC</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><table>
+<thead>
+<tr>
+<th style="text-align:left">fof.player.name</th>
+<th style="text-align:left">NrOfMutualF</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">LeBron James</td>
+<td style="text-align:left">2</td>
+</tr>
+<tr>
+<td style="text-align:left">James Harden</td>
+<td style="text-align:left">1</td>
+</tr>
+<tr>
+<td style="text-align:left">Chris Paul</td>
+<td style="text-align:left">1</td>
+</tr>
+<tr>
+<td style="text-align:left">Yao Ming</td>
+<td style="text-align:left">1</td>
+</tr>
+<tr>
+<td style="text-align:left">Damian Lillard</td>
+<td style="text-align:left">1</td>
+</tr>
+<tr>
+<td style="text-align:left">JaVale McGee</td>
+<td style="text-align:left">1</td>
+</tr>
+<tr>
+<td style="text-align:left">Kevin Durant</td>
+<td style="text-align:left">1</td>
+</tr>
+<tr>
+<td style="text-align:left">Kyle Anderson</td>
+<td style="text-align:left">1</td>
+</tr>
+<tr>
+<td style="text-align:left">Rudy Gay</td>
+<td style="text-align:left">1</td>
+</tr>
+<tr>
+<td style="text-align:left">Russell Westbrook</td>
+<td style="text-align:left">1</td>
+</tr>
+</tbody>
+</table>
+<p>显然，LeBron 最值得推荐！再看看这些共同好友都是谁？</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">fof.player.name</th>
+<th style="text-align:left">collect(distinct f.player.name)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">James Harden</td>
+<td style="text-align:left">[&ldquo;Dejounte Murray&rdquo;]</td>
+</tr>
+<tr>
+<td style="text-align:left">LeBron James</td>
+<td style="text-align:left">[&ldquo;Danny Green&rdquo;, &ldquo;Dejounte Murray&rdquo;]</td>
+</tr>
+<tr>
+<td style="text-align:left">Chris Paul</td>
+<td style="text-align:left">[&ldquo;Dejounte Murray&rdquo;]</td>
+</tr>
+<tr>
+<td style="text-align:left">Yao Ming</td>
+<td style="text-align:left">[&ldquo;Shaquille O&rsquo;Neal&rdquo;]</td>
+</tr>
+<tr>
+<td style="text-align:left">Damian Lillard</td>
+<td style="text-align:left">[&ldquo;LaMarcus Aldridge&rdquo;]</td>
+</tr>
+<tr>
+<td style="text-align:left">JaVale McGee</td>
+<td style="text-align:left">[&ldquo;Shaquille O&rsquo;Neal&rdquo;]</td>
+</tr>
+<tr>
+<td style="text-align:left">Kevin Durant</td>
+<td style="text-align:left">[&ldquo;Dejounte Murray&rdquo;]</td>
+</tr>
+<tr>
+<td style="text-align:left">Kyle Anderson</td>
+<td style="text-align:left">[&ldquo;Dejounte Murray&rdquo;]</td>
+</tr>
+<tr>
+<td style="text-align:left">Rudy Gay</td>
+<td style="text-align:left">[&ldquo;LaMarcus Aldridge&rdquo;]</td>
+</tr>
+<tr>
+<td style="text-align:left">Russell Westbrook</td>
+<td style="text-align:left">[&ldquo;Dejounte Murray&rdquo;]</td>
+</tr>
+</tbody>
+</table>
+<p>同样，我们在刚才的子图里找找 LeBron James 吧！我们把它俩之间的两步、双向路径找出来，果然只会经过 <code>[&quot;Danny Green&quot;, &quot;Dejounte Murray&quot;]</code> 并且，没有直接的连接：</p>
+<p><a class="lightgallery" href="/nebulagraph-sns/Tim_newFriend.webp" title="Tim_newFriend" data-thumbnail="/nebulagraph-sns/Tim_newFriend.webp">
+        
+    </a></p>
+<p>现在，系统会给两边发提醒：“hey，也许你们应该交个朋友！”</p>
+<h2 id="共同邻居" class="headerLink">
+    <a href="#%e5%85%b1%e5%90%8c%e9%82%bb%e5%b1%85" class="header-mark"></a>7 共同邻居</h2><p>查找共同邻居是一个很常见的图库查询，它的场景可能根据不同的邻居关系，节点类型，同构、异构，带来不同的场景，前边两个场景下的共同好友本质上是两点之间的共同邻居，直接查询这样的关系用 OpenCypher 的表达非常简单。</p>
+<h3 id="两点之间的共同邻居" class="headerLink">
+    <a href="#%e4%b8%a4%e7%82%b9%e4%b9%8b%e9%97%b4%e7%9a%84%e5%85%b1%e5%90%8c%e9%82%bb%e5%b1%85" class="header-mark"></a>7.1 两点之间的共同邻居</h3><p>比如这个表达可以查询两个用户之间的共性、交集，结果可能是共同团队、去过的地方、兴趣爱好、共同参与的帖子回复等等：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="line"><span class="cl"><span class="k">MATCH</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="o">`</span><span class="n">v0</span><span class="o">`</span><span class="p">)</span><span class="o">--</span><span class="p">()</span><span class="o">--</span><span class="p">(</span><span class="o">`</span><span class="n">v1</span><span class="o">`</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">WHERE</span><span class="w"> </span><span class="nf">id</span><span class="p">(</span><span class="o">`</span><span class="n">v0</span><span class="o">`</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&#34;player100&#34;</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="nf">id</span><span class="p">(</span><span class="o">`</span><span class="n">v1</span><span class="o">`</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&#34;player104&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">RETURN</span><span class="w"> </span><span class="n">p</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>而限定了边的类型之后，这个查询就限定在共同好友的查询了。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="line"><span class="cl"><span class="k">MATCH</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">v0</span><span class="p">)</span><span class="o">--</span><span class="p">(:</span><span class="o">`</span><span class="n">follow</span><span class="o">`</span><span class="p">)</span><span class="o">--</span><span class="p">(</span><span class="n">v1</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">WHERE</span><span class="w"> </span><span class="nf">id</span><span class="p">(</span><span class="n">v0</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&#34;player100&#34;</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="nf">id</span><span class="p">(</span><span class="n">v1</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&#34;player104&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">RETURN</span><span class="w"> </span><span class="n">p</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="多点之间的共同邻居内容推送" class="headerLink">
+    <a href="#%e5%a4%9a%e7%82%b9%e4%b9%8b%e9%97%b4%e7%9a%84%e5%85%b1%e5%90%8c%e9%82%bb%e5%b1%85%e5%86%85%e5%ae%b9%e6%8e%a8%e9%80%81" class="header-mark"></a>7.2 多点之间的共同邻居：内容推送</h3><p>下面，我们给出一个多点共同邻居的场景，我们从一个文章触发，查出所有在这个文章上有互动的用户，找到这一群体中的共同邻居。</p>
+<p>这个共同邻居有什么用处呢？很自然，如果这个共同邻居还没有和这个文章有任何交互，我们可以把这个文章推荐给他。</p>
+<p>这个查询的实现很有意思：</p>
+<ul>
+<li>第一个 MATCH 是查到所有 post11 文章下留言和作者这些人的总人数</li>
+<li>在第二个 MATCH 之后，我们查到所有这群人的一度好友路径中，这些文章过的交互用户的一度好友的参与过文章的朋友数量刚好等于这个参与文章的用户的数量的这些人，他们其实就是这些所有参与用户的共同好友。</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="line"><span class="cl"><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">blog</span><span class="p">:</span><span class="n">post</span><span class="p">)</span><span class="o">&lt;-</span><span class="p">[</span><span class="n">e</span><span class="p">]</span><span class="o">-</span><span class="p">(:</span><span class="n">player</span><span class="p">)</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="nf">id</span><span class="p">(</span><span class="n">blog</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&#34;post11&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">WITH</span><span class="w"> </span><span class="n">blog</span><span class="p">,</span><span class="w"> </span><span class="nf">count</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">invoved_user_count</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">blog</span><span class="p">:</span><span class="n">post</span><span class="p">)</span><span class="o">&lt;-</span><span class="p">[]</span><span class="o">-</span><span class="p">(</span><span class="n">users</span><span class="p">:</span><span class="n">player</span><span class="p">)</span><span class="o">-</span><span class="p">[:</span><span class="o">`</span><span class="n">follow</span><span class="o">`</span><span class="p">]</span><span class="o">-</span><span class="p">(</span><span class="n">common_neighbor</span><span class="p">:</span><span class="n">player</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">WITH</span><span class="w"> </span><span class="nf">toSet</span><span class="p">(</span><span class="nf">collect</span><span class="p">(</span><span class="n">users</span><span class="p">))</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">users</span><span class="p">,</span><span class="w"> </span><span class="n">common_neighbor</span><span class="p">,</span><span class="w"> </span><span class="n">invoved_user_count</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">WHERE</span><span class="w"> </span><span class="nf">size</span><span class="p">(</span><span class="n">users</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">invoved_user_count</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">RETURN</span><span class="w"> </span><span class="n">common_neighbor</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>而这个人就是&hellip;Tony！</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">+-----------------------------------------------------+
+</span></span><span class="line"><span class="cl">| common_neighbor                                     |
+</span></span><span class="line"><span class="cl">+-----------------------------------------------------+
+</span></span><span class="line"><span class="cl">| (&#34;player101&#34; :player{age: 36, name: &#34;Tony Parker&#34;}) |
+</span></span><span class="line"><span class="cl">+-----------------------------------------------------+
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>而我们可以很容易在可视化中国验证它：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="line"><span class="cl"><span class="k">MATCH</span><span class="w"> </span><span class="n">p</span><span class="o">=</span><span class="p">(</span><span class="n">blog</span><span class="p">:</span><span class="n">post</span><span class="p">)</span><span class="o">&lt;-</span><span class="p">[]</span><span class="o">-</span><span class="p">(</span><span class="n">users</span><span class="p">:</span><span class="n">player</span><span class="p">)</span><span class="o">-</span><span class="p">[:</span><span class="o">`</span><span class="n">follow</span><span class="o">`</span><span class="p">]</span><span class="o">-</span><span class="p">(</span><span class="n">common_neighbor</span><span class="p">:</span><span class="n">player</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">WHERE</span><span class="w"> </span><span class="nf">id</span><span class="p">(</span><span class="n">blog</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&#34;post11&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">RETURN</span><span class="w"> </span><span class="n">p</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>渲染这个查询结果，然后再这篇叫做 &ldquo;Let&rsquo;s have a party!&rdquo; 的文章与 Tony 之间查找评论、po文、关注三类边的双向、两跳查询，就可以看到这些参与文章的人们无一例外，都是 Tony 的好友，而只有 Tony 自己还没去文章里留言！</p>
+<p>而 Party 怎么可以少了 Tony 呢？难道是他的惊喜生日 Party，Opps，我们是不是不应该告诉他？</p>
+<p><a class="lightgallery" href="/nebulagraph-sns/common_nbrs_tony.webp" title="common_nbrs_tony" data-thumbnail="/nebulagraph-sns/common_nbrs_tony.webp">
+        
+    </a></p>
+<h2 id="信息流" class="headerLink">
+    <a href="#%e4%bf%a1%e6%81%af%e6%b5%81" class="header-mark"></a>8 信息流</h2><p>我在之前写过基于图技术的推荐系统实现方法，其中描述了现代推荐系统中内容过滤、排序方法可以在图谱上进行，社交网络中有一点相似但又不同的场景是信息流（Feed），它的产生类似于推荐系统中的个性化，同时有具有很高的时效性，借助于包含了内容行为知识的社交图谱可以很直观、高效去实现个性化的信息流生成。</p>
+<h3 id="好友参与的内容" class="headerLink">
+    <a href="#%e5%a5%bd%e5%8f%8b%e5%8f%82%e4%b8%8e%e7%9a%84%e5%86%85%e5%ae%b9" class="header-mark"></a>8.1 好友参与的内容</h3><p>最简单、直接的信息流定义可能就是在朋友圈、微博 feed 上刷一下关注的人创建、参与的内容列表了，先不考虑排序的问题，这些内容一定是：</p>
+<ul>
+<li>一定时间段内好友创建的内容</li>
+<li>一定时间端内好友评论的内容</li>
+</ul>
+<p>我们可以用 cypher 表达这个查询用户 id 为 player100 的信息流：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="line"><span class="cl"><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">feed_owner</span><span class="p">:</span><span class="n">player</span><span class="p">)</span><span class="o">-</span><span class="p">[:</span><span class="o">`</span><span class="n">follow</span><span class="o">`</span><span class="p">]</span><span class="o">-</span><span class="p">(</span><span class="n">friend</span><span class="p">:</span><span class="n">player</span><span class="p">)</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="nf">id</span><span class="p">(</span><span class="n">feed_owner</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&#34;player100&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">OPTIONAL</span><span class="w"> </span><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">friend</span><span class="p">:</span><span class="n">player</span><span class="p">)</span><span class="o">-</span><span class="p">[</span><span class="n">newly_commented</span><span class="p">:</span><span class="n">commented_at</span><span class="p">]</span><span class="o">-&gt;</span><span class="p">(:</span><span class="n">post</span><span class="p">)</span><span class="o">&lt;-</span><span class="p">[:</span><span class="n">created_post</span><span class="p">]</span><span class="o">-</span><span class="p">(</span><span class="n">feed_owner</span><span class="p">:</span><span class="n">player</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">WHERE</span><span class="w"> </span><span class="n">newly_commented</span><span class="p">.</span><span class="n">post_time</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="kt">timestamp</span><span class="p">(</span><span class="s2">&#34;2010-01-01 00:00:00&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">OPTIONAL</span><span class="w"> </span><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">friend</span><span class="p">:</span><span class="n">player</span><span class="p">)</span><span class="o">-</span><span class="p">[</span><span class="n">newly_created</span><span class="p">:</span><span class="n">created_post</span><span class="p">]</span><span class="o">-&gt;</span><span class="p">(</span><span class="n">po</span><span class="p">:</span><span class="n">post</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">WHERE</span><span class="w"> </span><span class="n">newly_created</span><span class="p">.</span><span class="n">post_time</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="kt">timestamp</span><span class="p">(</span><span class="s2">&#34;2010-01-01 00:00:00&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">WITH</span><span class="w"> </span><span class="k">DISTINCT</span><span class="w"> </span><span class="n">friend</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nf">collect</span><span class="p">(</span><span class="k">DISTINCT</span><span class="w"> </span><span class="n">po</span><span class="p">.</span><span class="n">post</span><span class="p">.</span><span class="n">title</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nf">collect</span><span class="p">(</span><span class="s2">&#34;comment of &#34;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nf">dst</span><span class="p">(</span><span class="n">newly_commented</span><span class="p">))</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">AS</span><span class="w"> </span><span class="n">feeds</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="nf">size</span><span class="p">(</span><span class="n">feeds</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">RETURN</span><span class="w"> </span><span class="n">friend</span><span class="p">.</span><span class="n">player</span><span class="p">.</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">feeds</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><table>
+<thead>
+<tr>
+<th style="text-align:left">friend.player.name</th>
+<th style="text-align:left">feeds</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">Boris Diaw</td>
+<td style="text-align:left">[&ldquo;I love you, Mom&rdquo;, &ldquo;comment of post11&rdquo;]</td>
+</tr>
+<tr>
+<td style="text-align:left">Marco Belinelli</td>
+<td style="text-align:left">[&ldquo;my best friend, tom&rdquo;, &ldquo;comment of post11&rdquo;]</td>
+</tr>
+<tr>
+<td style="text-align:left">Danny Green</td>
+<td style="text-align:left">[&ldquo;comment of post1&rdquo;]</td>
+</tr>
+<tr>
+<td style="text-align:left">Tiago Splitter</td>
+<td style="text-align:left">[&ldquo;comment of post1&rdquo;]</td>
+</tr>
+<tr>
+<td style="text-align:left">Dejounte Murray</td>
+<td style="text-align:left">[&ldquo;comment of post11&rdquo;]</td>
+</tr>
+<tr>
+<td style="text-align:left">Tony Parker</td>
+<td style="text-align:left">[&ldquo;I can swim&rdquo;]</td>
+</tr>
+<tr>
+<td style="text-align:left">LaMarcus Aldridge</td>
+<td style="text-align:left">[&ldquo;I hate coriander&rdquo;, &ldquo;comment of post11&rdquo;, &ldquo;comment of post1&rdquo;]</td>
+</tr>
+<tr>
+<td style="text-align:left">Manu Ginobili</td>
+<td style="text-align:left">[&ldquo;my best friend, jerry&rdquo;, &ldquo;comment of post11&rdquo;, &ldquo;comment of post11&rdquo;]</td>
+</tr>
+</tbody>
+</table>
+<p>于是，我们可以把这些评论、文章发送到用户的 feed 之上了。</p>
+<p>我们也来看看他们在图上的样子吧，我们输出所有查到的路径：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="line"><span class="cl"><span class="k">MATCH</span><span class="w"> </span><span class="n">p</span><span class="o">=</span><span class="p">(</span><span class="n">feed_owner</span><span class="p">:</span><span class="n">player</span><span class="p">)</span><span class="o">-</span><span class="p">[:</span><span class="o">`</span><span class="n">follow</span><span class="o">`</span><span class="p">]</span><span class="o">-</span><span class="p">(</span><span class="n">friend</span><span class="p">:</span><span class="n">player</span><span class="p">)</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="nf">id</span><span class="p">(</span><span class="n">feed_owner</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&#34;player100&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">OPTIONAL</span><span class="w"> </span><span class="k">MATCH</span><span class="w"> </span><span class="n">p_comment</span><span class="o">=</span><span class="p">(</span><span class="n">friend</span><span class="p">:</span><span class="n">player</span><span class="p">)</span><span class="o">-</span><span class="p">[</span><span class="n">newly_commented</span><span class="p">:</span><span class="n">commented_at</span><span class="p">]</span><span class="o">-&gt;</span><span class="p">(:</span><span class="n">post</span><span class="p">)</span><span class="o">&lt;-</span><span class="p">[:</span><span class="n">created_post</span><span class="p">]</span><span class="o">-</span><span class="p">(</span><span class="n">feed_owner</span><span class="p">:</span><span class="n">player</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">WHERE</span><span class="w"> </span><span class="n">newly_commented</span><span class="p">.</span><span class="n">post_time</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="kt">timestamp</span><span class="p">(</span><span class="s2">&#34;2010-01-01 00:00:00&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">OPTIONAL</span><span class="w"> </span><span class="k">MATCH</span><span class="w"> </span><span class="n">p_post</span><span class="o">=</span><span class="p">(</span><span class="n">friend</span><span class="p">:</span><span class="n">player</span><span class="p">)</span><span class="o">-</span><span class="p">[</span><span class="n">newly_created</span><span class="p">:</span><span class="n">created_post</span><span class="p">]</span><span class="o">-&gt;</span><span class="p">(</span><span class="n">po</span><span class="p">:</span><span class="n">post</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">WHERE</span><span class="w"> </span><span class="n">newly_created</span><span class="p">.</span><span class="n">post_time</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="kt">timestamp</span><span class="p">(</span><span class="s2">&#34;2010-01-01 00:00:00&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">RETURN</span><span class="w"> </span><span class="n">p</span><span class="p">,</span><span class="w"> </span><span class="n">p_comment</span><span class="p">,</span><span class="w"> </span><span class="n">p_post</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>渲染在 Explorer 上，选择“神经网络”这个布局，可以很清晰看出这些粉色的文章节点，还有代表评论的边。</p>
+<p><a class="lightgallery" href="/nebulagraph-sns/feed_from_friends.webp" title="feed_from_friends" data-thumbnail="/nebulagraph-sns/feed_from_friends.webp">
+        
+    </a></p>
+<h3 id="附近好友的内容" class="headerLink">
+    <a href="#%e9%99%84%e8%bf%91%e5%a5%bd%e5%8f%8b%e7%9a%84%e5%86%85%e5%ae%b9" class="header-mark"></a>8.2 附近好友的内容</h3><p>我们再进一步，把地理信息考虑进来，获取那些住址的经纬度小于一定距离朋友相关的内容。</p>
+<p>这里，我们用到了 NebulaGraph 的 GeoSpatial 地理功能，<code>ST_Distance(home.address.geo_point, friend_addr.address.geo_point) AS distance WHERE distance &lt; 1000000</code> 的约束条件帮我们表达了距离的限制。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="line"><span class="cl"><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">home</span><span class="p">:</span><span class="n">address</span><span class="p">)</span><span class="o">-</span><span class="p">[:</span><span class="n">lived_in</span><span class="p">]</span><span class="o">-</span><span class="p">(</span><span class="n">feed_owner</span><span class="p">:</span><span class="n">player</span><span class="p">)</span><span class="o">-</span><span class="p">[:</span><span class="o">`</span><span class="n">follow</span><span class="o">`</span><span class="p">]</span><span class="o">-</span><span class="p">(</span><span class="n">friend</span><span class="p">:</span><span class="n">player</span><span class="p">)</span><span class="o">-</span><span class="p">[:</span><span class="n">lived_in</span><span class="p">]</span><span class="o">-</span><span class="p">(</span><span class="n">friend_addr</span><span class="p">:</span><span class="n">address</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">WHERE</span><span class="w"> </span><span class="nf">id</span><span class="p">(</span><span class="n">feed_owner</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&#34;player100&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">WITH</span><span class="w"> </span><span class="n">feed_owner</span><span class="p">,</span><span class="w"> </span><span class="n">friend</span><span class="p">,</span><span class="w"> </span><span class="nf">ST_Distance</span><span class="p">(</span><span class="n">home</span><span class="p">.</span><span class="n">address</span><span class="p">.</span><span class="n">geo_point</span><span class="p">,</span><span class="w"> </span><span class="n">friend_addr</span><span class="p">.</span><span class="n">address</span><span class="p">.</span><span class="n">geo_point</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">distance</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">distance</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">1000000</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">OPTIONAL</span><span class="w"> </span><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">friend</span><span class="p">:</span><span class="n">player</span><span class="p">)</span><span class="o">-</span><span class="p">[</span><span class="n">newly_commented</span><span class="p">:</span><span class="n">commented_at</span><span class="p">]</span><span class="o">-&gt;</span><span class="p">(:</span><span class="n">post</span><span class="p">)</span><span class="o">&lt;-</span><span class="p">[:</span><span class="n">created_post</span><span class="p">]</span><span class="o">-</span><span class="p">(</span><span class="n">feed_owner</span><span class="p">:</span><span class="n">player</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">WHERE</span><span class="w"> </span><span class="n">newly_commented</span><span class="p">.</span><span class="n">post_time</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="kt">timestamp</span><span class="p">(</span><span class="s2">&#34;2010-01-01 00:00:00&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">OPTIONAL</span><span class="w"> </span><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">friend</span><span class="p">:</span><span class="n">player</span><span class="p">)</span><span class="o">-</span><span class="p">[</span><span class="n">newly_created</span><span class="p">:</span><span class="n">created_post</span><span class="p">]</span><span class="o">-&gt;</span><span class="p">(</span><span class="n">po</span><span class="p">:</span><span class="n">post</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">WHERE</span><span class="w"> </span><span class="n">newly_created</span><span class="p">.</span><span class="n">post_time</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="kt">timestamp</span><span class="p">(</span><span class="s2">&#34;2010-01-01 00:00:00&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">WITH</span><span class="w"> </span><span class="k">DISTINCT</span><span class="w"> </span><span class="n">friend</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nf">collect</span><span class="p">(</span><span class="k">DISTINCT</span><span class="w"> </span><span class="n">po</span><span class="p">.</span><span class="n">post</span><span class="p">.</span><span class="n">title</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nf">collect</span><span class="p">(</span><span class="s2">&#34;comment of &#34;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nf">dst</span><span class="p">(</span><span class="n">newly_commented</span><span class="p">))</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">AS</span><span class="w"> </span><span class="n">feeds</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="nf">size</span><span class="p">(</span><span class="n">feeds</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">RETURN</span><span class="w"> </span><span class="n">friend</span><span class="p">.</span><span class="n">player</span><span class="p">.</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">feeds</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><table>
+<thead>
+<tr>
+<th style="text-align:left">friend.player.name</th>
+<th style="text-align:left">feeds</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">Marco Belinelli</td>
+<td style="text-align:left">[&ldquo;my best friend, tom&rdquo;, &ldquo;comment of post11&rdquo;]</td>
+</tr>
+<tr>
+<td style="text-align:left">Tony Parker</td>
+<td style="text-align:left">[&ldquo;I can swim&rdquo;]</td>
+</tr>
+<tr>
+<td style="text-align:left">Danny Green</td>
+<td style="text-align:left">[&ldquo;comment of post1&rdquo;]</td>
+</tr>
+</tbody>
+</table>
+<p>这时候，从可视化这个结果也可以看到住址这一关系，以及它们的经纬度信息，我手动根据它们的经纬度，把地址的节点在图上排布了一下可以看到这个 feed 的主人 Tim(player100) 的住址（7，8）刚好在其他好友住址的中间位置，这些临近好友的相关的文章和参与评论的内容将被作为信息流推送给 Tim：</p>
+<p><a class="lightgallery" href="/nebulagraph-sns/geo_feed.webp" title="geo_feed" data-thumbnail="/nebulagraph-sns/geo_feed.webp">
+        
+    </a></p>
+<h2 id="时空关系追踪" class="headerLink">
+    <a href="#%e6%97%b6%e7%a9%ba%e5%85%b3%e7%b3%bb%e8%bf%bd%e8%b8%aa" class="header-mark"></a>9 时空关系追踪</h2><p>时空关系追踪这个图谱应用是在公共安全、物流、疫情防控等场景下，利用图遍历将繁杂、凌乱的信息充分利用起来的典型应用。当我们建立起这样的图谱之后往往只需要简单的图查询就可以获得非常有用的洞察。本章节我给大家距离一下这个应用场景。</p>
+<h3 id="数据集" class="headerLink">
+    <a href="#%e6%95%b0%e6%8d%ae%e9%9b%86" class="header-mark"></a>9.1 数据集</h3><p>为此，我创建了一个虚拟的数据集由来构建一个时空关系图谱。数据集的生成程序和一份可以直接用的文件都放在了 GitHub 上，仓库地址是： <a href="https://github.com/wey-gu/covid-track-graph-datagen" target="_blank" rel="noopener noreferrer">https://github.com/wey-gu/covid-track-graph-datagen</a> 。</p>
+<p>它的数据建模如下：</p>
+
+<p>在一个全新的环境里，我们可以用下边的 3 行命令就准备好这个图谱：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 安装 NebulaGraph + NebulaGraph Studio</span>
+</span></span><span class="line"><span class="cl">curl -fsSL nebula-up.siwei.io/install.sh <span class="p">|</span> bash -s -- v3
+</span></span><span class="line"><span class="cl"><span class="c1"># 下载数据集</span>
+</span></span><span class="line"><span class="cl">git clone https://github.com/wey-gu/covid-track-graph-datagen <span class="o">&amp;&amp;</span> <span class="nb">cd</span> covid-track-graph-datagen
+</span></span><span class="line"><span class="cl"><span class="c1"># 导入数据集</span>
+</span></span><span class="line"><span class="cl">docker run --rm -ti <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    --network<span class="o">=</span>nebula-net <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    -v <span class="si">${</span><span class="nv">PWD</span><span class="si">}</span>/:/root <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    vesoft/nebula-importer:v3.2.0 <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    --config /root/nebula-importer-config.yaml
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>然后我们在 console 里查看一下数据</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">~/.nebula-up/console.sh
+</span></span><span class="line"><span class="cl"><span class="c1"># 进入 console 了，进到 covid_trace 图空间（刚才创建的）</span>
+</span></span><span class="line"><span class="cl">USE covid_trace<span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 执行数据统计的任务</span>
+</span></span><span class="line"><span class="cl">SHOW JOB STATS
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>结果：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="o">(</span>root@nebula<span class="o">)</span> <span class="o">[</span>covid_trace<span class="o">]</span>&gt; SHOW STATS
+</span></span><span class="line"><span class="cl">+---------+------------+--------+
+</span></span><span class="line"><span class="cl"><span class="p">|</span> Type    <span class="p">|</span> Name       <span class="p">|</span> Count  <span class="p">|</span>
+</span></span><span class="line"><span class="cl">+---------+------------+--------+
+</span></span><span class="line"><span class="cl"><span class="p">|</span> <span class="s2">&#34;Tag&#34;</span>   <span class="p">|</span> <span class="s2">&#34;人&#34;</span>       <span class="p">|</span> <span class="m">10000</span>  <span class="p">|</span>
+</span></span><span class="line"><span class="cl"><span class="p">|</span> <span class="s2">&#34;Tag&#34;</span>   <span class="p">|</span> <span class="s2">&#34;地址&#34;</span>     <span class="p">|</span> <span class="m">1000</span>   <span class="p">|</span>
+</span></span><span class="line"><span class="cl"><span class="p">|</span> <span class="s2">&#34;Tag&#34;</span>   <span class="p">|</span> <span class="s2">&#34;城市&#34;</span>     <span class="p">|</span> <span class="m">341</span>    <span class="p">|</span>
+</span></span><span class="line"><span class="cl"><span class="p">|</span> <span class="s2">&#34;Tag&#34;</span>   <span class="p">|</span> <span class="s2">&#34;村镇&#34;</span>     <span class="p">|</span> <span class="m">42950</span>  <span class="p">|</span>
+</span></span><span class="line"><span class="cl"><span class="p">|</span> <span class="s2">&#34;Tag&#34;</span>   <span class="p">|</span> <span class="s2">&#34;省份&#34;</span>     <span class="p">|</span> <span class="m">32</span>     <span class="p">|</span>
+</span></span><span class="line"><span class="cl"><span class="p">|</span> <span class="s2">&#34;Tag&#34;</span>   <span class="p">|</span> <span class="s2">&#34;联系方式&#34;</span> <span class="p">|</span> <span class="m">0</span>      <span class="p">|</span>
+</span></span><span class="line"><span class="cl"><span class="p">|</span> <span class="s2">&#34;Tag&#34;</span>   <span class="p">|</span> <span class="s2">&#34;行政区&#34;</span>   <span class="p">|</span> <span class="m">3134</span>   <span class="p">|</span>
+</span></span><span class="line"><span class="cl"><span class="p">|</span> <span class="s2">&#34;Tag&#34;</span>   <span class="p">|</span> <span class="s2">&#34;街道&#34;</span>     <span class="p">|</span> <span class="m">667911</span> <span class="p">|</span>
+</span></span><span class="line"><span class="cl"><span class="p">|</span> <span class="s2">&#34;Edge&#34;</span>  <span class="p">|</span> <span class="s2">&#34;住址&#34;</span>     <span class="p">|</span> <span class="m">0</span>      <span class="p">|</span>
+</span></span><span class="line"><span class="cl"><span class="p">|</span> <span class="s2">&#34;Edge&#34;</span>  <span class="p">|</span> <span class="s2">&#34;到访&#34;</span>     <span class="p">|</span> <span class="m">19986</span>  <span class="p">|</span>
+</span></span><span class="line"><span class="cl"><span class="p">|</span> <span class="s2">&#34;Edge&#34;</span>  <span class="p">|</span> <span class="s2">&#34;同住&#34;</span>     <span class="p">|</span> <span class="m">19998</span>  <span class="p">|</span>
+</span></span><span class="line"><span class="cl"><span class="p">|</span> <span class="s2">&#34;Edge&#34;</span>  <span class="p">|</span> <span class="s2">&#34;属于&#34;</span>     <span class="p">|</span> <span class="m">715336</span> <span class="p">|</span>
+</span></span><span class="line"><span class="cl"><span class="p">|</span> <span class="s2">&#34;Space&#34;</span> <span class="p">|</span> <span class="s2">&#34;vertices&#34;</span> <span class="p">|</span> <span class="m">725368</span> <span class="p">|</span>
+</span></span><span class="line"><span class="cl"><span class="p">|</span> <span class="s2">&#34;Space&#34;</span> <span class="p">|</span> <span class="s2">&#34;edges&#34;</span>    <span class="p">|</span> <span class="m">755320</span> <span class="p">|</span>
+</span></span><span class="line"><span class="cl">+---------+------------+--------+
+</span></span><span class="line"><span class="cl">Got <span class="m">14</span> rows <span class="o">(</span><span class="nb">time</span> spent 1087/46271 us<span class="o">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="两人之间的关联" class="headerLink">
+    <a href="#%e4%b8%a4%e4%ba%ba%e4%b9%8b%e9%97%b4%e7%9a%84%e5%85%b3%e8%81%94" class="header-mark"></a>9.2 两人之间的关联</h3><p>很自然，利用路径查询就可以了：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl"># 最短
+</span></span><span class="line"><span class="cl">FIND SHORTEST PATH FROM &#34;p_100&#34; TO &#34;p_101&#34; OVER * BIDIRECT YIELD PATH AS paths
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"># 所有路径
+</span></span><span class="line"><span class="cl">FIND ALL PATH FROM &#34;p_100&#34; TO &#34;p_101&#34; OVER * BIDIRECT YIELD PATH AS paths | LIMIT 10
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>最短路径结果：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">paths</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">&lt;(&ldquo;p_100&rdquo;)&lt;-[:同住@0 {}]-(&ldquo;p_2136&rdquo;)&lt;-[:同住@0 {}]-(&ldquo;p_3708&rdquo;)-[:到访@0 {}]-&gt;(&ldquo;a_125&rdquo;)&lt;-[:到访@0 {}]-(&ldquo;p_101&rdquo;)&gt;</td>
+</tr>
+</tbody>
+</table>
+<p>所有路径结果：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">paths</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">&lt;(&ldquo;p_100&rdquo;)&lt;-[:同住@0 {}]-(&ldquo;p_2136&rdquo;)&lt;-[:同住@0 {}]-(&ldquo;p_3708&rdquo;)-[:到访@0 {}]-&gt;(&ldquo;a_125&rdquo;)&lt;-[:到访@0 {}]-(&ldquo;p_101&rdquo;)&gt;</td>
+</tr>
+<tr>
+<td style="text-align:left">&lt;(&ldquo;p_100&rdquo;)-[:到访@0 {}]-&gt;(&ldquo;a_328&rdquo;)&lt;-[:到访@0 {}]-(&ldquo;p_6976&rdquo;)&lt;-[:同住@0 {}]-(&ldquo;p_261&rdquo;)-[:到访@0 {}]-&gt;(&ldquo;a_352&rdquo;)&lt;-[:到访@0 {}]-(&ldquo;p_101&rdquo;)&gt;</td>
+</tr>
+<tr>
+<td style="text-align:left">&lt;(&ldquo;p_100&rdquo;)-[:同住@0 {}]-&gt;(&ldquo;p_8709&rdquo;)-[:同住@0 {}]-&gt;(&ldquo;p_9315&rdquo;)-[:同住@0 {}]-&gt;(&ldquo;p_261&rdquo;)-[:到访@0 {}]-&gt;(&ldquo;a_352&rdquo;)&lt;-[:到访@0 {}]-(&ldquo;p_101&rdquo;)&gt;</td>
+</tr>
+<tr>
+<td style="text-align:left">&lt;(&ldquo;p_100&rdquo;)-[:到访@0 {}]-&gt;(&ldquo;a_328&rdquo;)&lt;-[:到访@0 {}]-(&ldquo;p_6311&rdquo;)-[:同住@0 {}]-&gt;(&ldquo;p_3941&rdquo;)-[:到访@0 {}]-&gt;(&ldquo;a_345&rdquo;)&lt;-[:到访@0 {}]-(&ldquo;p_101&rdquo;)&gt;</td>
+</tr>
+<tr>
+<td style="text-align:left">&lt;(&ldquo;p_100&rdquo;)-[:到访@0 {}]-&gt;(&ldquo;a_328&rdquo;)&lt;-[:到访@0 {}]-(&ldquo;p_5046&rdquo;)-[:同住@0 {}]-&gt;(&ldquo;p_3993&rdquo;)-[:到访@0 {}]-&gt;(&ldquo;a_144&rdquo;)&lt;-[:到访@0 {}]-(&ldquo;p_101&rdquo;)&gt;</td>
+</tr>
+<tr>
+<td style="text-align:left">&lt;(&ldquo;p_100&rdquo;)-[:同住@0 {}]-&gt;(&ldquo;p_3457&rdquo;)-[:到访@0 {}]-&gt;(&ldquo;a_199&rdquo;)&lt;-[:到访@0 {}]-(&ldquo;p_6771&rdquo;)-[:到访@0 {}]-&gt;(&ldquo;a_458&rdquo;)&lt;-[:到访@0 {}]-(&ldquo;p_101&rdquo;)&gt;</td>
+</tr>
+<tr>
+<td style="text-align:left">&lt;(&ldquo;p_100&rdquo;)&lt;-[:同住@0 {}]-(&ldquo;p_1462&rdquo;)-[:到访@0 {}]-&gt;(&ldquo;a_922&rdquo;)&lt;-[:到访@0 {}]-(&ldquo;p_5869&rdquo;)-[:到访@0 {}]-&gt;(&ldquo;a_345&rdquo;)&lt;-[:到访@0 {}]-(&ldquo;p_101&rdquo;)&gt;</td>
+</tr>
+<tr>
+<td style="text-align:left">&lt;(&ldquo;p_100&rdquo;)&lt;-[:同住@0 {}]-(&ldquo;p_9489&rdquo;)-[:到访@0 {}]-&gt;(&ldquo;a_985&rdquo;)&lt;-[:到访@0 {}]-(&ldquo;p_2733&rdquo;)-[:到访@0 {}]-&gt;(&ldquo;a_458&rdquo;)&lt;-[:到访@0 {}]-(&ldquo;p_101&rdquo;)&gt;</td>
+</tr>
+<tr>
+<td style="text-align:left">&lt;(&ldquo;p_100&rdquo;)&lt;-[:同住@0 {}]-(&ldquo;p_9489&rdquo;)-[:到访@0 {}]-&gt;(&ldquo;a_905&rdquo;)&lt;-[:到访@0 {}]-(&ldquo;p_2733&rdquo;)-[:到访@0 {}]-&gt;(&ldquo;a_458&rdquo;)&lt;-[:到访@0 {}]-(&ldquo;p_101&rdquo;)&gt;</td>
+</tr>
+<tr>
+<td style="text-align:left">&lt;(&ldquo;p_100&rdquo;)-[:到访@0 {}]-&gt;(&ldquo;a_89&rdquo;)&lt;-[:到访@0 {}]-(&ldquo;p_1333&rdquo;)&lt;-[:同住@0 {}]-(&ldquo;p_1683&rdquo;)-[:到访@0 {}]-&gt;(&ldquo;a_345&rdquo;)&lt;-[:到访@0 {}]-(&ldquo;p_101&rdquo;)&gt;</td>
+</tr>
+</tbody>
+</table>
+<p>我们把所有路径进行可视化渲染，标记出起点终点的两人，并在其中查到他们的最短路径，他们之间的千丝万缕关系就一目了然了，无论是商业洞察、公共安全还是疫情防控的目的，有了这个信息，相应的工作都可以如虎添翼地向下进展。</p>
+<p><a class="lightgallery" href="/nebulagraph-sns/find_path_two_people.webp" title="find_path_two_people" data-thumbnail="/nebulagraph-sns/find_path_two_people.webp">
+        
+    </a></p>
+<p>当然，在真实的系统上，可能我们只需要关心两个用户之间的关联远近，得出量化的评估：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">FIND SHORTEST PATH FROM &#34;p_100&#34; TO &#34;p_101&#34; OVER * BIDIRECT YIELD PATH AS paths |
+</span></span><span class="line"><span class="cl">    YIELD collect(length($-.paths)) AS len | YIELD coalesce($-.len[0], -1) AS len
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>结果中我们只关心他们之间最短路径的长度为：4。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">len</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">4</td>
+</tr>
+</tbody>
+</table>
+<h3 id="时空相交的人" class="headerLink">
+    <a href="#%e6%97%b6%e7%a9%ba%e7%9b%b8%e4%ba%a4%e7%9a%84%e4%ba%ba" class="header-mark"></a>9.3 时空相交的人</h3><p>进一步我们可以用图语义勾勒出我们想确定的任何带有时间与空间信息的模式，在图谱中实时查询出来，比如对给定的人，他的 id 是 p_101，我们相差在特定时间里所有和他有时空相交的人，这意味着那些人在 p_101 访问某一地方的时间段之内也逗留、访问了这些地方：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="line"><span class="cl"><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">p</span><span class="p">:</span><span class="err">人</span><span class="p">)</span><span class="o">-</span><span class="p">[</span><span class="o">`</span><span class="n">visit0</span><span class="o">`</span><span class="p">:</span><span class="err">到访</span><span class="p">]</span><span class="o">-&gt;</span><span class="p">(</span><span class="o">`</span><span class="n">addr</span><span class="o">`</span><span class="p">:</span><span class="err">地址</span><span class="p">)</span><span class="o">&lt;-</span><span class="p">[</span><span class="o">`</span><span class="n">visit1</span><span class="o">`</span><span class="p">:</span><span class="err">到访</span><span class="p">]</span><span class="o">-</span><span class="p">(</span><span class="n">p1</span><span class="p">:</span><span class="err">人</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">WHERE</span><span class="w"> </span><span class="nf">id</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&#34;p_101&#34;</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="o">`</span><span class="n">visit0</span><span class="o">`</span><span class="p">.</span><span class="o">`</span><span class="n">start_time</span><span class="o">`</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="o">`</span><span class="n">visit1</span><span class="o">`</span><span class="p">.</span><span class="o">`</span><span class="n">end_time</span><span class="o">`</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">RETURN</span><span class="w"> </span><span class="o">`</span><span class="n">addr</span><span class="o">`</span><span class="p">.</span><span class="err">地址</span><span class="p">.</span><span class="o">`</span><span class="n">name</span><span class="o">`</span><span class="p">,</span><span class="w"> </span><span class="nf">collect</span><span class="p">(</span><span class="n">p1</span><span class="p">.</span><span class="err">人</span><span class="p">.</span><span class="o">`</span><span class="n">name</span><span class="o">`</span><span class="p">)</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>我们得到了再每一个到访地点的时空相交人列表如下：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">addr.地址.name</th>
+<th style="text-align:left">collect(p1.人.name)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">闵行仇路q座 255960</td>
+<td style="text-align:left">[&ldquo;徐畅&rdquo;, &ldquo;王佳&rdquo;, &ldquo;曾亮&rdquo;, &ldquo;姜桂香&rdquo;, &ldquo;邵秀英&rdquo;, &ldquo;韦婷婷&rdquo;, &ldquo;陶玉&rdquo;, &ldquo;马坤&rdquo;, &ldquo;黄想&rdquo;, &ldquo;张秀芳&rdquo;, &ldquo;颜桂芳&rdquo;, &ldquo;张洋&rdquo;]</td>
+</tr>
+<tr>
+<td style="text-align:left">丰都北京路J座 725701</td>
+<td style="text-align:left">[&ldquo;陈春梅&rdquo;, &ldquo;施婷婷&rdquo;, &ldquo;井成&rdquo;, &ldquo;范文&rdquo;, &ldquo;王楠&rdquo;, &ldquo;尚明&rdquo;, &ldquo;薛秀珍&rdquo;, &ldquo;宋金凤&rdquo;, &ldquo;杨雪&rdquo;, &ldquo;邓丽华&rdquo;, &ldquo;李杨&rdquo;, &ldquo;温佳&rdquo;, &ldquo;叶玉&rdquo;, &ldquo;周明&rdquo;, &ldquo;王桂珍&rdquo;, &ldquo;段玉华&rdquo;, &ldquo;金成&rdquo;, &ldquo;黄鑫&rdquo;, &ldquo;邬兵&rdquo;, &ldquo;魏柳&rdquo;, &ldquo;王兰英&rdquo;, &ldquo;杨柳&rdquo;]</td>
+</tr>
+<tr>
+<td style="text-align:left">普陀潜江路P座 210730</td>
+<td style="text-align:left">[&ldquo;储平&rdquo;, &ldquo;洪红霞&rdquo;, &ldquo;沈玉英&rdquo;, &ldquo;王洁&rdquo;, &ldquo;董玉英&rdquo;, &ldquo;邓凤英&rdquo;, &ldquo;谢海燕&rdquo;, &ldquo;梁雷&rdquo;, &ldquo;张畅&rdquo;, &ldquo;任玉兰&rdquo;, &ldquo;贾宇&rdquo;, &ldquo;汪成&rdquo;, &ldquo;孙琴&rdquo;, &ldquo;纪红梅&rdquo;, &ldquo;王欣&rdquo;, &ldquo;陈兵&rdquo;, &ldquo;张成&rdquo;, &ldquo;王东&rdquo;, &ldquo;谷霞&rdquo;, &ldquo;林成&rdquo;]</td>
+</tr>
+<tr>
+<td style="text-align:left">普陀武街f座 706352</td>
+<td style="text-align:left">[&ldquo;邢成&rdquo;, &ldquo;张建军&rdquo;, &ldquo;张鑫&rdquo;, &ldquo;戴涛&rdquo;, &ldquo;蔡洋&rdquo;, &ldquo;汪燕&rdquo;, &ldquo;尹亮&rdquo;, &ldquo;何利&rdquo;, &ldquo;何玉&rdquo;, &ldquo;周波&rdquo;, &ldquo;金秀珍&rdquo;, &ldquo;杨波&rdquo;, &ldquo;张帅&rdquo;, &ldquo;周柳&rdquo;, &ldquo;马云&rdquo;, &ldquo;张建华&rdquo;, &ldquo;王丽丽&rdquo;, &ldquo;陈丽&rdquo;, &ldquo;万萍&rdquo;]</td>
+</tr>
+<tr>
+<td style="text-align:left">城东贵阳街O座 110567</td>
+<td style="text-align:left">[&ldquo;李洁&rdquo;, &ldquo;陈静&rdquo;, &ldquo;王建国&rdquo;, &ldquo;方淑华&rdquo;, &ldquo;古想&rdquo;, &ldquo;漆萍&rdquo;, &ldquo;詹桂花&rdquo;, &ldquo;王成&rdquo;, &ldquo;李慧&rdquo;, &ldquo;孙娜&rdquo;, &ldquo;马伟&rdquo;, &ldquo;谢杰&rdquo;, &ldquo;王鹏&rdquo;, &ldquo;鞠桂英&rdquo;, &ldquo;莫桂英&rdquo;, &ldquo;汪雷&rdquo;, &ldquo;黄彬&rdquo;, &ldquo;李玉梅&rdquo;, &ldquo;祝红梅&rdquo;]</td>
+</tr>
+</tbody>
+</table>
+<p>现在，我们在图上可视化这个结果看看：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="line"><span class="cl"><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">p</span><span class="p">:</span><span class="err">人</span><span class="p">)</span><span class="o">-</span><span class="p">[</span><span class="o">`</span><span class="n">visit0</span><span class="o">`</span><span class="p">:</span><span class="err">到访</span><span class="p">]</span><span class="o">-&gt;</span><span class="p">(</span><span class="o">`</span><span class="n">addr</span><span class="o">`</span><span class="p">:</span><span class="err">地址</span><span class="p">)</span><span class="o">&lt;-</span><span class="p">[</span><span class="o">`</span><span class="n">visit1</span><span class="o">`</span><span class="p">:</span><span class="err">到访</span><span class="p">]</span><span class="o">-</span><span class="p">(</span><span class="n">p1</span><span class="p">:</span><span class="err">人</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">WHERE</span><span class="w"> </span><span class="nf">id</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&#34;p_101&#34;</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="o">`</span><span class="n">visit0</span><span class="o">`</span><span class="p">.</span><span class="o">`</span><span class="n">start_time</span><span class="o">`</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="o">`</span><span class="n">visit1</span><span class="o">`</span><span class="p">.</span><span class="o">`</span><span class="n">end_time</span><span class="o">`</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">RETURN</span><span class="w"> </span><span class="n">paths</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>结果中我们标记了 p_101 为不同的图标，在用标签传播算法识别一下聚集社区，是不是一图胜千言呢？</p>
+<p><a class="lightgallery" href="/nebulagraph-sns/time_and_space.webp" title="time_and_space" data-thumbnail="/nebulagraph-sns/time_and_space.webp">
+        
+    </a></p>
+<h3 id="最近去过的省份" class="headerLink">
+    <a href="#%e6%9c%80%e8%bf%91%e5%8e%bb%e8%bf%87%e7%9a%84%e7%9c%81%e4%bb%bd" class="header-mark"></a>9.4 最近去过的省份</h3><p>最后，我们再用简单的查询模式表达出一个人在给定时间内，比如从一个时间点开始，到访过的所有省份</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="line"><span class="cl"><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">p</span><span class="p">:</span><span class="err">人</span><span class="p">)</span><span class="o">-</span><span class="p">[</span><span class="n">visit</span><span class="p">:</span><span class="err">到访</span><span class="p">]</span><span class="o">-&gt;</span><span class="p">(</span><span class="o">`</span><span class="n">addr</span><span class="o">`</span><span class="p">:</span><span class="err">地址</span><span class="p">)</span><span class="o">-</span><span class="p">[:</span><span class="err">属于</span><span class="o">*</span><span class="mi">5</span><span class="p">]</span><span class="o">-</span><span class="p">(</span><span class="n">province</span><span class="p">:</span><span class="err">省份</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">WHERE</span><span class="w"> </span><span class="nf">id</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&#34;p_101&#34;</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">visit</span><span class="p">.</span><span class="n">start_time</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">1625469000</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">RETURN</span><span class="w"> </span><span class="n">province</span><span class="p">.</span><span class="err">省份</span><span class="p">.</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="nf">collect</span><span class="p">(</span><span class="n">addr</span><span class="p">.</span><span class="err">地址</span><span class="p">.</span><span class="n">name</span><span class="p">);</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>看起来他/她去过不少地方呢：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">province.省份.name</th>
+<th style="text-align:left">collect(addr.地址.name)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">四川省</td>
+<td style="text-align:left">[&ldquo;闵行仇路q座 255960&rdquo;]</td>
+</tr>
+<tr>
+<td style="text-align:left">山东省</td>
+<td style="text-align:left">[&ldquo;城东贵阳街O座 110567&rdquo;]</td>
+</tr>
+<tr>
+<td style="text-align:left">云南省</td>
+<td style="text-align:left">[&ldquo;丰都北京路J座 725701&rdquo;]</td>
+</tr>
+<tr>
+<td style="text-align:left">福建省</td>
+<td style="text-align:left">[&ldquo;普陀潜江路P座 210730&rdquo;]</td>
+</tr>
+<tr>
+<td style="text-align:left">内蒙古自治区</td>
+<td style="text-align:left">[&ldquo;普陀武街f座 706352&rdquo;]</td>
+</tr>
+</tbody>
+</table>
+<p>老轨迹，我们在图上看看这个结果吧，这次，我们选择 Dagre-LR 这个布局渲染，结果是不是非常清晰呢？</p>
+<p><a class="lightgallery" href="/nebulagraph-sns/visited_provinces.webp" title="visited_provinces" data-thumbnail="/nebulagraph-sns/visited_provinces.webp">
+        
+    </a></p>
+<h2 id="总结" class="headerLink">
+    <a href="#%e6%80%bb%e7%bb%93" class="header-mark"></a>10 总结</h2><p>社交网络作为天然的图结构，非常适合用图的技术来存储、查询、计算、分析与可视化去解决其上的各式各样的问题，NebulaGraph 的强大处理能力和可视化能力使得我们已知很多公司在使用它作为社交领域的图存储、计算层，这其中包括：网易游戏、微信、Line、Soul、快手和知乎等等很多行业领先的团队，希望大家通过本章能对社交领域的图技术应有有一个初步的认识。</p>
+<blockquote>
+<p>题图版权：by <a href="https://unsplash.com/photos/IBaVuZsJJTo" target="_blank" rel="noopener noreferrer">Ryoji</a></p>
+</blockquote>]]></description>
+</item><item>
     <title>chatGPT 加 NebulaGraph 预测 2022 世界杯冠军球队</title>
     <link>https://siwei.io/chatgpt-and-nebulagraph-predict-fifa-world-cup/</link>
     <pubDate>Tue, 06 Dec 2022 18:01:55 &#43;0800</pubDate><author>

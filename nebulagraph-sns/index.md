@@ -382,7 +382,7 @@ RETURN fof.player.name, collect(DISTINCT f.player.name);
 - 首先，我们把 Tim 的量度好友路径全查出来
 
 ```cypher
-MATCH p=(start:player{name: "Tim Duncan"})-[:follow]-(f:player)-[:follow]-(fof:player)
+MATCH p=(start:player{name: "Tim Duncan"})-[:`follow`]-(f:player)-[:follow]-(fof:player)
 RETURN p
 ```
 
