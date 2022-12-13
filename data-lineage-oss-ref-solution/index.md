@@ -116,16 +116,6 @@ Amundsen 支持多种图数据库为后端，这里咱们用 [NebulaGraph](https
 
 ## 环境搭建与各组件初识
 
-The reference runnable project is open-source and you could find it here:
-
-- https://github.com/wey-gu/data-lineage-ref-solution
-
-I will try my best to make things clean and isolated. It's assumed you are running on a UNIX-like system with internet and Docker Compose being installed.
-
-> Please refer [here](https://docs.docker.com/compose/install/) to install Docker and Docker Compose before moving forward.
-
-I am running it on Ubuntu 20.04 LTS X86_64, but there shouldn't be issues on other distros or versions of Linux.
-
 整个项目方案都是开源的，大家可以在这里找到它的所有细节：
 
 - https://github.com/wey-gu/data-lineage-ref-solution
@@ -273,14 +263,6 @@ Payments 表里长这样子：
 
 ### 搭一个 BI Dashboard 系统
 
-Now, we have the data in data warehouses, with ETL toolchains to pipe different data sources into it. How could those data be consumed?
-
-BI tools like the dashboard could be one way to help us get insights from the data.
-
-With Apache Superset, dashboards, and charts based on those data sources could be created and managed smoothly and beautifully.
-
-The focus of this project was not on Apache Superset itself, thus, we simply reuse examples that [Pat Nadolny](https://github.com/pnadolny13) had created in [Superset as a utility if meltano Example](https://github.com/pnadolny13/meltano_example_implementations/tree/main/meltano_projects/jaffle_superset).
-
 现在，我们有了数据仓库中的一些数据，用 ETL 工具链将不同的数据源导了进去，接下来可以试着用一下这些数据了。
 
 像仪表大盘 Dashbaord 这样的 BI 工具能帮助我们从数据中获得有用的洞察，使用 Apache Superset，可以很容易地创建和管理基于这些数据源的 Dashboard 和各式各样的图表。
@@ -298,12 +280,6 @@ source .venv/meltano/bin/activate
 python3 -m pip install wheel
 python3 -m pip install meltano
 ```
-
-Following [Pat's guide](https://github.com/pnadolny13/meltano_example_implementations/tree/main/meltano_projects/jaffle_superset), with tiny modifications:
-
-
-
-- Clone the repo, enter the `jaffle_superset` project
 
 参考 Pat 的 Guide（https://github.com/pnadolny13/meltano_example_implementations/tree/main/meltano_projects/jaffle_superset），稍微做一些修改：
 
@@ -394,12 +370,6 @@ meltano invoke superset:load_datasources
 
 ![](https://user-images.githubusercontent.com/1651790/168573874-b5d57919-2866-4b3c-a4e5-55b6e6ef342e.png)
 
-It's quite cool, ah? For now, we have a simple but typical data stack like any hobby data lab with everything open-source!
-
-Imagine we have 100 datasets in CSV, 200 tables in Data warehouse and a couple of data engineers running different projects that consume, generate different application, dashboard, and databases. When someone would like to discovery some of those table, dataset, dashboard and pipelines running across them, and then even modify some of them, it's proven to be quite costly in both communicationand engineering.
-
-Here comes the main part of our reference project: Metadata Discovery.
-
 目前，我们有一个简单但典型的 homelab 数据技术栈了，并且所有东西都是开源的！
 
 想象一下，我们在 CSV 中有 100 个数据集，在数据仓库中有 200 个表，并且有几个数据工程师在运行不同的项目，这些项目使用、生成不同的应用与服务、Dashbaord 和数据库。 当有人想要查找、发现或者修改其中的一些表、数据集、Dashbaord 和管道，在沟通和工程方面可能都是非常不好管理的。
@@ -407,12 +377,6 @@ Here comes the main part of our reference project: Metadata Discovery.
 如前边提到的，我们需要这个示例项目的主要部分：元数据发现系统。
 
 ### 元数据发现系统
-
-Then, we are stepping to deploy the Amundsen with Nebula Graph and Elasticsearch.
-
-> Note: For the time being, the [PR Nebula Graph as the Amundsen backend](https://github.com/amundsen-io/amundsen/pull/1817) is not yet merged, I am [working with the Amundsen team](https://github.com/amundsen-io/rfcs/pull/48) to make it happen.
-
-With Amundsen, we could have all metadata of the whole data stack being discovered and managed in one place. And there are mainly two parts of Amundsen:
 
 然后，我们部署一个带有 NebulaGraph 和 Elasticsearch 的 Amundsen。
 
@@ -434,10 +398,6 @@ Amundsen 主要有两个部分组成：
 #### 部署 Amundsen
 
 ##### 元数据服务 Metadata service
-
-We are going to deploy a cluster of Amundsen with its docker-compose file. As the Nebula Graph backend support is not yet merged, we are referring to my fork.
-
-First, let's clone the repo with all submodules:
 
 我们用 docker-compose 文件部署一个 Amundsen 集群。 由于 NebulaGraph 后端支持尚未合并，还不能用官方的代码，先用我自己的分叉版本。
 
@@ -477,10 +437,6 @@ docker-compose -f docker-amundsen-nebula.yml up
 部署好了之后，我们使用 Data builder 将一些示例、虚构的数据加载存储里。
 
 ##### 抓取元数据 Data builder
-
-Amundsen Data builder is just like a Meltano but for ETL of Metadata to `Metadata service` and `Search service`‘s backend storage: Nebula Graph and Elasticsearch. The Data builder here is only a python module and the ETL job could be either run as a script or orchestrated with a DAG platform like Apache Airflow.
-
-With [Amundsen Data builder](https://github.com/amundsen-io/amundsen/tree/main/databuilder) being installed:
 
 Amundsen Data builder 就像 Meltano 系统一样，只不过是用在元数据的上的 ETL ，它把元数据加载到“Meta service”和“Search service”的后端存储：NebulaGraph 和 Elasticsearch 里。 这里的 Data builder 只是一个 python 模块，所有的元数据 ETL 作业可以作为脚本运行，也可以用 Apache Airflow 等 DAG 平台进行编排。
 
@@ -997,7 +953,5 @@ task = DefaultTask(
 - Open Lineage
 - singer
 
-
-
-> Feature Image credit to [Phil Hearing](https://unsplash.com/photos/PhnJhjH9Y9s)
+> 题图版权： [Phil Hearing](https://unsplash.com/photos/PhnJhjH9Y9s)
 
