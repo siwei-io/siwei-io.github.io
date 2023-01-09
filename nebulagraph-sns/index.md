@@ -277,7 +277,7 @@ PageRank 是一个非常“古老的”图算法，它通过考虑图上点之�
 
 在现代、复杂的搜索引擎中，PageRank 早就因为其过于简单而被弃用，但是在其他图结构网络场景中，PageRank 仍然在发光发热，社交网络中我们可以粗略地认为所有链接的重要程度类似，去运行这个算法找出那些关键的用户。
 
-在 NebulaGraph 中，我们可以利用 NebulaGraph Algorithm、NebulaGraph Analytics 去在大的全图上运行 PageRank，而在日常的分析、验证、设计截断，我们不需要在全量数据上跑结果，而在很小的子图上（最多上万），我们可以轻松地在浏览器里边运行各种图算法去得出线上业务可以用的方法。
+在 NebulaGraph 中，我们可以利用 NebulaGraph Algorithm、NebulaGraph Analytics 去在大的全图上运行 PageRank，而在日常的分析、验证、设计阶段，我们不需要在全量数据上跑结果，而在很小的子图上（最多上万），我们可以轻松地在浏览器里边运行各种图算法去得出线上业务可以用的方法。
 
 今天，我们就用 NebulaGraph Explorer 内置的浏览器内图算法功能执行一下 PageRank 看看（具体方法这里略去，可以参考[文档](https://docs.nebula-graph.com.cn/3.3.0/nebula-explorer/graph-explorer/graph-algorithm/)，不过其实就是点一下鼠标的事儿）：
 
@@ -287,7 +287,7 @@ PageRank 是一个非常“古老的”图算法，它通过考虑图上点之�
 
 ![TimDuncan](TimDuncan.webp)
 
-从自图中可以看到 Tim Duncan 和非常多其他球员有关注的关系的同时，一些其他很受欢迎的队员和他一起一样服役过非常热门的热刺（Spurs）队，这些都印证了 PageRank 的评估方式。
+从子图中可以看到 Tim Duncan 和非常多其他球员有关注的关系的同时，一些其他很受欢迎的队员和他一起一样服役过非常热门的热刺（Spurs）队，这些都印证了 PageRank 的评估方式。
 
 现在我们再看看其他判定维度下的算法会不会得出一样的结论呢？
 

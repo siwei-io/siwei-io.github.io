@@ -140,10 +140,6 @@ docker run --rm --name postgres \
     -p 5432:5432 postgres
 ```
 
-Then we could verify it with Postgres CLI or GUI clients.
-
-> Hint: You could use VS Code extension: [SQL tools](https://marketplace.visualstudio.com/items?itemName=mtxr.sqltools) to quickly connect to multiple RDBMS(MariaDB, Postgres, etc.) or even Non-SQL DBMS like Cassandra in a GUI fashion.
-
 然后我们可以使用 Postgres CLI 或 GUI 客户端来验证它。
 
 > 提示：可以用 VS Code 插件：[SQL TOOLS](https://marketplace.visualstudio.com/items?itemName=mtxr.sqltools) 快速以 GUI 方式连接到数据库（支持 MariaDB、Postgres 、Cassandra 等）
@@ -772,8 +768,6 @@ INSERT edge `DASHBOARD_WITH_TABLE` (`END_LABEL`, `START_LABEL`, published_tag, p
 > ![dashboard_graph_modeling](https://www.amundsen.io/amundsen/databuilder/docs/assets/dashboard_graph_modeling.png?raw=true)
 
 ### 用 Superset 预览数据
-
-Superset could be used to preview Table Data like this. Corresponding documentation could be referred [here](https://www.amundsen.io/amundsen/frontend/docs/configuration/#preview-client), where the API of `/superset/sql_json/` will be called by Amundsen Frontend.
 
 Superset可以用来预览这样的表格数据。 相应的文档可以参考 https://www.amundsen.io/amundsen/frontend/docs/configuration/#preview-client ，其中 `/superset/sql_json/` 的 API 被 Amundsen Frontend service 调用，取得预览信息。
 
