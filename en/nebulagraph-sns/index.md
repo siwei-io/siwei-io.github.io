@@ -390,7 +390,7 @@ We can see that they are the closest of friends to each other and that their mut
 
 `["Dejounte Murray", "Boris Diaw", "Manu Ginobili", "Marco Belinelli", "LaMarcus Aldridge"]`
 
-![closest_friend](/Users/weyl/dev/siwei.io/siwei.io/content/posts/nebulagraph-sns/closest_friend.webp)
+![closest_friend](closest_friend.webp)
 
 ### Small groups in your friends
 
@@ -398,21 +398,21 @@ At this point, as mentioned earlier, the non-authenticity of this dataset itself
 
 - Weakly connected components can split Tim's friends into two or three parts that are not connected to each other, which is very much in line with the intuitive understanding and definition of connected components.
 
-![Tim_wcc](/Users/weyl/dev/siwei.io/siwei.io/content/posts/nebulagraph-sns/Tim_wcc.webp)
+![Tim_wcc](Tim_wcc.webp)
 
 - Label propagation, we can control the number of iterations on-demand to delineate different degrees of division by random propagation, which results in a certain degree of differentiation.
 
   20 iterations
 
-  ![Tim_LPA](/Users/weyl/dev/siwei.io/siwei.io/content/posts/nebulagraph-sns/Tim_LPA.webp)
+  ![Tim_LPA](Tim_LPA.webp)
 
   1000 iterations
 
-  ![Tim_LPA_1000](/Users/weyl/dev/siwei.io/siwei.io/content/posts/nebulagraph-sns/Tim_LPA_1000.webp)
+  ![Tim_LPA_1000](Tim_LPA_1000.webp)
 
 - Louvain, a more efficient and stable algorithm, basically under this subgraph we can get a very intuitive division with a very small number of iterations.
 
-![Tim_Louvain](/Users/weyl/dev/siwei.io/siwei.io/content/posts/nebulagraph-sns/Tim_Louvain.webp)
+![Tim_Louvain](Tim_Louvain.webp)
 
 ## New friend recommendation
 
@@ -456,7 +456,7 @@ Obviously, LeBron is the most recommended! And look at who these mutual friends 
 
 Again, let's look for LeBron James in the subgraph we just created! And find the two-step, two-way path between them, and sure enough, it only goes through `["Danny Green", "Dejounte Murray"]` and, without a direct connection.
 
-![Tim_newFriend](/Users/weyl/dev/siwei.io/siwei.io/content/posts/nebulagraph-sns/Tim_newFriend.webp)
+![Tim_newFriend](Tim_newFriend.webp)
 
 Now, the system could send reminders to both sides: "HEY, maybe you two should make new friends!"
 
@@ -524,7 +524,7 @@ Rendering this query, and then looking for two-way, two-hop queries between the 
 
 And how can a party be without Tony? Is it his surprise birthday party, Opps, shouldn't we tell him, or?
 
-![common_nbrs_tony](/Users/weyl/dev/siwei.io/siwei.io/content/posts/nebulagraph-sns/common_nbrs_tony.webp)
+![common_nbrs_tony](common_nbrs_tony.webp)
 
 
 
@@ -579,7 +579,7 @@ RETURN p, p_comment, p_post
 
 Rendering on Explorer and selecting the "Neural Network" layout, you can clearly see the pink article nodes and the edges representing the comments.
 
-![feed_from_friends](/Users/weyl/dev/siwei.io/siwei.io/content/posts/nebulagraph-sns/feed_from_friends.webp)
+![feed_from_friends](feed_from_friends.webp)
 
 ### Content of nearby friends
 
@@ -612,7 +612,7 @@ At this point, you can also see the relationship between addresses and their lat
 
 I manually arranged the nodes of the addresses on the graph according to their latitude and longitude and saw that the address (7, 8) of Tim(player100), the owner of this feed, is exactly in the middle of other friends' addresses.
 
-![geo_feed](/Users/weyl/dev/siwei.io/siwei.io/content/posts/nebulagraph-sns/geo_feed.webp)
+![geo_feed](geo_feed.webp)
 
 ## Spatio-temporal relationship tracking
 
@@ -624,7 +624,7 @@ For this purpose, I created a fake dataset by which to build a spatio-temporal r
 
 It models the data as follows.
 
-<img src="/Users/weyl/dev/siwei.io/siwei.io/content/posts/nebulagraph-sns/schema_covid.webp" alt="schema_covid" style="zoom:40%;" />
+<img src="schema_covid.webp" alt="schema_covid" style="zoom:40%;" />
 
 We could get the data ready in three lines in any Linux System:
 
@@ -711,7 +711,7 @@ ALL Path result:
 
 We render all the paths visually, mark the two people at the starting node and end end, and check their shortest paths in between, and the inextricable relationship between them is clear at a glance, whether it is for business insight, public safety or epidemic prevention and control purposes, with this information, the corresponding work can progress downward like a tiger.
 
-![find_path_two_people](/Users/weyl/dev/siwei.io/siwei.io/content/posts/nebulagraph-sns/find_path_two_people.webp)
+![find_path_two_people](find_path_two_people.webp)
 
 Of course, on a real world system, it may be that we only need to care about the proximity of the association between two users:
 
@@ -758,7 +758,7 @@ MATCH (p:person)-[`visit0`:visited]->(`addr`:address)<-[`visit1`:visited]-(p1:pe
 
 In the result, we marked p_101 as a different icon, and identified the gathering community with the label propagation algorithm, isn't a graph worth a thousand words?
 
-![time_and_space](/Users/weyl/dev/siwei.io/siwei.io/content/posts/nebulagraph-sns/time_and_space.webp)
+![time_and_space](time_and_space.webp)
 
 ### Most recently visited provinces
 
@@ -782,7 +782,7 @@ Result:
 
 The usual rules, let's look at the results on the graph, this time, we choose Dagre-LR layout rendering, and the result looks like:
 
-![visited_provinces](/Users/weyl/dev/siwei.io/siwei.io/content/posts/nebulagraph-sns/visited_provinces.webp)
+![visited_provinces](visited_provinces.webp)
 
 ## Recap
 
