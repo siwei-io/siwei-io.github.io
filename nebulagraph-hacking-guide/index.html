@@ -5,13 +5,12 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noodp" />
-    <title class="pjax-title">NebulaGraph 内核贡献开发指南 - siwei.io</title><meta name="Description" content="本文是一个快速了解为 NebulaGraph 内核贡献代码、构建、Debug 的一站式指南。"><meta property="og:title" content="NebulaGraph 内核贡献开发指南" />
+    <title>NebulaGraph 内核贡献开发指南 - siwei.io</title><meta name="Description" content="本文是一个快速了解为 NebulaGraph 内核贡献代码、构建、Debug 的一站式指南。"><meta property="og:title" content="NebulaGraph 内核贡献开发指南" />
 <meta property="og:description" content="本文是一个快速了解为 NebulaGraph 内核贡献代码、构建、Debug 的一站式指南。" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://siwei.io/nebulagraph-hacking-guide/" /><meta property="og:image" content="https://siwei.io/nebulagraph-hacking-guide/featured-image.png"/><meta property="article:section" content="posts" />
 <meta property="article:published_time" content="2022-10-23T14:57:07+08:00" />
 <meta property="article:modified_time" content="2022-11-09T22:08:10+08:00" /><meta property="og:site_name" content="siwei.io" />
-
 <meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:image" content="https://siwei.io/nebulagraph-hacking-guide/featured-image.png"/>
 <meta name="twitter:title" content="NebulaGraph 内核贡献开发指南"/>
@@ -21,7 +20,7 @@
 
 <meta name="theme-color" content="#f8f8f8"><meta name="msapplication-TileColor" content="#da532c"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
         <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="manifest" href="/site.webmanifest"><link rel="canonical" href="https://siwei.io/nebulagraph-hacking-guide/" /><link rel="prev" href="https://siwei.io/ngql-execution-plan/" /><link rel="next" href="https://siwei.io/recommendation-system-with-graphdb/" /><link rel="stylesheet" href="/lib/normalize/normalize.min.css"><link rel="stylesheet" href="/css/style.min.css"><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/fontawesome-free/all.min.css">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="manifest" href="/site.webmanifest"><link rel="canonical" href="https://siwei.io/nebulagraph-hacking-guide/" /><link rel="prev" href="https://siwei.io/ngql-execution-plan/" /><link rel="next" href="https://siwei.io/recommendation-system-with-graphdb/" /><link rel="stylesheet" href="/lib/normalize/normalize.min.css"><link rel="stylesheet" href="/css/color.css"><link rel="stylesheet" href="/css/style.min.css"><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/fontawesome-free/all.min.css">
         <noscript><link rel="stylesheet" href="/lib/fontawesome-free/all.min.css"></noscript><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/animate/animate.min.css">
         <noscript><link rel="stylesheet" href="/lib/animate/animate.min.css"></noscript>
     
@@ -44,7 +43,8 @@
                 "name": "Wey Gu"
             },"description": "本文是一个快速了解为 NebulaGraph 内核贡献代码、构建、Debug 的一站式指南。"
     }
-    </script></head>
+    </script><script src="//instant.page/5.1.1" defer type="module" integrity="sha384-MWfCL6g1OTGsbSwfuMHc8+8J2u71/LA8dzlIN3ycajckxuZZmF+DNjdm7O6H3PSq"></script>
+</head>
 
 <body header-desktop="fixed" header-mobile="auto"><script type="text/javascript">
         function setTheme(theme) {document.body.setAttribute('theme', theme); document.documentElement.style.setProperty('color-scheme', theme === 'light' ? 'light' : 'dark');}
@@ -61,20 +61,20 @@
             <a href="/" title="siwei.io"><span class="header-title-pre"><i class="fas fa-code-branch"></i></span>siwei.io</a>
         </div>
         <div class="menu">
-            <div class="menu-inner"><a class="menu-item" href="/about/"> 关于 </a><a class="menu-item" href="/projects/"> 项目 </a><a class="menu-item" href="/sketch-notes/"> 手绘 </a><a class="menu-item" href="/posts/"> 博客 </a><a class="menu-item" href="/talk/"> 演讲 </a><a class="menu-item" href="/cources/"> 课程 </a><a class="menu-item" href="https://vesoft.com/cn/careers/" rel="noopener noreferrer" target="_blank"> 招聘 </a><a class="menu-item" href="/about/#%E8%81%94%E7%B3%BB%E6%88%91"> 联系 </a><a class="menu-item" href="/path/"> 学习路径 </a><span class="menu-item delimiter"></span><a href="#" onclick="return false;" class="menu-item language" title="选择语言">🌏 Chinese<i class="fas fa-chevron-right fa-fw"></i>
+            <div class="menu-inner"><a class="menu-item" href="/about/"> 关于 </a><a class="menu-item" href="/projects/"> 项目 </a><a class="menu-item" href="/sketch-notes/"> 手绘 </a><a class="menu-item" href="/posts/"> 博客 </a><a class="menu-item" href="/talk/"> 演讲 </a><a class="menu-item" href="/cources/"> 课程 </a><a class="menu-item" href="https://vesoft.com/cn/careers/" rel="noopener noreferrer" target="_blank"> 招聘 </a><a class="menu-item" href="/about/#%E8%81%94%E7%B3%BB%E6%88%91"> 联系 </a><a class="menu-item" href="/path/"> 学习路径 </a><span class="menu-item delimiter"></span><a href="#" class="menu-item language" title="选择语言">🌏 Chinese<i class="fas fa-chevron-right fa-fw"></i>
                         <select class="language-select" title="Select Language" id="language-select-desktop" onchange="location = this.value;"><option value="/nebulagraph-hacking-guide/" selected>🌏 Chinese</option></select>
                     </a><span class="menu-item search" id="search-desktop">
                         <input type="text" placeholder="搜索文章标题或内容..." id="search-input-desktop">
-                        <a href="#" onclick="return false;" class="search-button search-toggle" id="search-toggle-desktop" title="搜索">
+                        <a href="#" class="search-button search-toggle" id="search-toggle-desktop" title="搜索">
                             <i class="fas fa-search fa-fw"></i>
                         </a>
-                        <a href="#" onclick="return false;" class="search-button search-clear" id="search-clear-desktop" title="清空">
+                        <a href="#" class="search-button search-clear" id="search-clear-desktop" title="清空">
                             <i class="fas fa-times-circle fa-fw"></i>
                         </a>
                         <span class="search-button search-loading" id="search-loading-desktop">
                             <i class="fas fa-spinner fa-fw fa-spin"></i>
                         </span>
-                    </span><a href="#" onclick="return false;" class="menu-item theme-select" title="切换主题">
+                    </span><a href="#" class="menu-item theme-select" title="切换主题">
                     <i class="fas fa-adjust fa-fw"></i>
                     <select class="color-theme-select" id="theme-select-desktop" title="切换主题">
                         <option value="light">浅色</option>
@@ -98,20 +98,20 @@
         <div class="menu" id="menu-mobile"><div class="search-wrapper">
                     <div class="search mobile" id="search-mobile">
                         <input type="text" placeholder="搜索文章标题或内容..." id="search-input-mobile">
-                        <a href="#" onclick="return false;" class="search-button search-toggle" id="search-toggle-mobile" title="搜索">
+                        <a href="#" class="search-button search-toggle" id="search-toggle-mobile" title="搜索">
                             <i class="fas fa-search fa-fw"></i>
                         </a>
-                        <a href="#" onclick="return false;" class="search-button search-clear" id="search-clear-mobile" title="清空">
+                        <a href="#" class="search-button search-clear" id="search-clear-mobile" title="清空">
                             <i class="fas fa-times-circle fa-fw"></i>
                         </a>
                         <span class="search-button search-loading" id="search-loading-mobile">
                             <i class="fas fa-spinner fa-fw fa-spin"></i>
                         </span>
                     </div>
-                    <a href="#" onclick="return false;" class="search-cancel" id="search-cancel-mobile">
+                    <a href="#" class="search-cancel" id="search-cancel-mobile">
                         取消
                     </a>
-                </div><a class="menu-item" href="/about/" title="">关于</a><a class="menu-item" href="/projects/" title="">项目</a><a class="menu-item" href="/sketch-notes/" title="">手绘</a><a class="menu-item" href="/posts/" title="">博客</a><a class="menu-item" href="/talk/" title="">演讲</a><a class="menu-item" href="/cources/" title="">课程</a><a class="menu-item" href="https://vesoft.com/cn/careers/" title="" rel="noopener noreferrer" target="_blank">招聘</a><a class="menu-item" href="/about/#%E8%81%94%E7%B3%BB%E6%88%91" title="">联系</a><a class="menu-item" href="/path/" title="">学习路径</a><a href="#" onclick="return false;" class="menu-item theme-select" title="切换主题">
+                </div><a class="menu-item" href="/about/" title="">关于</a><a class="menu-item" href="/projects/" title="">项目</a><a class="menu-item" href="/sketch-notes/" title="">手绘</a><a class="menu-item" href="/posts/" title="">博客</a><a class="menu-item" href="/talk/" title="">演讲</a><a class="menu-item" href="/cources/" title="">课程</a><a class="menu-item" href="https://vesoft.com/cn/careers/" title="" rel="noopener noreferrer" target="_blank">招聘</a><a class="menu-item" href="/about/#%E8%81%94%E7%B3%BB%E6%88%91" title="">联系</a><a class="menu-item" href="/path/" title="">学习路径</a><a href="#" class="menu-item theme-select" title="切换主题">
                 <i class="fas fa-adjust fa-fw"></i>
                 <select class="color-theme-select" id="theme-select-mobile" title="切换主题">
                     <option value="light">浅色</option>
@@ -119,7 +119,7 @@
                     <option value="black">黑色</option>
                     <option value="auto">跟随系统</option>
                 </select>
-            </a><a href="#" onclick="return false;" class="menu-item" title="选择语言">🌏 Chinese<i class="fas fa-chevron-right fa-fw"></i>
+            </a><a href="#" class="menu-item" title="选择语言">🌏 Chinese<i class="fas fa-chevron-right fa-fw"></i>
                     <select class="language-select" title="Select Language" onchange="location = this.value;"><option value="/nebulagraph-hacking-guide/" selected>🌏 Chinese</option></select>
                 </a></div>
     </div>
@@ -201,10 +201,11 @@
             <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime="2022-10-23">2022-10-23</time>&nbsp;<i class="far fa-edit fa-fw"></i>&nbsp;<time datetime="2022-11-09">2022-11-09</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;约 6460 字&nbsp;
                 <i class="far fa-clock fa-fw"></i>&nbsp;预计阅读 13 分钟&nbsp;</div>
         </div><div class="featured-image"><img
-        class="lazyload"
-        data-src="/nebulagraph-hacking-guide/featured-image.webp"
-        data-srcset="/nebulagraph-hacking-guide/featured-image.webp, /nebulagraph-hacking-guide/featured-image.webp 1.5x, /nebulagraph-hacking-guide/featured-image.webp 2x"
-        data-sizes="auto"
+        
+        loading="eager"
+        src="/nebulagraph-hacking-guide/featured-image.webp"
+        srcset="/nebulagraph-hacking-guide/featured-image.webp, /nebulagraph-hacking-guide/featured-image.webp 1.5x, /nebulagraph-hacking-guide/featured-image.webp 2x"
+        sizes="auto"
         alt="/nebulagraph-hacking-guide/featured-image.webp"
         title="本文是一个快速了解为 NebulaGraph 内核贡献代码、构建、Debug 的一站式指南。" height="914" width="1738"></div><div class="details toc" id="toc-static"  kept="">
                 <div class="details-summary toc-title">
@@ -281,10 +282,11 @@
     <a href="#%e6%9c%8d%e5%8a%a1%e8%bf%9b%e7%a8%8b" class="header-mark"></a>1.1 服务、进程</h3><p>NebulaGraph 的架构和 Google Spanner, TiDB 很相似，核心部分只有三种服务、进程：Graph 服务、Meta 服务和 Storage 服务。它们之间彼此通过 TCP 之上的 Thrift RPC 协议进行通信。</p>
 <p><a class="lightgallery" href="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/nebula-graph-architecture-1.png" title="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/nebula-graph-architecture-1.png" data-thumbnail="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/nebula-graph-architecture-1.png">
         <img
-            class="lazyload"
-            data-src="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/nebula-graph-architecture-1.png"
-            data-srcset="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/nebula-graph-architecture-1.png, https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/nebula-graph-architecture-1.png 1.5x, https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/nebula-graph-architecture-1.png 2x"
-            data-sizes="auto"
+            
+            loading="lazy"
+            src="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/nebula-graph-architecture-1.png"
+            srcset="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/nebula-graph-architecture-1.png, https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/nebula-graph-architecture-1.png 1.5x, https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/nebula-graph-architecture-1.png 2x"
+            sizes="auto"
             alt="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/nebula-graph-architecture-1.png">
     </a></p>
 <h3 id="计算层与存储层" class="headerLink">
@@ -297,10 +299,11 @@
 <p>Graph 服务也叫 Query Engine，其内部和传统的数据库系统的设计非常相似，分为：解析、校验、计划、执行几部分。</p>
 <p><a class="lightgallery" href="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/query-engine-architecture.png" title="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/query-engine-architecture.png" data-thumbnail="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/query-engine-architecture.png">
         <img
-            class="lazyload"
-            data-src="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/query-engine-architecture.png"
-            data-srcset="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/query-engine-architecture.png, https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/query-engine-architecture.png 1.5x, https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/query-engine-architecture.png 2x"
-            data-sizes="auto"
+            
+            loading="lazy"
+            src="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/query-engine-architecture.png"
+            srcset="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/query-engine-architecture.png, https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/query-engine-architecture.png 1.5x, https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/query-engine-architecture.png 2x"
+            sizes="auto"
             alt="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/query-engine-architecture.png">
     </a></p>
 <h4 id="meta-service-nebula-metad" class="headerLink">
@@ -314,10 +317,11 @@
 <p>Meta 服务的进程可以单实例部署，在非单机部署的场景下，为了数据、服务的高 SLA ，我们可以奇数多个实例的部署，通常来说 3 个 nebula-metad 就足够了，三个 nebula-metad 通过 RAFT 共识协议构成一个集群提供服务。</p>
 <p><a class="lightgallery" href="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/meta-architecture1.png" title="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/meta-architecture1.png" data-thumbnail="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/meta-architecture1.png">
         <img
-            class="lazyload"
-            data-src="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/meta-architecture1.png"
-            data-srcset="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/meta-architecture1.png, https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/meta-architecture1.png 1.5x, https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/meta-architecture1.png 2x"
-            data-sizes="auto"
+            
+            loading="lazy"
+            src="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/meta-architecture1.png"
+            srcset="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/meta-architecture1.png, https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/meta-architecture1.png 1.5x, https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/meta-architecture1.png 2x"
+            sizes="auto"
             alt="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/meta-architecture1.png">
     </a></p>
 <h4 id="storage-service-nebula-storaged" class="headerLink">
@@ -325,10 +329,11 @@
 <p>当 NebulaGraph 中图空间的副本数大于 1 的时候，每一个分区都会在不同 storaged 示例上有副本，副本之间则通过 RAFT 协议协调同步与读写。</p>
 <p><a class="lightgallery" href="https://www-cdn.nebula-graph.com.cn/nebula-blog/nebula-reading-storage-architecture.png" title="https://www-cdn.nebula-graph.com.cn/nebula-blog/nebula-reading-storage-architecture.png" data-thumbnail="https://www-cdn.nebula-graph.com.cn/nebula-blog/nebula-reading-storage-architecture.png">
         <img
-            class="lazyload"
-            data-src="https://www-cdn.nebula-graph.com.cn/nebula-blog/nebula-reading-storage-architecture.png"
-            data-srcset="https://www-cdn.nebula-graph.com.cn/nebula-blog/nebula-reading-storage-architecture.png, https://www-cdn.nebula-graph.com.cn/nebula-blog/nebula-reading-storage-architecture.png 1.5x, https://www-cdn.nebula-graph.com.cn/nebula-blog/nebula-reading-storage-architecture.png 2x"
-            data-sizes="auto"
+            
+            loading="lazy"
+            src="https://www-cdn.nebula-graph.com.cn/nebula-blog/nebula-reading-storage-architecture.png"
+            srcset="https://www-cdn.nebula-graph.com.cn/nebula-blog/nebula-reading-storage-architecture.png, https://www-cdn.nebula-graph.com.cn/nebula-blog/nebula-reading-storage-architecture.png 1.5x, https://www-cdn.nebula-graph.com.cn/nebula-blog/nebula-reading-storage-architecture.png 2x"
+            sizes="auto"
             alt="https://www-cdn.nebula-graph.com.cn/nebula-blog/nebula-reading-storage-architecture.png">
     </a></p>
 <blockquote>
@@ -735,19 +740,21 @@
     <a href="#%e5%9c%a8%e4%b8%aa%e4%ba%ba%e8%bf%9c%e7%a8%8b%e5%88%86%e5%8f%89%e5%88%86%e6%94%af%e4%b8%8a%e5%88%9b%e5%bb%ba-pr" class="header-mark"></a>5.1.3 在个人远程分叉分支上创建 PR</h4><p>这时候，我们访问这个远程分支：https://github.com/wey-gu/nebula/tree/fn_JSON_EXTRACT ，就能找到 Open PR 的入口：</p>
 <p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/197544575-c04a06cf-b867-409c-832e-f3d893fea784.png" title="https://user-images.githubusercontent.com/1651790/197544575-c04a06cf-b867-409c-832e-f3d893fea784.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/197544575-c04a06cf-b867-409c-832e-f3d893fea784.png">
         <img
-            class="lazyload"
-            data-src="https://user-images.githubusercontent.com/1651790/197544575-c04a06cf-b867-409c-832e-f3d893fea784.png"
-            data-srcset="https://user-images.githubusercontent.com/1651790/197544575-c04a06cf-b867-409c-832e-f3d893fea784.png, https://user-images.githubusercontent.com/1651790/197544575-c04a06cf-b867-409c-832e-f3d893fea784.png 1.5x, https://user-images.githubusercontent.com/1651790/197544575-c04a06cf-b867-409c-832e-f3d893fea784.png 2x"
-            data-sizes="auto"
+            
+            loading="lazy"
+            src="https://user-images.githubusercontent.com/1651790/197544575-c04a06cf-b867-409c-832e-f3d893fea784.png"
+            srcset="https://user-images.githubusercontent.com/1651790/197544575-c04a06cf-b867-409c-832e-f3d893fea784.png, https://user-images.githubusercontent.com/1651790/197544575-c04a06cf-b867-409c-832e-f3d893fea784.png 1.5x, https://user-images.githubusercontent.com/1651790/197544575-c04a06cf-b867-409c-832e-f3d893fea784.png 2x"
+            sizes="auto"
             alt="https://user-images.githubusercontent.com/1651790/197544575-c04a06cf-b867-409c-832e-f3d893fea784.png">
     </a></p>
 <p>然后点击 Open pull request 按钮，就进入到创建 PR 的界面了，这和在一般的论坛里提交一个帖子是很类似的：</p>
 <p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/197545824-93706cc7-32a9-4638-84eb-26573106aa28.png" title="https://user-images.githubusercontent.com/1651790/197545824-93706cc7-32a9-4638-84eb-26573106aa28.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/197545824-93706cc7-32a9-4638-84eb-26573106aa28.png">
         <img
-            class="lazyload"
-            data-src="https://user-images.githubusercontent.com/1651790/197545824-93706cc7-32a9-4638-84eb-26573106aa28.png"
-            data-srcset="https://user-images.githubusercontent.com/1651790/197545824-93706cc7-32a9-4638-84eb-26573106aa28.png, https://user-images.githubusercontent.com/1651790/197545824-93706cc7-32a9-4638-84eb-26573106aa28.png 1.5x, https://user-images.githubusercontent.com/1651790/197545824-93706cc7-32a9-4638-84eb-26573106aa28.png 2x"
-            data-sizes="auto"
+            
+            loading="lazy"
+            src="https://user-images.githubusercontent.com/1651790/197545824-93706cc7-32a9-4638-84eb-26573106aa28.png"
+            srcset="https://user-images.githubusercontent.com/1651790/197545824-93706cc7-32a9-4638-84eb-26573106aa28.png, https://user-images.githubusercontent.com/1651790/197545824-93706cc7-32a9-4638-84eb-26573106aa28.png 1.5x, https://user-images.githubusercontent.com/1651790/197545824-93706cc7-32a9-4638-84eb-26573106aa28.png 2x"
+            sizes="auto"
             alt="https://user-images.githubusercontent.com/1651790/197545824-93706cc7-32a9-4638-84eb-26573106aa28.png">
     </a></p>
 <p>提交之后，我们可以等待、或者邀请其他人来做代码的审查（review），往往其他的贡献者都能从他们的角度给出一些代码修改的建议和提示，我们需要经过几轮的代码修改、讨论之后使得代码达到最佳的状态。</p>
@@ -760,10 +767,11 @@
 <p>通常来说，这些所有的自动化审查机器人所代表的任务也需要全都通过，代码的状态才能被认为是可以合并的，而不出意外，我首次提交的代码果然有测试的失败。</p>
 <p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/197549538-4bba79b5-6b0a-42f4-b287-55061c08cbe8.png" title="https://user-images.githubusercontent.com/1651790/197549538-4bba79b5-6b0a-42f4-b287-55061c08cbe8.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/197549538-4bba79b5-6b0a-42f4-b287-55061c08cbe8.png">
         <img
-            class="lazyload"
-            data-src="https://user-images.githubusercontent.com/1651790/197549538-4bba79b5-6b0a-42f4-b287-55061c08cbe8.png"
-            data-srcset="https://user-images.githubusercontent.com/1651790/197549538-4bba79b5-6b0a-42f4-b287-55061c08cbe8.png, https://user-images.githubusercontent.com/1651790/197549538-4bba79b5-6b0a-42f4-b287-55061c08cbe8.png 1.5x, https://user-images.githubusercontent.com/1651790/197549538-4bba79b5-6b0a-42f4-b287-55061c08cbe8.png 2x"
-            data-sizes="auto"
+            
+            loading="lazy"
+            src="https://user-images.githubusercontent.com/1651790/197549538-4bba79b5-6b0a-42f4-b287-55061c08cbe8.png"
+            srcset="https://user-images.githubusercontent.com/1651790/197549538-4bba79b5-6b0a-42f4-b287-55061c08cbe8.png, https://user-images.githubusercontent.com/1651790/197549538-4bba79b5-6b0a-42f4-b287-55061c08cbe8.png 1.5x, https://user-images.githubusercontent.com/1651790/197549538-4bba79b5-6b0a-42f4-b287-55061c08cbe8.png 2x"
+            sizes="auto"
             alt="https://user-images.githubusercontent.com/1651790/197549538-4bba79b5-6b0a-42f4-b287-55061c08cbe8.png">
     </a></p>
 <h3 id="调试-ci-测试代码" class="headerLink">
@@ -872,10 +880,11 @@
 <p>但是，我收到了新的建议：</p>
 <p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/197553025-82f1e7e5-b8a8-4729-a9b8-0f13a34adfed.png" title="https://user-images.githubusercontent.com/1651790/197553025-82f1e7e5-b8a8-4729-a9b8-0f13a34adfed.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/197553025-82f1e7e5-b8a8-4729-a9b8-0f13a34adfed.png">
         <img
-            class="lazyload"
-            data-src="https://user-images.githubusercontent.com/1651790/197553025-82f1e7e5-b8a8-4729-a9b8-0f13a34adfed.png"
-            data-srcset="https://user-images.githubusercontent.com/1651790/197553025-82f1e7e5-b8a8-4729-a9b8-0f13a34adfed.png, https://user-images.githubusercontent.com/1651790/197553025-82f1e7e5-b8a8-4729-a9b8-0f13a34adfed.png 1.5x, https://user-images.githubusercontent.com/1651790/197553025-82f1e7e5-b8a8-4729-a9b8-0f13a34adfed.png 2x"
-            data-sizes="auto"
+            
+            loading="lazy"
+            src="https://user-images.githubusercontent.com/1651790/197553025-82f1e7e5-b8a8-4729-a9b8-0f13a34adfed.png"
+            srcset="https://user-images.githubusercontent.com/1651790/197553025-82f1e7e5-b8a8-4729-a9b8-0f13a34adfed.png, https://user-images.githubusercontent.com/1651790/197553025-82f1e7e5-b8a8-4729-a9b8-0f13a34adfed.png 1.5x, https://user-images.githubusercontent.com/1651790/197553025-82f1e7e5-b8a8-4729-a9b8-0f13a34adfed.png 2x"
+            sizes="auto"
             alt="https://user-images.githubusercontent.com/1651790/197553025-82f1e7e5-b8a8-4729-a9b8-0f13a34adfed.png">
     </a></p>
 <p>另一位贡献者请我添加 TCK 的测试用例。</p>
@@ -988,10 +997,11 @@
     <a href="#%e9%82%80%e8%af%b7%e5%86%8d%e6%ac%a1-review" class="header-mark"></a>5.3 邀请再次 review</h3><p>待我们把需要的测试调通、再次提交 PR 并且 CI 用例全都通过之后，我们可以再次邀请之前帮助审查代码的同学做做最后的查看，如果一切都顺利，代码就会被合并了！</p>
 <p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/197557709-2c851a03-d001-4fc9-bc5a-b858219fbded.png" title="https://user-images.githubusercontent.com/1651790/197557709-2c851a03-d001-4fc9-bc5a-b858219fbded.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/197557709-2c851a03-d001-4fc9-bc5a-b858219fbded.png">
         <img
-            class="lazyload"
-            data-src="https://user-images.githubusercontent.com/1651790/197557709-2c851a03-d001-4fc9-bc5a-b858219fbded.png"
-            data-srcset="https://user-images.githubusercontent.com/1651790/197557709-2c851a03-d001-4fc9-bc5a-b858219fbded.png, https://user-images.githubusercontent.com/1651790/197557709-2c851a03-d001-4fc9-bc5a-b858219fbded.png 1.5x, https://user-images.githubusercontent.com/1651790/197557709-2c851a03-d001-4fc9-bc5a-b858219fbded.png 2x"
-            data-sizes="auto"
+            
+            loading="lazy"
+            src="https://user-images.githubusercontent.com/1651790/197557709-2c851a03-d001-4fc9-bc5a-b858219fbded.png"
+            srcset="https://user-images.githubusercontent.com/1651790/197557709-2c851a03-d001-4fc9-bc5a-b858219fbded.png, https://user-images.githubusercontent.com/1651790/197557709-2c851a03-d001-4fc9-bc5a-b858219fbded.png 1.5x, https://user-images.githubusercontent.com/1651790/197557709-2c851a03-d001-4fc9-bc5a-b858219fbded.png 2x"
+            sizes="auto"
             alt="https://user-images.githubusercontent.com/1651790/197557709-2c851a03-d001-4fc9-bc5a-b858219fbded.png">
     </a></p>
 <blockquote>
@@ -1006,10 +1016,11 @@
     <div class="related-item-container">
             <div class="related-image">
                 <a href="/build-open-communication-infra/"><img
-        class="lazyload"
-        data-src="/build-open-communication-infra/featured-image.webp"
-        data-srcset="/build-open-communication-infra/featured-image.webp, /build-open-communication-infra/featured-image.webp 1.5x, /build-open-communication-infra/featured-image.webp 2x"
-        data-sizes="auto"
+        
+        loading="lazy"
+        src="/build-open-communication-infra/featured-image.webp"
+        srcset="/build-open-communication-infra/featured-image.webp, /build-open-communication-infra/featured-image.webp 1.5x, /build-open-communication-infra/featured-image.webp 2x"
+        sizes="auto"
         alt="/build-open-communication-infra/featured-image.webp"
         title="本文是一个快速了解为 NebulaGraph 内核贡献代码、构建、Debug 的一站式指南。" height="200" width="400"></a>
             </div><h2 class="related-title">
@@ -1019,10 +1030,11 @@
     <div class="related-item-container">
             <div class="related-image">
                 <a href="/ngql-execution-plan/"><img
-        class="lazyload"
-        data-src="/ngql-execution-plan/featured-image.webp"
-        data-srcset="/ngql-execution-plan/featured-image.webp, /ngql-execution-plan/featured-image.webp 1.5x, /ngql-execution-plan/featured-image.webp 2x"
-        data-sizes="auto"
+        
+        loading="lazy"
+        src="/ngql-execution-plan/featured-image.webp"
+        srcset="/ngql-execution-plan/featured-image.webp, /ngql-execution-plan/featured-image.webp 1.5x, /ngql-execution-plan/featured-image.webp 2x"
+        sizes="auto"
         alt="/ngql-execution-plan/featured-image.webp"
         title="本文是一个快速了解为 NebulaGraph 内核贡献代码、构建、Debug 的一站式指南。" height="200" width="400"></a>
             </div><h2 class="related-title">
@@ -1032,10 +1044,11 @@
     <div class="related-item-container">
             <div class="related-image">
                 <a href="/ngql-tutorial/"><img
-        class="lazyload"
-        data-src="/ngql-tutorial/featured-image.webp"
-        data-srcset="/ngql-tutorial/featured-image.webp, /ngql-tutorial/featured-image.webp 1.5x, /ngql-tutorial/featured-image.webp 2x"
-        data-sizes="auto"
+        
+        loading="lazy"
+        src="/ngql-tutorial/featured-image.webp"
+        srcset="/ngql-tutorial/featured-image.webp, /ngql-tutorial/featured-image.webp 1.5x, /ngql-tutorial/featured-image.webp 2x"
+        sizes="auto"
         alt="/ngql-tutorial/featured-image.webp"
         title="本文是一个快速了解为 NebulaGraph 内核贡献代码、构建、Debug 的一站式指南。" height="200" width="400"></a>
             </div><h2 class="related-title">
@@ -1059,7 +1072,7 @@
             <div class="post-info-md"><span><a class="link-to-mardown" href=/nebulagraph-hacking-guide/index.md target="_blank" rel="noopener noreferrer">阅读原始文档</a>
                     </span></div>
             <div class="post-info-share">
-                <span><a href="#" onclick="return false;" title="分享到 Twitter" data-sharer="twitter" data-url="https://siwei.io/nebulagraph-hacking-guide/" data-title="NebulaGraph 内核贡献开发指南" data-via="wey_gu" data-hashtags="NebulaGraph,contributing,open-source,开发指南"><i class="fab fa-twitter fa-fw"></i></a><a href="#" onclick="return false;" title="分享到 Facebook" data-sharer="facebook" data-url="https://siwei.io/nebulagraph-hacking-guide/" data-hashtag="NebulaGraph"><i class="fab fa-facebook-square fa-fw"></i></a><a href="#" onclick="return false;" title="分享到 WhatsApp" data-sharer="whatsapp" data-url="https://siwei.io/nebulagraph-hacking-guide/" data-title="NebulaGraph 内核贡献开发指南" data-web><i class="fab fa-whatsapp fa-fw"></i></a><a href="#" onclick="return false;" title="分享到 Line" data-sharer="line" data-url="https://siwei.io/nebulagraph-hacking-guide/" data-title="NebulaGraph 内核贡献开发指南"><i data-svg-src="/lib/simple-icons/icons/line.min.svg"></i></a><a href="#" onclick="return false;" title="分享到 微博" data-sharer="weibo" data-url="https://siwei.io/nebulagraph-hacking-guide/" data-title="NebulaGraph 内核贡献开发指南" data-image="featured-image.webp" data-ralateuid="siweigu"><i class="fab fa-weibo fa-fw"></i></a><a href="#" onclick="return false;" title="分享到 Myspace" data-sharer="myspace" data-url="https://siwei.io/nebulagraph-hacking-guide/" data-title="NebulaGraph 内核贡献开发指南" data-description="本文是一个快速了解为 NebulaGraph 内核贡献代码、构建、Debug 的一站式指南。"><i data-svg-src="/lib/simple-icons/icons/myspace.min.svg"></i></a><a href="#" onclick="return false;" title="分享到 Blogger" data-sharer="blogger" data-url="https://siwei.io/nebulagraph-hacking-guide/" data-title="NebulaGraph 内核贡献开发指南" data-description="本文是一个快速了解为 NebulaGraph 内核贡献代码、构建、Debug 的一站式指南。"><i class="fab fa-blogger fa-fw"></i></a><a href="#" onclick="return false;" title="分享到 Evernote" data-sharer="evernote" data-url="https://siwei.io/nebulagraph-hacking-guide/" data-title="NebulaGraph 内核贡献开发指南"><i class="fab fa-evernote fa-fw"></i></a></span>
+                <span><a href="#" title="分享到 Twitter" data-sharer="twitter" data-url="https://siwei.io/nebulagraph-hacking-guide/" data-title="NebulaGraph 内核贡献开发指南" data-via="wey_gu" data-hashtags="NebulaGraph,contributing,open-source,开发指南"><i class="fab fa-twitter fa-fw"></i></a><a href="#" title="分享到 Facebook" data-sharer="facebook" data-url="https://siwei.io/nebulagraph-hacking-guide/" data-hashtag="NebulaGraph"><i class="fab fa-facebook-square fa-fw"></i></a><a href="#" title="分享到 WhatsApp" data-sharer="whatsapp" data-url="https://siwei.io/nebulagraph-hacking-guide/" data-title="NebulaGraph 内核贡献开发指南" data-web><i class="fab fa-whatsapp fa-fw"></i></a><a href="#" title="分享到 Line" data-sharer="line" data-url="https://siwei.io/nebulagraph-hacking-guide/" data-title="NebulaGraph 内核贡献开发指南"><i data-svg-src="/lib/simple-icons/icons/line.min.svg"></i></a><a href="#" title="分享到 微博" data-sharer="weibo" data-url="https://siwei.io/nebulagraph-hacking-guide/" data-title="NebulaGraph 内核贡献开发指南" data-image="featured-image.webp" data-ralateuid="siweigu"><i class="fab fa-weibo fa-fw"></i></a><a href="#" title="分享到 Myspace" data-sharer="myspace" data-url="https://siwei.io/nebulagraph-hacking-guide/" data-title="NebulaGraph 内核贡献开发指南" data-description="本文是一个快速了解为 NebulaGraph 内核贡献代码、构建、Debug 的一站式指南。"><i data-svg-src="/lib/simple-icons/icons/myspace.min.svg"></i></a><a href="#" title="分享到 Blogger" data-sharer="blogger" data-url="https://siwei.io/nebulagraph-hacking-guide/" data-title="NebulaGraph 内核贡献开发指南" data-description="本文是一个快速了解为 NebulaGraph 内核贡献代码、构建、Debug 的一站式指南。"><i class="fab fa-blogger fa-fw"></i></a><a href="#" title="分享到 Evernote" data-sharer="evernote" data-url="https://siwei.io/nebulagraph-hacking-guide/" data-title="NebulaGraph 内核贡献开发指南"><i class="fab fa-evernote fa-fw"></i></a></span>
             </div>
         </div>
     </div>
@@ -1079,7 +1092,7 @@
             </noscript></div></article></div>
         </main><footer class="footer">
         <div class="footer-container"><div class="footer-line">
-                    由 <a href="https://gohugo.io/" target="_blank" rel="noopener noreferrer" title="Hugo 0.107.0">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreferrer" title="DoIt 0.2.13"><i class="far fa-edit fa-fw"></i> DoIt</a>
+                    由 <a href="https://gohugo.io/" target="_blank" rel="noopener noreferrer" title="Hugo 0.109.0">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreferrer" title="DoIt 0.2.13"><i class="far fa-edit fa-fw"></i> DoIt</a>
                 </div><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2018 - 2023</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="https://siwei.io" target="_blank" rel="noopener noreferrer">Wey Gu</a></span>&nbsp;|&nbsp;<span class="license"><a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">CC BY-NC 4.0</a></span></div>
             <div class="footer-line"></div>
             <div class="footer-line">
@@ -1103,13 +1116,11 @@
         </a><a href="#" id="view-comments" class="fixed-button" title="查看评论">
             <i class="fas fa-comment fa-fw"></i>
         </a>
-    </div><div class="assets"><script type="text/javascript" src="/lib/autocomplete/autocomplete.min.js"></script><script type="text/javascript" src="/lib/fuse/fuse.min.js"></script><script type="text/javascript" src="/lib/lazysizes/lazysizes.min.js"></script><script type="text/javascript" src="/lib/tablesort/tablesort.min.js"></script><script type="text/javascript" src="/lib/topbar/topbar.min.js"></script><script type="text/javascript" src="/lib/pjax/pjax.min.js"></script><script type="text/javascript" src="/js/theme.min.js" defer></script><script type="text/javascript">
+    </div><div class="assets"><link rel="stylesheet" href="/lib/katex/katex.min.css"><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/katex/copy-tex.min.css">
+        <noscript><link rel="stylesheet" href="/lib/katex/copy-tex.min.css"></noscript><script type="text/javascript">window.config={"code":{"copyTitle":"复制到剪贴板","maxShownLines":10},"comment":{"giscus":{"darkTheme":"dark","dataCategory":"Comments","dataCategoryId":"DIC_kwDOFhiy8c4CQeuu","dataEmitMetadata":"1","dataInputPosition":"bottom","dataLang":"en","dataMapping":"title","dataReactionsEnabled":"1","dataRepo":"siwei-io/siwei-io.github.io","dataRepoId":"MDEwOlJlcG9zaXRvcnkzNzA3MTc0MjU=","dataStrict":"1","lightTheme":"light"}},"math":{"delimiters":[{"display":true,"left":"$$","right":"$$"},{"display":true,"left":"\\[","right":"\\]"},{"display":false,"left":"$","right":"$"},{"display":false,"left":"\\(","right":"\\)"}],"strict":false},"search":{"distance":100,"findAllMatches":true,"fuseIndexURL":"/index.json","highlightTag":"em","ignoreFieldNorm":false,"ignoreLocation":false,"isCaseSensitive":false,"location":0,"maxResultLength":10,"minMatchCharLength":2,"noResultsFound":"没有找到结果","snippetLength":50,"threshold":0.3,"type":"fuse","useExtendedSearch":false},"sharerjs":true,"table":{"sort":true}};</script><script type="text/javascript" src="/js/giscus.min.js" defer></script><script type="text/javascript" src="/lib/tablesort/tablesort.min.js"></script><script type="text/javascript" src="/lib/clipboard/clipboard.min.js"></script><script type="text/javascript" src="/lib/sharer/sharer.min.js"></script><script type="text/javascript" src="/lib/katex/katex.min.js" defer></script><script type="text/javascript" src="/lib/katex/auto-render.min.js" defer></script><script type="text/javascript" src="/lib/katex/copy-tex.min.js" defer></script><script type="text/javascript" src="/lib/katex/mhchem.min.js" defer></script><script type="text/javascript" src="/js/katex.min.js" defer></script><script type="text/javascript" src="/js/theme.min.js" defer></script><script type="text/javascript">
             window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());
             gtag('config', 'UA-659952-4', { 'anonymize_ip': true });
         </script><script type="text/javascript" src="https://www.googletagmanager.com/gtag/js?id=UA-659952-4" async></script></div>
-
-<div class="pjax-assets"><script type="text/javascript">window.config={"code":{"copyTitle":"复制到剪贴板","maxShownLines":10},"comment":{"giscus":{"darkTheme":"dark","dataCategory":"Comments","dataCategoryId":"DIC_kwDOFhiy8c4CQeuu","dataEmitMetadata":"1","dataInputPosition":"bottom","dataLang":"en","dataMapping":"title","dataReactionsEnabled":"1","dataRepo":"siwei-io/siwei-io.github.io","dataRepoId":"MDEwOlJlcG9zaXRvcnkzNzA3MTc0MjU=","dataStrict":"1","lightTheme":"light"}},"math":{"delimiters":[{"display":true,"left":"$$","right":"$$"},{"display":true,"left":"\\[","right":"\\]"},{"display":false,"left":"$","right":"$"},{"display":false,"left":"\\(","right":"\\)"}],"strict":false},"search":{"distance":100,"findAllMatches":true,"fuseIndexURL":"/index.json","highlightTag":"em","ignoreFieldNorm":false,"ignoreLocation":false,"isCaseSensitive":false,"location":0,"maxResultLength":10,"minMatchCharLength":2,"noResultsFound":"没有找到结果","snippetLength":50,"threshold":0.3,"type":"fuse","useExtendedSearch":false},"sharerjs":true,"table":{"sort":true}};</script><script type="text/javascript" src="/js/giscus.min.js" defer></script><script type="text/javascript" src="/lib/clipboard/clipboard.min.js"></script><script type="text/javascript" src="/lib/sharer/sharer.min.js"></script><script type="text/javascript" src="/lib/katex/katex.min.js" defer></script><script type="text/javascript" src="/lib/katex/auto-render.min.js" defer></script><script type="text/javascript" src="/lib/katex/copy-tex.min.js" defer></script><script type="text/javascript" src="/lib/katex/mhchem.min.js" defer></script><script type="text/javascript" src="/js/katex.min.js" defer></script><link rel="stylesheet" href="/lib/katex/katex.min.css"><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/katex/copy-tex.min.css">
-        <noscript><link rel="stylesheet" href="/lib/katex/copy-tex.min.css"></noscript></div>
 </body>
 
 </html>

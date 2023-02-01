@@ -5,13 +5,12 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noodp" />
-    <title class="pjax-title">nGQL 简明教程，第二期 nGQL 执行计划详解与调优 - siwei.io</title><meta name="Description" content="本文旨在帮助 NebulaGraph 新手快速了解查询语句调优，读懂查询计划。"><meta property="og:title" content="nGQL 简明教程，第二期 nGQL 执行计划详解与调优" />
+    <title>nGQL 简明教程，第二期 nGQL 执行计划详解与调优 - siwei.io</title><meta name="Description" content="本文旨在帮助 NebulaGraph 新手快速了解查询语句调优，读懂查询计划。"><meta property="og:title" content="nGQL 简明教程，第二期 nGQL 执行计划详解与调优" />
 <meta property="og:description" content="本文旨在帮助 NebulaGraph 新手快速了解查询语句调优，读懂查询计划。" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://siwei.io/ngql-execution-plan/" /><meta property="og:image" content="https://siwei.io/ngql-execution-plan/featured-image.png"/><meta property="article:section" content="posts" />
 <meta property="article:published_time" content="2022-09-06T10:25:05+08:00" />
 <meta property="article:modified_time" content="2022-10-22T11:00:18+08:00" /><meta property="og:site_name" content="siwei.io" />
-
 <meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:image" content="https://siwei.io/ngql-execution-plan/featured-image.png"/>
 <meta name="twitter:title" content="nGQL 简明教程，第二期 nGQL 执行计划详解与调优"/>
@@ -21,7 +20,7 @@
 
 <meta name="theme-color" content="#f8f8f8"><meta name="msapplication-TileColor" content="#da532c"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
         <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="manifest" href="/site.webmanifest"><link rel="canonical" href="https://siwei.io/ngql-execution-plan/" /><link rel="prev" href="https://siwei.io/ngql-tutorial/" /><link rel="next" href="https://siwei.io/nebulagraph-hacking-guide/" /><link rel="stylesheet" href="/lib/normalize/normalize.min.css"><link rel="stylesheet" href="/css/style.min.css"><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/fontawesome-free/all.min.css">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="manifest" href="/site.webmanifest"><link rel="canonical" href="https://siwei.io/ngql-execution-plan/" /><link rel="prev" href="https://siwei.io/ngql-tutorial/" /><link rel="next" href="https://siwei.io/nebulagraph-hacking-guide/" /><link rel="stylesheet" href="/lib/normalize/normalize.min.css"><link rel="stylesheet" href="/css/color.css"><link rel="stylesheet" href="/css/style.min.css"><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/fontawesome-free/all.min.css">
         <noscript><link rel="stylesheet" href="/lib/fontawesome-free/all.min.css"></noscript><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/animate/animate.min.css">
         <noscript><link rel="stylesheet" href="/lib/animate/animate.min.css"></noscript>
     
@@ -44,7 +43,8 @@
                 "name": "Wey Gu"
             },"description": "本文旨在帮助 NebulaGraph 新手快速了解查询语句调优，读懂查询计划。"
     }
-    </script></head>
+    </script><script src="//instant.page/5.1.1" defer type="module" integrity="sha384-MWfCL6g1OTGsbSwfuMHc8+8J2u71/LA8dzlIN3ycajckxuZZmF+DNjdm7O6H3PSq"></script>
+</head>
 
 <body header-desktop="fixed" header-mobile="auto"><script type="text/javascript">
         function setTheme(theme) {document.body.setAttribute('theme', theme); document.documentElement.style.setProperty('color-scheme', theme === 'light' ? 'light' : 'dark');}
@@ -61,20 +61,20 @@
             <a href="/" title="siwei.io"><span class="header-title-pre"><i class="fas fa-code-branch"></i></span>siwei.io</a>
         </div>
         <div class="menu">
-            <div class="menu-inner"><a class="menu-item" href="/about/"> 关于 </a><a class="menu-item" href="/projects/"> 项目 </a><a class="menu-item" href="/sketch-notes/"> 手绘 </a><a class="menu-item" href="/posts/"> 博客 </a><a class="menu-item" href="/talk/"> 演讲 </a><a class="menu-item" href="/cources/"> 课程 </a><a class="menu-item" href="https://vesoft.com/cn/careers/" rel="noopener noreferrer" target="_blank"> 招聘 </a><a class="menu-item" href="/about/#%E8%81%94%E7%B3%BB%E6%88%91"> 联系 </a><a class="menu-item" href="/path/"> 学习路径 </a><span class="menu-item delimiter"></span><a href="#" onclick="return false;" class="menu-item language" title="选择语言">🌏 Chinese<i class="fas fa-chevron-right fa-fw"></i>
+            <div class="menu-inner"><a class="menu-item" href="/about/"> 关于 </a><a class="menu-item" href="/projects/"> 项目 </a><a class="menu-item" href="/sketch-notes/"> 手绘 </a><a class="menu-item" href="/posts/"> 博客 </a><a class="menu-item" href="/talk/"> 演讲 </a><a class="menu-item" href="/cources/"> 课程 </a><a class="menu-item" href="https://vesoft.com/cn/careers/" rel="noopener noreferrer" target="_blank"> 招聘 </a><a class="menu-item" href="/about/#%E8%81%94%E7%B3%BB%E6%88%91"> 联系 </a><a class="menu-item" href="/path/"> 学习路径 </a><span class="menu-item delimiter"></span><a href="#" class="menu-item language" title="选择语言">🌏 Chinese<i class="fas fa-chevron-right fa-fw"></i>
                         <select class="language-select" title="Select Language" id="language-select-desktop" onchange="location = this.value;"><option value="/ngql-execution-plan/" selected>🌏 Chinese</option></select>
                     </a><span class="menu-item search" id="search-desktop">
                         <input type="text" placeholder="搜索文章标题或内容..." id="search-input-desktop">
-                        <a href="#" onclick="return false;" class="search-button search-toggle" id="search-toggle-desktop" title="搜索">
+                        <a href="#" class="search-button search-toggle" id="search-toggle-desktop" title="搜索">
                             <i class="fas fa-search fa-fw"></i>
                         </a>
-                        <a href="#" onclick="return false;" class="search-button search-clear" id="search-clear-desktop" title="清空">
+                        <a href="#" class="search-button search-clear" id="search-clear-desktop" title="清空">
                             <i class="fas fa-times-circle fa-fw"></i>
                         </a>
                         <span class="search-button search-loading" id="search-loading-desktop">
                             <i class="fas fa-spinner fa-fw fa-spin"></i>
                         </span>
-                    </span><a href="#" onclick="return false;" class="menu-item theme-select" title="切换主题">
+                    </span><a href="#" class="menu-item theme-select" title="切换主题">
                     <i class="fas fa-adjust fa-fw"></i>
                     <select class="color-theme-select" id="theme-select-desktop" title="切换主题">
                         <option value="light">浅色</option>
@@ -98,20 +98,20 @@
         <div class="menu" id="menu-mobile"><div class="search-wrapper">
                     <div class="search mobile" id="search-mobile">
                         <input type="text" placeholder="搜索文章标题或内容..." id="search-input-mobile">
-                        <a href="#" onclick="return false;" class="search-button search-toggle" id="search-toggle-mobile" title="搜索">
+                        <a href="#" class="search-button search-toggle" id="search-toggle-mobile" title="搜索">
                             <i class="fas fa-search fa-fw"></i>
                         </a>
-                        <a href="#" onclick="return false;" class="search-button search-clear" id="search-clear-mobile" title="清空">
+                        <a href="#" class="search-button search-clear" id="search-clear-mobile" title="清空">
                             <i class="fas fa-times-circle fa-fw"></i>
                         </a>
                         <span class="search-button search-loading" id="search-loading-mobile">
                             <i class="fas fa-spinner fa-fw fa-spin"></i>
                         </span>
                     </div>
-                    <a href="#" onclick="return false;" class="search-cancel" id="search-cancel-mobile">
+                    <a href="#" class="search-cancel" id="search-cancel-mobile">
                         取消
                     </a>
-                </div><a class="menu-item" href="/about/" title="">关于</a><a class="menu-item" href="/projects/" title="">项目</a><a class="menu-item" href="/sketch-notes/" title="">手绘</a><a class="menu-item" href="/posts/" title="">博客</a><a class="menu-item" href="/talk/" title="">演讲</a><a class="menu-item" href="/cources/" title="">课程</a><a class="menu-item" href="https://vesoft.com/cn/careers/" title="" rel="noopener noreferrer" target="_blank">招聘</a><a class="menu-item" href="/about/#%E8%81%94%E7%B3%BB%E6%88%91" title="">联系</a><a class="menu-item" href="/path/" title="">学习路径</a><a href="#" onclick="return false;" class="menu-item theme-select" title="切换主题">
+                </div><a class="menu-item" href="/about/" title="">关于</a><a class="menu-item" href="/projects/" title="">项目</a><a class="menu-item" href="/sketch-notes/" title="">手绘</a><a class="menu-item" href="/posts/" title="">博客</a><a class="menu-item" href="/talk/" title="">演讲</a><a class="menu-item" href="/cources/" title="">课程</a><a class="menu-item" href="https://vesoft.com/cn/careers/" title="" rel="noopener noreferrer" target="_blank">招聘</a><a class="menu-item" href="/about/#%E8%81%94%E7%B3%BB%E6%88%91" title="">联系</a><a class="menu-item" href="/path/" title="">学习路径</a><a href="#" class="menu-item theme-select" title="切换主题">
                 <i class="fas fa-adjust fa-fw"></i>
                 <select class="color-theme-select" id="theme-select-mobile" title="切换主题">
                     <option value="light">浅色</option>
@@ -119,7 +119,7 @@
                     <option value="black">黑色</option>
                     <option value="auto">跟随系统</option>
                 </select>
-            </a><a href="#" onclick="return false;" class="menu-item" title="选择语言">🌏 Chinese<i class="fas fa-chevron-right fa-fw"></i>
+            </a><a href="#" class="menu-item" title="选择语言">🌏 Chinese<i class="fas fa-chevron-right fa-fw"></i>
                     <select class="language-select" title="Select Language" onchange="location = this.value;"><option value="/ngql-execution-plan/" selected>🌏 Chinese</option></select>
                 </a></div>
     </div>
@@ -188,10 +188,11 @@
             <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime="2022-09-06">2022-09-06</time>&nbsp;<i class="far fa-edit fa-fw"></i>&nbsp;<time datetime="2022-10-22">2022-10-22</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;约 29252 字&nbsp;
                 <i class="far fa-clock fa-fw"></i>&nbsp;预计阅读 59 分钟&nbsp;</div>
         </div><div class="featured-image"><img
-        class="lazyload"
-        data-src="/ngql-execution-plan/featured-image.webp"
-        data-srcset="/ngql-execution-plan/featured-image.webp, /ngql-execution-plan/featured-image.webp 1.5x, /ngql-execution-plan/featured-image.webp 2x"
-        data-sizes="auto"
+        
+        loading="eager"
+        src="/ngql-execution-plan/featured-image.webp"
+        srcset="/ngql-execution-plan/featured-image.webp, /ngql-execution-plan/featured-image.webp 1.5x, /ngql-execution-plan/featured-image.webp 2x"
+        sizes="auto"
         alt="/ngql-execution-plan/featured-image.webp"
         title="本文旨在帮助 NebulaGraph 新手快速了解查询语句调优，读懂查询计划。" height="884" width="1730"></div><div class="details toc" id="toc-static"  kept="">
                 <div class="details-summary toc-title">
@@ -276,10 +277,11 @@
 <p>的过程：</p>
 <p><a class="lightgallery" href="/ngql-execution-plan/code-reading-qe-planner-arch.png" title="img" data-thumbnail="/ngql-execution-plan/code-reading-qe-planner-arch.png">
         <img
-            class="lazyload"
-            data-src="code-reading-qe-planner-arch.png"
-            data-srcset="/ngql-execution-plan/code-reading-qe-planner-arch.png, code-reading-qe-planner-arch.png 1.5x, /ngql-execution-plan/code-reading-qe-planner-arch.png 2x"
-            data-sizes="auto"
+            
+            loading="lazy"
+            src="code-reading-qe-planner-arch.png"
+            srcset="/ngql-execution-plan/code-reading-qe-planner-arch.png, code-reading-qe-planner-arch.png 1.5x, /ngql-execution-plan/code-reading-qe-planner-arch.png 2x"
+            sizes="auto"
             alt="/ngql-execution-plan/code-reading-qe-planner-arch.png">
     </a></p>
 <p>举一个例子，在查年龄大于 34 岁的三跳好友的语句被查询之后</p>
@@ -294,10 +296,11 @@
 </div><p>语句经过了解析、验证、优化之后，最终的执行计划是， <code>Start -&gt; Loop -&gt; Start -&gt; GetNeighbors -&gt; Project -&gt; Dedup -&gt; Loop -&gt; GetNeighbors -&gt; Project -&gt; GetVertices -&gt; Project -&gt; LeftJoin -&gt; Filter -&gt; Project -&gt; Dedup -&gt; Sort</code>，或者如下图所示。</p>
 <p><a class="lightgallery" href="/ngql-execution-plan/go_n_steps.svg" title="go_n_steps" data-thumbnail="/ngql-execution-plan/go_n_steps.svg">
         <img
-            class="lazyload"
-            data-src="go_n_steps.svg"
-            data-srcset="/ngql-execution-plan/go_n_steps.svg, go_n_steps.svg 1.5x, /ngql-execution-plan/go_n_steps.svg 2x"
-            data-sizes="auto"
+            
+            loading="lazy"
+            src="go_n_steps.svg"
+            srcset="/ngql-execution-plan/go_n_steps.svg, go_n_steps.svg 1.5x, /ngql-execution-plan/go_n_steps.svg 2x"
+            sizes="auto"
             alt="/ngql-execution-plan/go_n_steps.svg">
     </a></p>
 <p>了解这个优化过程和最终执行计划意味着什么是调优查询、面向性能设计图建模的关键。</p>
@@ -5369,10 +5372,11 @@
 </blockquote>
 <p><a class="lightgallery" href="https://www-cdn.nebula-graph.com.cn/nebula-blog/Architecture0105.png" title="image" data-thumbnail="https://www-cdn.nebula-graph.com.cn/nebula-blog/Architecture0105.png">
         <img
-            class="lazyload"
-            data-src="https://www-cdn.nebula-graph.com.cn/nebula-blog/Architecture0105.png"
-            data-srcset="https://www-cdn.nebula-graph.com.cn/nebula-blog/Architecture0105.png, https://www-cdn.nebula-graph.com.cn/nebula-blog/Architecture0105.png 1.5x, https://www-cdn.nebula-graph.com.cn/nebula-blog/Architecture0105.png 2x"
-            data-sizes="auto"
+            
+            loading="lazy"
+            src="https://www-cdn.nebula-graph.com.cn/nebula-blog/Architecture0105.png"
+            srcset="https://www-cdn.nebula-graph.com.cn/nebula-blog/Architecture0105.png, https://www-cdn.nebula-graph.com.cn/nebula-blog/Architecture0105.png 1.5x, https://www-cdn.nebula-graph.com.cn/nebula-blog/Architecture0105.png 2x"
+            sizes="auto"
             alt="https://www-cdn.nebula-graph.com.cn/nebula-blog/Architecture0105.png">
     </a></p>
 <p>所以，绕开 <code>id($$)</code> 这个表达的另一个方法就是用 <code>edge</code>，这里双向探索的情况下，等价的表达是 <code>dst(edge) == &quot;player101&quot; OR src(edge) == &quot;player101&quot;</code>，所以，这句查询可以改写成：</p>
@@ -5830,10 +5834,11 @@
 <p>索引设计的文章参考：https://nebula-graph.com.cn/posts/how-indexing-works-in-nebula-graph，如下是文中介绍的点索引在 RocksDB 中的数据结构。</p>
 <p><a class="lightgallery" href="https://www-cdn.nebula-graph.com.cn/nebula-blog/Index04.png" title="vertex-index-format" data-thumbnail="https://www-cdn.nebula-graph.com.cn/nebula-blog/Index04.png">
         <img
-            class="lazyload"
-            data-src="https://www-cdn.nebula-graph.com.cn/nebula-blog/Index04.png"
-            data-srcset="https://www-cdn.nebula-graph.com.cn/nebula-blog/Index04.png, https://www-cdn.nebula-graph.com.cn/nebula-blog/Index04.png 1.5x, https://www-cdn.nebula-graph.com.cn/nebula-blog/Index04.png 2x"
-            data-sizes="auto"
+            
+            loading="lazy"
+            src="https://www-cdn.nebula-graph.com.cn/nebula-blog/Index04.png"
+            srcset="https://www-cdn.nebula-graph.com.cn/nebula-blog/Index04.png, https://www-cdn.nebula-graph.com.cn/nebula-blog/Index04.png 1.5x, https://www-cdn.nebula-graph.com.cn/nebula-blog/Index04.png 2x"
+            sizes="auto"
             alt="https://www-cdn.nebula-graph.com.cn/nebula-blog/Index04.png">
     </a></p>
 </blockquote>
@@ -6544,10 +6549,11 @@
     <div class="related-item-container">
             <div class="related-image">
                 <a href="/nebulagraph-hacking-guide/"><img
-        class="lazyload"
-        data-src="/nebulagraph-hacking-guide/featured-image.webp"
-        data-srcset="/nebulagraph-hacking-guide/featured-image.webp, /nebulagraph-hacking-guide/featured-image.webp 1.5x, /nebulagraph-hacking-guide/featured-image.webp 2x"
-        data-sizes="auto"
+        
+        loading="lazy"
+        src="/nebulagraph-hacking-guide/featured-image.webp"
+        srcset="/nebulagraph-hacking-guide/featured-image.webp, /nebulagraph-hacking-guide/featured-image.webp 1.5x, /nebulagraph-hacking-guide/featured-image.webp 2x"
+        sizes="auto"
         alt="/nebulagraph-hacking-guide/featured-image.webp"
         title="本文旨在帮助 NebulaGraph 新手快速了解查询语句调优，读懂查询计划。" height="200" width="400"></a>
             </div><h2 class="related-title">
@@ -6557,10 +6563,11 @@
     <div class="related-item-container">
             <div class="related-image">
                 <a href="/ngql-tutorial/"><img
-        class="lazyload"
-        data-src="/ngql-tutorial/featured-image.webp"
-        data-srcset="/ngql-tutorial/featured-image.webp, /ngql-tutorial/featured-image.webp 1.5x, /ngql-tutorial/featured-image.webp 2x"
-        data-sizes="auto"
+        
+        loading="lazy"
+        src="/ngql-tutorial/featured-image.webp"
+        srcset="/ngql-tutorial/featured-image.webp, /ngql-tutorial/featured-image.webp 1.5x, /ngql-tutorial/featured-image.webp 2x"
+        sizes="auto"
         alt="/ngql-tutorial/featured-image.webp"
         title="本文旨在帮助 NebulaGraph 新手快速了解查询语句调优，读懂查询计划。" height="200" width="400"></a>
             </div><h2 class="related-title">
@@ -6584,7 +6591,7 @@
             <div class="post-info-md"><span><a class="link-to-mardown" href=/ngql-execution-plan/index.md target="_blank" rel="noopener noreferrer">阅读原始文档</a>
                     </span></div>
             <div class="post-info-share">
-                <span><a href="#" onclick="return false;" title="分享到 Twitter" data-sharer="twitter" data-url="https://siwei.io/ngql-execution-plan/" data-title="nGQL 简明教程，第二期 nGQL 执行计划详解与调优" data-via="wey_gu" data-hashtags="NebulaGraph,nGQL,OpenCypher,调优,执行计划"><i class="fab fa-twitter fa-fw"></i></a><a href="#" onclick="return false;" title="分享到 Facebook" data-sharer="facebook" data-url="https://siwei.io/ngql-execution-plan/" data-hashtag="NebulaGraph"><i class="fab fa-facebook-square fa-fw"></i></a><a href="#" onclick="return false;" title="分享到 WhatsApp" data-sharer="whatsapp" data-url="https://siwei.io/ngql-execution-plan/" data-title="nGQL 简明教程，第二期 nGQL 执行计划详解与调优" data-web><i class="fab fa-whatsapp fa-fw"></i></a><a href="#" onclick="return false;" title="分享到 Line" data-sharer="line" data-url="https://siwei.io/ngql-execution-plan/" data-title="nGQL 简明教程，第二期 nGQL 执行计划详解与调优"><i data-svg-src="/lib/simple-icons/icons/line.min.svg"></i></a><a href="#" onclick="return false;" title="分享到 微博" data-sharer="weibo" data-url="https://siwei.io/ngql-execution-plan/" data-title="nGQL 简明教程，第二期 nGQL 执行计划详解与调优" data-image="featured-image.webp" data-ralateuid="siweigu"><i class="fab fa-weibo fa-fw"></i></a><a href="#" onclick="return false;" title="分享到 Myspace" data-sharer="myspace" data-url="https://siwei.io/ngql-execution-plan/" data-title="nGQL 简明教程，第二期 nGQL 执行计划详解与调优" data-description="本文旨在帮助 NebulaGraph 新手快速了解查询语句调优，读懂查询计划。"><i data-svg-src="/lib/simple-icons/icons/myspace.min.svg"></i></a><a href="#" onclick="return false;" title="分享到 Blogger" data-sharer="blogger" data-url="https://siwei.io/ngql-execution-plan/" data-title="nGQL 简明教程，第二期 nGQL 执行计划详解与调优" data-description="本文旨在帮助 NebulaGraph 新手快速了解查询语句调优，读懂查询计划。"><i class="fab fa-blogger fa-fw"></i></a><a href="#" onclick="return false;" title="分享到 Evernote" data-sharer="evernote" data-url="https://siwei.io/ngql-execution-plan/" data-title="nGQL 简明教程，第二期 nGQL 执行计划详解与调优"><i class="fab fa-evernote fa-fw"></i></a></span>
+                <span><a href="#" title="分享到 Twitter" data-sharer="twitter" data-url="https://siwei.io/ngql-execution-plan/" data-title="nGQL 简明教程，第二期 nGQL 执行计划详解与调优" data-via="wey_gu" data-hashtags="NebulaGraph,nGQL,OpenCypher,调优,执行计划"><i class="fab fa-twitter fa-fw"></i></a><a href="#" title="分享到 Facebook" data-sharer="facebook" data-url="https://siwei.io/ngql-execution-plan/" data-hashtag="NebulaGraph"><i class="fab fa-facebook-square fa-fw"></i></a><a href="#" title="分享到 WhatsApp" data-sharer="whatsapp" data-url="https://siwei.io/ngql-execution-plan/" data-title="nGQL 简明教程，第二期 nGQL 执行计划详解与调优" data-web><i class="fab fa-whatsapp fa-fw"></i></a><a href="#" title="分享到 Line" data-sharer="line" data-url="https://siwei.io/ngql-execution-plan/" data-title="nGQL 简明教程，第二期 nGQL 执行计划详解与调优"><i data-svg-src="/lib/simple-icons/icons/line.min.svg"></i></a><a href="#" title="分享到 微博" data-sharer="weibo" data-url="https://siwei.io/ngql-execution-plan/" data-title="nGQL 简明教程，第二期 nGQL 执行计划详解与调优" data-image="featured-image.webp" data-ralateuid="siweigu"><i class="fab fa-weibo fa-fw"></i></a><a href="#" title="分享到 Myspace" data-sharer="myspace" data-url="https://siwei.io/ngql-execution-plan/" data-title="nGQL 简明教程，第二期 nGQL 执行计划详解与调优" data-description="本文旨在帮助 NebulaGraph 新手快速了解查询语句调优，读懂查询计划。"><i data-svg-src="/lib/simple-icons/icons/myspace.min.svg"></i></a><a href="#" title="分享到 Blogger" data-sharer="blogger" data-url="https://siwei.io/ngql-execution-plan/" data-title="nGQL 简明教程，第二期 nGQL 执行计划详解与调优" data-description="本文旨在帮助 NebulaGraph 新手快速了解查询语句调优，读懂查询计划。"><i class="fab fa-blogger fa-fw"></i></a><a href="#" title="分享到 Evernote" data-sharer="evernote" data-url="https://siwei.io/ngql-execution-plan/" data-title="nGQL 简明教程，第二期 nGQL 执行计划详解与调优"><i class="fab fa-evernote fa-fw"></i></a></span>
             </div>
         </div>
     </div>
@@ -6604,7 +6611,7 @@
             </noscript></div></article></div>
         </main><footer class="footer">
         <div class="footer-container"><div class="footer-line">
-                    由 <a href="https://gohugo.io/" target="_blank" rel="noopener noreferrer" title="Hugo 0.107.0">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreferrer" title="DoIt 0.2.13"><i class="far fa-edit fa-fw"></i> DoIt</a>
+                    由 <a href="https://gohugo.io/" target="_blank" rel="noopener noreferrer" title="Hugo 0.109.0">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreferrer" title="DoIt 0.2.13"><i class="far fa-edit fa-fw"></i> DoIt</a>
                 </div><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2018 - 2023</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="https://siwei.io" target="_blank" rel="noopener noreferrer">Wey Gu</a></span>&nbsp;|&nbsp;<span class="license"><a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">CC BY-NC 4.0</a></span></div>
             <div class="footer-line"></div>
             <div class="footer-line">
@@ -6628,13 +6635,11 @@
         </a><a href="#" id="view-comments" class="fixed-button" title="查看评论">
             <i class="fas fa-comment fa-fw"></i>
         </a>
-    </div><div class="assets"><script type="text/javascript" src="/lib/autocomplete/autocomplete.min.js"></script><script type="text/javascript" src="/lib/fuse/fuse.min.js"></script><script type="text/javascript" src="/lib/lazysizes/lazysizes.min.js"></script><script type="text/javascript" src="/lib/tablesort/tablesort.min.js"></script><script type="text/javascript" src="/lib/topbar/topbar.min.js"></script><script type="text/javascript" src="/lib/pjax/pjax.min.js"></script><script type="text/javascript" src="/js/theme.min.js" defer></script><script type="text/javascript">
+    </div><div class="assets"><link rel="stylesheet" href="/lib/katex/katex.min.css"><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/katex/copy-tex.min.css">
+        <noscript><link rel="stylesheet" href="/lib/katex/copy-tex.min.css"></noscript><script type="text/javascript">window.config={"code":{"copyTitle":"复制到剪贴板","maxShownLines":10},"comment":{"giscus":{"darkTheme":"dark","dataCategory":"Comments","dataCategoryId":"DIC_kwDOFhiy8c4CQeuu","dataEmitMetadata":"1","dataInputPosition":"bottom","dataLang":"en","dataMapping":"title","dataReactionsEnabled":"1","dataRepo":"siwei-io/siwei-io.github.io","dataRepoId":"MDEwOlJlcG9zaXRvcnkzNzA3MTc0MjU=","dataStrict":"1","lightTheme":"light"}},"math":{"delimiters":[{"display":true,"left":"$$","right":"$$"},{"display":true,"left":"\\[","right":"\\]"},{"display":false,"left":"$","right":"$"},{"display":false,"left":"\\(","right":"\\)"}],"strict":false},"search":{"distance":100,"findAllMatches":true,"fuseIndexURL":"/index.json","highlightTag":"em","ignoreFieldNorm":false,"ignoreLocation":false,"isCaseSensitive":false,"location":0,"maxResultLength":10,"minMatchCharLength":2,"noResultsFound":"没有找到结果","snippetLength":50,"threshold":0.3,"type":"fuse","useExtendedSearch":false},"sharerjs":true,"table":{"sort":true}};</script><script type="text/javascript" src="/js/giscus.min.js" defer></script><script type="text/javascript" src="/lib/tablesort/tablesort.min.js"></script><script type="text/javascript" src="/lib/clipboard/clipboard.min.js"></script><script type="text/javascript" src="/lib/sharer/sharer.min.js"></script><script type="text/javascript" src="/lib/katex/katex.min.js" defer></script><script type="text/javascript" src="/lib/katex/auto-render.min.js" defer></script><script type="text/javascript" src="/lib/katex/copy-tex.min.js" defer></script><script type="text/javascript" src="/lib/katex/mhchem.min.js" defer></script><script type="text/javascript" src="/js/katex.min.js" defer></script><script type="text/javascript" src="/js/theme.min.js" defer></script><script type="text/javascript">
             window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());
             gtag('config', 'UA-659952-4', { 'anonymize_ip': true });
         </script><script type="text/javascript" src="https://www.googletagmanager.com/gtag/js?id=UA-659952-4" async></script></div>
-
-<div class="pjax-assets"><script type="text/javascript">window.config={"code":{"copyTitle":"复制到剪贴板","maxShownLines":10},"comment":{"giscus":{"darkTheme":"dark","dataCategory":"Comments","dataCategoryId":"DIC_kwDOFhiy8c4CQeuu","dataEmitMetadata":"1","dataInputPosition":"bottom","dataLang":"en","dataMapping":"title","dataReactionsEnabled":"1","dataRepo":"siwei-io/siwei-io.github.io","dataRepoId":"MDEwOlJlcG9zaXRvcnkzNzA3MTc0MjU=","dataStrict":"1","lightTheme":"light"}},"math":{"delimiters":[{"display":true,"left":"$$","right":"$$"},{"display":true,"left":"\\[","right":"\\]"},{"display":false,"left":"$","right":"$"},{"display":false,"left":"\\(","right":"\\)"}],"strict":false},"search":{"distance":100,"findAllMatches":true,"fuseIndexURL":"/index.json","highlightTag":"em","ignoreFieldNorm":false,"ignoreLocation":false,"isCaseSensitive":false,"location":0,"maxResultLength":10,"minMatchCharLength":2,"noResultsFound":"没有找到结果","snippetLength":50,"threshold":0.3,"type":"fuse","useExtendedSearch":false},"sharerjs":true,"table":{"sort":true}};</script><script type="text/javascript" src="/js/giscus.min.js" defer></script><script type="text/javascript" src="/lib/clipboard/clipboard.min.js"></script><script type="text/javascript" src="/lib/sharer/sharer.min.js"></script><script type="text/javascript" src="/lib/katex/katex.min.js" defer></script><script type="text/javascript" src="/lib/katex/auto-render.min.js" defer></script><script type="text/javascript" src="/lib/katex/copy-tex.min.js" defer></script><script type="text/javascript" src="/lib/katex/mhchem.min.js" defer></script><script type="text/javascript" src="/js/katex.min.js" defer></script><link rel="stylesheet" href="/lib/katex/katex.min.css"><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/katex/copy-tex.min.css">
-        <noscript><link rel="stylesheet" href="/lib/katex/copy-tex.min.css"></noscript></div>
 </body>
 
 </html>
