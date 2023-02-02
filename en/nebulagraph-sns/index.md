@@ -1,8 +1,6 @@
 # Social Network with NebulaGraph
 
 
-# Social Network with NebulaGraph
-
 > How NebulaGraph helps build social network systems.
 
 <!--more-->
