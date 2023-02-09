@@ -1,19 +1,29 @@
 # Nebula Graph 索引详解
 
 
-> `index not found`？找不到索引？为什么我要创建 Nebula Graph 索引？什么时候要用到 Nebula Graph 原生索引，一文把这些搞清楚。
+> `index not found`？ 找不到索引？为什么我要创建 NebulaGraph 索引？什么时候要用到 Nebula Graph 原生索引，一文把这些搞清楚。
 
-Nebula Graph 的索引其实和传统的关系型数据库中的索引很像，但是又有一些容易让人疑惑的区别。刚开始了解 Nebula 的同学会疑惑于：
+updated:
 
-- 不清楚 Nebula Graph 图数据库中的索引到的是什么概念
-- 我应该什么时候使用 Nebula Graph 索引
-- Nebula Graph 索引怎么影响到写入性能
+`3.x` 之后，缺乏索引造成的新报错是：
+
+```log
+need to specify a limit number, or limit number can not push down.
+```
+
+--------------
+
+NebulaGraph 的索引其实和传统的关系型数据库中的索引很像，但是又有一些容易让人疑惑的区别。刚开始了解 NebulaGraph 的同学会疑惑于：
+
+- 不清楚 NebulaGraph 图数据库中的索引到的是什么概念
+- 我应该什么时候使用 NebulaGraph 索引
+- NebulaGraph 索引怎么影响到写入性能
 
 这篇文章里，我们就把这些问题回答好。
 
-## 到底 Nebula Graph 索引是什么
+## 到底 NebulaGraph 索引是什么
 
-简而言之，Nebula Graph 索引是用来，且只用来针对纯属性条件出发查询场景的
+简而言之，NebulaGraph 索引是用来，且只用来针对纯属性条件出发查询场景的
 
 - 图游走（walk）查询中的属性条件过滤不需要它
 - 纯属性条件出发查询（注：非采样情况）必须创建索引
@@ -22,7 +32,7 @@ Nebula Graph 的索引其实和传统的关系型数据库中的索引很像，�
 
 我们知道在传统关系型数据库中，索引是对表数据的一个或多个针对特定**列**重排序的副本，它用来**加速特定列过滤条件的读查询**并带来了额外的数据写入（加速而非这样查询的必须前提）。
 
-在 Nebula Graph 图数据库里，索引则是对**点、边特定属性数据**重排序的副本，用来提供**纯属性条件出发查询**（如下边的查询：从只给定了点边属性条件，而非点的 ID 出发去获取图数据）
+在 NebulaGraph 图数据库里，索引则是对**点、边特定属性数据**重排序的副本，用来提供**纯属性条件出发查询**（如下边的查询：从只给定了点边属性条件，而非点的 ID 出发去获取图数据）
 
 ```sql
 #### 必须 Nebula Graph 索引存在的查询
@@ -72,14 +82,14 @@ MATCH (v:player { name: 'Tim Duncan' })--(v2) \
 
 | `query 1`, 需要基于索引，纯属性条件出发查询          | `query 3`, 从已知 VID，不需要索引                          |
 | ---------------------------------------------------- | ---------------------------------------------------------- |
-| ![query-based-on-index](./query-based-on-index.webp) | ![query-requires-no-index](./query-requires-no-index.webp) |
+| ![query-based-on-index](query-based-on-index.webp) | ![query-requires-no-index](query-requires-no-index.webp) |
 
 
 
 
 ### 为什么纯属性条件出发查询里必须要索引呢？
 
-因为 Nebula Graph 在存储数据的时候，它的结构是面向分布式与关联关系设计的，类似表结构数据库中无索引的全扫描条件搜索实际上更加昂贵，所以设计上被有意禁止了。
+因为 NebulaGraph 在存储数据的时候，它的结构是面向分布式与关联关系设计的，类似表结构数据库中无索引的全扫描条件搜索实际上更加昂贵，所以设计上被有意禁止了。
 
 
 
@@ -99,18 +109,18 @@ MATCH (v:player { name: 'Tim Duncan' })--(v2) \
 - graph-queries： 如 `query 2` 、 `query 3`是沿着边一路找到特定路径条件的扩展游走
 - pure-prop-condition queries：如 `query 0` and `query 1`  是只通过一定属性条件（或者是无限制条件）找到满足的点、边
 
-而在 Nebula Graph 里，graph-queries 在扩展的时候，图的原始数据已经按照 VID（点和边都是）排序过了（或者说在数据里已经索引过了），这个排序带来连续存储（物理上临接）使得扩展游走本身就是优化、很快的。
+而在 NebulaGraph 里，graph-queries 在扩展的时候，图的原始数据已经按照 VID（点和边都是）排序过了（或者说在数据里已经索引过了），这个排序带来连续存储（物理上临接）使得扩展游走本身就是优化、很快的。
 
 ### 总结：索引是什么，索引不是什么？
 
 
 索引是什么？
 
-- Nebula Graph 索引是为了从给定属性条件查点、边的一份属性数据的排序，它用写入的代价是的这种读查询模式成为可能。
+- NebulaGraph 索引是为了从给定属性条件查点、边的一份属性数据的排序，它用写入的代价是的这种读查询模式成为可能。
 
 索引不是什么？
 
-- Nebula Graph 索引不是用来加速一般图查询的：从一个点开始向外拓展的查询（即使是过滤属性条件的）不会依赖原生索引，因为 Nebula 数据自身的存储就是面向这种查询优化、排序的。
+- NebulaGraph 索引不是用来加速一般图查询的：从一个点开始向外拓展的查询（即使是过滤属性条件的）不会依赖原生索引，因为 Nebula 数据自身的存储就是面向这种查询优化、排序的。
 
 
 
@@ -118,7 +128,7 @@ MATCH (v:player { name: 'Tim Duncan' })--(v2) \
 
 为了更好理解索引的限制、代价、能力，咱们来解释更多他的细节
 
-- Nebula Graph 索引是在本地（不是分开、中心化）和点数据被一起存储、分片的。
+- NebulaGraph 索引是在本地（不是分开、中心化）和点数据被一起存储、分片的。
 - 它只支持左匹配
   - 因为底层是 RocksDB Prefix Scan
 
@@ -188,22 +198,24 @@ MATCH (v:player { name: 'Tim Duncan' })--(v2) \
 - 复合索引的能力与限制
 
   理解原生索引的匹配是左匹配能让我们知道对于超过一个属性的索引：复合索引，并且能帮助我们理解它的能力有限制，这里说几个结论：
-    
+  
   - 我们创建针对多个属性的复合索引是顺序有关的
     - 比如，我们创建一个双属性复合索引 index_a: `(isRisky: bool, age: int)`，和 index_b: `(age: int, isRisky: bool)` 在根据 `WHERE n.user.isRisky == true AND n.user.age > 18` 这个条件查询时候，index_a 因为左匹配一个相等的短字段，显然效率更高。
   - 只有复合左匹配的被复合索引的属性真子集的过滤条件才能被只支持
     - 比如，index_a: `(isRisky: bool, age: int)`，和 index_b: `(age: int, isRisky: bool)` 在查询 `WHERE n.user.age > 18` 这个语句的时候, 只有 index_b 复合最左匹配，能满足这个查询。
   - 针对一些从属性作为查询的起点，找点、边的情况，原生索引是不能满足全文搜索的匹配场景的，这时候，我们应该考虑使用 Nebula 全文索引，它是 Nebula 社区支持的开箱即用的外置 Elastic Search，通过配置，创建了全文索引的数据会通过 Raft listener 异步更新到 Elastic 集群中，他的查询入口也是 `LOOKUP`，详细的信息请[参考文档](https://docs.nebula-graph.com.cn/3.0.1/4.deployment-and-installation/6.deploy-text-based-index/2.deploy-es/)。
 
+
+
 ## 回顾
 
-- Nebula Graph 索引在只提供属性条件情况下通过对属性的排序副本扫描查点、边
-- Nebula Graph 索引**不是**用来图拓展查询的
-- Nebula Graph 索引是左匹配，不是用来做模糊全文搜索的
-- Nebula Graph 索引在写入时候有性能代价
-- 记得如果创建 Nebula Graph 索引之前已经有相应点边上的数据，要重建索引
+- NebulaGraph 索引在只提供属性条件情况下通过对属性的排序副本扫描查点、边
+- NebulaGraph 索引**不是**用来图拓展查询的
+- NebulaGraph 索引是左匹配，不是用来做模糊全文搜索的
+- NebulaGraph 索引在写入时候有性能代价
+- 记得如果创建 NebulaGraph 索引之前已经有相应点边上的数据，要重建索引
 
 
 Happy Graphing!
 
-Feture image credit to [Alina](https://unsplash.com/photos/ZiQkhI7417A)
+Feature image credit to [Alina](https://unsplash.com/photos/ZiQkhI7417A)

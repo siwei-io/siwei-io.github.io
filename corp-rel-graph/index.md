@@ -26,7 +26,7 @@
 
 在这样一个简单的数据模型之下，我们可以很直接的在关系型数据库中这么建模：
 
-![why_0_tabular](./why_0_tabular.webp)
+![why_0_tabular](why_0_tabular.webp)
 
 而这么建模的问题在于：这种逻辑关联的方式使得无论数据的关联关系查询表达、存储、还是引入新的关联关系都不是很高效。
 
@@ -44,7 +44,7 @@
 
 | 表结构数据库                                                 | 图数据库（属性图）                                           |
 | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| ![why_1_sql_join](./why_1_sql_join.webp) | ![why_1_ngql](./why_1_ngql.webp) |
+| ![why_1_sql_join](why_1_sql_join.webp) | ![why_1_ngql](why_1_ngql.webp) |
 
 
 - 将关联关系存储为物理连接，从而使得跳转查询代价最小。（挑战 3、2）
@@ -64,7 +64,7 @@
 
 | 表结构数据库                             | 图数据库（属性图）                             |
 | ---------------------------------------- | ---------------------------------------------- |
-| ![why_0_tabular](./why_0_tabular.webp)   | ![why_0_graph_based](./why_0_graph_based.webp) |
+| ![why_0_tabular](why_0_tabular.webp)   | ![why_0_graph_based](why_0_graph_based.webp) |
 
 
 > 表结构数据库与图数据库的总体比较：
@@ -90,8 +90,8 @@ WHERE a.id = 'p_100')
 
 |          | 表结构数据库                                                 | 图数据库（属性图）                                           |
 | -------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| 查询   | ![why_1_sql_join](./why_1_sql_join.webp) | ![why_1_ngql](./why_1_ngql.webp) |
-| 建模     | ![why_0_tabular](./why_0_tabular.webp) | ![why_0_graph_based](./why_0_graph_based.webp) |
+| 查询   | ![why_1_sql_join](why_1_sql_join.webp) | ![why_1_ngql](why_1_ngql.webp) |
+| 建模     | ![why_0_tabular](why_0_tabular.webp) | ![why_0_graph_based](why_0_graph_based.webp) |
 | 性能     | 4 跳查询时延 1544 秒                                         | 4 跳查询时延 1.36 秒                                         |
 
 
@@ -118,7 +118,7 @@ WHERE a.id = 'p_100')
 - `持有股份` 这个关系有属性 `share`(份额)
 - `任职`这个关系有属性 `role`，`level`
 
-![why_0_graph_based](./why_0_graph_based.webp)
+![why_0_graph_based](why_0_graph_based.webp)
 
 ## 数据入库
 
@@ -208,11 +208,11 @@ CREATE EDGE reletive_with(degree int);
 
 访问 Nebula Studio：
 
-![studio_login](./studio_login.webp)
+![studio_login](studio_login.webp)
 
 选择图空间: Shareholding
 
-![studio_space_selection](./studio_space_selection.webp)
+![studio_space_selection](studio_space_selection.webp)
 
 之后，我们就可以在里边探索比如一个公司的三跳以内的股权穿透，具体的操作可以参考：[股权穿透在线 Playground 的介绍](https://nebula-graph.com.cn/demo/shared-holding/)：
 
@@ -383,7 +383,7 @@ relationships: [
         {"source": "p_4000", "target": "c_132", "properties": { "role": "Editorial assistant" }, "edge": "`role_as`"}]
 ```
 
-![d3-demo](./vue-network-d3-demo.webp)
+![d3-demo](vue-network-d3-demo.webp)
 
 ### 前端<--后端
 

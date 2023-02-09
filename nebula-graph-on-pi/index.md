@@ -15,11 +15,11 @@
 
 终于，一周多之前在 [@laixintao](https://twitter.com/laixintao) 和 [@andelf](https://twitter.com/andelf/status/1504295476958404608) 的一个讨论下我决定找一个树莓派的 alternative，最后下单了 [Rock Pi 3A](https://wiki.radxa.com/Rock3/)，在因为深圳疫情影响下拖到了这个礼拜才终于发货了！
 
-![tweet-RPi-alternative](./tweet-RPi-alternative.webp)
+![tweet-RPi-alternative](tweet-RPi-alternative.webp)
 
 它看起来真的很棒！
 
-![rockspi_before](./rockspi_before.webp)
+![rockspi_before](rockspi_before.webp)
 
 ## 在 ARM64 板子上装 Nebula Graph 图数据库
 
@@ -106,7 +106,7 @@ Check this out and...
 
 Happy Graphing!
 
-![Nebula-on-Pi](./Nebula-on-Pi.webp)
+![Nebula-on-Pi](Nebula-on-Pi.webp)
 
 
 

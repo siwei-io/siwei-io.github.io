@@ -26,7 +26,7 @@ Install Nebula-Operator-Kind:
 curl -sL nebula-kind.siwei.io/install.sh | bash
 ```
 You will see this after it's done
-![install_success](./install_success.webp)
+![install_success](install_success.webp)
 
 You can connect to the cluster via `~/.nebula-kind/bin/console` as below:
 ```bash

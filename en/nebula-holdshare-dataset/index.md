@@ -23,7 +23,7 @@ This is a demo of Shareholding Relationship Analysis with Distributed open-sourc
 
 ### Data Modeling
 
-![modeling](./modeling.webp)
+![modeling](modeling.webp)
 
 There are various kinds of relationships when we checking companies' shareholding breakthrough, here let's simplify it with only two kind of entities: person and corp, and with following relationship types.
 
@@ -190,7 +190,7 @@ Of course, we can also be done in a visual way:
 
 Step 1, login from Nebula Graph Studio, explore with one VID: `c_132`:
 
-![studio_explore_0](./studio_explore_0.webp)
+![studio_explore_0](studio_explore_0.webp)
 
 Step2, click this explored vertex dot, then you can explore from select vertices by selecting:
 
@@ -201,11 +201,11 @@ Step2, click this explored vertex dot, then you can explore from select vertices
 
 > note, you can click the 👁️ icon to add options to show fields of the graph,
 
-![studio_explore_1](./studio_explore_1.webp)
+![studio_explore_1](studio_explore_1.webp)
 
 Step3, after click Expand, you will see all quried relations with `c_132` the `Chambers LLC`.
 
-![studio_explore_2](./studio_explore_2.webp)
+![studio_explore_2](studio_explore_2.webp)
 
 ## Thanks to Upstream Projects ❤️
 

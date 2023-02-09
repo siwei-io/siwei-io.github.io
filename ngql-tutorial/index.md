@@ -40,13 +40,13 @@
 
 > 大家可以报错这份单页速查表，一次了解所有 nGQL 的用法。
 >
-> [原始文件链接](./ngql-cheatsheet-cn.png)
+> [原始文件链接](ngql-cheatsheet-cn.png)
 
 ![ngql-cheatsheet](ngql-cheatsheet-cn.webp)
 
 ## NebulaGraph 独有 DQL
 
-NebulaGraph 的独有读查询语句的设计非常简介，对初学者非常友好，结合了管道的概念，做到了只涉及了几个关键词就可以描述大多数图查询模式。
+NebulaGraph 的独有读查询语句的设计非常简洁，对初学者非常友好，结合了管道的概念，做到了只涉及了几个关键词就可以描述大多数图查询模式。
 
 用一句话描述来说，nGQL 的独有 DQL 一共分成四类语句：
 
@@ -173,9 +173,9 @@ GET SUBGRAPH 5 STEPS FROM "player101" \
              ───┬─── ─────┬──────────             
   YIELD VERTICES AS nodes, EDGES AS relationships;
         ────┬───┼─────────┼───────────────────────
-   ┌────────┘                                     
+   ┌────────┘   │         │                       
    │            │         └─────── 从 "player101" 开始触发
-   │                                              
+   │            │                                 
    │            └───────────────── 获取 5 步的探索
    │                                              
    └────────────────────────────── 返回所有的点、边
@@ -208,7 +208,7 @@ GO FROM "player100" OVER follow YIELD dst(edge) AS did  | \
 > - 更多例子
 > - 结合 LOOKUP, GO, FETCH 的语句
 
-除了以上的集中表达之外，NebulaGraph 独有查询语句还有聚合的表达参考 [GROUP-BY](https://docs.nebula-graph.com.cn/3.2.0/3.ngql-guide/8.clauses-and-options/group-by/)，另外在文档里还有一个 [Cheatsheet](https://docs.nebula-graph.com.cn/3.2.0/2.quick-start/6.cheatsheet-for-ngql-command/) 供大家查询一些复杂一点查询的例子。
+除了以上的几种表达之外，NebulaGraph 独有查询语句还有聚合的表达参考 [GROUP-BY](https://docs.nebula-graph.com.cn/3.2.0/3.ngql-guide/8.clauses-and-options/group-by/)，另外在文档里还有一个 [Cheatsheet](https://docs.nebula-graph.com.cn/3.2.0/2.quick-start/6.cheatsheet-for-ngql-command/) 供大家查询一些复杂一点查询的例子。
 
 ### NebulaGraph OpenCypher DQL
 
@@ -250,7 +250,7 @@ OPTIONAL MATCH (n)-[]->(l) WHERE id(n)=="player125" \
 - 多 MATCH
 - OPTIONAL MATCH
 
-> 题图版权：DALL·E Open-AI，[原图](./featured-image-raw.webp)
+> 题图版权：DALL·E Open-AI，[原图](featured-image-raw.webp)
 >
 > The featured image was generated with keywords: learning spells of the nebula magic, with DALL·E Open-AI.
 

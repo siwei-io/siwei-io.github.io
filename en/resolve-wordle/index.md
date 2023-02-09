@@ -11,7 +11,7 @@ You may have seen tweets like this in past months, where the color dots in emoji
 
 > Feel free to [Google Wordle](https://www.google.com/search?q=wordle) first if you don't know its meaning yet.
 
-![wordle_SNS_share](./wordle_SNS_share.webp)
+![wordle_SNS_share](wordle_SNS_share.webp)
 
 ### Wordle Solver
 
@@ -35,7 +35,7 @@ ref: [Chinese idiom puzzle](https://chinese.stackexchange.com/questions/42416/ch
 
 Thus, a wordle but in Chinese idiom will be quite strange, or even hilarious as [Chee](https://cheeaun.com/blog/2022/02/chengyu-wordle-is-not-a-love-story/) and JinGen discussed in this [tweet thread](https://twitter.com/jg_lim/status/1484506430711697412), where you could see the candidate characters are counted in thousands: there is no chance to guess the idiom in 10 attempts!
 
-![wordle-but-in-Chinese-idioms](./wordle-but-in-Chinese-idioms.webp)
+![wordle-but-in-Chinese-idioms](wordle-but-in-Chinese-idioms.webp)
 
 
 
@@ -79,7 +79,7 @@ As a non-native English speaker, the way I was playing wordle is to ~~cheating~~
 
 After knowing on the third letter to be "O", I googled and got this: [5-letter-words-with-o-in-the-middle](https://uppolice.org/5-letter-words-with-o-in-the-middle/) and do the searching 😁.
 
-![wordle-en-play](./wordle-en-play.webp)
+![wordle-en-play](wordle-en-play.webp)
 
 The way to play with helpers works for me to have fun yet not ruin it by an automated cheat resolver(it's only simulating my brain as a native-speaker!), so that I could somehow experience the same as Millions of people out there without cheating.
 
@@ -129,7 +129,7 @@ It's indeed entertaining to me, and I could write Graph Queries[*] by hand or vi
 
 - **
 
-![studio_en](./studio_en.webp)
+![studio_en](studio_en.webp)
 
 ### The long version of playing with Knowledge Graph
 
@@ -141,7 +141,7 @@ So, if we visit the "handle" game 👉🏻 https://handle.antfu.me/. We could st
 
 We will get hint of the first guess as:
 
-![](./initial_word.webp)
+![](initial_word.webp)
 
 Not bad, we have three of the charactor with informative hints!
 
@@ -186,7 +186,7 @@ And there are 7 results left in this single guess for us!
 
 And as a Chinese native speaker, the common one would be "惊世骇俗", and let's give a try!
 
-![汉兜 D59](./D59.webp)
+![汉兜 D59](D59.webp)
 
 #### The Visualization of the Query
 
@@ -214,7 +214,7 @@ RETURN p0,p1,p2,p3
 
 And then we query it in Nebula-Studio-Console, and click "View Subgraphs" to see how the searching was done like it was in our own brains:
 
-![studio_en](./studio_en.webp)
+![studio_en](studio_en.webp)
 
 ## What's Next
 
@@ -264,7 +264,7 @@ The edges with properteis as:
 - with_pinyin
 - with_pinyin_part
 
-![schema_v1_en](./schema_v1_en.webp)
+![schema_v1_en](schema_v1_en.webp)
 
 ### Deploy Nebula Graph
 

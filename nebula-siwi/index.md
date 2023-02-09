@@ -48,7 +48,7 @@ This is one of the most naive pipeline for a specific domain/ single purpose cha
 
 ### Backend
 
-![backend-demo](./backend-demo.webp)
+![backend-demo](backend-demo.webp)
 
 The Backend(Siwi API) is a Flask based API server:
 
@@ -60,7 +60,7 @@ The Backend(Siwi API) is a Flask based API server:
 
 ### Frontend
 
-![demo](./demo.webp)
+![demo](demo.webp)
 
 The Frontend is a VueJS Single Page Applicaiton(SPA):
 

@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noodp" />
-    <title>图数据库体操：用 Nebula Graph 搭成语图谱解汉兜 - siwei.io | 古思为说</title><meta name="Description" content="我发现用 Nebula Graph 的图查询解 Antfu 的汉兜特别有意思！"><meta property="og:title" content="图数据库体操：用 Nebula Graph 搭成语图谱解汉兜" />
+    <title>图数据库体操：用 Nebula Graph 搭成语图谱解汉兜 - siwei.io</title><meta name="Description" content="我发现用 Nebula Graph 的图查询解 Antfu 的汉兜特别有意思！"><meta property="og:title" content="图数据库体操：用 Nebula Graph 搭成语图谱解汉兜" />
 <meta property="og:description" content="我发现用 Nebula Graph 的图查询解 Antfu 的汉兜特别有意思！" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://siwei.io/resolve-wordle/" /><meta property="og:image" content="https://siwei.io/resolve-wordle/featured-image.png"/><meta property="article:section" content="posts" />
@@ -58,7 +58,7 @@
     <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
     <div class="header-wrapper">
         <div class="header-title">
-            <a href="/" title="siwei.io | 古思为说"><span class="header-title-pre"><i class='fas fa-code-branch'></i></span>siwei.io</a>
+            <a href="/" title="siwei.io"><span class="header-title-pre"><i class='fas fa-code-branch'></i></span>siwei.io</a>
         </div>
         <div class="menu">
             <div class="menu-inner"><a class="menu-item" href="/about/"> 关于 </a><a class="menu-item" href="/projects/"> 项目 </a><a class="menu-item" href="/sketch-notes/"> 手绘 </a><a class="menu-item" href="/posts/"> 博客 </a><a class="menu-item" href="/talk/"> 演讲 </a><a class="menu-item" href="/cources/"> 课程 </a><a class="menu-item" href="https://vesoft.com/cn/careers/" rel="noopener noreferrer" target="_blank"> 招聘 </a><a class="menu-item" href="/about/#%E8%81%94%E7%B3%BB%E6%88%91"> 联系 </a><a class="menu-item" href="/path/"> 学习路径 </a><span class="menu-item delimiter"></span><a href="#" class="menu-item language" title="选择语言">🌏 Chinese<i class="fas fa-chevron-right fa-fw"></i>
@@ -89,7 +89,7 @@
     <div class="header-container">
         <div class="header-wrapper">
             <div class="header-title">
-                <a href="/" title="siwei.io | 古思为说"><span class="header-title-pre"><i class='fas fa-code-branch'></i></span>siwei.io</a>
+                <a href="/" title="siwei.io"><span class="header-title-pre"><i class='fas fa-code-branch'></i></span>siwei.io</a>
             </div>
             <div class="menu-toggle" id="menu-toggle-mobile">
                 <span></span><span></span><span></span>
@@ -270,25 +270,25 @@
 </ul>
 <p>成语-[包含]-&gt;汉字，每个汉字-[读作]-&gt;读音。</p>
 <p>其次，因为解谜过程中涉及到了声母、韵母以及声调的条件，考虑到图谱本身的量级非常小（千级别），而且字的读音是一对多的关系，我把读音和声母（包涵声母-initial和韵母-final）也作为实体，他们之间的关系则是顺理成章了：</p>
-<p><a class="lightgallery" href="./schema_v0.webp" title="schema_v0" data-thumbnail="./schema_v0.webp">
+<p><a class="lightgallery" href="/resolve-wordle/schema_v0.webp" title="schema_v0" data-thumbnail="/resolve-wordle/schema_v0.webp">
         <img
             
             loading="lazy"
-            src="./schema_v0.webp"
-            srcset="./schema_v0.webp, ./schema_v0.webp 1.5x, ./schema_v0.webp 2x"
+            src="schema_v0.webp"
+            srcset="/resolve-wordle/schema_v0.webp, schema_v0.webp 1.5x, /resolve-wordle/schema_v0.webp 2x"
             sizes="auto"
-            alt="./schema_v0.webp">
+            alt="/resolve-wordle/schema_v0.webp">
     </a></p>
 <h5 id="最终的版本" class="headerLink">
     <a href="#%e6%9c%80%e7%bb%88%e7%9a%84%e7%89%88%e6%9c%ac" class="header-mark"></a>2.3.1.2 最终的版本</h5><p>然而，我在后边基于图谱进行查询的时候发现最初的建模会使得(成语)&ndash;&gt;(字)&ndash;&gt;(读音)查询过程中丢失了这个字特定的读法的条件，所以我最终的建模是：</p>
-<p><a class="lightgallery" href="./schema_v1.webp" title="schema_v1" data-thumbnail="./schema_v1.webp">
+<p><a class="lightgallery" href="/resolve-wordle/schema_v1.webp" title="schema_v1" data-thumbnail="/resolve-wordle/schema_v1.webp">
         <img
             
             loading="lazy"
-            src="./schema_v1.webp"
-            srcset="./schema_v1.webp, ./schema_v1.webp 1.5x, ./schema_v1.webp 2x"
+            src="schema_v1.webp"
+            srcset="/resolve-wordle/schema_v1.webp, schema_v1.webp 1.5x, /resolve-wordle/schema_v1.webp 2x"
             sizes="auto"
-            alt="./schema_v1.webp">
+            alt="/resolve-wordle/schema_v1.webp">
     </a></p>
 <p>这样，纯文字的条件只涉及了<code>(成语)--&gt;(字)</code> 这一跳，而读音、声母、声调的条件则是另一条关系路径，既没有最初版本条件的冗余，又可以在一个路径模式匹配里带上两种条件（后边的例子里会涉及这样的表达）。</p>
 <h4 id="构建成语知识图谱" class="headerLink">
@@ -390,14 +390,14 @@
 </span></span></code></pre></td></tr></table>
 </div>
 </div><p>看起来 <code>惊世骇俗</code> 比较主流，试试！</p>
-<p><a class="lightgallery" href="./D59.webp" title="汉兜 D59" data-thumbnail="./D59.webp">
+<p><a class="lightgallery" href="/resolve-wordle/D59.webp" title="汉兜 D59" data-thumbnail="/resolve-wordle/D59.webp">
         <img
             
             loading="lazy"
-            src="./D59.webp"
-            srcset="./D59.webp, ./D59.webp 1.5x, ./D59.webp 2x"
+            src="D59.webp"
+            srcset="/resolve-wordle/D59.webp, D59.webp 1.5x, /resolve-wordle/D59.webp 2x"
             sizes="auto"
-            alt="./D59.webp">
+            alt="/resolve-wordle/D59.webp">
     </a></p>
 <p>我们很幸运，借助于成语<del>作弊</del>知识图谱，居然一次就找到了答案，当然这实际上得益于第一次随机选取的词带来的限制条件的个数，不过在大部分情况下，两次尝试获得最终答案的可能性还是非常大的！</p>
 <blockquote>
@@ -870,7 +870,7 @@
             </noscript></div></article></div>
         </main><footer class="footer">
         <div class="footer-container"><div class="footer-line">
-                    由 <a href="https://gohugo.io/" target="_blank" rel="noopener noreferrer" title="Hugo 0.109.0">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreferrer" title="DoIt 0.2.13"><i class="far fa-edit fa-fw"></i> DoIt</a>
+                    由 <a href="https://gohugo.io/" target="_blank" rel="noopener noreferrer" title="Hugo 0.110.0">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreferrer" title="DoIt 0.2.13"><i class="far fa-edit fa-fw"></i> DoIt</a>
                 </div><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2018 - 2023</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="https://siwei.io" target="_blank" rel="noopener noreferrer">Wey Gu</a></span>&nbsp;|&nbsp;<span class="license"><a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">CC BY-NC 4.0</a></span></div>
             <div class="footer-line"></div>
             <div class="footer-line">

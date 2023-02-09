@@ -275,11 +275,11 @@ $ gcloud pubsub subscriptions create cron-sub --topic nebula-insights-cron-topic
 当 Scheduler 每天定时发送消息之后，接收方就是我们要定义的 Google Functions了，它的定义如图
 第一步，选择它的触发类型为 Pub/Sub，同时要定义消息的主题和名字。
 
-![create_functions](./create_functions.png)
+![create_functions](create_functions.png)
 
 第二步就是把代码放进去:
 
-![create_functions_code](./create_functions_code.png)
+![create_functions_code](create_functions_code.png)
 
 ```
                                               ┌─────────────────────┐
@@ -312,7 +312,7 @@ https://github.com/wey-gu/nebula-insights/blob/main/functions/data-fetching-0/ma
 ### 数仓表结构定义
 
 数仓的表结构比较直接，schema的图贴在下边了，值得注意的是，BigQuery支持嵌套的表结构（而不像一般关系型数据库那样需要把这样的逻辑结构用辅助表来表示），在我们这个场景下非常方便，比如release表中的 assets的三个嵌套字段。
-![bigquery_schema|475x412](./bigquery_schema.png)
+![bigquery_schema|475x412](bigquery_schema.png)
 
 更详细的信息可以参考GitHub上的介绍和代码: https://github.com/wey-gu/nebula-insights#data-etl-bigquery-and-gcs
 

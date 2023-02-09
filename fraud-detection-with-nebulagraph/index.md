@@ -73,7 +73,7 @@ docker run --rm -ti \
 
 有了这样一个图谱，风控专家可以在可视化探索工具中按需探索实体之间的关系，绘制相应的风险模式：
 
-![](./viz_graph_query.webp)
+![](viz_graph_query.webp)
 
 在这个探索截图里，我们可以明显看到一个群控设备的风险模式，这个模式可以被交给图数据库开发者，抽象成可以被风控应用定期、实时查询的语句：
 
@@ -462,7 +462,7 @@ plt.show()
 
 可以看到最后画出来的结果：
 
-![](./lpa_spread_notation_matplot.webp)
+![](lpa_spread_notation_matplot.webp)
 
 可以看到有一些蓝色标签被 Spread 开了，实际上我的这个例子的效果并不理想（因为这个例子李，绿色的才是重要的标签），不过我给的子图实在是太小了，也本不应该奢求有好的结果，只是为了个大家演示一下这个方法。
 
@@ -1340,9 +1340,9 @@ GET SUBGRAPH WITH PROP FROM 2048 YIELD VERTICES AS nodes, EDGES AS relationships
 
 可以看到返回的结果其实还是很多的，不过对于 NebulaGraph 来说，这个子图结果返回是在 10 ms 左右获取的，这里我就不贴出来了，如果我们在 NebulaGraph Studio 或者 Explorer 中可以把结果渲染出来（可视化展示的 Query 可以去掉 `WITH PROP` ，可以给浏览器省点内存），结果就更容易让人脑理解了：
 
-![](./subgraph_console_view.webp)
+![](subgraph_console_view.webp)
 
-![](./subgraph_viz.webp)
+![](subgraph_viz.webp)
 
 现在我们就来实现这一步的代码吧，它的输入是点的 id：`vertex_id`。输出是一个 `dgl_graph`，用来传给推理接口。
 

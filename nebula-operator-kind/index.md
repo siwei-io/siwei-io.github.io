@@ -30,7 +30,7 @@ Nebula Graph 作为云原生的分布式开源图数据库，有开源的 [K8s O
 curl -sL nebula-kind.siwei.io/install.sh | bash
 ```
 成功之后：
-![install_success](./install_success.webp)
+![install_success](install_success.webp)
 
 用 `~/.nebula-kind/bin/console` 一行连接集群：
 ```bash

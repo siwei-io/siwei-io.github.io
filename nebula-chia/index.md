@@ -66,11 +66,11 @@ SQlite 浏览器的官网是 https://sqlitebrowser.org/ 。在下载，安装之
 
 打开数据库之后，我们可以选择第一个标签 `Database Schema` 来看看表的结构。
 
-![SQLite_Schema](./SQLite_Schema.png)
+![SQLite_Schema](SQLite_Schema.png)
 
 我们还能像类似于 Excel 一样去看表的数据，还可以 Filter/过滤、Sort/排序任意列。
 
-![SQLite_Browse_Data](./SQLite_Browse_Data.png)
+![SQLite_Browse_Data](SQLite_Browse_Data.png)
 
 下一部分，我们来简单看看表里的数据。
 
@@ -316,7 +316,7 @@ Out[201]:
 - confirms 边 （Block 到 Coin）
 - belongs_to 边（Coin 到 Puzzle）
 
-![Chia_Graph_schema](./Chia_Graph_schema.png)
+![Chia_Graph_schema](Chia_Graph_schema.png)
 
 这里，我们应用的图是一种叫做属性图的形式，除了点和边的关系之外。这两种实体（点、边）还有其他信息只和它们的一个实例相关，所以再定义为顶点、边就不是很适合，这些信息就作为点、边的属性（preperty）存在。
 
@@ -513,27 +513,27 @@ Nebula Graph 为我们提供了图形化界面，有了它，我们可以用更�
 
 比如，我们还是回到上边的那个区块，从这里查询。
 
-![Visualized_block](./Visualized_block.png)
+![Visualized_block](Visualized_block.png)
 
 我们就获得了这个 block 类型的一个点/ vertex。我们可以从他开始进一步探索，先鼠标单击这个点，在拓展条件里把方向选择双向，默认的边类型是所有的边类型，这样我们就可以把所有 `步数`内相关联的数据一下子全都找出来。
 
 选择好拓展条件之后，点击拓展就可以。
 
-![Visualized_block_1](./Visualized_block_1.png)
+![Visualized_block_1](Visualized_block_1.png)
 
 这里，我们选择了步数为 `1`，点击拓展（或者双击要拓展的点），之后，我们可以快速双击其他的点继续拓展，这是我鼠标点了几次之后看到的样子：
 
-![Visualized_block_2](./Visualized_block_2.png)
+![Visualized_block_2](Visualized_block_2.png)
 
 我们接下来再试试拓展的步数为 `2`，点击拓展（或者双击要拓展的点），看起来找到了有意思的信息。
 
 我们看到了一个有很多边的黑色的点。
 
-![Visualized_block_3](./Visualized_block_3.png)
+![Visualized_block_3](Visualized_block_3.png)
 
 通过查看这个点和我们开始查看的 block 之间的边，我们知道这个点正是 farm 这个 block 的地址，这个地址下边有非常多的 coin。
 
-![Visualized_block_3](./Visualized_block_4.png)
+![Visualized_block_3](Visualized_block_4.png)
 
 这只是一个开始，有了这个导入到 Nebula Graph 图数据的基础，我们可以做很多有意思的分析和洞察，大家可以自己试试看，得到更有意思的结果分享给其他同学。
 
@@ -553,7 +553,7 @@ Nebula-Chia 我也开源在 https://github.com/wey-gu/nebula-chia
 
 是不是很酷？
 
-![Visualized_block_5](./Visualized_block_5.png)
+![Visualized_block_5](Visualized_block_5.png)
 
 
 

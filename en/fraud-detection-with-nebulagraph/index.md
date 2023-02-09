@@ -104,7 +104,7 @@ docker run --rm -ti \
 
 With such a mapping, risk control experts can explore the relationships between entities on-demand in a visual exploration tool that maps the corresponding risk patterns:
 
-![](./viz_graph_query.webp)
+![](viz_graph_query.webp)
 
 In this screenshot of rendered query, we can clearly see a risk pattern for a group-controlled device that can be given to a graph database developer and abstracted into NebulaGraph database statements that can be queried by anyone or certain application in real-time fashion:
 
@@ -499,7 +499,7 @@ plt.show()
 
 It looks like this:
 
-![](./lpa_spread_notation_matplot.webp)
+![](lpa_spread_notation_matplot.webp)
 
 We could see some of the label was spread(color change).
 
@@ -1476,9 +1476,9 @@ GET SUBGRAPH WITH PROP FROM 2048 YIELD VERTICES AS nodes, EDGES AS relationships
 
 If we render the result in NebulaGraph Studio or NebulaGraph Explorer, it looks like this:
 
-![](./subgraph_console_view.webp)
+![](subgraph_console_view.webp)
 
-![](./subgraph_viz.webp)
+![](subgraph_viz.webp)
 
 Below is the code for the SUBGRAPH fetching, the input is vertex_id, and output is a dgl graph, which will be sent to the inference API.
 

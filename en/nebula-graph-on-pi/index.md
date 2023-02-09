@@ -13,11 +13,11 @@ Recently, after Yee from Nebula Graph Community fixed ARM build on [nebula-third
 
 A couple of weeks before, in a twitter thread with [@laixintao](https://twitter.com/laixintao) and [@andelf](https://twitter.com/andelf/status/1504295476958404608) I decided to purchase a [Rock Pi 3A](https://wiki.radxa.com/Rock3/):
 
-![tweet-RPi-alternative](./tweet-RPi-alternative.webp)
+![tweet-RPi-alternative](tweet-RPi-alternative.webp)
 
 And it looks nice!(Even come with a NPU inside)
 
-![rockspi_before](./rockspi_before.webp)
+![rockspi_before](rockspi_before.webp)
 
 ## The Guide of running Nebula Graph on a Pi SBC
 
@@ -106,7 +106,7 @@ Check this out and...
 
 Happy Graphing!
 
-![Nebula-on-Pi](./Nebula-on-Pi.webp)
+![Nebula-on-Pi](Nebula-on-Pi.webp)
 
 
 

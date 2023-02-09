@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noodp" />
-    <title>Nebula Exchange SST 2.x Hands-on Guide - siwei.io | 古思为说</title><meta name="Description" content="这篇文章带大家以最小方式，快速趟一下 Nebula Exchange 中 SST 写入方式的步骤。"><meta property="og:title" content="Nebula Exchange SST 2.x Hands-on Guide" />
+    <title>Nebula Exchange SST 2.x Hands-on Guide - siwei.io</title><meta name="Description" content="这篇文章带大家以最小方式，快速趟一下 Nebula Exchange 中 SST 写入方式的步骤。"><meta property="og:title" content="Nebula Exchange SST 2.x Hands-on Guide" />
 <meta property="og:description" content="这篇文章带大家以最小方式，快速趟一下 Nebula Exchange 中 SST 写入方式的步骤。" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://siwei.io/nebula-exchange-sst-2.x/" /><meta property="og:image" content="https://siwei.io/nebula-exchange-sst-2.x/featured-image.png"/><meta property="article:section" content="posts" />
@@ -58,7 +58,7 @@
     <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
     <div class="header-wrapper">
         <div class="header-title">
-            <a href="/" title="siwei.io | 古思为说"><span class="header-title-pre"><i class='fas fa-code-branch'></i></span>siwei.io</a>
+            <a href="/" title="siwei.io"><span class="header-title-pre"><i class='fas fa-code-branch'></i></span>siwei.io</a>
         </div>
         <div class="menu">
             <div class="menu-inner"><a class="menu-item" href="/about/"> 关于 </a><a class="menu-item" href="/projects/"> 项目 </a><a class="menu-item" href="/sketch-notes/"> 手绘 </a><a class="menu-item" href="/posts/"> 博客 </a><a class="menu-item" href="/talk/"> 演讲 </a><a class="menu-item" href="/cources/"> 课程 </a><a class="menu-item" href="https://vesoft.com/cn/careers/" rel="noopener noreferrer" target="_blank"> 招聘 </a><a class="menu-item" href="/about/#%E8%81%94%E7%B3%BB%E6%88%91"> 联系 </a><a class="menu-item" href="/path/"> 学习路径 </a><span class="menu-item delimiter"></span><a href="#" class="menu-item language" title="选择语言">🌏 Chinese<i class="fas fa-chevron-right fa-fw"></i>
@@ -89,7 +89,7 @@
     <div class="header-container">
         <div class="header-wrapper">
             <div class="header-title">
-                <a href="/" title="siwei.io | 古思为说"><span class="header-title-pre"><i class='fas fa-code-branch'></i></span>siwei.io</a>
+                <a href="/" title="siwei.io"><span class="header-title-pre"><i class='fas fa-code-branch'></i></span>siwei.io</a>
             </div>
             <div class="menu-toggle" id="menu-toggle-mobile">
                 <span></span><span></span><span></span>
@@ -221,14 +221,14 @@
 <h2 id="什么是-nebula-exchange-" class="headerLink">
     <a href="#%e4%bb%80%e4%b9%88%e6%98%af-nebula-exchange-" class="header-mark"></a>1 什么是 Nebula Exchange ?</h2><p>之前我在 <a href="https://siwei.io/sketches/nebula-data-import-options/" target="_blank" rel="noopener noreferrer">Nebula Data Import Options</a> 之中介绍过，<a href="https://github.com/vesoft-inc/nebula-spark-utils/tree/master/nebula-exchange" target="_blank" rel="noopener noreferrer">Nebula Exchange</a> 是一个 Nebula Graph 社区开源的 Spark Applicaiton，它专门用来支持批量或者流式地把数据导入 Nebula Graph Database 之中。</p>
 <p>Nebula Exchange 支持多种多样的数据源（从 Apache Parquet, ORC, JSON, CSV, HBase, Hive MaxCompute 到 Neo4j, MySQL, ClickHouse, 再有 Kafka, Pulsar，更多的数据源也在不断增加之中）。</p>
-<p><a class="lightgallery" href="./nebula-exchange-digram.webp" title="nebula-exchange-digram" data-thumbnail="./nebula-exchange-digram.webp">
+<p><a class="lightgallery" href="/nebula-exchange-sst-2.x/nebula-exchange-digram.webp" title="nebula-exchange-digram" data-thumbnail="/nebula-exchange-sst-2.x/nebula-exchange-digram.webp">
         <img
             
             loading="lazy"
-            src="./nebula-exchange-digram.webp"
-            srcset="./nebula-exchange-digram.webp, ./nebula-exchange-digram.webp 1.5x, ./nebula-exchange-digram.webp 2x"
+            src="nebula-exchange-digram.webp"
+            srcset="/nebula-exchange-sst-2.x/nebula-exchange-digram.webp, nebula-exchange-digram.webp 1.5x, /nebula-exchange-sst-2.x/nebula-exchange-digram.webp 2x"
             sizes="auto"
-            alt="./nebula-exchange-digram.webp">
+            alt="/nebula-exchange-sst-2.x/nebula-exchange-digram.webp">
     </a></p>
 <p>如上图所示，在 Exchange 内部，从除了不同 Reader 可以读取不同数据源之外，在数据经过 Processor 处理之后通过 Writer写入（sink） Nebula Graph 图数据库的时候，除了走正常的 ServerBaseWriter 的写入流程之外，它还可以绕过整个写入流程，利用 Spark 的计算能力并行生成底层 RocksDB 的 SST 文件，从而实现超高性能的数据导入，这个 SST 文件导入的场景就是本文带大家上手熟悉的部分。</p>
 <blockquote>
@@ -1586,7 +1586,7 @@
             </noscript></div></article></div>
         </main><footer class="footer">
         <div class="footer-container"><div class="footer-line">
-                    由 <a href="https://gohugo.io/" target="_blank" rel="noopener noreferrer" title="Hugo 0.109.0">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreferrer" title="DoIt 0.2.13"><i class="far fa-edit fa-fw"></i> DoIt</a>
+                    由 <a href="https://gohugo.io/" target="_blank" rel="noopener noreferrer" title="Hugo 0.110.0">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreferrer" title="DoIt 0.2.13"><i class="far fa-edit fa-fw"></i> DoIt</a>
                 </div><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2018 - 2023</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="https://siwei.io" target="_blank" rel="noopener noreferrer">Wey Gu</a></span>&nbsp;|&nbsp;<span class="license"><a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">CC BY-NC 4.0</a></span></div>
             <div class="footer-line"></div>
             <div class="footer-line">

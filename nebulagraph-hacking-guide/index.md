@@ -13,7 +13,7 @@
 
 ### 服务、进程
 
-NebulaGraph 的架构和 Google Spanner, TiDB 很相似，核心部分只有三种服务、进程：Graph 服务、Meta 服务和 Storage 服务。它们之间彼此通过 TCP 之上的 Thrift RPC 协议进行通信。
+NebulaGraph 的架构和 Google Spanner，TiDB 很相似，核心部分只有三种服务、进程：Graph 服务、Meta 服务和 Storage 服务。它们之间彼此通过 TCP 之上的 Thrift RPC 协议进行通信。
 
 ![https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/nebula-graph-architecture-1.png](https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/nebula-graph-architecture-1.png)
 

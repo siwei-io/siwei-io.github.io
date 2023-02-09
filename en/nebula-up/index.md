@@ -4,7 +4,7 @@
 
 <!--more-->
 
-[![nebula-up demo](./nebula-up-demo.svg)](https://asciinema.org/a/407151 "Nebula Up Demo")
+[![nebula-up demo](nebula-up-demo.svg)](https://asciinema.org/a/407151 "Nebula Up Demo")
 
 `Nebula-Up` is PoC utility to enable developer to bootstrap an nebula-graph cluster with nebula-graph-studio(Web UI) + nebula-graph-console(Command UI) ready out of box in an oneliner run. All required packages will handled with `nebula-up` as well, including Docker on Linux(Ubuntu/CentOS), Docker Desktop on macOS(including both Intel and M1 chip based), and Docker Desktop Windows.
 
@@ -15,7 +15,7 @@ macOS and Linux with Shell:
 ```bash
 curl -fsSL nebula-up.siwei.io/install.sh | bash
 ```
-![nebula-up-demo-shell](./nebula-up-demo-shell.png)
+![nebula-up-demo-shell](nebula-up-demo-shell.png)
 
 Note: you could specify the version of Nebula Graph like:
 
@@ -27,7 +27,7 @@ curl -fsSL nebula-up.siwei.io/install.sh | bash -s -- v2.6
 
 With all-in-one mode, you could play with many Nebula Tools in one command, too:
 
-![](./nebula-up-all-in-one.svg)
+![](nebula-up-all-in-one.svg)
 
 Supported tools:
 - [x] Nebula Dashboard

@@ -238,7 +238,7 @@ RETURN p limit 10
 
 > 同样，在上边交互图中可以放大看到这两对拥有相同 email 关联起来的账号：
 
-![](./shared_email.webp)
+![](shared_email.webp)
 
 然而，在更多真实世界中，这样的模式匹配往往不能解决更多稍微复杂一点的情形：
 
