@@ -732,7 +732,7 @@ FIND SHORTEST PATH FROM "p_100" TO "p_101" OVER * BIDIRECT YIELD PATH AS paths |
 
 ```cypher
 MATCH (p:人)-[`visit0`:到访]->(`addr`:地址)<-[`visit1`:到访]-(p1:人)
-    WHERE id(p) == "p_101" AND `visit0`.`start_time` < `visit1`.`end_time`
+    WHERE id(p) == "p_101" AND `visit0`.`start_time` < `visit1`.`end_time` AND `visit0`.`end_time` > `visit1`.`start_time`
     RETURN `addr`.地址.`name`, collect(p1.人.`name`)
 ```
 
@@ -750,7 +750,7 @@ MATCH (p:人)-[`visit0`:到访]->(`addr`:地址)<-[`visit1`:到访]-(p1:人)
 
 ```cypher
 MATCH (p:人)-[`visit0`:到访]->(`addr`:地址)<-[`visit1`:到访]-(p1:人)
-    WHERE id(p) == "p_101" AND `visit0`.`start_time` < `visit1`.`end_time`
+    WHERE id(p) == "p_101" AND `visit0`.`start_time` < `visit1`.`end_time` AND `visit0`.`end_time` > `visit1`.`start_time`
     RETURN paths;
 ```
 
