@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -47,12 +49,13 @@
 </head>
 
 <body header-desktop="fixed" header-mobile="auto"><script type="text/javascript">
-        function setTheme(theme) {document.body.setAttribute('theme', theme); document.documentElement.style.setProperty('color-scheme', theme === 'light' ? 'light' : 'dark');}
+        function setTheme(theme) {document.body.setAttribute('theme', theme); document.documentElement.style.setProperty('color-scheme', theme === 'light' ? 'light' : 'dark'); window.theme = theme;   window.isDark = window.theme !== 'light' }
         function saveTheme(theme) {window.localStorage && localStorage.setItem('theme', theme);}
         function getMeta(metaName) {const metas = document.getElementsByTagName('meta'); for (let i = 0; i < metas.length; i++) if (metas[i].getAttribute('name') === metaName) return metas[i]; return '';}
         if (window.localStorage && localStorage.getItem('theme')) {let theme = localStorage.getItem('theme');theme === 'light' || theme === 'dark' || theme === 'black' ? setTheme(theme) : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light')); } else { if ('auto' === 'light' || 'auto' === 'dark' || 'auto' === 'black') setTheme('auto'), saveTheme('auto'); else saveTheme('auto'), window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light');}
         let metaColors = {'light': '#f8f8f8','dark': '#252627','black': '#000000'}
         getMeta('theme-color').content = metaColors[document.body.getAttribute('theme')];
+        window.switchThemeEventSet = new Set()
     </script>
     <div id="back-to-top"></div>
     <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
@@ -152,7 +155,7 @@
     <li><a href="#总结">总结</a></li>
   </ol>
 </nav></div>
-    </div><script>document.getElementsByTagName("main")[0].setAttribute("pageStyle", "normal")</script><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC", "true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Nebula-Insights, How we leverage Serverless Cloud infra to setup Data Pipeline for Nebula Graph Community Insights</h1><div class="post-meta">
+    </div><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC", "true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Nebula-Insights, How we leverage Serverless Cloud infra to setup Data Pipeline for Nebula Graph Community Insights</h1><div class="post-meta">
             <div class="post-meta-line">
                 <span class="post-author"><i class="author fas fa-user-circle fa-fw"></i><a href="https://siwei.io" title="Author" target="_blank" rel="noopener noreferrer author" class="author">Wey Gu</a>
                 </span>&nbsp;<span class="post-category">included in </span>&nbsp;<span class="post-category">categories <a href="/en/categories/big-data/"><i class="far fa-folder fa-fw"></i>Big Data</a>&nbsp;<a href="/en/categories/cloud/"><i class="far fa-folder fa-fw"></i>Cloud</a></span></div>
@@ -165,7 +168,7 @@
         srcset="/en/nebula-insights/featured-image.webp, /en/nebula-insights/featured-image.webp 1.5x, /en/nebula-insights/featured-image.webp 2x"
         sizes="auto"
         alt="/en/nebula-insights/featured-image.webp"
-        title="How we leverage Serverless Cloud infra to setup Data Pipeline for Nebula Graph Community Insights. We used Google Cloud Scheduler, Google Cloud Functions, BigQuery, and codes are shared in GitHub" height="892" width="1736"></div><div class="details toc" id="toc-static"  kept="">
+        title="How we leverage Serverless Cloud infra to setup Data Pipeline for Nebula Graph Community Insights. We used Google Cloud Scheduler, Google Cloud Functions, BigQuery, and codes are shared in GitHub" height="892"   width="1736" ></div><div class="details toc" id="toc-static"  kept="">
                 <div class="details-summary toc-title">
                     <span>Contents</span>
                     <span><i class="details-icon fas fa-angle-right"></i></span>
@@ -643,25 +646,25 @@
 <h3 id="etl-worker-with-python--google-functions" class="headerLink">
     <a href="#etl-worker-with-python--google-functions" class="header-mark"></a>2.2 ETL Worker with Python + Google Functions</h3><p>当 Scheduler 每天定时发送消息之后，接收方就是我们要定义的 Google Functions了，它的定义如图
 第一步，选择它的触发类型为 Pub/Sub，同时要定义消息的主题和名字。</p>
-<p><a class="lightgallery" href="/en/nebula-insights/create_functions.png" title="create_functions" data-thumbnail="/en/nebula-insights/create_functions.png">
+<p><figure><a class="lightgallery" href="/en/nebula-insights/create_functions.png" title="create_functions" data-thumbnail="/en/nebula-insights/create_functions.png">
         <img
             
             loading="lazy"
-            src="create_functions.png"
-            srcset="/en/nebula-insights/create_functions.png, create_functions.png 1.5x, /en/nebula-insights/create_functions.png 2x"
+            src="/en/nebula-insights/create_functions.png"
+            srcset="/en/nebula-insights/create_functions.png, /en/nebula-insights/create_functions.png 1.5x, /en/nebula-insights/create_functions.png 2x"
             sizes="auto"
             alt="/en/nebula-insights/create_functions.png">
-    </a></p>
+    </a></figure></p>
 <p>第二步就是把代码放进去:</p>
-<p><a class="lightgallery" href="/en/nebula-insights/create_functions_code.png" title="create_functions_code" data-thumbnail="/en/nebula-insights/create_functions_code.png">
+<p><figure><a class="lightgallery" href="/en/nebula-insights/create_functions_code.png" title="create_functions_code" data-thumbnail="/en/nebula-insights/create_functions_code.png">
         <img
             
             loading="lazy"
-            src="create_functions_code.png"
-            srcset="/en/nebula-insights/create_functions_code.png, create_functions_code.png 1.5x, /en/nebula-insights/create_functions_code.png 2x"
+            src="/en/nebula-insights/create_functions_code.png"
+            srcset="/en/nebula-insights/create_functions_code.png, /en/nebula-insights/create_functions_code.png 1.5x, /en/nebula-insights/create_functions_code.png 2x"
             sizes="auto"
             alt="/en/nebula-insights/create_functions_code.png">
-    </a></p>
+    </a></figure></p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -715,15 +718,15 @@
 另外，可以参考这个官方教程 <a href="https://cloud.google.com/scheduler/docs/tut-pub-sub" target="_blank" rel="noopener noreferrer">https://cloud.google.com/scheduler/docs/tut-pub-sub</a></p>
 <h3 id="数仓表结构定义" class="headerLink">
     <a href="#%e6%95%b0%e4%bb%93%e8%a1%a8%e7%bb%93%e6%9e%84%e5%ae%9a%e4%b9%89" class="header-mark"></a>2.3 数仓表结构定义</h3><p>数仓的表结构比较直接，schema的图贴在下边了，值得注意的是，BigQuery支持嵌套的表结构（而不像一般关系型数据库那样需要把这样的逻辑结构用辅助表来表示），在我们这个场景下非常方便，比如release表中的 assets的三个嵌套字段。
-<a class="lightgallery" href="/en/nebula-insights/bigquery_schema.png" title="bigquery_schema|475x412" data-thumbnail="/en/nebula-insights/bigquery_schema.png">
+<figure><a class="lightgallery" href="/en/nebula-insights/bigquery_schema.png" title="bigquery_schema|475x412" data-thumbnail="/en/nebula-insights/bigquery_schema.png">
         <img
             
             loading="lazy"
-            src="bigquery_schema.png"
-            srcset="/en/nebula-insights/bigquery_schema.png, bigquery_schema.png 1.5x, /en/nebula-insights/bigquery_schema.png 2x"
+            src="/en/nebula-insights/bigquery_schema.png"
+            srcset="/en/nebula-insights/bigquery_schema.png, /en/nebula-insights/bigquery_schema.png 1.5x, /en/nebula-insights/bigquery_schema.png 2x"
             sizes="auto"
             alt="/en/nebula-insights/bigquery_schema.png">
-    </a></p>
+    </a></figure></p>
 <p>更详细的信息可以参考GitHub上的介绍和代码: <a href="https://github.com/wey-gu/nebula-insights#data-etl-bigquery-and-gcs" target="_blank" rel="noopener noreferrer">https://github.com/wey-gu/nebula-insights#data-etl-bigquery-and-gcs</a></p>
 <h3 id="数据可视化" class="headerLink">
     <a href="#%e6%95%b0%e6%8d%ae%e5%8f%af%e8%a7%86%e5%8c%96" class="header-mark"></a>2.4 数据可视化</h3><p>到这里，我们就可以自动在BigQuery里存有每天收集的不同来源的统计数据啦，有了它，我们可以借助 Data Studio 来生成各式各样的可视化表示。</p>
@@ -749,7 +752,7 @@
         srcset="/en/nebulagraph-sns/featured-image.webp, /en/nebulagraph-sns/featured-image.webp 1.5x, /en/nebulagraph-sns/featured-image.webp 2x"
         sizes="auto"
         alt="/en/nebulagraph-sns/featured-image.webp"
-        title="How we leverage Serverless Cloud infra to setup Data Pipeline for Nebula Graph Community Insights. We used Google Cloud Scheduler, Google Cloud Functions, BigQuery, and codes are shared in GitHub" height="200" width="400"></a>
+        title="How we leverage Serverless Cloud infra to setup Data Pipeline for Nebula Graph Community Insights. We used Google Cloud Scheduler, Google Cloud Functions, BigQuery, and codes are shared in GitHub" height="200"   width="400" ></a>
             </div><h2 class="related-title">
                 <a href="/en/nebulagraph-sns/">Social Network with NebulaGraph</a>
             </h2>
@@ -763,7 +766,7 @@
         srcset="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.webp, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.webp 1.5x, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.webp 2x"
         sizes="auto"
         alt="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.webp"
-        title="How we leverage Serverless Cloud infra to setup Data Pipeline for Nebula Graph Community Insights. We used Google Cloud Scheduler, Google Cloud Functions, BigQuery, and codes are shared in GitHub" height="200" width="400"></a>
+        title="How we leverage Serverless Cloud infra to setup Data Pipeline for Nebula Graph Community Insights. We used Google Cloud Scheduler, Google Cloud Functions, BigQuery, and codes are shared in GitHub" height="200"   width="400" ></a>
             </div><h2 class="related-title">
                 <a href="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/">Use ChatGPT and Nebulagraph to Predict Fifa World Cup</a>
             </h2>
@@ -777,7 +780,7 @@
         srcset="/en/nebulagraph-etl-dbt/featured-image.webp, /en/nebulagraph-etl-dbt/featured-image.webp 1.5x, /en/nebulagraph-etl-dbt/featured-image.webp 2x"
         sizes="auto"
         alt="/en/nebulagraph-etl-dbt/featured-image.webp"
-        title="How we leverage Serverless Cloud infra to setup Data Pipeline for Nebula Graph Community Insights. We used Google Cloud Scheduler, Google Cloud Functions, BigQuery, and codes are shared in GitHub" height="200" width="400"></a>
+        title="How we leverage Serverless Cloud infra to setup Data Pipeline for Nebula Graph Community Insights. We used Google Cloud Scheduler, Google Cloud Functions, BigQuery, and codes are shared in GitHub" height="200"   width="400" ></a>
             </div><h2 class="related-title">
                 <a href="/en/nebulagraph-etl-dbt/">Tabular Data ETL to NebulaGraph with dbt</a>
             </h2>
@@ -791,7 +794,7 @@
         srcset="/en/fraud-detection-with-nebulagraph/featured-image.webp, /en/fraud-detection-with-nebulagraph/featured-image.webp 1.5x, /en/fraud-detection-with-nebulagraph/featured-image.webp 2x"
         sizes="auto"
         alt="/en/fraud-detection-with-nebulagraph/featured-image.webp"
-        title="How we leverage Serverless Cloud infra to setup Data Pipeline for Nebula Graph Community Insights. We used Google Cloud Scheduler, Google Cloud Functions, BigQuery, and codes are shared in GitHub" height="200" width="400"></a>
+        title="How we leverage Serverless Cloud infra to setup Data Pipeline for Nebula Graph Community Insights. We used Google Cloud Scheduler, Google Cloud Functions, BigQuery, and codes are shared in GitHub" height="200"   width="400" ></a>
             </div><h2 class="related-title">
                 <a href="/en/fraud-detection-with-nebulagraph/">Fraud Detection with NebulaGraph GraphDatabase in action</a>
             </h2>
@@ -805,7 +808,7 @@
         srcset="/en/data-lineage-oss-ref-solution/featured-image.webp, /en/data-lineage-oss-ref-solution/featured-image.webp 1.5x, /en/data-lineage-oss-ref-solution/featured-image.webp 2x"
         sizes="auto"
         alt="/en/data-lineage-oss-ref-solution/featured-image.webp"
-        title="How we leverage Serverless Cloud infra to setup Data Pipeline for Nebula Graph Community Insights. We used Google Cloud Scheduler, Google Cloud Functions, BigQuery, and codes are shared in GitHub" height="200" width="400"></a>
+        title="How we leverage Serverless Cloud infra to setup Data Pipeline for Nebula Graph Community Insights. We used Google Cloud Scheduler, Google Cloud Functions, BigQuery, and codes are shared in GitHub" height="200"   width="400" ></a>
             </div><h2 class="related-title">
                 <a href="/en/data-lineage-oss-ref-solution/">A Data Lineage OSS Reference Solution</a>
             </h2>
@@ -848,7 +851,7 @@
             </noscript></div></article></div>
         </main><footer class="footer">
         <div class="footer-container"><div class="footer-line">
-                    Powered by <a href="https://gohugo.io/" target="_blank" rel="noopener noreferrer" title="Hugo 0.110.0">Hugo</a>&nbsp;|&nbsp;Theme - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreferrer" title="DoIt 0.3.0"><i class="far fa-edit fa-fw"></i> DoIt</a>
+                    Powered by <a href="https://gohugo.io/" target="_blank" rel="noopener noreferrer" title="Hugo 0.111.3">Hugo</a>&nbsp;|&nbsp;Theme - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreferrer" title="DoIt 0.3.0"><i class="far fa-edit fa-fw"></i> DoIt</a>
                 </div><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2018 - 2023</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="https://siwei.io" target="_blank" rel="noopener noreferrer">Wey Gu</a></span>&nbsp;|&nbsp;<span class="license"><a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">CC BY-NC 4.0</a></span></div>
             <div class="footer-line"></div>
             <div class="footer-line">

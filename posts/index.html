@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="zh-CN">
 
@@ -30,12 +32,13 @@
 </head>
 
 <body header-desktop="fixed" header-mobile="auto"><script type="text/javascript">
-        function setTheme(theme) {document.body.setAttribute('theme', theme); document.documentElement.style.setProperty('color-scheme', theme === 'light' ? 'light' : 'dark');}
+        function setTheme(theme) {document.body.setAttribute('theme', theme); document.documentElement.style.setProperty('color-scheme', theme === 'light' ? 'light' : 'dark'); window.theme = theme;   window.isDark = window.theme !== 'light' }
         function saveTheme(theme) {window.localStorage && localStorage.setItem('theme', theme);}
         function getMeta(metaName) {const metas = document.getElementsByTagName('meta'); for (let i = 0; i < metas.length; i++) if (metas[i].getAttribute('name') === metaName) return metas[i]; return '';}
         if (window.localStorage && localStorage.getItem('theme')) {let theme = localStorage.getItem('theme');theme === 'light' || theme === 'dark' || theme === 'black' ? setTheme(theme) : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light')); } else { if ('auto' === 'light' || 'auto' === 'dark' || 'auto' === 'black') setTheme('auto'), saveTheme('auto'); else saveTheme('auto'), window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light');}
         let metaColors = {'light': '#f8f8f8','dark': '#252627','black': '#000000'}
         getMeta('theme-color').content = metaColors[document.body.getAttribute('theme')];
+        window.switchThemeEventSet = new Set()
     </script>
     <div id="back-to-top"></div>
     <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
@@ -114,37 +117,7 @@
     <div id="search-dropdown-mobile"></div>
 </div>
 <main class="main">
-            <div class="container"><div class="page archive"><h2 class="single-title animate__animated animate__pulse animate__faster">所有文章</h2><h3 class="group-title">最近更新</h3><article class="archive-item">
-                        <a href="/nebulagraph-sns/" class="archive-item-link">图数据库的社交网络应用</a>
-                        <span class="archive-item-date">03-01</span>
-                    </article><article class="archive-item">
-                        <a href="/nebula-up/" class="archive-item-link">Nebula-Up，一键拉起一个 Nebula 测试环境</a>
-                        <span class="archive-item-date">02-09</span>
-                    </article><article class="archive-item">
-                        <a href="/nebula-insights/" class="archive-item-link">Nebula-Insights，我们基于 Serverless 架构的数据管道方案与代码分享。</a>
-                        <span class="archive-item-date">02-09</span>
-                    </article><article class="archive-item">
-                        <a href="/nebula-chia/" class="archive-item-link">用图数据库可视化探索 Chia Network 区块链数据</a>
-                        <span class="archive-item-date">02-09</span>
-                    </article><article class="archive-item">
-                        <a href="/nebula-operator-kind/" class="archive-item-link">Nebula Operator Kind，一键单机玩转 Nebula K8s 集群</a>
-                        <span class="archive-item-date">02-09</span>
-                    </article><article class="archive-item">
-                        <a href="/nebula-exchange-sst-2.x/" class="archive-item-link">Nebula Exchange SST 2.x Hands-on Guide</a>
-                        <span class="archive-item-date">02-09</span>
-                    </article><article class="archive-item">
-                        <a href="/nebula-holdshare-dataset/" class="archive-item-link">Nebula Holdshare Dataset，图数据库的股权穿透</a>
-                        <span class="archive-item-date">02-09</span>
-                    </article><article class="archive-item">
-                        <a href="/nebula-siwi/" class="archive-item-link">Nebula Siwi，基于图数据库的智能问答助手</a>
-                        <span class="archive-item-date">02-09</span>
-                    </article><article class="archive-item">
-                        <a href="/corp-rel-graph/" class="archive-item-link">从零到一：如何构建一个企业股权图谱系统？</a>
-                        <span class="archive-item-date">02-09</span>
-                    </article><article class="archive-item">
-                        <a href="/nebula-index-explained/" class="archive-item-link">Nebula Graph 索引详解</a>
-                        <span class="archive-item-date">02-09</span>
-                    </article><h3 class="group-title">2023</h3><article class="archive-item">
+            <div class="container"><div class="page archive"><h2 class="single-title animate__animated animate__pulse animate__faster">所有文章</h2><h3 class="group-title">2023</h3><article class="archive-item">
                         <a href="/graph-enabled-infra-ops/" class="archive-item-link">图数据库驱动的基础设施运维示例</a>
                         <span class="archive-item-date">01-13</span>
                     </article><h3 class="group-title">2022</h3><article class="archive-item">
@@ -215,7 +188,7 @@
                 </li></ul></div></div>
         </main><footer class="footer">
         <div class="footer-container"><div class="footer-line">
-                    由 <a href="https://gohugo.io/" target="_blank" rel="noopener noreferrer" title="Hugo 0.110.0">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreferrer" title="DoIt 0.3.0"><i class="far fa-edit fa-fw"></i> DoIt</a>
+                    由 <a href="https://gohugo.io/" target="_blank" rel="noopener noreferrer" title="Hugo 0.111.3">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreferrer" title="DoIt 0.3.0"><i class="far fa-edit fa-fw"></i> DoIt</a>
                 </div><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2018 - 2023</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="https://siwei.io" target="_blank" rel="noopener noreferrer">Wey Gu</a></span>&nbsp;|&nbsp;<span class="license"><a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">CC BY-NC 4.0</a></span></div>
             <div class="footer-line"></div>
             <div class="footer-line">

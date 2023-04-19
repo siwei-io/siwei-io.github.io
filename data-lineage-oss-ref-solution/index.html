@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="zh-CN">
 
@@ -47,12 +49,13 @@
 </head>
 
 <body header-desktop="fixed" header-mobile="auto"><script type="text/javascript">
-        function setTheme(theme) {document.body.setAttribute('theme', theme); document.documentElement.style.setProperty('color-scheme', theme === 'light' ? 'light' : 'dark');}
+        function setTheme(theme) {document.body.setAttribute('theme', theme); document.documentElement.style.setProperty('color-scheme', theme === 'light' ? 'light' : 'dark'); window.theme = theme;   window.isDark = window.theme !== 'light' }
         function saveTheme(theme) {window.localStorage && localStorage.setItem('theme', theme);}
         function getMeta(metaName) {const metas = document.getElementsByTagName('meta'); for (let i = 0; i < metas.length; i++) if (metas[i].getAttribute('name') === metaName) return metas[i]; return '';}
         if (window.localStorage && localStorage.getItem('theme')) {let theme = localStorage.getItem('theme');theme === 'light' || theme === 'dark' || theme === 'black' ? setTheme(theme) : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light')); } else { if ('auto' === 'light' || 'auto' === 'dark' || 'auto' === 'black') setTheme('auto'), saveTheme('auto'); else saveTheme('auto'), window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light');}
         let metaColors = {'light': '#f8f8f8','dark': '#252627','black': '#000000'}
         getMeta('theme-color').content = metaColors[document.body.getAttribute('theme')];
+        window.switchThemeEventSet = new Set()
     </script>
     <div id="back-to-top"></div>
     <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
@@ -221,7 +224,7 @@
     </li>
   </ol>
 </nav></div>
-    </div><script>document.getElementsByTagName("main")[0].setAttribute("pageStyle", "normal")</script><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC", "true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">基于开源技术栈的数据血缘、治理参考解决方案</h1><div class="post-meta">
+    </div><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC", "true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">基于开源技术栈的数据血缘、治理参考解决方案</h1><div class="post-meta">
             <div class="post-meta-line">
                 <span class="post-author"><i class="author fas fa-user-circle fa-fw"></i><a href="https://siwei.io" title="Author" target="_blank" rel="noopener noreferrer author" class="author">Wey Gu</a>
                 </span>&nbsp;<span class="post-category">收录于 </span>&nbsp;<span class="post-category">类别 <a href="/categories/nebula-graph/"><i class="far fa-folder fa-fw"></i>Nebula Graph</a>&nbsp;<a href="/categories/amundsen/"><i class="far fa-folder fa-fw"></i>Amundsen</a></span></div>
@@ -234,7 +237,7 @@
         srcset="/data-lineage-oss-ref-solution/featured-image.webp, /data-lineage-oss-ref-solution/featured-image.webp 1.5x, /data-lineage-oss-ref-solution/featured-image.webp 2x"
         sizes="auto"
         alt="/data-lineage-oss-ref-solution/featured-image.webp"
-        title="也许我们没有必要从头在 NebulaGraph 上搭建自己的数据血缘项目，本文分享如何用开源、现代的 DataOps、ETL、Dashboard、元数据、数据血缘管理系统构建大数据治理基础设施" height="872" width="1730"></div><div class="details toc" id="toc-static"  kept="">
+        title="也许我们没有必要从头在 NebulaGraph 上搭建自己的数据血缘项目，本文分享如何用开源、现代的 DataOps、ETL、Dashboard、元数据、数据血缘管理系统构建大数据治理基础设施" height="872"   width="1730" ></div><div class="details toc" id="toc-static"  kept="">
                 <div class="details-summary toc-title">
                     <span>目录</span>
                     <span><i class="details-icon fas fa-angle-right"></i></span>
@@ -361,7 +364,7 @@
 <p>我尽量把这个方案做的完备、端到端（不只有元数据管理），希望也能为考虑做基于图做数据治理的新手一些启发和参考。</p>
 <p>下图是整个方案的简单示意图：</p>
 <p>其中上方是元数据的来源与导入、下方是元数据的存储与展示、发现。</p>
-<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg" title="diagram-of-ref-project" data-thumbnail="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg">
+<p><figure><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg" title="diagram-of-ref-project" data-thumbnail="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg">
         <img
             
             loading="lazy"
@@ -369,7 +372,7 @@
             srcset="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg, https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg 1.5x, https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg 2x"
             sizes="auto"
             alt="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg">
-    </a></p>
+    </a></figure></p>
 <h3 id="技术栈介绍" class="headerLink">
     <a href="#%e6%8a%80%e6%9c%af%e6%a0%88%e4%bb%8b%e7%bb%8d" class="header-mark"></a>2.2 技术栈介绍</h3><p>下边介绍一下其中的每一部分。</p>
 <h4 id="数据库和数仓" class="headerLink">
@@ -388,7 +391,7 @@
 <p>✅ - T: dbt <a href="https://getdbt.com/" target="_blank" rel="noopener noreferrer">https://getdbt.com/</a></p>
 <h4 id="数据可视化" class="headerLink">
     <a href="#%e6%95%b0%e6%8d%ae%e5%8f%af%e8%a7%86%e5%8c%96" class="header-mark"></a>2.2.4 数据可视化</h4><p>在数据之上创建 Dashboard、图表和表格来获得洞察是很直接的需求（可以想象为想象大数据之上的 excel 图标功能）。</p>
-<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/172800854-8e01acae-696d-4e07-8e3e-a7d34dec8278.png" title="https://user-images.githubusercontent.com/1651790/172800854-8e01acae-696d-4e07-8e3e-a7d34dec8278.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/172800854-8e01acae-696d-4e07-8e3e-a7d34dec8278.png">
+<p><figure><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/172800854-8e01acae-696d-4e07-8e3e-a7d34dec8278.png" title="https://user-images.githubusercontent.com/1651790/172800854-8e01acae-696d-4e07-8e3e-a7d34dec8278.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/172800854-8e01acae-696d-4e07-8e3e-a7d34dec8278.png">
         <img
             
             loading="lazy"
@@ -396,7 +399,7 @@
             srcset="https://user-images.githubusercontent.com/1651790/172800854-8e01acae-696d-4e07-8e3e-a7d34dec8278.png, https://user-images.githubusercontent.com/1651790/172800854-8e01acae-696d-4e07-8e3e-a7d34dec8278.png 1.5x, https://user-images.githubusercontent.com/1651790/172800854-8e01acae-696d-4e07-8e3e-a7d34dec8278.png 2x"
             sizes="auto"
             alt="https://user-images.githubusercontent.com/1651790/172800854-8e01acae-696d-4e07-8e3e-a7d34dec8278.png">
-    </a></p>
+    </a></figure></p>
 <p><a href="https://superset.apache.org/" target="_blank" rel="noopener noreferrer">Apache Superset</a> 是我很喜欢的开源数据可视化项目，我准备用它来作为被治理管理的目标之一，同时，也会利用它的可视化作为元数据洞察功能的一部分。</p>
 <p>✅ - Dashboard：Apache Superset <a href="https://superset.apache.org/" target="_blank" rel="noopener noreferrer">https://superset.apache.org/</a></p>
 <h4 id="任务编排dag-job-orchestration" class="headerLink">
@@ -405,7 +408,7 @@
 <h4 id="元数据治理" class="headerLink">
     <a href="#%e5%85%83%e6%95%b0%e6%8d%ae%e6%b2%bb%e7%90%86" class="header-mark"></a>2.2.6 元数据治理</h4><p>随着越来越多的组件和数据被引入数据基础设施，在数据库、表、数据建模(schema)、Dashboard、DAG（编排系统中的有向无环图）、应用与服务的所有生命周期中都将存在海量的元数据，需要对它们的管理员和团队进行协同管理、连接和发现。</p>
 <p><a href="https://www.amundsen.io/amundsen/" target="_blank" rel="noopener noreferrer">Linux Foundation Amundsen</a> 是我认为可以解决这个问题的最佳项目之一。</p>
-<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/172801018-ecd67fa9-2743-451f-8734-b14f2a814199.png" title="https://user-images.githubusercontent.com/1651790/172801018-ecd67fa9-2743-451f-8734-b14f2a814199.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/172801018-ecd67fa9-2743-451f-8734-b14f2a814199.png">
+<p><figure><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/172801018-ecd67fa9-2743-451f-8734-b14f2a814199.png" title="https://user-images.githubusercontent.com/1651790/172801018-ecd67fa9-2743-451f-8734-b14f2a814199.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/172801018-ecd67fa9-2743-451f-8734-b14f2a814199.png">
         <img
             
             loading="lazy"
@@ -413,7 +416,7 @@
             srcset="https://user-images.githubusercontent.com/1651790/172801018-ecd67fa9-2743-451f-8734-b14f2a814199.png, https://user-images.githubusercontent.com/1651790/172801018-ecd67fa9-2743-451f-8734-b14f2a814199.png 1.5x, https://user-images.githubusercontent.com/1651790/172801018-ecd67fa9-2743-451f-8734-b14f2a814199.png 2x"
             sizes="auto"
             alt="https://user-images.githubusercontent.com/1651790/172801018-ecd67fa9-2743-451f-8734-b14f2a814199.png">
-    </a></p>
+    </a></figure></p>
 <p>✅ - 数据发现：Linux Foundation Amundsen <a href="https://www.amundsen.io/amundsen/" target="_blank" rel="noopener noreferrer">https://www.amundsen.io/amundsen/</a></p>
 <p>Amundsen 用图数据库为事实源（single source of truth）以加速多跳查询，Elastic Search 为全文搜索引擎，它能对所有元数据及其血缘进行了顺滑的处理还提供了优雅的 UI 和 API。</p>
 <p>Amundsen 支持多种图数据库为后端，这里咱们用 <a href="https://nebula-graph.com.cn" target="_blank" rel="noopener noreferrer">NebulaGraph</a>。</p>
@@ -615,7 +618,7 @@
 </div>
 </div><p>现在，我们可以连接到 Postgres 来查看 加载和转换后的数据预览如下，截图来自 VS Code 的 SQLTool：</p>
 <p>Payments 表里长这样子：</p>
-<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png" title="https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png">
+<p><figure><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png" title="https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png">
         <img
             
             loading="lazy"
@@ -623,7 +626,7 @@
             srcset="https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png, https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png 1.5x, https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png 2x"
             sizes="auto"
             alt="https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png">
-    </a></p>
+    </a></figure></p>
 <h3 id="搭一个-bi-dashboard-系统" class="headerLink">
     <a href="#%e6%90%ad%e4%b8%80%e4%b8%aa-bi-dashboard-%e7%b3%bb%e7%bb%9f" class="header-mark"></a>3.3 搭一个 BI Dashboard 系统</h3><p>现在，我们有了数据仓库中的一些数据，用 ETL 工具链将不同的数据源导了进去，接下来可以试着用一下这些数据了。</p>
 <p>像仪表大盘 Dashbaord 这样的 BI 工具能帮助我们从数据中获得有用的洞察，使用 Apache Superset，可以很容易地创建和管理基于这些数据源的 Dashboard 和各式各样的图表。</p>
@@ -751,7 +754,7 @@
 </div><ul>
 <li>通过浏览器访问 http://localhost:8088/ 就是Superset 的图形界面了：</li>
 </ul>
-<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168570300-186b56a5-58e8-4ff1-bc06-89fd77d74166.png" title="https://user-images.githubusercontent.com/1651790/168570300-186b56a5-58e8-4ff1-bc06-89fd77d74166.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168570300-186b56a5-58e8-4ff1-bc06-89fd77d74166.png">
+<p><figure><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168570300-186b56a5-58e8-4ff1-bc06-89fd77d74166.png" title="https://user-images.githubusercontent.com/1651790/168570300-186b56a5-58e8-4ff1-bc06-89fd77d74166.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168570300-186b56a5-58e8-4ff1-bc06-89fd77d74166.png">
         <img
             
             loading="lazy"
@@ -759,13 +762,13 @@
             srcset="https://user-images.githubusercontent.com/1651790/168570300-186b56a5-58e8-4ff1-bc06-89fd77d74166.png, https://user-images.githubusercontent.com/1651790/168570300-186b56a5-58e8-4ff1-bc06-89fd77d74166.png 1.5x, https://user-images.githubusercontent.com/1651790/168570300-186b56a5-58e8-4ff1-bc06-89fd77d74166.png 2x"
             sizes="auto"
             alt="https://user-images.githubusercontent.com/1651790/168570300-186b56a5-58e8-4ff1-bc06-89fd77d74166.png">
-    </a></p>
+    </a></figure></p>
 <h4 id="创建一个-dashboard" class="headerLink">
     <a href="#%e5%88%9b%e5%bb%ba%e4%b8%80%e4%b8%aa-dashboard" class="header-mark"></a>3.3.2 创建一个 Dashboard</h4><p>试一下在这个 Meltano 项目中定义的 Postgres 中的 ETL 数据上创建一个 Dashboard 吧</p>
 <ul>
 <li>点击 <code>+ DASHBOARD</code>，填写仪表盘名称，然后点击 <code>SAVE</code>，然后点击 <code>+ CREATE A NEW CHART</code></li>
 </ul>
-<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168570363-c6b4f929-2aad-4f03-8e3e-b1b61f560ce5.png" title="https://user-images.githubusercontent.com/1651790/168570363-c6b4f929-2aad-4f03-8e3e-b1b61f560ce5.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168570363-c6b4f929-2aad-4f03-8e3e-b1b61f560ce5.png">
+<p><figure><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168570363-c6b4f929-2aad-4f03-8e3e-b1b61f560ce5.png" title="https://user-images.githubusercontent.com/1651790/168570363-c6b4f929-2aad-4f03-8e3e-b1b61f560ce5.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168570363-c6b4f929-2aad-4f03-8e3e-b1b61f560ce5.png">
         <img
             
             loading="lazy"
@@ -773,11 +776,11 @@
             srcset="https://user-images.githubusercontent.com/1651790/168570363-c6b4f929-2aad-4f03-8e3e-b1b61f560ce5.png, https://user-images.githubusercontent.com/1651790/168570363-c6b4f929-2aad-4f03-8e3e-b1b61f560ce5.png 1.5x, https://user-images.githubusercontent.com/1651790/168570363-c6b4f929-2aad-4f03-8e3e-b1b61f560ce5.png 2x"
             sizes="auto"
             alt="https://user-images.githubusercontent.com/1651790/168570363-c6b4f929-2aad-4f03-8e3e-b1b61f560ce5.png">
-    </a></p>
+    </a></figure></p>
 <ul>
 <li>在新图表（Create a new chart）视图中，我们应该选择图表类型和数据集。 在这里，我选择了 <code>orders</code> 表作为数据源和 <code>Pie Chart</code> 图表类型：</li>
 </ul>
-<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168570927-9559a2a1-fed7-43be-9f6a-f6fb3c263830.png" title="https://user-images.githubusercontent.com/1651790/168570927-9559a2a1-fed7-43be-9f6a-f6fb3c263830.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168570927-9559a2a1-fed7-43be-9f6a-f6fb3c263830.png">
+<p><figure><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168570927-9559a2a1-fed7-43be-9f6a-f6fb3c263830.png" title="https://user-images.githubusercontent.com/1651790/168570927-9559a2a1-fed7-43be-9f6a-f6fb3c263830.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168570927-9559a2a1-fed7-43be-9f6a-f6fb3c263830.png">
         <img
             
             loading="lazy"
@@ -785,11 +788,11 @@
             srcset="https://user-images.githubusercontent.com/1651790/168570927-9559a2a1-fed7-43be-9f6a-f6fb3c263830.png, https://user-images.githubusercontent.com/1651790/168570927-9559a2a1-fed7-43be-9f6a-f6fb3c263830.png 1.5x, https://user-images.githubusercontent.com/1651790/168570927-9559a2a1-fed7-43be-9f6a-f6fb3c263830.png 2x"
             sizes="auto"
             alt="https://user-images.githubusercontent.com/1651790/168570927-9559a2a1-fed7-43be-9f6a-f6fb3c263830.png">
-    </a></p>
+    </a></figure></p>
 <ul>
 <li>点击“CREATE NEW CHART”后，我们在图表定义视图中，我选择了“status”的“Query”为“DIMENSIONS”，“COUNT(amount)”为“METRIC”。 至此，咱们就可以看到每个订单状态分布的饼图了。</li>
 </ul>
-<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168571130-a65ba88e-1ebe-4699-8783-08e5ecf54a0c.png" title="https://user-images.githubusercontent.com/1651790/168571130-a65ba88e-1ebe-4699-8783-08e5ecf54a0c.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168571130-a65ba88e-1ebe-4699-8783-08e5ecf54a0c.png">
+<p><figure><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168571130-a65ba88e-1ebe-4699-8783-08e5ecf54a0c.png" title="https://user-images.githubusercontent.com/1651790/168571130-a65ba88e-1ebe-4699-8783-08e5ecf54a0c.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168571130-a65ba88e-1ebe-4699-8783-08e5ecf54a0c.png">
         <img
             
             loading="lazy"
@@ -797,11 +800,11 @@
             srcset="https://user-images.githubusercontent.com/1651790/168571130-a65ba88e-1ebe-4699-8783-08e5ecf54a0c.png, https://user-images.githubusercontent.com/1651790/168571130-a65ba88e-1ebe-4699-8783-08e5ecf54a0c.png 1.5x, https://user-images.githubusercontent.com/1651790/168571130-a65ba88e-1ebe-4699-8783-08e5ecf54a0c.png 2x"
             sizes="auto"
             alt="https://user-images.githubusercontent.com/1651790/168571130-a65ba88e-1ebe-4699-8783-08e5ecf54a0c.png">
-    </a></p>
+    </a></figure></p>
 <ul>
 <li>点击 <code>SAVE</code> ，它会询问应该将此图表添加到哪个 Dashboard，选择后，单击 <code>SAVE &amp; GO TO DASHBOARD</code>。</li>
 </ul>
-<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168571301-8ae69983-eda8-4e75-99cf-6904f583fc7c.png" title="https://user-images.githubusercontent.com/1651790/168571301-8ae69983-eda8-4e75-99cf-6904f583fc7c.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168571301-8ae69983-eda8-4e75-99cf-6904f583fc7c.png">
+<p><figure><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168571301-8ae69983-eda8-4e75-99cf-6904f583fc7c.png" title="https://user-images.githubusercontent.com/1651790/168571301-8ae69983-eda8-4e75-99cf-6904f583fc7c.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168571301-8ae69983-eda8-4e75-99cf-6904f583fc7c.png">
         <img
             
             loading="lazy"
@@ -809,11 +812,11 @@
             srcset="https://user-images.githubusercontent.com/1651790/168571301-8ae69983-eda8-4e75-99cf-6904f583fc7c.png, https://user-images.githubusercontent.com/1651790/168571301-8ae69983-eda8-4e75-99cf-6904f583fc7c.png 1.5x, https://user-images.githubusercontent.com/1651790/168571301-8ae69983-eda8-4e75-99cf-6904f583fc7c.png 2x"
             sizes="auto"
             alt="https://user-images.githubusercontent.com/1651790/168571301-8ae69983-eda8-4e75-99cf-6904f583fc7c.png">
-    </a></p>
+    </a></figure></p>
 <ul>
 <li>然后，在 Dashboard 中，我们可以看到那里的所有图表。 您可以看到我还添加了另一个图表来显示客户订单数量分布：</li>
 </ul>
-<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168571878-30a77057-1f66-448a-9bbd-0dedcee24cc9.png" title="https://user-images.githubusercontent.com/1651790/168571878-30a77057-1f66-448a-9bbd-0dedcee24cc9.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168571878-30a77057-1f66-448a-9bbd-0dedcee24cc9.png">
+<p><figure><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168571878-30a77057-1f66-448a-9bbd-0dedcee24cc9.png" title="https://user-images.githubusercontent.com/1651790/168571878-30a77057-1f66-448a-9bbd-0dedcee24cc9.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168571878-30a77057-1f66-448a-9bbd-0dedcee24cc9.png">
         <img
             
             loading="lazy"
@@ -821,11 +824,11 @@
             srcset="https://user-images.githubusercontent.com/1651790/168571878-30a77057-1f66-448a-9bbd-0dedcee24cc9.png, https://user-images.githubusercontent.com/1651790/168571878-30a77057-1f66-448a-9bbd-0dedcee24cc9.png 1.5x, https://user-images.githubusercontent.com/1651790/168571878-30a77057-1f66-448a-9bbd-0dedcee24cc9.png 2x"
             sizes="auto"
             alt="https://user-images.githubusercontent.com/1651790/168571878-30a77057-1f66-448a-9bbd-0dedcee24cc9.png">
-    </a></p>
+    </a></figure></p>
 <ul>
 <li>点  <code>···</code> 的话，还能看到刷新率设置、下载渲染图等其他的功能。</li>
 </ul>
-<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168573874-b5d57919-2866-4b3c-a4e5-55b6e6ef342e.png" title="https://user-images.githubusercontent.com/1651790/168573874-b5d57919-2866-4b3c-a4e5-55b6e6ef342e.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168573874-b5d57919-2866-4b3c-a4e5-55b6e6ef342e.png">
+<p><figure><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168573874-b5d57919-2866-4b3c-a4e5-55b6e6ef342e.png" title="https://user-images.githubusercontent.com/1651790/168573874-b5d57919-2866-4b3c-a4e5-55b6e6ef342e.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168573874-b5d57919-2866-4b3c-a4e5-55b6e6ef342e.png">
         <img
             
             loading="lazy"
@@ -833,7 +836,7 @@
             srcset="https://user-images.githubusercontent.com/1651790/168573874-b5d57919-2866-4b3c-a4e5-55b6e6ef342e.png, https://user-images.githubusercontent.com/1651790/168573874-b5d57919-2866-4b3c-a4e5-55b6e6ef342e.png 1.5x, https://user-images.githubusercontent.com/1651790/168573874-b5d57919-2866-4b3c-a4e5-55b6e6ef342e.png 2x"
             sizes="auto"
             alt="https://user-images.githubusercontent.com/1651790/168573874-b5d57919-2866-4b3c-a4e5-55b6e6ef342e.png">
-    </a></p>
+    </a></figure></p>
 <p>目前，我们有一个简单但典型的 homelab 数据技术栈了，并且所有东西都是开源的！</p>
 <p>想象一下，我们在 CSV 中有 100 个数据集，在数据仓库中有 200 个表，并且有几个数据工程师在运行不同的项目，这些项目使用、生成不同的应用与服务、Dashbaord 和数据库。 当有人想要查找、发现或者修改其中的一些表、数据集、Dashbaord 和管道，在沟通和工程方面可能都是非常不好管理的。</p>
 <p>如前边提到的，我们需要这个示例项目的主要部分：元数据发现系统。</p>
@@ -972,7 +975,7 @@
 </span></span></code></pre></td></tr></table>
 </div>
 </div><p>然后我们可以在 <a href="http://localhost:5000/" target="_blank" rel="noopener noreferrer">http://localhost:5000</a> 查看 UI 并尝试搜索 <code>test</code>，它应该会返回一些结果。</p>
-<p><a class="lightgallery" href="https://github.com/amundsen-io/amundsen/raw/master/docs/img/search-page.png" title="https://github.com/amundsen-io/amundsen/raw/master/docs/img/search-page.png" data-thumbnail="https://github.com/amundsen-io/amundsen/raw/master/docs/img/search-page.png">
+<p><figure><a class="lightgallery" href="https://github.com/amundsen-io/amundsen/raw/master/docs/img/search-page.png" title="https://github.com/amundsen-io/amundsen/raw/master/docs/img/search-page.png" data-thumbnail="https://github.com/amundsen-io/amundsen/raw/master/docs/img/search-page.png">
         <img
             
             loading="lazy"
@@ -980,7 +983,7 @@
             srcset="https://github.com/amundsen-io/amundsen/raw/master/docs/img/search-page.png, https://github.com/amundsen-io/amundsen/raw/master/docs/img/search-page.png 1.5x, https://github.com/amundsen-io/amundsen/raw/master/docs/img/search-page.png 2x"
             sizes="auto"
             alt="https://github.com/amundsen-io/amundsen/raw/master/docs/img/search-page.png">
-    </a></p>
+    </a></figure></p>
 <p>然后，可以单击并浏览在“sample_data_loader_nebula.py”期间加载到 Amundsen 的那些示例元数据。</p>
 <p>此外，我们还可以通过 NebulaStudio(http://localhost:7001) 访问 NebulaGraph 里的这些数据。</p>
 <blockquote>
@@ -1084,7 +1087,7 @@
 </div>
 </div><h2 id="穿针引线元数据发现" class="headerLink">
     <a href="#%e7%a9%bf%e9%92%88%e5%bc%95%e7%ba%bf%e5%85%83%e6%95%b0%e6%8d%ae%e5%8f%91%e7%8e%b0" class="header-mark"></a>4 穿针引线：元数据发现</h2><p>设置好基本环境后，让我们把所有东西穿起来。还记得我们有 ELT 一些数据到 PostgreSQL 吗？</p>
-<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png" title="https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png">
+<p><figure><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png" title="https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png">
         <img
             
             loading="lazy"
@@ -1092,7 +1095,7 @@
             srcset="https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png, https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png 1.5x, https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png 2x"
             sizes="auto"
             alt="https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png">
-    </a></p>
+    </a></figure></p>
 <p>那么，我们如何让 Amundsen 发现有关这些数据和 ETL 的元数据呢？</p>
 <h3 id="提取-postgres-元数据" class="headerLink">
     <a href="#%e6%8f%90%e5%8f%96-postgres-%e5%85%83%e6%95%b0%e6%8d%ae" class="header-mark"></a>4.1 提取 Postgres 元数据</h3><p>我们从数据源开始：首先是 Postgres。</p>
@@ -1177,7 +1180,7 @@
 </blockquote>
 <h4 id="验证-postgres-中元数据的获取" class="headerLink">
     <a href="#%e9%aa%8c%e8%af%81-postgres-%e4%b8%ad%e5%85%83%e6%95%b0%e6%8d%ae%e7%9a%84%e8%8e%b7%e5%8f%96" class="header-mark"></a>4.1.2 验证 Postgres 中元数据的获取</h4><p>搜索<code>payments</code>或者直接访问http://localhost:5000/table_detail/warehouse/postgres/public/payments，你可以看到我们 Postgres 的元数据，比如：</p>
-<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168475180-ebfaa188-268c-4fbe-a614-135d56d07e5d.png" title="https://user-images.githubusercontent.com/1651790/168475180-ebfaa188-268c-4fbe-a614-135d56d07e5d.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168475180-ebfaa188-268c-4fbe-a614-135d56d07e5d.png">
+<p><figure><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168475180-ebfaa188-268c-4fbe-a614-135d56d07e5d.png" title="https://user-images.githubusercontent.com/1651790/168475180-ebfaa188-268c-4fbe-a614-135d56d07e5d.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168475180-ebfaa188-268c-4fbe-a614-135d56d07e5d.png">
         <img
             
             loading="lazy"
@@ -1185,7 +1188,7 @@
             srcset="https://user-images.githubusercontent.com/1651790/168475180-ebfaa188-268c-4fbe-a614-135d56d07e5d.png, https://user-images.githubusercontent.com/1651790/168475180-ebfaa188-268c-4fbe-a614-135d56d07e5d.png 1.5x, https://user-images.githubusercontent.com/1651790/168475180-ebfaa188-268c-4fbe-a614-135d56d07e5d.png 2x"
             sizes="auto"
             alt="https://user-images.githubusercontent.com/1651790/168475180-ebfaa188-268c-4fbe-a614-135d56d07e5d.png">
-    </a></p>
+    </a></figure></p>
 <p>然后，像上面的屏幕截图一样，可以轻松完成元数据管理操作，如添加标签、所有者和描述。</p>
 <h3 id="提取-dbt-元数据" class="headerLink">
     <a href="#%e6%8f%90%e5%8f%96-dbt-%e5%85%83%e6%95%b0%e6%8d%ae" class="header-mark"></a>4.2 提取 dbt 元数据</h3><p>实际上，我们也可以从 <a href="https://www.getdbt.com/" target="_blank" rel="noopener noreferrer">dbt</a> 本身提取元数据。</p>
@@ -1287,7 +1290,7 @@
 </div>
 </div><h4 id="验证-dbt-抓取结果" class="headerLink">
     <a href="#%e9%aa%8c%e8%af%81-dbt-%e6%8a%93%e5%8f%96%e7%bb%93%e6%9e%9c" class="header-mark"></a>4.2.2 验证 dbt 抓取结果</h4><p>搜索 <code>dbt_demo</code> 或者直接访问 http://localhost:5000/table_detail/dbt_demo/snowflake/public/raw_inventory_value，可以看到</p>
-<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168479864-2f73ea73-265f-4cd2-999f-e7effbaf3ec1.png" title="https://user-images.githubusercontent.com/1651790/168479864-2f73ea73-265f-4cd2-999f-e7effbaf3ec1.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168479864-2f73ea73-265f-4cd2-999f-e7effbaf3ec1.png">
+<p><figure><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168479864-2f73ea73-265f-4cd2-999f-e7effbaf3ec1.png" title="https://user-images.githubusercontent.com/1651790/168479864-2f73ea73-265f-4cd2-999f-e7effbaf3ec1.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168479864-2f73ea73-265f-4cd2-999f-e7effbaf3ec1.png">
         <img
             
             loading="lazy"
@@ -1295,7 +1298,7 @@
             srcset="https://user-images.githubusercontent.com/1651790/168479864-2f73ea73-265f-4cd2-999f-e7effbaf3ec1.png, https://user-images.githubusercontent.com/1651790/168479864-2f73ea73-265f-4cd2-999f-e7effbaf3ec1.png 1.5x, https://user-images.githubusercontent.com/1651790/168479864-2f73ea73-265f-4cd2-999f-e7effbaf3ec1.png 2x"
             sizes="auto"
             alt="https://user-images.githubusercontent.com/1651790/168479864-2f73ea73-265f-4cd2-999f-e7effbaf3ec1.png">
-    </a></p>
+    </a></figure></p>
 <blockquote>
 <p>小提示：我们可以选择启用 DEBUG log 级别去看已发送到 Elasticsearch 和 NebulaGraph 的内容。</p>
 <div class="highlight"><div class="chroma">
@@ -1311,7 +1314,7 @@
 </div></blockquote>
 <p>或者，在 NebulaStudio 中探索导入的数据：</p>
 <p>首先，点击 “Start with Vertices”，填写顶点 vid：<code>snowflake://dbt_demo.public/fact_warehouse_inventory</code></p>
-<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168480047-26c28cde-5df8-40af-8da4-6ab0203094e2.png" title="https://user-images.githubusercontent.com/1651790/168480047-26c28cde-5df8-40af-8da4-6ab0203094e2.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168480047-26c28cde-5df8-40af-8da4-6ab0203094e2.png">
+<p><figure><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168480047-26c28cde-5df8-40af-8da4-6ab0203094e2.png" title="https://user-images.githubusercontent.com/1651790/168480047-26c28cde-5df8-40af-8da4-6ab0203094e2.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168480047-26c28cde-5df8-40af-8da4-6ab0203094e2.png">
         <img
             
             loading="lazy"
@@ -1319,13 +1322,13 @@
             srcset="https://user-images.githubusercontent.com/1651790/168480047-26c28cde-5df8-40af-8da4-6ab0203094e2.png, https://user-images.githubusercontent.com/1651790/168480047-26c28cde-5df8-40af-8da4-6ab0203094e2.png 1.5x, https://user-images.githubusercontent.com/1651790/168480047-26c28cde-5df8-40af-8da4-6ab0203094e2.png 2x"
             sizes="auto"
             alt="https://user-images.githubusercontent.com/1651790/168480047-26c28cde-5df8-40af-8da4-6ab0203094e2.png">
-    </a></p>
+    </a></figure></p>
 <p>然后，我们可以看到顶点显示为粉红色的点。 让我们修改 <code>Expand</code> / ”拓展“选项：</p>
 <ul>
 <li>方向：双向</li>
 <li>步数：单向、三步</li>
 </ul>
-<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168480101-7b7b5824-06d9-4155-87c9-798db0dc7612.png" title="https://user-images.githubusercontent.com/1651790/168480101-7b7b5824-06d9-4155-87c9-798db0dc7612.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168480101-7b7b5824-06d9-4155-87c9-798db0dc7612.png">
+<p><figure><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168480101-7b7b5824-06d9-4155-87c9-798db0dc7612.png" title="https://user-images.githubusercontent.com/1651790/168480101-7b7b5824-06d9-4155-87c9-798db0dc7612.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168480101-7b7b5824-06d9-4155-87c9-798db0dc7612.png">
         <img
             
             loading="lazy"
@@ -1333,9 +1336,9 @@
             srcset="https://user-images.githubusercontent.com/1651790/168480101-7b7b5824-06d9-4155-87c9-798db0dc7612.png, https://user-images.githubusercontent.com/1651790/168480101-7b7b5824-06d9-4155-87c9-798db0dc7612.png 1.5x, https://user-images.githubusercontent.com/1651790/168480101-7b7b5824-06d9-4155-87c9-798db0dc7612.png 2x"
             sizes="auto"
             alt="https://user-images.githubusercontent.com/1651790/168480101-7b7b5824-06d9-4155-87c9-798db0dc7612.png">
-    </a></p>
+    </a></figure></p>
 <p>并双击顶点（点），它将双向拓展 3 步：</p>
-<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168480280-1dc88d1b-1f1e-48fd-9997-972965522ef5.png" title="https://user-images.githubusercontent.com/1651790/168480280-1dc88d1b-1f1e-48fd-9997-972965522ef5.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168480280-1dc88d1b-1f1e-48fd-9997-972965522ef5.png">
+<p><figure><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168480280-1dc88d1b-1f1e-48fd-9997-972965522ef5.png" title="https://user-images.githubusercontent.com/1651790/168480280-1dc88d1b-1f1e-48fd-9997-972965522ef5.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168480280-1dc88d1b-1f1e-48fd-9997-972965522ef5.png">
         <img
             
             loading="lazy"
@@ -1343,13 +1346,13 @@
             srcset="https://user-images.githubusercontent.com/1651790/168480280-1dc88d1b-1f1e-48fd-9997-972965522ef5.png, https://user-images.githubusercontent.com/1651790/168480280-1dc88d1b-1f1e-48fd-9997-972965522ef5.png 1.5x, https://user-images.githubusercontent.com/1651790/168480280-1dc88d1b-1f1e-48fd-9997-972965522ef5.png 2x"
             sizes="auto"
             alt="https://user-images.githubusercontent.com/1651790/168480280-1dc88d1b-1f1e-48fd-9997-972965522ef5.png">
-    </a></p>
+    </a></figure></p>
 <p>从上边这个截图里我们可以发现，在可视化之后的图数据库中，这些元数据可以很容易被查看、分析，并从中获得洞察。</p>
 <blockquote>
 <p>小贴士，您可以点击 👁 图标选择一些要显示的属性，我在截图之前就是通过它让一些信息显示出来的。</p>
 </blockquote>
 <p>而且，我们在 NebulaStudio 中看到的也与 Amundsen 元数据服务的数据模型相呼应：</p>
-<p><a class="lightgallery" href="https://www.amundsen.io/amundsen/img/graph_model.png" title="https://www.amundsen.io/amundsen/img/graph_model.png" data-thumbnail="https://www.amundsen.io/amundsen/img/graph_model.png">
+<p><figure><a class="lightgallery" href="https://www.amundsen.io/amundsen/img/graph_model.png" title="https://www.amundsen.io/amundsen/img/graph_model.png" data-thumbnail="https://www.amundsen.io/amundsen/img/graph_model.png">
         <img
             
             loading="lazy"
@@ -1357,7 +1360,7 @@
             srcset="https://www.amundsen.io/amundsen/img/graph_model.png, https://www.amundsen.io/amundsen/img/graph_model.png 1.5x, https://www.amundsen.io/amundsen/img/graph_model.png 2x"
             sizes="auto"
             alt="https://www.amundsen.io/amundsen/img/graph_model.png">
-    </a></p>
+    </a></figure></p>
 <p>最后，请记住我们曾利用 dbt 来转换meltano 中的一些数据，并且清单文件路径是<code>.meltano/transformers/dbt/target/catalog.json</code>，您可以尝试创建一个数据构建器作业来导入它。</p>
 <h3 id="提取-superset-中的元数据" class="headerLink">
     <a href="#%e6%8f%90%e5%8f%96-superset-%e4%b8%ad%e7%9a%84%e5%85%83%e6%95%b0%e6%8d%ae" class="header-mark"></a>4.3 提取 Superset 中的元数据</h3><p>Amundsen 的 Superset extractor 可以获取</p>
@@ -1423,7 +1426,7 @@
 </div><h4 id="验证-superset-dashboard-元数据" class="headerLink">
     <a href="#%e9%aa%8c%e8%af%81-superset-dashboard-%e5%85%83%e6%95%b0%e6%8d%ae" class="header-mark"></a>4.3.2 验证 Superset Dashboard 元数据</h4><p>通过在 Amundsen 中搜索它，我们现在可以获得 Dashboard 信息。</p>
 <p>我们也可以从 NebulaStudio 进行验证。</p>
-<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168719624-738323dd-4c6e-475f-a370-f149181c6184.png" title="https://user-images.githubusercontent.com/1651790/168719624-738323dd-4c6e-475f-a370-f149181c6184.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168719624-738323dd-4c6e-475f-a370-f149181c6184.png">
+<p><figure><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168719624-738323dd-4c6e-475f-a370-f149181c6184.png" title="https://user-images.githubusercontent.com/1651790/168719624-738323dd-4c6e-475f-a370-f149181c6184.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168719624-738323dd-4c6e-475f-a370-f149181c6184.png">
         <img
             
             loading="lazy"
@@ -1431,10 +1434,10 @@
             srcset="https://user-images.githubusercontent.com/1651790/168719624-738323dd-4c6e-475f-a370-f149181c6184.png, https://user-images.githubusercontent.com/1651790/168719624-738323dd-4c6e-475f-a370-f149181c6184.png 1.5x, https://user-images.githubusercontent.com/1651790/168719624-738323dd-4c6e-475f-a370-f149181c6184.png 2x"
             sizes="auto"
             alt="https://user-images.githubusercontent.com/1651790/168719624-738323dd-4c6e-475f-a370-f149181c6184.png">
-    </a></p>
+    </a></figure></p>
 <blockquote>
 <p>注：可以参阅 <a href="https://www.amundsen.io/amundsen/databuilder/docs/dashboard_ingestion_guide/" target="_blank" rel="noopener noreferrer">Dashboard 抓取指南</a> 中的 Amundsen Dashboard 图建模：</p>
-<p><a class="lightgallery" href="https://www.amundsen.io/amundsen/databuilder/docs/assets/dashboard_graph_modeling.png?raw=true" title="dashboard_graph_modeling" data-thumbnail="https://www.amundsen.io/amundsen/databuilder/docs/assets/dashboard_graph_modeling.png?raw=true">
+<p><figure><a class="lightgallery" href="https://www.amundsen.io/amundsen/databuilder/docs/assets/dashboard_graph_modeling.png?raw=true" title="dashboard_graph_modeling" data-thumbnail="https://www.amundsen.io/amundsen/databuilder/docs/assets/dashboard_graph_modeling.png?raw=true">
         <img
             
             loading="lazy"
@@ -1442,11 +1445,11 @@
             srcset="https://www.amundsen.io/amundsen/databuilder/docs/assets/dashboard_graph_modeling.png?raw=true, https://www.amundsen.io/amundsen/databuilder/docs/assets/dashboard_graph_modeling.png?raw=true 1.5x, https://www.amundsen.io/amundsen/databuilder/docs/assets/dashboard_graph_modeling.png?raw=true 2x"
             sizes="auto"
             alt="https://www.amundsen.io/amundsen/databuilder/docs/assets/dashboard_graph_modeling.png?raw=true">
-    </a></p>
+    </a></figure></p>
 </blockquote>
 <h3 id="用-superset-预览数据" class="headerLink">
     <a href="#%e7%94%a8-superset-%e9%a2%84%e8%a7%88%e6%95%b0%e6%8d%ae" class="header-mark"></a>4.4 用 Superset 预览数据</h3><p>Superset可以用来预览这样的表格数据。 相应的文档可以参考 <a href="https://www.amundsen.io/amundsen/frontend/docs/configuration/#preview-client" target="_blank" rel="noopener noreferrer">https://www.amundsen.io/amundsen/frontend/docs/configuration/#preview-client</a> ，其中 <code>/superset/sql_json/</code> 的 API 被 Amundsen Frontend service 调用，取得预览信息。</p>
-<p><a class="lightgallery" href="https://github.com/amundsen-io/amundsenfrontendlibrary/blob/master/docs/img/data_preview.png?raw=true" title="https://github.com/amundsen-io/amundsenfrontendlibrary/blob/master/docs/img/data_preview.png?raw=true" data-thumbnail="https://github.com/amundsen-io/amundsenfrontendlibrary/blob/master/docs/img/data_preview.png?raw=true">
+<p><figure><a class="lightgallery" href="https://github.com/amundsen-io/amundsenfrontendlibrary/blob/master/docs/img/data_preview.png?raw=true" title="https://github.com/amundsen-io/amundsenfrontendlibrary/blob/master/docs/img/data_preview.png?raw=true" data-thumbnail="https://github.com/amundsen-io/amundsenfrontendlibrary/blob/master/docs/img/data_preview.png?raw=true">
         <img
             
             loading="lazy"
@@ -1454,7 +1457,7 @@
             srcset="https://github.com/amundsen-io/amundsenfrontendlibrary/blob/master/docs/img/data_preview.png?raw=true, https://github.com/amundsen-io/amundsenfrontendlibrary/blob/master/docs/img/data_preview.png?raw=true 1.5x, https://github.com/amundsen-io/amundsenfrontendlibrary/blob/master/docs/img/data_preview.png?raw=true 2x"
             sizes="auto"
             alt="https://github.com/amundsen-io/amundsenfrontendlibrary/blob/master/docs/img/data_preview.png?raw=true">
-    </a></p>
+    </a></figure></p>
 <h3 id="开启数据血缘信息" class="headerLink">
     <a href="#%e5%bc%80%e5%90%af%e6%95%b0%e6%8d%ae%e8%a1%80%e7%bc%98%e4%bf%a1%e6%81%af" class="header-mark"></a>4.5 开启数据血缘信息</h3><p>默认情况下，数据血缘是关闭的，我们可以通过以下方式启用它：</p>
 <ol start="0">
@@ -1531,7 +1534,7 @@
 </span></span></code></pre></td></tr></table>
 </div>
 </div><p>之后，我们可以访问 http://localhost:5000/lineage/table/gold/hive/test_schema/test_table1 看到 <code>Lineage （beta）</code> 血缘按钮已经显示出来了：</p>
-<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168838731-79d0e3bc-439e-4f6b-8ef7-83b37e9bcb12.png" title="https://user-images.githubusercontent.com/1651790/168838731-79d0e3bc-439e-4f6b-8ef7-83b37e9bcb12.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168838731-79d0e3bc-439e-4f6b-8ef7-83b37e9bcb12.png">
+<p><figure><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168838731-79d0e3bc-439e-4f6b-8ef7-83b37e9bcb12.png" title="https://user-images.githubusercontent.com/1651790/168838731-79d0e3bc-439e-4f6b-8ef7-83b37e9bcb12.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168838731-79d0e3bc-439e-4f6b-8ef7-83b37e9bcb12.png">
         <img
             
             loading="lazy"
@@ -1539,9 +1542,9 @@
             srcset="https://user-images.githubusercontent.com/1651790/168838731-79d0e3bc-439e-4f6b-8ef7-83b37e9bcb12.png, https://user-images.githubusercontent.com/1651790/168838731-79d0e3bc-439e-4f6b-8ef7-83b37e9bcb12.png 1.5x, https://user-images.githubusercontent.com/1651790/168838731-79d0e3bc-439e-4f6b-8ef7-83b37e9bcb12.png 2x"
             sizes="auto"
             alt="https://user-images.githubusercontent.com/1651790/168838731-79d0e3bc-439e-4f6b-8ef7-83b37e9bcb12.png">
-    </a></p>
+    </a></figure></p>
 <p>我们可以点击 <code>Downstream</code> 在存在的时候查看该表的下游资源：</p>
-<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168839251-efd523af-d729-44cf-a40b-fa83a0852654.png" title="https://user-images.githubusercontent.com/1651790/168839251-efd523af-d729-44cf-a40b-fa83a0852654.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168839251-efd523af-d729-44cf-a40b-fa83a0852654.png">
+<p><figure><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168839251-efd523af-d729-44cf-a40b-fa83a0852654.png" title="https://user-images.githubusercontent.com/1651790/168839251-efd523af-d729-44cf-a40b-fa83a0852654.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168839251-efd523af-d729-44cf-a40b-fa83a0852654.png">
         <img
             
             loading="lazy"
@@ -1549,9 +1552,9 @@
             srcset="https://user-images.githubusercontent.com/1651790/168839251-efd523af-d729-44cf-a40b-fa83a0852654.png, https://user-images.githubusercontent.com/1651790/168839251-efd523af-d729-44cf-a40b-fa83a0852654.png 1.5x, https://user-images.githubusercontent.com/1651790/168839251-efd523af-d729-44cf-a40b-fa83a0852654.png 2x"
             sizes="auto"
             alt="https://user-images.githubusercontent.com/1651790/168839251-efd523af-d729-44cf-a40b-fa83a0852654.png">
-    </a></p>
+    </a></figure></p>
 <p>或者点血缘按钮查看血缘的图表式：</p>
-<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168838814-e6ff5152-c24b-470e-a46a-48f183ba7201.png" title="https://user-images.githubusercontent.com/1651790/168838814-e6ff5152-c24b-470e-a46a-48f183ba7201.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168838814-e6ff5152-c24b-470e-a46a-48f183ba7201.png">
+<p><figure><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168838814-e6ff5152-c24b-470e-a46a-48f183ba7201.png" title="https://user-images.githubusercontent.com/1651790/168838814-e6ff5152-c24b-470e-a46a-48f183ba7201.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168838814-e6ff5152-c24b-470e-a46a-48f183ba7201.png">
         <img
             
             loading="lazy"
@@ -1559,7 +1562,7 @@
             srcset="https://user-images.githubusercontent.com/1651790/168838814-e6ff5152-c24b-470e-a46a-48f183ba7201.png, https://user-images.githubusercontent.com/1651790/168838814-e6ff5152-c24b-470e-a46a-48f183ba7201.png 1.5x, https://user-images.githubusercontent.com/1651790/168838814-e6ff5152-c24b-470e-a46a-48f183ba7201.png 2x"
             sizes="auto"
             alt="https://user-images.githubusercontent.com/1651790/168838814-e6ff5152-c24b-470e-a46a-48f183ba7201.png">
-    </a></p>
+    </a></figure></p>
 <p>也有用于血缘查询的 API。 这个例子中我们用 cURL 调用下这个 API：</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
@@ -1648,7 +1651,7 @@
 </div><ul>
 <li>我们现在甚至可以在 NebulaGraph Studio 或者 Explorer 的控制台中查询它</li>
 </ul>
-<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168844882-ca3d0587-7946-4e17-8264-9dc973a44673.png" title="https://user-images.githubusercontent.com/1651790/168844882-ca3d0587-7946-4e17-8264-9dc973a44673.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168844882-ca3d0587-7946-4e17-8264-9dc973a44673.png">
+<p><figure><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168844882-ca3d0587-7946-4e17-8264-9dc973a44673.png" title="https://user-images.githubusercontent.com/1651790/168844882-ca3d0587-7946-4e17-8264-9dc973a44673.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168844882-ca3d0587-7946-4e17-8264-9dc973a44673.png">
         <img
             
             loading="lazy"
@@ -1656,9 +1659,9 @@
             srcset="https://user-images.githubusercontent.com/1651790/168844882-ca3d0587-7946-4e17-8264-9dc973a44673.png, https://user-images.githubusercontent.com/1651790/168844882-ca3d0587-7946-4e17-8264-9dc973a44673.png 1.5x, https://user-images.githubusercontent.com/1651790/168844882-ca3d0587-7946-4e17-8264-9dc973a44673.png 2x"
             sizes="auto"
             alt="https://user-images.githubusercontent.com/1651790/168844882-ca3d0587-7946-4e17-8264-9dc973a44673.png">
-    </a></p>
+    </a></figure></p>
 <p>​    然后渲染这个结果：</p>
-<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168845155-b0e7a5ce-3ddf-4cc9-89a3-aaf1bbb0f5ec.png" title="https://user-images.githubusercontent.com/1651790/168845155-b0e7a5ce-3ddf-4cc9-89a3-aaf1bbb0f5ec.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168845155-b0e7a5ce-3ddf-4cc9-89a3-aaf1bbb0f5ec.png">
+<p><figure><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168845155-b0e7a5ce-3ddf-4cc9-89a3-aaf1bbb0f5ec.png" title="https://user-images.githubusercontent.com/1651790/168845155-b0e7a5ce-3ddf-4cc9-89a3-aaf1bbb0f5ec.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168845155-b0e7a5ce-3ddf-4cc9-89a3-aaf1bbb0f5ec.png">
         <img
             
             loading="lazy"
@@ -1666,7 +1669,7 @@
             srcset="https://user-images.githubusercontent.com/1651790/168845155-b0e7a5ce-3ddf-4cc9-89a3-aaf1bbb0f5ec.png, https://user-images.githubusercontent.com/1651790/168845155-b0e7a5ce-3ddf-4cc9-89a3-aaf1bbb0f5ec.png 1.5x, https://user-images.githubusercontent.com/1651790/168845155-b0e7a5ce-3ddf-4cc9-89a3-aaf1bbb0f5ec.png 2x"
             sizes="auto"
             alt="https://user-images.githubusercontent.com/1651790/168845155-b0e7a5ce-3ddf-4cc9-89a3-aaf1bbb0f5ec.png">
-    </a></p>
+    </a></figure></p>
 <h4 id="提取数据血缘" class="headerLink">
     <a href="#%e6%8f%90%e5%8f%96%e6%95%b0%e6%8d%ae%e8%a1%80%e7%bc%98" class="header-mark"></a>4.5.2 提取数据血缘</h4><p>这些血缘信息是需要我们明确指定、获取的，获取的方式可以是自己写的 extractor，也可以是一些已经有的方式。比如 dbt 的 extractor和 Open Lineage 项目的 Amundsen extractor。</p>
 <h5 id="通过-dbt" class="headerLink">
@@ -1711,7 +1714,7 @@
 <li>从前端 UI（使用 Superset 预览）或 API 去使用、消费、管理和发现元数据</li>
 <li>通过查询和 UI 对 NebulaGraph，我们可以获得更多的可能性、灵活性和数据、血缘的洞察</li>
 </ul>
-<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg" title="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg" data-thumbnail="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg">
+<p><figure><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg" title="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg" data-thumbnail="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg">
         <img
             
             loading="lazy"
@@ -1719,7 +1722,7 @@
             srcset="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg, https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg 1.5x, https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg 2x"
             sizes="auto"
             alt="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg">
-    </a></p>
+    </a></figure></p>
 <h3 id="涉及到的开源" class="headerLink">
     <a href="#%e6%b6%89%e5%8f%8a%e5%88%b0%e7%9a%84%e5%bc%80%e6%ba%90" class="header-mark"></a>5.1 涉及到的开源</h3><p>此参考项目中使用的所有项目都按字典顺序在下面列出。</p>
 <ul>
@@ -1751,7 +1754,7 @@
         srcset="/graph-enabled-infra-ops/featured-image.webp, /graph-enabled-infra-ops/featured-image.webp 1.5x, /graph-enabled-infra-ops/featured-image.webp 2x"
         sizes="auto"
         alt="/graph-enabled-infra-ops/featured-image.webp"
-        title="也许我们没有必要从头在 NebulaGraph 上搭建自己的数据血缘项目，本文分享如何用开源、现代的 DataOps、ETL、Dashboard、元数据、数据血缘管理系统构建大数据治理基础设施" height="200" width="400"></a>
+        title="也许我们没有必要从头在 NebulaGraph 上搭建自己的数据血缘项目，本文分享如何用开源、现代的 DataOps、ETL、Dashboard、元数据、数据血缘管理系统构建大数据治理基础设施" height="200"   width="400" ></a>
             </div><h2 class="related-title">
                 <a href="/graph-enabled-infra-ops/">图数据库驱动的基础设施运维示例</a>
             </h2>
@@ -1765,7 +1768,7 @@
         srcset="/nebulagraph-sns/featured-image.webp, /nebulagraph-sns/featured-image.webp 1.5x, /nebulagraph-sns/featured-image.webp 2x"
         sizes="auto"
         alt="/nebulagraph-sns/featured-image.webp"
-        title="也许我们没有必要从头在 NebulaGraph 上搭建自己的数据血缘项目，本文分享如何用开源、现代的 DataOps、ETL、Dashboard、元数据、数据血缘管理系统构建大数据治理基础设施" height="200" width="400"></a>
+        title="也许我们没有必要从头在 NebulaGraph 上搭建自己的数据血缘项目，本文分享如何用开源、现代的 DataOps、ETL、Dashboard、元数据、数据血缘管理系统构建大数据治理基础设施" height="200"   width="400" ></a>
             </div><h2 class="related-title">
                 <a href="/nebulagraph-sns/">图数据库的社交网络应用</a>
             </h2>
@@ -1779,7 +1782,7 @@
         srcset="/chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.webp, /chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.webp 1.5x, /chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.webp 2x"
         sizes="auto"
         alt="/chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.webp"
-        title="也许我们没有必要从头在 NebulaGraph 上搭建自己的数据血缘项目，本文分享如何用开源、现代的 DataOps、ETL、Dashboard、元数据、数据血缘管理系统构建大数据治理基础设施" height="200" width="400"></a>
+        title="也许我们没有必要从头在 NebulaGraph 上搭建自己的数据血缘项目，本文分享如何用开源、现代的 DataOps、ETL、Dashboard、元数据、数据血缘管理系统构建大数据治理基础设施" height="200"   width="400" ></a>
             </div><h2 class="related-title">
                 <a href="/chatgpt-and-nebulagraph-predict-fifa-world-cup/">chatGPT 加 NebulaGraph 预测 2022 世界杯冠军球队</a>
             </h2>
@@ -1793,7 +1796,7 @@
         srcset="/apisix-and-nebulagraph/featured-image.webp, /apisix-and-nebulagraph/featured-image.webp 1.5x, /apisix-and-nebulagraph/featured-image.webp 2x"
         sizes="auto"
         alt="/apisix-and-nebulagraph/featured-image.webp"
-        title="也许我们没有必要从头在 NebulaGraph 上搭建自己的数据血缘项目，本文分享如何用开源、现代的 DataOps、ETL、Dashboard、元数据、数据血缘管理系统构建大数据治理基础设施" height="200" width="400"></a>
+        title="也许我们没有必要从头在 NebulaGraph 上搭建自己的数据血缘项目，本文分享如何用开源、现代的 DataOps、ETL、Dashboard、元数据、数据血缘管理系统构建大数据治理基础设施" height="200"   width="400" ></a>
             </div><h2 class="related-title">
                 <a href="/apisix-and-nebulagraph/">NebulaGraph 的云原生 API 网关最佳实践</a>
             </h2>
@@ -1807,7 +1810,7 @@
         srcset="/nebulagraph-etl-dbt/featured-image.webp, /nebulagraph-etl-dbt/featured-image.webp 1.5x, /nebulagraph-etl-dbt/featured-image.webp 2x"
         sizes="auto"
         alt="/nebulagraph-etl-dbt/featured-image.webp"
-        title="也许我们没有必要从头在 NebulaGraph 上搭建自己的数据血缘项目，本文分享如何用开源、现代的 DataOps、ETL、Dashboard、元数据、数据血缘管理系统构建大数据治理基础设施" height="200" width="400"></a>
+        title="也许我们没有必要从头在 NebulaGraph 上搭建自己的数据血缘项目，本文分享如何用开源、现代的 DataOps、ETL、Dashboard、元数据、数据血缘管理系统构建大数据治理基础设施" height="200"   width="400" ></a>
             </div><h2 class="related-title">
                 <a href="/nebulagraph-etl-dbt/">利用 dbt，基于表结构的 Nebulagraph 图建模与 ETL</a>
             </h2>
@@ -1850,7 +1853,7 @@
             </noscript></div></article></div>
         </main><footer class="footer">
         <div class="footer-container"><div class="footer-line">
-                    由 <a href="https://gohugo.io/" target="_blank" rel="noopener noreferrer" title="Hugo 0.110.0">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreferrer" title="DoIt 0.3.0"><i class="far fa-edit fa-fw"></i> DoIt</a>
+                    由 <a href="https://gohugo.io/" target="_blank" rel="noopener noreferrer" title="Hugo 0.111.3">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreferrer" title="DoIt 0.3.0"><i class="far fa-edit fa-fw"></i> DoIt</a>
                 </div><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2018 - 2023</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="https://siwei.io" target="_blank" rel="noopener noreferrer">Wey Gu</a></span>&nbsp;|&nbsp;<span class="license"><a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">CC BY-NC 4.0</a></span></div>
             <div class="footer-line"></div>
             <div class="footer-line">

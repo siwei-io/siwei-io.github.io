@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="zh-CN">
 
@@ -47,12 +49,13 @@
 </head>
 
 <body header-desktop="fixed" header-mobile="auto"><script type="text/javascript">
-        function setTheme(theme) {document.body.setAttribute('theme', theme); document.documentElement.style.setProperty('color-scheme', theme === 'light' ? 'light' : 'dark');}
+        function setTheme(theme) {document.body.setAttribute('theme', theme); document.documentElement.style.setProperty('color-scheme', theme === 'light' ? 'light' : 'dark'); window.theme = theme;   window.isDark = window.theme !== 'light' }
         function saveTheme(theme) {window.localStorage && localStorage.setItem('theme', theme);}
         function getMeta(metaName) {const metas = document.getElementsByTagName('meta'); for (let i = 0; i < metas.length; i++) if (metas[i].getAttribute('name') === metaName) return metas[i]; return '';}
         if (window.localStorage && localStorage.getItem('theme')) {let theme = localStorage.getItem('theme');theme === 'light' || theme === 'dark' || theme === 'black' ? setTheme(theme) : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light')); } else { if ('auto' === 'light' || 'auto' === 'dark' || 'auto' === 'black') setTheme('auto'), saveTheme('auto'); else saveTheme('auto'), window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light');}
         let metaColors = {'light': '#f8f8f8','dark': '#252627','black': '#000000'}
         getMeta('theme-color').content = metaColors[document.body.getAttribute('theme')];
+        window.switchThemeEventSet = new Set()
     </script>
     <div id="back-to-top"></div>
     <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
@@ -178,7 +181,7 @@
     <li><a href="#总结">总结</a></li>
   </ol>
 </nav></div>
-    </div><script>document.getElementsByTagName("main")[0].setAttribute("pageStyle", "normal")</script><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC", "true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">图数据库驱动的基础设施运维示例</h1><div class="post-meta">
+    </div><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC", "true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">图数据库驱动的基础设施运维示例</h1><div class="post-meta">
             <div class="post-meta-line">
                 <span class="post-author"><i class="author fas fa-user-circle fa-fw"></i><a href="https://siwei.io" title="Author" target="_blank" rel="noopener noreferrer author" class="author">Wey Gu</a>
                 </span>&nbsp;<span class="post-category">收录于 </span>&nbsp;<span class="post-category">类别 <a href="/categories/nebula-graph/"><i class="far fa-folder fa-fw"></i>Nebula Graph</a></span></div>
@@ -191,7 +194,7 @@
         srcset="/graph-enabled-infra-ops/featured-image.webp, /graph-enabled-infra-ops/featured-image.webp 1.5x, /graph-enabled-infra-ops/featured-image.webp 2x"
         sizes="auto"
         alt="/graph-enabled-infra-ops/featured-image.webp"
-        title="图技术在大型、复杂基础设施之中 SRE/DevOps 的实践参考，本文以 OpenStack 系统之上的图数据库增强的运维案例为例，揭示图数据库、图算法的智能运维方法，全流程示例代码开源。" height="882" width="1738"></div><div class="details toc" id="toc-static"  kept="">
+        title="图技术在大型、复杂基础设施之中 SRE/DevOps 的实践参考，本文以 OpenStack 系统之上的图数据库增强的运维案例为例，揭示图数据库、图算法的智能运维方法，全流程示例代码开源。" height="882"   width="1738" ></div><div class="details toc" id="toc-static"  kept="">
                 <div class="details-summary toc-title">
                     <span>目录</span>
                     <span><i class="details-icon fas fa-angle-right"></i></span>
@@ -261,25 +264,25 @@
 <h2 id="试验环境搭建" class="headerLink">
     <a href="#%e8%af%95%e9%aa%8c%e7%8e%af%e5%a2%83%e6%90%ad%e5%bb%ba" class="header-mark"></a>1 试验环境搭建</h2><h3 id="背景知识" class="headerLink">
     <a href="#%e8%83%8c%e6%99%af%e7%9f%a5%e8%af%86" class="header-mark"></a>1.1 背景知识</h3><p>OpenStack 是一个开源的云计算平台，提供了类似于 AWS 的云服务。它提供了一组可插拔的模块，包括了计算，存储和网络等功能，可以帮助用户构建和管理云环境。OpenStack采用分布式架构，支持多种操作系统和硬件平台，可以在企业级和服务提供商级环境中使用。</p>
-<p><a class="lightgallery" href="/graph-enabled-infra-ops/OpenStack-overview-diagram-new.webp" title="OpenStack-overview-diagram-new" data-thumbnail="/graph-enabled-infra-ops/OpenStack-overview-diagram-new.webp">
+<p><figure><a class="lightgallery" href="/graph-enabled-infra-ops/OpenStack-overview-diagram-new.webp" title="OpenStack-overview-diagram-new" data-thumbnail="/graph-enabled-infra-ops/OpenStack-overview-diagram-new.webp">
         <img
             
             loading="lazy"
-            src="OpenStack-overview-diagram-new.webp"
-            srcset="/graph-enabled-infra-ops/OpenStack-overview-diagram-new.webp, OpenStack-overview-diagram-new.webp 1.5x, /graph-enabled-infra-ops/OpenStack-overview-diagram-new.webp 2x"
+            src="/graph-enabled-infra-ops/OpenStack-overview-diagram-new.webp"
+            srcset="/graph-enabled-infra-ops/OpenStack-overview-diagram-new.webp, /graph-enabled-infra-ops/OpenStack-overview-diagram-new.webp 1.5x, /graph-enabled-infra-ops/OpenStack-overview-diagram-new.webp 2x"
             sizes="auto"
             alt="/graph-enabled-infra-ops/OpenStack-overview-diagram-new.webp">
-    </a></p>
+    </a></figure></p>
 <p>最初由 <em>NASA</em> 和 <em>Rackspace</em> Inc. 发起的 nova （虚拟化计算项目）和 swift （兼容 S3 的对象存储）项目组成，OpenStack 现在由非常多不同的子项目组成：</p>
-<p><a class="lightgallery" href="/graph-enabled-infra-ops/openstack-map-v20221001.webp" title="openstack-map-v20221001" data-thumbnail="/graph-enabled-infra-ops/openstack-map-v20221001.webp">
+<p><figure><a class="lightgallery" href="/graph-enabled-infra-ops/openstack-map-v20221001.webp" title="openstack-map-v20221001" data-thumbnail="/graph-enabled-infra-ops/openstack-map-v20221001.webp">
         <img
             
             loading="lazy"
-            src="openstack-map-v20221001.webp"
-            srcset="/graph-enabled-infra-ops/openstack-map-v20221001.webp, openstack-map-v20221001.webp 1.5x, /graph-enabled-infra-ops/openstack-map-v20221001.webp 2x"
+            src="/graph-enabled-infra-ops/openstack-map-v20221001.webp"
+            srcset="/graph-enabled-infra-ops/openstack-map-v20221001.webp, /graph-enabled-infra-ops/openstack-map-v20221001.webp 1.5x, /graph-enabled-infra-ops/openstack-map-v20221001.webp 2x"
             sizes="auto"
             alt="/graph-enabled-infra-ops/openstack-map-v20221001.webp">
-    </a></p>
+    </a></figure></p>
 <p>本实验中，我们设计的 OpenStack 主要项目有：</p>
 <ul>
 <li>Nova 是 OpenStack 的计算服务，用于管理虚拟机。</li>
@@ -322,34 +325,34 @@
 <p>整个流程我都放在 <a href="https://github.com/wey-gu/openstack-graph/#environment-setup" target="_blank" rel="noopener noreferrer">https://github.com/wey-gu/openstack-graph/#environment-setup</a> 这里了，感兴趣的同学可以访问、获取。</p>
 <p>虚拟机搭建之后，我们还需要模拟真实的 Infra 环境，创建很多资源：整个过程也在 <a href="https://github.com/wey-gu/openstack-graph/#create-resources-on-openstack" target="_blank" rel="noopener noreferrer">https://github.com/wey-gu/openstack-graph/#create-resources-on-openstack</a> 有详细列出，想要动手操作的同学可以参考来亲自上手一下。</p>
 <p>参考如上步骤操作之后，我们应该可以通过 Horizon Dashboard 查看集群和资源：</p>
-<p>我们创建了几个虚拟机：<a class="lightgallery" href="/graph-enabled-infra-ops/nova_instance.webp" title="nova_instance" data-thumbnail="/graph-enabled-infra-ops/nova_instance.webp">
+<p>我们创建了几个虚拟机：<figure><a class="lightgallery" href="/graph-enabled-infra-ops/nova_instance.webp" title="nova_instance" data-thumbnail="/graph-enabled-infra-ops/nova_instance.webp">
         <img
             
             loading="lazy"
-            src="nova_instance.webp"
-            srcset="/graph-enabled-infra-ops/nova_instance.webp, nova_instance.webp 1.5x, /graph-enabled-infra-ops/nova_instance.webp 2x"
+            src="/graph-enabled-infra-ops/nova_instance.webp"
+            srcset="/graph-enabled-infra-ops/nova_instance.webp, /graph-enabled-infra-ops/nova_instance.webp 1.5x, /graph-enabled-infra-ops/nova_instance.webp 2x"
             sizes="auto"
             alt="/graph-enabled-infra-ops/nova_instance.webp">
-    </a></p>
+    </a></figure></p>
 <p>几个网盘，其中四个挂载在不同的虚拟机上</p>
-<p><a class="lightgallery" href="/graph-enabled-infra-ops/cinder_volume.webp" title="cinder_volume" data-thumbnail="/graph-enabled-infra-ops/cinder_volume.webp">
+<p><figure><a class="lightgallery" href="/graph-enabled-infra-ops/cinder_volume.webp" title="cinder_volume" data-thumbnail="/graph-enabled-infra-ops/cinder_volume.webp">
         <img
             
             loading="lazy"
-            src="cinder_volume.webp"
-            srcset="/graph-enabled-infra-ops/cinder_volume.webp, cinder_volume.webp 1.5x, /graph-enabled-infra-ops/cinder_volume.webp 2x"
+            src="/graph-enabled-infra-ops/cinder_volume.webp"
+            srcset="/graph-enabled-infra-ops/cinder_volume.webp, /graph-enabled-infra-ops/cinder_volume.webp 1.5x, /graph-enabled-infra-ops/cinder_volume.webp 2x"
             sizes="auto"
             alt="/graph-enabled-infra-ops/cinder_volume.webp">
-    </a></p>
-<p>集群租户的网络拓扑：<a class="lightgallery" href="/graph-enabled-infra-ops/neutron_topology.webp" title="neutron_topology" data-thumbnail="/graph-enabled-infra-ops/neutron_topology.webp">
+    </a></figure></p>
+<p>集群租户的网络拓扑：<figure><a class="lightgallery" href="/graph-enabled-infra-ops/neutron_topology.webp" title="neutron_topology" data-thumbnail="/graph-enabled-infra-ops/neutron_topology.webp">
         <img
             
             loading="lazy"
-            src="neutron_topology.webp"
-            srcset="/graph-enabled-infra-ops/neutron_topology.webp, neutron_topology.webp 1.5x, /graph-enabled-infra-ops/neutron_topology.webp 2x"
+            src="/graph-enabled-infra-ops/neutron_topology.webp"
+            srcset="/graph-enabled-infra-ops/neutron_topology.webp, /graph-enabled-infra-ops/neutron_topology.webp 1.5x, /graph-enabled-infra-ops/neutron_topology.webp 2x"
             sizes="auto"
             alt="/graph-enabled-infra-ops/neutron_topology.webp">
-    </a></p>
+    </a></figure></p>
 <p>我们还能通过 OpenStack Vitrage 的 API/CLI 获得部分主要资源的拓扑：</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
@@ -517,15 +520,15 @@
 <li>neutron port: 是Neutron服务中的端口，用来连接nova instance和neutron network之间，在 nova instance 虚拟机上，一个 port 常常对应一个网卡（如果不是 trunk port 的话）。</li>
 </ul>
 <p>他们之间的关系如下：</p>
-<p><a class="lightgallery" href="/graph-enabled-infra-ops/schema_draft.webp" title="schema_draft" data-thumbnail="/graph-enabled-infra-ops/schema_draft.webp">
+<p><figure><a class="lightgallery" href="/graph-enabled-infra-ops/schema_draft.webp" title="schema_draft" data-thumbnail="/graph-enabled-infra-ops/schema_draft.webp">
         <img
             
             loading="lazy"
-            src="schema_draft.webp"
-            srcset="/graph-enabled-infra-ops/schema_draft.webp, schema_draft.webp 1.5x, /graph-enabled-infra-ops/schema_draft.webp 2x"
+            src="/graph-enabled-infra-ops/schema_draft.webp"
+            srcset="/graph-enabled-infra-ops/schema_draft.webp, /graph-enabled-infra-ops/schema_draft.webp 1.5x, /graph-enabled-infra-ops/schema_draft.webp 2x"
             sizes="auto"
             alt="/graph-enabled-infra-ops/schema_draft.webp">
-    </a></p>
+    </a></figure></p>
 <h2 id="基础设施图-etl" class="headerLink">
     <a href="#%e5%9f%ba%e7%a1%80%e8%ae%be%e6%96%bd%e5%9b%be-etl" class="header-mark"></a>3 基础设施图 ETL</h2><p>接下来我们解决从基础设施中抽取资源元数据的问题，</p>
 <h3 id="push-模式" class="headerLink">
@@ -536,15 +539,15 @@
 <blockquote>
 <p>注意：实际上 Vitrage 服务还提供了推理告警、推理状态、定义决策事件的能力，这里我们并没有采用，后边我们在图上做的一些事情甚至还和它的能力有一些重叠。</p>
 </blockquote>
-<p><a class="lightgallery" href="/graph-enabled-infra-ops/vitrage_arch.webp" title="vitrage_arch" data-thumbnail="/graph-enabled-infra-ops/vitrage_arch.webp">
+<p><figure><a class="lightgallery" href="/graph-enabled-infra-ops/vitrage_arch.webp" title="vitrage_arch" data-thumbnail="/graph-enabled-infra-ops/vitrage_arch.webp">
         <img
             
             loading="lazy"
-            src="vitrage_arch.webp"
-            srcset="/graph-enabled-infra-ops/vitrage_arch.webp, vitrage_arch.webp 1.5x, /graph-enabled-infra-ops/vitrage_arch.webp 2x"
+            src="/graph-enabled-infra-ops/vitrage_arch.webp"
+            srcset="/graph-enabled-infra-ops/vitrage_arch.webp, /graph-enabled-infra-ops/vitrage_arch.webp 1.5x, /graph-enabled-infra-ops/vitrage_arch.webp 2x"
             sizes="auto"
             alt="/graph-enabled-infra-ops/vitrage_arch.webp">
-    </a></p>
+    </a></figure></p>
 <p>这里我只是用它来展示 push 模式的工作机制，如果没有 Virtrage 这个项目存在，我们也可以比较容易通过 OpenStack 的 oslo.messaging 这个库很容易写出在 Message Bus（可能是 Kafka, RabbitMQ 等不同底层实现）上订阅资源时间的应用，然后把事件通过 Flink/ Kafka/ Pulsar 等方式接驳 NebulaGraph。</p>
 <p>因为 Vitrage 的存在，我就偷懒不用去实现这部分逻辑，只消写一小部分代码调用 Vitrage API 取这个数据就可以了，讽刺的是，从这个角度来看，这其实是一种 pull 的模式了，不用拘泥它本质上算是哪一种方式，至少在资源发起测，我们把它当做 push 模式的例子看待吧。</p>
 <p>这部分从 Vitrage 抓取的代码我放在 <a href="https://github.com/wey-gu/openstack-graph/blob/main/utils/vitrage_to_graph.py" target="_blank" rel="noopener noreferrer">https://github.com/wey-gu/openstack-graph/blob/main/utils/vitrage_to_graph.py</a> 了，调用方式很简单，在有 OpenStack 客户端的环境中，执行它就可以了，比如：</p>
@@ -662,15 +665,15 @@
 </span></span></code></pre></td></tr></table>
 </div>
 </div><p>然后渲染在 explorer 中，手动设置一下数据的图标，就可以看到我们 OpenStack 集群里的所有租户的资源图了：</p>
-<p><a class="lightgallery" href="/graph-enabled-infra-ops/all_graph_view.webp" title="all_graph_view" data-thumbnail="/graph-enabled-infra-ops/all_graph_view.webp">
+<p><figure><a class="lightgallery" href="/graph-enabled-infra-ops/all_graph_view.webp" title="all_graph_view" data-thumbnail="/graph-enabled-infra-ops/all_graph_view.webp">
         <img
             
             loading="lazy"
-            src="all_graph_view.webp"
-            srcset="/graph-enabled-infra-ops/all_graph_view.webp, all_graph_view.webp 1.5x, /graph-enabled-infra-ops/all_graph_view.webp 2x"
+            src="/graph-enabled-infra-ops/all_graph_view.webp"
+            srcset="/graph-enabled-infra-ops/all_graph_view.webp, /graph-enabled-infra-ops/all_graph_view.webp 1.5x, /graph-enabled-infra-ops/all_graph_view.webp 2x"
             sizes="auto"
             alt="/graph-enabled-infra-ops/all_graph_view.webp">
-    </a></p>
+    </a></figure></p>
 <p>接下来我们终于可以在图上看看有意思的洞察了。</p>
 <h2 id="基于图谱的基础设施运维示例" class="headerLink">
     <a href="#%e5%9f%ba%e4%ba%8e%e5%9b%be%e8%b0%b1%e7%9a%84%e5%9f%ba%e7%a1%80%e8%ae%be%e6%96%bd%e8%bf%90%e7%bb%b4%e7%a4%ba%e4%be%8b" class="header-mark"></a>4 基于图谱的基础设施运维示例</h2><p>作为非 SRE、DevOps 人员，我尝试藉由自己在 OpenStack 和图技术的理解想象出下边的一些实例，希望能帮助到需要的读者们。</p>
@@ -829,15 +832,15 @@
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>它可能的连接路径一目了然</p>
-<p><a class="lightgallery" href="/graph-enabled-infra-ops/cross_vpc_vm.webp" title="cross_vpc_vm" data-thumbnail="/graph-enabled-infra-ops/cross_vpc_vm.webp">
+<p><figure><a class="lightgallery" href="/graph-enabled-infra-ops/cross_vpc_vm.webp" title="cross_vpc_vm" data-thumbnail="/graph-enabled-infra-ops/cross_vpc_vm.webp">
         <img
             
             loading="lazy"
-            src="cross_vpc_vm.webp"
-            srcset="/graph-enabled-infra-ops/cross_vpc_vm.webp, cross_vpc_vm.webp 1.5x, /graph-enabled-infra-ops/cross_vpc_vm.webp 2x"
+            src="/graph-enabled-infra-ops/cross_vpc_vm.webp"
+            srcset="/graph-enabled-infra-ops/cross_vpc_vm.webp, /graph-enabled-infra-ops/cross_vpc_vm.webp 1.5x, /graph-enabled-infra-ops/cross_vpc_vm.webp 2x"
             sizes="auto"
             alt="/graph-enabled-infra-ops/cross_vpc_vm.webp">
-    </a></p>
+    </a></figure></p>
 <p>有了获得这些信息的能力，我们可以可编程地连接告警、状态、安全风控、网络等方方面面系统了，因为这不是本文的重点，这里就不加以赘述了，欢迎大家来 NebulaGraph 社区分享你们的图洞察使用方式。</p>
 <p>接下来我们来看看存储相关的例子。</p>
 <h3 id="镜像云盘快照的血缘" class="headerLink">
@@ -868,15 +871,15 @@
 <li><code>volume-1</code> 是从 <code>cirros-0.5.2-x86_64-disk</code> 这个镜像创建的</li>
 <li>此外，还有其他有分叉关系的存储资源和他们也息息相关</li>
 </ul>
-<p><a class="lightgallery" href="/graph-enabled-infra-ops/storage_lineage_0.webp" title="storage_lineage_0" data-thumbnail="/graph-enabled-infra-ops/storage_lineage_0.webp">
+<p><figure><a class="lightgallery" href="/graph-enabled-infra-ops/storage_lineage_0.webp" title="storage_lineage_0" data-thumbnail="/graph-enabled-infra-ops/storage_lineage_0.webp">
         <img
             
             loading="lazy"
-            src="storage_lineage_0.webp"
-            srcset="/graph-enabled-infra-ops/storage_lineage_0.webp, storage_lineage_0.webp 1.5x, /graph-enabled-infra-ops/storage_lineage_0.webp 2x"
+            src="/graph-enabled-infra-ops/storage_lineage_0.webp"
+            srcset="/graph-enabled-infra-ops/storage_lineage_0.webp, /graph-enabled-infra-ops/storage_lineage_0.webp 1.5x, /graph-enabled-infra-ops/storage_lineage_0.webp 2x"
             sizes="auto"
             alt="/graph-enabled-infra-ops/storage_lineage_0.webp">
-    </a></p>
+    </a></figure></p>
 <p>接下来，我们不只考虑存储资源，再看看涉及云盘（cinder_volume）挂载（attached）这层关系下的血缘关系：</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
@@ -914,15 +917,15 @@
 </ul>
 </li>
 </ul>
-<p><a class="lightgallery" href="/graph-enabled-infra-ops/storage_lineage_1.webp" title="storage_lineage_1" data-thumbnail="/graph-enabled-infra-ops/storage_lineage_1.webp">
+<p><figure><a class="lightgallery" href="/graph-enabled-infra-ops/storage_lineage_1.webp" title="storage_lineage_1" data-thumbnail="/graph-enabled-infra-ops/storage_lineage_1.webp">
         <img
             
             loading="lazy"
-            src="storage_lineage_1.webp"
-            srcset="/graph-enabled-infra-ops/storage_lineage_1.webp, storage_lineage_1.webp 1.5x, /graph-enabled-infra-ops/storage_lineage_1.webp 2x"
+            src="/graph-enabled-infra-ops/storage_lineage_1.webp"
+            srcset="/graph-enabled-infra-ops/storage_lineage_1.webp, /graph-enabled-infra-ops/storage_lineage_1.webp 1.5x, /graph-enabled-infra-ops/storage_lineage_1.webp 2x"
             sizes="auto"
             alt="/graph-enabled-infra-ops/storage_lineage_1.webp">
-    </a></p>
+    </a></figure></p>
 <p>而这些血缘信息可以被用在资源生命周期管理、根因分析、安全告警、状态传导上，这里不加以赘述。</p>
 <h3 id="高相关性虚机预警" class="headerLink">
     <a href="#%e9%ab%98%e7%9b%b8%e5%85%b3%e6%80%a7%e8%99%9a%e6%9c%ba%e9%a2%84%e8%ad%a6" class="header-mark"></a>4.4 高相关性虚机预警</h3><p>下面再给一个节点相似度的应用，我们可以在全图或者子图上，利用图算法找到与一个虚机在图上关系的维度上最相似的其他虚机，基于在这种相关性增加新的关系，并在关系上做风险事件预警。</p>
@@ -940,35 +943,35 @@
 </span></span></code></pre></td></tr></table>
 </div>
 </div><p>将结果渲染在画布上，我们可以看到子图中包含了其他几个虚机：</p>
-<p><a class="lightgallery" href="/graph-enabled-infra-ops/server_subgraph.webp" title="server_subgraph" data-thumbnail="/graph-enabled-infra-ops/server_subgraph.webp">
+<p><figure><a class="lightgallery" href="/graph-enabled-infra-ops/server_subgraph.webp" title="server_subgraph" data-thumbnail="/graph-enabled-infra-ops/server_subgraph.webp">
         <img
             
             loading="lazy"
-            src="server_subgraph.webp"
-            srcset="/graph-enabled-infra-ops/server_subgraph.webp, server_subgraph.webp 1.5x, /graph-enabled-infra-ops/server_subgraph.webp 2x"
+            src="/graph-enabled-infra-ops/server_subgraph.webp"
+            srcset="/graph-enabled-infra-ops/server_subgraph.webp, /graph-enabled-infra-ops/server_subgraph.webp 1.5x, /graph-enabled-infra-ops/server_subgraph.webp 2x"
             sizes="auto"
             alt="/graph-enabled-infra-ops/server_subgraph.webp">
-    </a></p>
+    </a></figure></p>
 <p>然后，我们利用 explorer 中的浏览器内图算法，可以非常方便地验证我们的想法，这里，我们使用 Jaccard SImilarity 相似性算法，进行 <code>server-0</code> 与 <code>server-1,server-3,server-4,server-6</code> 迭代分别得到相似性：</p>
-<p><a class="lightgallery" href="/graph-enabled-infra-ops/jacc_sim_browser.webp" title="jacc_sim_browser" data-thumbnail="/graph-enabled-infra-ops/jacc_sim_browser.webp">
+<p><figure><a class="lightgallery" href="/graph-enabled-infra-ops/jacc_sim_browser.webp" title="jacc_sim_browser" data-thumbnail="/graph-enabled-infra-ops/jacc_sim_browser.webp">
         <img
             
             loading="lazy"
-            src="jacc_sim_browser.webp"
-            srcset="/graph-enabled-infra-ops/jacc_sim_browser.webp, jacc_sim_browser.webp 1.5x, /graph-enabled-infra-ops/jacc_sim_browser.webp 2x"
+            src="/graph-enabled-infra-ops/jacc_sim_browser.webp"
+            srcset="/graph-enabled-infra-ops/jacc_sim_browser.webp, /graph-enabled-infra-ops/jacc_sim_browser.webp 1.5x, /graph-enabled-infra-ops/jacc_sim_browser.webp 2x"
             sizes="auto"
             alt="/graph-enabled-infra-ops/jacc_sim_browser.webp">
-    </a></p>
+    </a></figure></p>
 <p>可以看出，在 3 步子图内，和 <code>server-0</code> 最近接的虚机是 <code>server-4</code>。进一步我们可以简单在子图上看看两者之间的路径作为相似性的解释：</p>
-<p><a class="lightgallery" href="/graph-enabled-infra-ops/sim_explain.webp" title="sim_explain" data-thumbnail="/graph-enabled-infra-ops/sim_explain.webp">
+<p><figure><a class="lightgallery" href="/graph-enabled-infra-ops/sim_explain.webp" title="sim_explain" data-thumbnail="/graph-enabled-infra-ops/sim_explain.webp">
         <img
             
             loading="lazy"
-            src="sim_explain.webp"
-            srcset="/graph-enabled-infra-ops/sim_explain.webp, sim_explain.webp 1.5x, /graph-enabled-infra-ops/sim_explain.webp 2x"
+            src="/graph-enabled-infra-ops/sim_explain.webp"
+            srcset="/graph-enabled-infra-ops/sim_explain.webp, /graph-enabled-infra-ops/sim_explain.webp 1.5x, /graph-enabled-infra-ops/sim_explain.webp 2x"
             sizes="auto"
             alt="/graph-enabled-infra-ops/sim_explain.webp">
-    </a></p>
+    </a></figure></p>
 <p>在这个可解释结果中，我们知道 <code>server-0</code> 与 <code>server-4</code> 相似的原因可能是：</p>
 <ul>
 <li>坐落在同一个宿主机：node-0</li>
@@ -996,34 +999,34 @@
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>这里 Query job 我们输出待比较的其他虚机的 vid。</p>
-<p><a class="lightgallery" href="/graph-enabled-infra-ops/query_sim_server.webp" title="query_sim_server" data-thumbnail="/graph-enabled-infra-ops/query_sim_server.webp">
+<p><figure><a class="lightgallery" href="/graph-enabled-infra-ops/query_sim_server.webp" title="query_sim_server" data-thumbnail="/graph-enabled-infra-ops/query_sim_server.webp">
         <img
             
             loading="lazy"
-            src="query_sim_server.webp"
-            srcset="/graph-enabled-infra-ops/query_sim_server.webp, query_sim_server.webp 1.5x, /graph-enabled-infra-ops/query_sim_server.webp 2x"
+            src="/graph-enabled-infra-ops/query_sim_server.webp"
+            srcset="/graph-enabled-infra-ops/query_sim_server.webp, /graph-enabled-infra-ops/query_sim_server.webp 1.5x, /graph-enabled-infra-ops/query_sim_server.webp 2x"
             sizes="auto"
             alt="/graph-enabled-infra-ops/query_sim_server.webp">
-    </a></p>
-<p>接着，JaccardSImilarity job 中，我们选择 ids1 为 server-0（这里如上，上线时是参数化的），ids2 从上游取（前边的 Query job），选择在 openstack 全图扫描所有类型的边。<a class="lightgallery" href="/graph-enabled-infra-ops/jacc_sim_workflow.webp" title="jacc_sim_workflow" data-thumbnail="/graph-enabled-infra-ops/jacc_sim_workflow.webp">
+    </a></figure></p>
+<p>接着，JaccardSImilarity job 中，我们选择 ids1 为 server-0（这里如上，上线时是参数化的），ids2 从上游取（前边的 Query job），选择在 openstack 全图扫描所有类型的边。<figure><a class="lightgallery" href="/graph-enabled-infra-ops/jacc_sim_workflow.webp" title="jacc_sim_workflow" data-thumbnail="/graph-enabled-infra-ops/jacc_sim_workflow.webp">
         <img
             
             loading="lazy"
-            src="jacc_sim_workflow.webp"
-            srcset="/graph-enabled-infra-ops/jacc_sim_workflow.webp, jacc_sim_workflow.webp 1.5x, /graph-enabled-infra-ops/jacc_sim_workflow.webp 2x"
+            src="/graph-enabled-infra-ops/jacc_sim_workflow.webp"
+            srcset="/graph-enabled-infra-ops/jacc_sim_workflow.webp, /graph-enabled-infra-ops/jacc_sim_workflow.webp 1.5x, /graph-enabled-infra-ops/jacc_sim_workflow.webp 2x"
             sizes="auto"
             alt="/graph-enabled-infra-ops/jacc_sim_workflow.webp">
-    </a></p>
+    </a></figure></p>
 <p>保存、运行，我们可以看到，结果如下，区别是这次它运算了更多的目标虚机，并且迭代作用范围是全图而非一个子图，可以看到结果是一致的，这是因为子图上关联度大的点和相近的边在 Jaccard 算法里起到了更主要的作用。</p>
-<p><a class="lightgallery" href="/graph-enabled-infra-ops/jacc_result.webp" title="jacc_result" data-thumbnail="/graph-enabled-infra-ops/jacc_result.webp">
+<p><figure><a class="lightgallery" href="/graph-enabled-infra-ops/jacc_result.webp" title="jacc_result" data-thumbnail="/graph-enabled-infra-ops/jacc_result.webp">
         <img
             
             loading="lazy"
-            src="jacc_result.webp"
-            srcset="/graph-enabled-infra-ops/jacc_result.webp, jacc_result.webp 1.5x, /graph-enabled-infra-ops/jacc_result.webp 2x"
+            src="/graph-enabled-infra-ops/jacc_result.webp"
+            srcset="/graph-enabled-infra-ops/jacc_result.webp, /graph-enabled-infra-ops/jacc_result.webp 1.5x, /graph-enabled-infra-ops/jacc_result.webp 2x"
             sizes="auto"
             alt="/graph-enabled-infra-ops/jacc_result.webp">
-    </a></p>
+    </a></figure></p>
 <h3 id="安全相关场景" class="headerLink">
     <a href="#%e5%ae%89%e5%85%a8%e7%9b%b8%e5%85%b3%e5%9c%ba%e6%99%af" class="header-mark"></a>4.5 安全相关场景</h3><p>基础设施资源中的关联关系和金融、内容系统、电商领域的风控场景有相似的地方，很多场景本质上利用到了图谱关系中的知识，在图库上实时获取这些复杂多跳天然带有可解释性的安全洞察非常适合。</p>
 <h4 id="秘钥泄漏风控分析" class="headerLink">
@@ -1103,15 +1106,15 @@
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>在 explorer 里 应用 Dagre-LR 的布局，一关联关系很清晰的被展示出来，也许可以考虑把它引用在安全事故的报告分发给虚机租户。</p>
-<p><a class="lightgallery" href="/graph-enabled-infra-ops/key_leaked.webp" title="key_leaked" data-thumbnail="/graph-enabled-infra-ops/key_leaked.webp">
+<p><figure><a class="lightgallery" href="/graph-enabled-infra-ops/key_leaked.webp" title="key_leaked" data-thumbnail="/graph-enabled-infra-ops/key_leaked.webp">
         <img
             
             loading="lazy"
-            src="key_leaked.webp"
-            srcset="/graph-enabled-infra-ops/key_leaked.webp, key_leaked.webp 1.5x, /graph-enabled-infra-ops/key_leaked.webp 2x"
+            src="/graph-enabled-infra-ops/key_leaked.webp"
+            srcset="/graph-enabled-infra-ops/key_leaked.webp, /graph-enabled-infra-ops/key_leaked.webp 1.5x, /graph-enabled-infra-ops/key_leaked.webp 2x"
             sizes="auto"
             alt="/graph-enabled-infra-ops/key_leaked.webp">
-    </a></p>
+    </a></figure></p>
 <h4 id="镜像云盘漏洞范围分析" class="headerLink">
     <a href="#%e9%95%9c%e5%83%8f%e4%ba%91%e7%9b%98%e6%bc%8f%e6%b4%9e%e8%8c%83%e5%9b%b4%e5%88%86%e6%9e%90" class="header-mark"></a>4.5.2 镜像、云盘漏洞范围分析</h4><p>类似的，一个镜像被扫出漏洞，我们可以瞬间查到涉及到的资源，并做出相应</p>
 <ul>
@@ -1131,15 +1134,15 @@
 </span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">RETURN</span><span class="w"> </span><span class="n">p</span><span class="p">,</span><span class="w"> </span><span class="n">p1</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
-</div><p><a class="lightgallery" href="/graph-enabled-infra-ops/image_vulnerability.webp" title="image_vulnerability" data-thumbnail="/graph-enabled-infra-ops/image_vulnerability.webp">
+</div><p><figure><a class="lightgallery" href="/graph-enabled-infra-ops/image_vulnerability.webp" title="image_vulnerability" data-thumbnail="/graph-enabled-infra-ops/image_vulnerability.webp">
         <img
             
             loading="lazy"
-            src="image_vulnerability.webp"
-            srcset="/graph-enabled-infra-ops/image_vulnerability.webp, image_vulnerability.webp 1.5x, /graph-enabled-infra-ops/image_vulnerability.webp 2x"
+            src="/graph-enabled-infra-ops/image_vulnerability.webp"
+            srcset="/graph-enabled-infra-ops/image_vulnerability.webp, /graph-enabled-infra-ops/image_vulnerability.webp 1.5x, /graph-enabled-infra-ops/image_vulnerability.webp 2x"
             sizes="auto"
             alt="/graph-enabled-infra-ops/image_vulnerability.webp">
-    </a></p>
+    </a></figure></p>
 <ul>
 <li>一个云盘有漏洞</li>
 </ul>
@@ -1157,15 +1160,15 @@
 </span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">RETURN</span><span class="w"> </span><span class="n">p</span><span class="p">,</span><span class="w"> </span><span class="n">p1</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
-</div><p><a class="lightgallery" href="/graph-enabled-infra-ops/volume_vulnerability.webp" title="volume_vulnerability" data-thumbnail="/graph-enabled-infra-ops/volume_vulnerability.webp">
+</div><p><figure><a class="lightgallery" href="/graph-enabled-infra-ops/volume_vulnerability.webp" title="volume_vulnerability" data-thumbnail="/graph-enabled-infra-ops/volume_vulnerability.webp">
         <img
             
             loading="lazy"
-            src="volume_vulnerability.webp"
-            srcset="/graph-enabled-infra-ops/volume_vulnerability.webp, volume_vulnerability.webp 1.5x, /graph-enabled-infra-ops/volume_vulnerability.webp 2x"
+            src="/graph-enabled-infra-ops/volume_vulnerability.webp"
+            srcset="/graph-enabled-infra-ops/volume_vulnerability.webp, /graph-enabled-infra-ops/volume_vulnerability.webp 1.5x, /graph-enabled-infra-ops/volume_vulnerability.webp 2x"
             sizes="auto"
             alt="/graph-enabled-infra-ops/volume_vulnerability.webp">
-    </a></p>
+    </a></figure></p>
 <h4 id="潜在宿主机逃离影响范围分析" class="headerLink">
     <a href="#%e6%bd%9c%e5%9c%a8%e5%ae%bf%e4%b8%bb%e6%9c%ba%e9%80%83%e7%a6%bb%e5%bd%b1%e5%93%8d%e8%8c%83%e5%9b%b4%e5%88%86%e6%9e%90" class="header-mark"></a>4.5.3 潜在宿主机逃离影响范围分析</h4><p>最后，我们讨论一个比较严重的安全问题：宿主机逃离。</p>
 <p>在极端的情况下如果在我们得到消息，<code>server-0</code> 发生了有可能影响宿主机的安全时间的时候，仅仅关闭这个宿主机是不够的，受影响的范围可能已经扩大了，然而，我们不可能因为这样关闭整个机房，所以，利用图谱辅助找出受影响范围会有一些帮助。</p>
@@ -1285,15 +1288,15 @@
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>选择 Dagre 布局之后，可以比较清晰看出影响资源的范围，从这些可能受影响的虚机、网络、网盘出发，可以进一步采取需要的措施了。</p>
-<p><a class="lightgallery" href="/graph-enabled-infra-ops/hypervisor_escape.webp" title="hypervisor_escape" data-thumbnail="/graph-enabled-infra-ops/hypervisor_escape.webp">
+<p><figure><a class="lightgallery" href="/graph-enabled-infra-ops/hypervisor_escape.webp" title="hypervisor_escape" data-thumbnail="/graph-enabled-infra-ops/hypervisor_escape.webp">
         <img
             
             loading="lazy"
-            src="hypervisor_escape.webp"
-            srcset="/graph-enabled-infra-ops/hypervisor_escape.webp, hypervisor_escape.webp 1.5x, /graph-enabled-infra-ops/hypervisor_escape.webp 2x"
+            src="/graph-enabled-infra-ops/hypervisor_escape.webp"
+            srcset="/graph-enabled-infra-ops/hypervisor_escape.webp, /graph-enabled-infra-ops/hypervisor_escape.webp 1.5x, /graph-enabled-infra-ops/hypervisor_escape.webp 2x"
             sizes="auto"
             alt="/graph-enabled-infra-ops/hypervisor_escape.webp">
-    </a></p>
+    </a></figure></p>
 <h3 id="重点关注资源检测" class="headerLink">
     <a href="#%e9%87%8d%e7%82%b9%e5%85%b3%e6%b3%a8%e8%b5%84%e6%ba%90%e6%a3%80%e6%b5%8b" class="header-mark"></a>4.6 重点关注资源检测</h3><p>最后，利用 Betweenness Centrality 算法，我们可以得出基础设施中影响面大的那些，”脆弱环节“，这些资源不一定真的处在危险的状态，只是说，它们处在了比较重要的资源之间的交汇处，一旦它们出问题，出问题的代价可能会非常大。</p>
 <p>识别出这样的资源之后我们可以考虑：</p>
@@ -1317,15 +1320,15 @@
 </span></span></code></pre></td></tr></table>
 </div>
 </div><p>在其之上，我们运行 Betweenness Centrality 之后，得到 <code>node0</code> 是分值最大的”脆弱一环“，的确，它是我们当前实验中负载最大的宿主机，可以想象它确实是故障之后全局影响最大的一个资源。</p>
-<p><a class="lightgallery" href="/graph-enabled-infra-ops/bwteeness_centrality.webp" title="bwteeness_centrality" data-thumbnail="/graph-enabled-infra-ops/bwteeness_centrality.webp">
+<p><figure><a class="lightgallery" href="/graph-enabled-infra-ops/bwteeness_centrality.webp" title="bwteeness_centrality" data-thumbnail="/graph-enabled-infra-ops/bwteeness_centrality.webp">
         <img
             
             loading="lazy"
-            src="bwteeness_centrality.webp"
-            srcset="/graph-enabled-infra-ops/bwteeness_centrality.webp, bwteeness_centrality.webp 1.5x, /graph-enabled-infra-ops/bwteeness_centrality.webp 2x"
+            src="/graph-enabled-infra-ops/bwteeness_centrality.webp"
+            srcset="/graph-enabled-infra-ops/bwteeness_centrality.webp, /graph-enabled-infra-ops/bwteeness_centrality.webp 1.5x, /graph-enabled-infra-ops/bwteeness_centrality.webp 2x"
             sizes="auto"
             alt="/graph-enabled-infra-ops/bwteeness_centrality.webp">
-    </a></p>
+    </a></figure></p>
 <h2 id="总结" class="headerLink">
     <a href="#%e6%80%bb%e7%bb%93" class="header-mark"></a>5 总结</h2><p>在海量数据、企业云、混合云的复杂基础设施运维场景下，利用图数据库图算法的能力做高效的辅助运维工作是一个十分值得的尝试与技术投资。</p>
 <p>NebulaGraph 作为高性能、开源、分布式的新一代云原生图数据库，是一个很值得考虑的图基础设施选型目标。</p>
@@ -1348,7 +1351,7 @@
         srcset="/nebulagraph-sns/featured-image.webp, /nebulagraph-sns/featured-image.webp 1.5x, /nebulagraph-sns/featured-image.webp 2x"
         sizes="auto"
         alt="/nebulagraph-sns/featured-image.webp"
-        title="图技术在大型、复杂基础设施之中 SRE/DevOps 的实践参考，本文以 OpenStack 系统之上的图数据库增强的运维案例为例，揭示图数据库、图算法的智能运维方法，全流程示例代码开源。" height="200" width="400"></a>
+        title="图技术在大型、复杂基础设施之中 SRE/DevOps 的实践参考，本文以 OpenStack 系统之上的图数据库增强的运维案例为例，揭示图数据库、图算法的智能运维方法，全流程示例代码开源。" height="200"   width="400" ></a>
             </div><h2 class="related-title">
                 <a href="/nebulagraph-sns/">图数据库的社交网络应用</a>
             </h2>
@@ -1362,7 +1365,7 @@
         srcset="/chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.webp, /chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.webp 1.5x, /chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.webp 2x"
         sizes="auto"
         alt="/chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.webp"
-        title="图技术在大型、复杂基础设施之中 SRE/DevOps 的实践参考，本文以 OpenStack 系统之上的图数据库增强的运维案例为例，揭示图数据库、图算法的智能运维方法，全流程示例代码开源。" height="200" width="400"></a>
+        title="图技术在大型、复杂基础设施之中 SRE/DevOps 的实践参考，本文以 OpenStack 系统之上的图数据库增强的运维案例为例，揭示图数据库、图算法的智能运维方法，全流程示例代码开源。" height="200"   width="400" ></a>
             </div><h2 class="related-title">
                 <a href="/chatgpt-and-nebulagraph-predict-fifa-world-cup/">chatGPT 加 NebulaGraph 预测 2022 世界杯冠军球队</a>
             </h2>
@@ -1376,7 +1379,7 @@
         srcset="/data-lineage-oss-ref-solution/featured-image.webp, /data-lineage-oss-ref-solution/featured-image.webp 1.5x, /data-lineage-oss-ref-solution/featured-image.webp 2x"
         sizes="auto"
         alt="/data-lineage-oss-ref-solution/featured-image.webp"
-        title="图技术在大型、复杂基础设施之中 SRE/DevOps 的实践参考，本文以 OpenStack 系统之上的图数据库增强的运维案例为例，揭示图数据库、图算法的智能运维方法，全流程示例代码开源。" height="200" width="400"></a>
+        title="图技术在大型、复杂基础设施之中 SRE/DevOps 的实践参考，本文以 OpenStack 系统之上的图数据库增强的运维案例为例，揭示图数据库、图算法的智能运维方法，全流程示例代码开源。" height="200"   width="400" ></a>
             </div><h2 class="related-title">
                 <a href="/data-lineage-oss-ref-solution/">基于开源技术栈的数据血缘、治理参考解决方案</a>
             </h2>
@@ -1390,7 +1393,7 @@
         srcset="/apisix-and-nebulagraph/featured-image.webp, /apisix-and-nebulagraph/featured-image.webp 1.5x, /apisix-and-nebulagraph/featured-image.webp 2x"
         sizes="auto"
         alt="/apisix-and-nebulagraph/featured-image.webp"
-        title="图技术在大型、复杂基础设施之中 SRE/DevOps 的实践参考，本文以 OpenStack 系统之上的图数据库增强的运维案例为例，揭示图数据库、图算法的智能运维方法，全流程示例代码开源。" height="200" width="400"></a>
+        title="图技术在大型、复杂基础设施之中 SRE/DevOps 的实践参考，本文以 OpenStack 系统之上的图数据库增强的运维案例为例，揭示图数据库、图算法的智能运维方法，全流程示例代码开源。" height="200"   width="400" ></a>
             </div><h2 class="related-title">
                 <a href="/apisix-and-nebulagraph/">NebulaGraph 的云原生 API 网关最佳实践</a>
             </h2>
@@ -1404,7 +1407,7 @@
         srcset="/nebulagraph-etl-dbt/featured-image.webp, /nebulagraph-etl-dbt/featured-image.webp 1.5x, /nebulagraph-etl-dbt/featured-image.webp 2x"
         sizes="auto"
         alt="/nebulagraph-etl-dbt/featured-image.webp"
-        title="图技术在大型、复杂基础设施之中 SRE/DevOps 的实践参考，本文以 OpenStack 系统之上的图数据库增强的运维案例为例，揭示图数据库、图算法的智能运维方法，全流程示例代码开源。" height="200" width="400"></a>
+        title="图技术在大型、复杂基础设施之中 SRE/DevOps 的实践参考，本文以 OpenStack 系统之上的图数据库增强的运维案例为例，揭示图数据库、图算法的智能运维方法，全流程示例代码开源。" height="200"   width="400" ></a>
             </div><h2 class="related-title">
                 <a href="/nebulagraph-etl-dbt/">利用 dbt，基于表结构的 Nebulagraph 图建模与 ETL</a>
             </h2>
@@ -1446,7 +1449,7 @@
             </noscript></div></article></div>
         </main><footer class="footer">
         <div class="footer-container"><div class="footer-line">
-                    由 <a href="https://gohugo.io/" target="_blank" rel="noopener noreferrer" title="Hugo 0.110.0">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreferrer" title="DoIt 0.3.0"><i class="far fa-edit fa-fw"></i> DoIt</a>
+                    由 <a href="https://gohugo.io/" target="_blank" rel="noopener noreferrer" title="Hugo 0.111.3">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreferrer" title="DoIt 0.3.0"><i class="far fa-edit fa-fw"></i> DoIt</a>
                 </div><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2018 - 2023</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="https://siwei.io" target="_blank" rel="noopener noreferrer">Wey Gu</a></span>&nbsp;|&nbsp;<span class="license"><a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">CC BY-NC 4.0</a></span></div>
             <div class="footer-line"></div>
             <div class="footer-line">

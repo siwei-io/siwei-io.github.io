@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="zh-CN">
 
@@ -47,12 +49,13 @@
 </head>
 
 <body header-desktop="fixed" header-mobile="auto"><script type="text/javascript">
-        function setTheme(theme) {document.body.setAttribute('theme', theme); document.documentElement.style.setProperty('color-scheme', theme === 'light' ? 'light' : 'dark');}
+        function setTheme(theme) {document.body.setAttribute('theme', theme); document.documentElement.style.setProperty('color-scheme', theme === 'light' ? 'light' : 'dark'); window.theme = theme;   window.isDark = window.theme !== 'light' }
         function saveTheme(theme) {window.localStorage && localStorage.setItem('theme', theme);}
         function getMeta(metaName) {const metas = document.getElementsByTagName('meta'); for (let i = 0; i < metas.length; i++) if (metas[i].getAttribute('name') === metaName) return metas[i]; return '';}
         if (window.localStorage && localStorage.getItem('theme')) {let theme = localStorage.getItem('theme');theme === 'light' || theme === 'dark' || theme === 'black' ? setTheme(theme) : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light')); } else { if ('auto' === 'light' || 'auto' === 'dark' || 'auto' === 'black') setTheme('auto'), saveTheme('auto'); else saveTheme('auto'), window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light');}
         let metaColors = {'light': '#f8f8f8','dark': '#252627','black': '#000000'}
         getMeta('theme-color').content = metaColors[document.body.getAttribute('theme')];
+        window.switchThemeEventSet = new Set()
     </script>
     <div id="back-to-top"></div>
     <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
@@ -156,7 +159,7 @@
     <li><a href="#总结">总结</a></li>
   </ol>
 </nav></div>
-    </div><script>document.getElementsByTagName("main")[0].setAttribute("pageStyle", "normal")</script><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC", "true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">从零到一：如何构建一个企业股权图谱系统？</h1><div class="post-meta">
+    </div><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC", "true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">从零到一：如何构建一个企业股权图谱系统？</h1><div class="post-meta">
             <div class="post-meta-line">
                 <span class="post-author"><i class="author fas fa-user-circle fa-fw"></i><a href="https://siwei.io" title="Author" target="_blank" rel="noopener noreferrer author" class="author">Wey Gu</a>
                 </span>&nbsp;<span class="post-category">收录于 </span>&nbsp;<span class="post-category">类别 <a href="/categories/nebula-graph/"><i class="far fa-folder fa-fw"></i>Nebula Graph</a>&nbsp;<a href="/categories/mini-project/"><i class="far fa-folder fa-fw"></i>Mini Project</a></span></div>
@@ -169,7 +172,7 @@
         srcset="/corp-rel-graph/featured-image.webp, /corp-rel-graph/featured-image.webp 1.5x, /corp-rel-graph/featured-image.webp 2x"
         sizes="auto"
         alt="/corp-rel-graph/featured-image.webp"
-        title="如何利用图数据库从零到一构建一个具有股权分析的图谱与线上系统呢？本文手把手带你构建一个简易版的股权穿透图谱系统。" height="914" width="1738"></div><div class="details toc" id="toc-static"  kept="">
+        title="如何利用图数据库从零到一构建一个具有股权分析的图谱与线上系统呢？本文手把手带你构建一个简易版的股权穿透图谱系统。" height="914"   width="1738" ></div><div class="details toc" id="toc-static"  kept="">
                 <div class="details-summary toc-title">
                     <span>目录</span>
                     <span><i class="details-icon fas fa-angle-right"></i></span>
@@ -216,15 +219,15 @@
 </blockquote>
 <p>数据存在哪里？这是一个关键的问题，这里我们剧透一下，答案是：图数据库。然后我们再简单解释一下为什么这样一个股权图谱系统跑在图数据库上是更好的。</p>
 <p>在这样一个简单的数据模型之下，我们可以很直接的在关系型数据库中这么建模：</p>
-<p><a class="lightgallery" href="/corp-rel-graph/why_0_tabular.webp" title="why_0_tabular" data-thumbnail="/corp-rel-graph/why_0_tabular.webp">
+<p><figure><a class="lightgallery" href="/corp-rel-graph/why_0_tabular.webp" title="why_0_tabular" data-thumbnail="/corp-rel-graph/why_0_tabular.webp">
         <img
             
             loading="lazy"
-            src="why_0_tabular.webp"
-            srcset="/corp-rel-graph/why_0_tabular.webp, why_0_tabular.webp 1.5x, /corp-rel-graph/why_0_tabular.webp 2x"
+            src="/corp-rel-graph/why_0_tabular.webp"
+            srcset="/corp-rel-graph/why_0_tabular.webp, /corp-rel-graph/why_0_tabular.webp 1.5x, /corp-rel-graph/why_0_tabular.webp 2x"
             sizes="auto"
             alt="/corp-rel-graph/why_0_tabular.webp">
-    </a></p>
+    </a></figure></p>
 <p>而这么建模的问题在于：这种逻辑关联的方式使得无论数据的关联关系查询表达、存储、还是引入新的关联关系都不是很高效。</p>
 <ul>
 <li><strong>查询表达不高效</strong>是因为关系型数据库是面向表结构设计的，这决定了关系查询要写嵌套的 JOIN。
@@ -260,24 +263,24 @@
 </thead>
 <tbody>
 <tr>
-<td><a class="lightgallery" href="/corp-rel-graph/why_1_sql_join.webp" title="why_1_sql_join" data-thumbnail="/corp-rel-graph/why_1_sql_join.webp">
+<td><figure><a class="lightgallery" href="/corp-rel-graph/why_1_sql_join.webp" title="why_1_sql_join" data-thumbnail="/corp-rel-graph/why_1_sql_join.webp">
         <img
             
             loading="lazy"
-            src="why_1_sql_join.webp"
-            srcset="/corp-rel-graph/why_1_sql_join.webp, why_1_sql_join.webp 1.5x, /corp-rel-graph/why_1_sql_join.webp 2x"
+            src="/corp-rel-graph/why_1_sql_join.webp"
+            srcset="/corp-rel-graph/why_1_sql_join.webp, /corp-rel-graph/why_1_sql_join.webp 1.5x, /corp-rel-graph/why_1_sql_join.webp 2x"
             sizes="auto"
             alt="/corp-rel-graph/why_1_sql_join.webp">
-    </a></td>
-<td><a class="lightgallery" href="/corp-rel-graph/why_1_ngql.webp" title="why_1_ngql" data-thumbnail="/corp-rel-graph/why_1_ngql.webp">
+    </a></figure></td>
+<td><figure><a class="lightgallery" href="/corp-rel-graph/why_1_ngql.webp" title="why_1_ngql" data-thumbnail="/corp-rel-graph/why_1_ngql.webp">
         <img
             
             loading="lazy"
-            src="why_1_ngql.webp"
-            srcset="/corp-rel-graph/why_1_ngql.webp, why_1_ngql.webp 1.5x, /corp-rel-graph/why_1_ngql.webp 2x"
+            src="/corp-rel-graph/why_1_ngql.webp"
+            srcset="/corp-rel-graph/why_1_ngql.webp, /corp-rel-graph/why_1_ngql.webp 1.5x, /corp-rel-graph/why_1_ngql.webp 2x"
             sizes="auto"
             alt="/corp-rel-graph/why_1_ngql.webp">
-    </a></td>
+    </a></figure></td>
 </tr>
 </tbody>
 </table>
@@ -322,24 +325,24 @@
 </thead>
 <tbody>
 <tr>
-<td><a class="lightgallery" href="/corp-rel-graph/why_0_tabular.webp" title="why_0_tabular" data-thumbnail="/corp-rel-graph/why_0_tabular.webp">
+<td><figure><a class="lightgallery" href="/corp-rel-graph/why_0_tabular.webp" title="why_0_tabular" data-thumbnail="/corp-rel-graph/why_0_tabular.webp">
         <img
             
             loading="lazy"
-            src="why_0_tabular.webp"
-            srcset="/corp-rel-graph/why_0_tabular.webp, why_0_tabular.webp 1.5x, /corp-rel-graph/why_0_tabular.webp 2x"
+            src="/corp-rel-graph/why_0_tabular.webp"
+            srcset="/corp-rel-graph/why_0_tabular.webp, /corp-rel-graph/why_0_tabular.webp 1.5x, /corp-rel-graph/why_0_tabular.webp 2x"
             sizes="auto"
             alt="/corp-rel-graph/why_0_tabular.webp">
-    </a></td>
-<td><a class="lightgallery" href="/corp-rel-graph/why_0_graph_based.webp" title="why_0_graph_based" data-thumbnail="/corp-rel-graph/why_0_graph_based.webp">
+    </a></figure></td>
+<td><figure><a class="lightgallery" href="/corp-rel-graph/why_0_graph_based.webp" title="why_0_graph_based" data-thumbnail="/corp-rel-graph/why_0_graph_based.webp">
         <img
             
             loading="lazy"
-            src="why_0_graph_based.webp"
-            srcset="/corp-rel-graph/why_0_graph_based.webp, why_0_graph_based.webp 1.5x, /corp-rel-graph/why_0_graph_based.webp 2x"
+            src="/corp-rel-graph/why_0_graph_based.webp"
+            srcset="/corp-rel-graph/why_0_graph_based.webp, /corp-rel-graph/why_0_graph_based.webp 1.5x, /corp-rel-graph/why_0_graph_based.webp 2x"
             sizes="auto"
             alt="/corp-rel-graph/why_0_graph_based.webp">
-    </a></td>
+    </a></figure></td>
 </tr>
 </tbody>
 </table>
@@ -375,45 +378,45 @@ WHERE a.id = 'p_100')
 <tbody>
 <tr>
 <td>查询</td>
-<td><a class="lightgallery" href="/corp-rel-graph/why_1_sql_join.webp" title="why_1_sql_join" data-thumbnail="/corp-rel-graph/why_1_sql_join.webp">
+<td><figure><a class="lightgallery" href="/corp-rel-graph/why_1_sql_join.webp" title="why_1_sql_join" data-thumbnail="/corp-rel-graph/why_1_sql_join.webp">
         <img
             
             loading="lazy"
-            src="why_1_sql_join.webp"
-            srcset="/corp-rel-graph/why_1_sql_join.webp, why_1_sql_join.webp 1.5x, /corp-rel-graph/why_1_sql_join.webp 2x"
+            src="/corp-rel-graph/why_1_sql_join.webp"
+            srcset="/corp-rel-graph/why_1_sql_join.webp, /corp-rel-graph/why_1_sql_join.webp 1.5x, /corp-rel-graph/why_1_sql_join.webp 2x"
             sizes="auto"
             alt="/corp-rel-graph/why_1_sql_join.webp">
-    </a></td>
-<td><a class="lightgallery" href="/corp-rel-graph/why_1_ngql.webp" title="why_1_ngql" data-thumbnail="/corp-rel-graph/why_1_ngql.webp">
+    </a></figure></td>
+<td><figure><a class="lightgallery" href="/corp-rel-graph/why_1_ngql.webp" title="why_1_ngql" data-thumbnail="/corp-rel-graph/why_1_ngql.webp">
         <img
             
             loading="lazy"
-            src="why_1_ngql.webp"
-            srcset="/corp-rel-graph/why_1_ngql.webp, why_1_ngql.webp 1.5x, /corp-rel-graph/why_1_ngql.webp 2x"
+            src="/corp-rel-graph/why_1_ngql.webp"
+            srcset="/corp-rel-graph/why_1_ngql.webp, /corp-rel-graph/why_1_ngql.webp 1.5x, /corp-rel-graph/why_1_ngql.webp 2x"
             sizes="auto"
             alt="/corp-rel-graph/why_1_ngql.webp">
-    </a></td>
+    </a></figure></td>
 </tr>
 <tr>
 <td>建模</td>
-<td><a class="lightgallery" href="/corp-rel-graph/why_0_tabular.webp" title="why_0_tabular" data-thumbnail="/corp-rel-graph/why_0_tabular.webp">
+<td><figure><a class="lightgallery" href="/corp-rel-graph/why_0_tabular.webp" title="why_0_tabular" data-thumbnail="/corp-rel-graph/why_0_tabular.webp">
         <img
             
             loading="lazy"
-            src="why_0_tabular.webp"
-            srcset="/corp-rel-graph/why_0_tabular.webp, why_0_tabular.webp 1.5x, /corp-rel-graph/why_0_tabular.webp 2x"
+            src="/corp-rel-graph/why_0_tabular.webp"
+            srcset="/corp-rel-graph/why_0_tabular.webp, /corp-rel-graph/why_0_tabular.webp 1.5x, /corp-rel-graph/why_0_tabular.webp 2x"
             sizes="auto"
             alt="/corp-rel-graph/why_0_tabular.webp">
-    </a></td>
-<td><a class="lightgallery" href="/corp-rel-graph/why_0_graph_based.webp" title="why_0_graph_based" data-thumbnail="/corp-rel-graph/why_0_graph_based.webp">
+    </a></figure></td>
+<td><figure><a class="lightgallery" href="/corp-rel-graph/why_0_graph_based.webp" title="why_0_graph_based" data-thumbnail="/corp-rel-graph/why_0_graph_based.webp">
         <img
             
             loading="lazy"
-            src="why_0_graph_based.webp"
-            srcset="/corp-rel-graph/why_0_graph_based.webp, why_0_graph_based.webp 1.5x, /corp-rel-graph/why_0_graph_based.webp 2x"
+            src="/corp-rel-graph/why_0_graph_based.webp"
+            srcset="/corp-rel-graph/why_0_graph_based.webp, /corp-rel-graph/why_0_graph_based.webp 1.5x, /corp-rel-graph/why_0_graph_based.webp 2x"
             sizes="auto"
             alt="/corp-rel-graph/why_0_graph_based.webp">
-    </a></td>
+    </a></figure></td>
 </tr>
 <tr>
 <td>性能</td>
@@ -443,15 +446,15 @@ WHERE a.id = 'p_100')
 <li><code>持有股份</code> 这个关系有属性 <code>share</code>(份额)</li>
 <li><code>任职</code>这个关系有属性 <code>role</code>，<code>level</code></li>
 </ul>
-<p><a class="lightgallery" href="/corp-rel-graph/why_0_graph_based.webp" title="why_0_graph_based" data-thumbnail="/corp-rel-graph/why_0_graph_based.webp">
+<p><figure><a class="lightgallery" href="/corp-rel-graph/why_0_graph_based.webp" title="why_0_graph_based" data-thumbnail="/corp-rel-graph/why_0_graph_based.webp">
         <img
             
             loading="lazy"
-            src="why_0_graph_based.webp"
-            srcset="/corp-rel-graph/why_0_graph_based.webp, why_0_graph_based.webp 1.5x, /corp-rel-graph/why_0_graph_based.webp 2x"
+            src="/corp-rel-graph/why_0_graph_based.webp"
+            srcset="/corp-rel-graph/why_0_graph_based.webp, /corp-rel-graph/why_0_graph_based.webp 1.5x, /corp-rel-graph/why_0_graph_based.webp 2x"
             sizes="auto"
             alt="/corp-rel-graph/why_0_graph_based.webp">
-    </a></p>
+    </a></figure></p>
 <h2 id="数据入库" class="headerLink">
     <a href="#%e6%95%b0%e6%8d%ae%e5%85%a5%e5%ba%93" class="header-mark"></a>3 数据入库</h2><p>本教程中，我们使用的图数据库叫做 Nebula Graph（星云图数据库），它是一个以 Apache 2.0 许可证开源的分布式图数据库。</p>
 <blockquote>
@@ -572,27 +575,27 @@ WHERE a.id = 'p_100')
 <li>默认密码：<code>nebula</code></li>
 </ul>
 <p>访问 Nebula Studio：</p>
-<p><a class="lightgallery" href="/corp-rel-graph/studio_login.webp" title="studio_login" data-thumbnail="/corp-rel-graph/studio_login.webp">
+<p><figure><a class="lightgallery" href="/corp-rel-graph/studio_login.webp" title="studio_login" data-thumbnail="/corp-rel-graph/studio_login.webp">
         <img
             
             loading="lazy"
-            src="studio_login.webp"
-            srcset="/corp-rel-graph/studio_login.webp, studio_login.webp 1.5x, /corp-rel-graph/studio_login.webp 2x"
+            src="/corp-rel-graph/studio_login.webp"
+            srcset="/corp-rel-graph/studio_login.webp, /corp-rel-graph/studio_login.webp 1.5x, /corp-rel-graph/studio_login.webp 2x"
             sizes="auto"
             alt="/corp-rel-graph/studio_login.webp">
-    </a></p>
+    </a></figure></p>
 <p>选择图空间: Shareholding</p>
-<p><a class="lightgallery" href="/corp-rel-graph/studio_space_selection.webp" title="studio_space_selection" data-thumbnail="/corp-rel-graph/studio_space_selection.webp">
+<p><figure><a class="lightgallery" href="/corp-rel-graph/studio_space_selection.webp" title="studio_space_selection" data-thumbnail="/corp-rel-graph/studio_space_selection.webp">
         <img
             
             loading="lazy"
-            src="studio_space_selection.webp"
-            srcset="/corp-rel-graph/studio_space_selection.webp, studio_space_selection.webp 1.5x, /corp-rel-graph/studio_space_selection.webp 2x"
+            src="/corp-rel-graph/studio_space_selection.webp"
+            srcset="/corp-rel-graph/studio_space_selection.webp, /corp-rel-graph/studio_space_selection.webp 1.5x, /corp-rel-graph/studio_space_selection.webp 2x"
             sizes="auto"
             alt="/corp-rel-graph/studio_space_selection.webp">
-    </a></p>
+    </a></figure></p>
 <p>之后，我们就可以在里边探索比如一个公司的三跳以内的股权穿透，具体的操作可以参考：<a href="https://nebula-graph.com.cn/demo/shared-holding/" target="_blank" rel="noopener noreferrer">股权穿透在线 Playground 的介绍</a>：</p>
-<p><a class="lightgallery" href="https://nebula-website-cn.oss-cn-hangzhou.aliyuncs.com/nebula-website/images/demo/shared-holding/studio_explore_2.png" title="Studio 股权穿透" data-thumbnail="https://nebula-website-cn.oss-cn-hangzhou.aliyuncs.com/nebula-website/images/demo/shared-holding/studio_explore_2.png">
+<p><figure><a class="lightgallery" href="https://nebula-website-cn.oss-cn-hangzhou.aliyuncs.com/nebula-website/images/demo/shared-holding/studio_explore_2.png" title="Studio 股权穿透" data-thumbnail="https://nebula-website-cn.oss-cn-hangzhou.aliyuncs.com/nebula-website/images/demo/shared-holding/studio_explore_2.png">
         <img
             
             loading="lazy"
@@ -600,7 +603,7 @@ WHERE a.id = 'p_100')
             srcset="https://nebula-website-cn.oss-cn-hangzhou.aliyuncs.com/nebula-website/images/demo/shared-holding/studio_explore_2.png, https://nebula-website-cn.oss-cn-hangzhou.aliyuncs.com/nebula-website/images/demo/shared-holding/studio_explore_2.png 1.5x, https://nebula-website-cn.oss-cn-hangzhou.aliyuncs.com/nebula-website/images/demo/shared-holding/studio_explore_2.png 2x"
             sizes="auto"
             alt="https://nebula-website-cn.oss-cn-hangzhou.aliyuncs.com/nebula-website/images/demo/shared-holding/studio_explore_2.png">
-    </a></p>
+    </a></figure></p>
 <h2 id="构建一个图谱系统" class="headerLink">
     <a href="#%e6%9e%84%e5%bb%ba%e4%b8%80%e4%b8%aa%e5%9b%be%e8%b0%b1%e7%b3%bb%e7%bb%9f" class="header-mark"></a>5 构建一个图谱系统</h2><blockquote>
 <p>这部分的代码开源在 GitHub 上：</p>
@@ -852,15 +855,15 @@ WHERE a.id = 'p_100')
 </span></span><span class="line"><span class="cl">        <span class="p">{</span><span class="s2">&#34;source&#34;</span><span class="p">:</span> <span class="s2">&#34;p_4000&#34;</span><span class="p">,</span> <span class="s2">&#34;target&#34;</span><span class="p">:</span> <span class="s2">&#34;c_132&#34;</span><span class="p">,</span> <span class="s2">&#34;properties&#34;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&#34;role&#34;</span><span class="p">:</span> <span class="s2">&#34;Editorial assistant&#34;</span> <span class="p">},</span> <span class="s2">&#34;edge&#34;</span><span class="p">:</span> <span class="s2">&#34;`role_as`&#34;</span><span class="p">}]</span>
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p><a class="lightgallery" href="/corp-rel-graph/vue-network-d3-demo.webp" title="d3-demo" data-thumbnail="/corp-rel-graph/vue-network-d3-demo.webp">
+</div><p><figure><a class="lightgallery" href="/corp-rel-graph/vue-network-d3-demo.webp" title="d3-demo" data-thumbnail="/corp-rel-graph/vue-network-d3-demo.webp">
         <img
             
             loading="lazy"
-            src="vue-network-d3-demo.webp"
-            srcset="/corp-rel-graph/vue-network-d3-demo.webp, vue-network-d3-demo.webp 1.5x, /corp-rel-graph/vue-network-d3-demo.webp 2x"
+            src="/corp-rel-graph/vue-network-d3-demo.webp"
+            srcset="/corp-rel-graph/vue-network-d3-demo.webp, /corp-rel-graph/vue-network-d3-demo.webp 1.5x, /corp-rel-graph/vue-network-d3-demo.webp 2x"
             sizes="auto"
             alt="/corp-rel-graph/vue-network-d3-demo.webp">
-    </a></p>
+    </a></figure></p>
 <h3 id="前端--后端" class="headerLink">
     <a href="#%e5%89%8d%e7%ab%af--%e5%90%8e%e7%ab%af" class="header-mark"></a>5.3 前端&lt;&ndash;后端</h3><blockquote>
 <p>详细信息可以参考<a href="https://github.com/wey-gu/nebula-corp-rel-search#the-data-construction-in-back-end" target="_blank" rel="noopener noreferrer">这里</a></p>
@@ -1209,7 +1212,7 @@ WHERE a.id = 'p_100')
         srcset="/graph-enabled-infra-ops/featured-image.webp, /graph-enabled-infra-ops/featured-image.webp 1.5x, /graph-enabled-infra-ops/featured-image.webp 2x"
         sizes="auto"
         alt="/graph-enabled-infra-ops/featured-image.webp"
-        title="如何利用图数据库从零到一构建一个具有股权分析的图谱与线上系统呢？本文手把手带你构建一个简易版的股权穿透图谱系统。" height="200" width="400"></a>
+        title="如何利用图数据库从零到一构建一个具有股权分析的图谱与线上系统呢？本文手把手带你构建一个简易版的股权穿透图谱系统。" height="200"   width="400" ></a>
             </div><h2 class="related-title">
                 <a href="/graph-enabled-infra-ops/">图数据库驱动的基础设施运维示例</a>
             </h2>
@@ -1223,7 +1226,7 @@ WHERE a.id = 'p_100')
         srcset="/nebulagraph-sns/featured-image.webp, /nebulagraph-sns/featured-image.webp 1.5x, /nebulagraph-sns/featured-image.webp 2x"
         sizes="auto"
         alt="/nebulagraph-sns/featured-image.webp"
-        title="如何利用图数据库从零到一构建一个具有股权分析的图谱与线上系统呢？本文手把手带你构建一个简易版的股权穿透图谱系统。" height="200" width="400"></a>
+        title="如何利用图数据库从零到一构建一个具有股权分析的图谱与线上系统呢？本文手把手带你构建一个简易版的股权穿透图谱系统。" height="200"   width="400" ></a>
             </div><h2 class="related-title">
                 <a href="/nebulagraph-sns/">图数据库的社交网络应用</a>
             </h2>
@@ -1237,7 +1240,7 @@ WHERE a.id = 'p_100')
         srcset="/chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.webp, /chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.webp 1.5x, /chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.webp 2x"
         sizes="auto"
         alt="/chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.webp"
-        title="如何利用图数据库从零到一构建一个具有股权分析的图谱与线上系统呢？本文手把手带你构建一个简易版的股权穿透图谱系统。" height="200" width="400"></a>
+        title="如何利用图数据库从零到一构建一个具有股权分析的图谱与线上系统呢？本文手把手带你构建一个简易版的股权穿透图谱系统。" height="200"   width="400" ></a>
             </div><h2 class="related-title">
                 <a href="/chatgpt-and-nebulagraph-predict-fifa-world-cup/">chatGPT 加 NebulaGraph 预测 2022 世界杯冠军球队</a>
             </h2>
@@ -1251,7 +1254,7 @@ WHERE a.id = 'p_100')
         srcset="/data-lineage-oss-ref-solution/featured-image.webp, /data-lineage-oss-ref-solution/featured-image.webp 1.5x, /data-lineage-oss-ref-solution/featured-image.webp 2x"
         sizes="auto"
         alt="/data-lineage-oss-ref-solution/featured-image.webp"
-        title="如何利用图数据库从零到一构建一个具有股权分析的图谱与线上系统呢？本文手把手带你构建一个简易版的股权穿透图谱系统。" height="200" width="400"></a>
+        title="如何利用图数据库从零到一构建一个具有股权分析的图谱与线上系统呢？本文手把手带你构建一个简易版的股权穿透图谱系统。" height="200"   width="400" ></a>
             </div><h2 class="related-title">
                 <a href="/data-lineage-oss-ref-solution/">基于开源技术栈的数据血缘、治理参考解决方案</a>
             </h2>
@@ -1265,7 +1268,7 @@ WHERE a.id = 'p_100')
         srcset="/apisix-and-nebulagraph/featured-image.webp, /apisix-and-nebulagraph/featured-image.webp 1.5x, /apisix-and-nebulagraph/featured-image.webp 2x"
         sizes="auto"
         alt="/apisix-and-nebulagraph/featured-image.webp"
-        title="如何利用图数据库从零到一构建一个具有股权分析的图谱与线上系统呢？本文手把手带你构建一个简易版的股权穿透图谱系统。" height="200" width="400"></a>
+        title="如何利用图数据库从零到一构建一个具有股权分析的图谱与线上系统呢？本文手把手带你构建一个简易版的股权穿透图谱系统。" height="200"   width="400" ></a>
             </div><h2 class="related-title">
                 <a href="/apisix-and-nebulagraph/">NebulaGraph 的云原生 API 网关最佳实践</a>
             </h2>
@@ -1308,7 +1311,7 @@ WHERE a.id = 'p_100')
             </noscript></div></article></div>
         </main><footer class="footer">
         <div class="footer-container"><div class="footer-line">
-                    由 <a href="https://gohugo.io/" target="_blank" rel="noopener noreferrer" title="Hugo 0.110.0">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreferrer" title="DoIt 0.3.0"><i class="far fa-edit fa-fw"></i> DoIt</a>
+                    由 <a href="https://gohugo.io/" target="_blank" rel="noopener noreferrer" title="Hugo 0.111.3">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreferrer" title="DoIt 0.3.0"><i class="far fa-edit fa-fw"></i> DoIt</a>
                 </div><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2018 - 2023</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="https://siwei.io" target="_blank" rel="noopener noreferrer">Wey Gu</a></span>&nbsp;|&nbsp;<span class="license"><a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">CC BY-NC 4.0</a></span></div>
             <div class="footer-line"></div>
             <div class="footer-line">

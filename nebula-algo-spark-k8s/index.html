@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="zh-CN">
 
@@ -47,12 +49,13 @@
 </head>
 
 <body header-desktop="fixed" header-mobile="auto"><script type="text/javascript">
-        function setTheme(theme) {document.body.setAttribute('theme', theme); document.documentElement.style.setProperty('color-scheme', theme === 'light' ? 'light' : 'dark');}
+        function setTheme(theme) {document.body.setAttribute('theme', theme); document.documentElement.style.setProperty('color-scheme', theme === 'light' ? 'light' : 'dark'); window.theme = theme;   window.isDark = window.theme !== 'light' }
         function saveTheme(theme) {window.localStorage && localStorage.setItem('theme', theme);}
         function getMeta(metaName) {const metas = document.getElementsByTagName('meta'); for (let i = 0; i < metas.length; i++) if (metas[i].getAttribute('name') === metaName) return metas[i]; return '';}
         if (window.localStorage && localStorage.getItem('theme')) {let theme = localStorage.getItem('theme');theme === 'light' || theme === 'dark' || theme === 'black' ? setTheme(theme) : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light')); } else { if ('auto' === 'light' || 'auto' === 'dark' || 'auto' === 'black') setTheme('auto'), saveTheme('auto'); else saveTheme('auto'), window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light');}
         let metaColors = {'light': '#f8f8f8','dark': '#252627','black': '#000000'}
         getMeta('theme-color').content = metaColors[document.body.getAttribute('theme')];
+        window.switchThemeEventSet = new Set()
     </script>
     <div id="back-to-top"></div>
     <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
@@ -144,7 +147,7 @@
     <li><a href="#bonus一键体验-nebula-algorithm--nebula-operator">Bonus：一键体验 nebula-algorithm + nebula-operator</a></li>
   </ol>
 </nav></div>
-    </div><script>document.getElementsByTagName("main")[0].setAttribute("pageStyle", "normal")</script><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC", "true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">为什么我的 Nebula-Spark-Connector、Nebula-Algorithm 连不上 K8s 部署的 Nebula Graph 集群？</h1><div class="post-meta">
+    </div><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC", "true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">为什么我的 Nebula-Spark-Connector、Nebula-Algorithm 连不上 K8s 部署的 Nebula Graph 集群？</h1><div class="post-meta">
             <div class="post-meta-line">
                 <span class="post-author"><i class="author fas fa-user-circle fa-fw"></i><a href="https://siwei.io" title="Author" target="_blank" rel="noopener noreferrer author" class="author">Wey Gu</a>
                 </span>&nbsp;<span class="post-category">收录于 </span>&nbsp;<span class="post-category">类别 <a href="/categories/nebula-graph/"><i class="far fa-folder fa-fw"></i>Nebula Graph</a></span></div>
@@ -157,7 +160,7 @@
         srcset="/nebula-algo-spark-k8s/featured-image.webp, /nebula-algo-spark-k8s/featured-image.webp 1.5x, /nebula-algo-spark-k8s/featured-image.webp 2x"
         sizes="auto"
         alt="/nebula-algo-spark-k8s/featured-image.webp"
-        title="一文了解 K8s 部署的 Nebula Graph 集群的 Nebula-Algorithm 使用方法。" height="892" width="1740"></div><div class="details toc" id="toc-static"  kept="">
+        title="一文了解 K8s 部署的 Nebula Graph 集群的 Nebula-Algorithm 使用方法。" height="892"   width="1740" ></div><div class="details toc" id="toc-static"  kept="">
                 <div class="details-summary toc-title">
                     <span>目录</span>
                     <span><i class="details-icon fas fa-angle-right"></i></span>
@@ -290,7 +293,7 @@
 <li>详细的 Nebula Graph 架构信息可以参考博客系列文章：<a href="https://nebula-graph.com.cn/tags/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1/" target="_blank" rel="noopener noreferrer">nebula-graph.com.cn/tags/架构设计</a></li>
 <li>另外请确保您已经读了架构介绍的文档哦：<a href="https://docs.nebula-graph.com.cn/3.0.0/1.introduction/3.nebula-graph-architecture/1.architecture-overview/" target="_blank" rel="noopener noreferrer">Nebula 架构总览</a></li>
 </ul>
-<p><a class="lightgallery" href="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/nebula-graph-architecture-1.png" title="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/nebula-graph-architecture-1.png" data-thumbnail="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/nebula-graph-architecture-1.png">
+<p><figure><a class="lightgallery" href="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/nebula-graph-architecture-1.png" title="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/nebula-graph-architecture-1.png" data-thumbnail="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/nebula-graph-architecture-1.png">
         <img
             
             loading="lazy"
@@ -298,7 +301,7 @@
             srcset="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/nebula-graph-architecture-1.png, https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/nebula-graph-architecture-1.png 1.5x, https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/nebula-graph-architecture-1.png 2x"
             sizes="auto"
             alt="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/nebula-graph-architecture-1.png">
-    </a></p>
+    </a></figure></p>
 <p>下面我们看看 <strong>c.</strong></p>
 <blockquote>
 <p>c. Nebula K8s Operator 里，MetaD 中存储的 StorageD 地址（服务发现）的来源是 StorageD 的配置文件，而它是 k8s 的内部地址。</p>
@@ -312,7 +315,7 @@
 <p>关于服务发现详细的信息请参考四王的文章：<a href="https://nebula-graph.com.cn/posts/cluster-communication-heartbeat/" target="_blank" rel="noopener noreferrer">图数据库 Nebula Graph 集群通信：从心跳说起</a>。</p>
 </li>
 </ul>
-<p><a class="lightgallery" href="https://www-cdn.nebula-graph.com.cn/nebula-blog/nebula-graph-metad-storaged-graphd-v-r-family.png" title="metad storaged graphd 通信" data-thumbnail="https://www-cdn.nebula-graph.com.cn/nebula-blog/nebula-graph-metad-storaged-graphd-v-r-family.png">
+<p><figure><a class="lightgallery" href="https://www-cdn.nebula-graph.com.cn/nebula-blog/nebula-graph-metad-storaged-graphd-v-r-family.png" title="metad storaged graphd 通信" data-thumbnail="https://www-cdn.nebula-graph.com.cn/nebula-blog/nebula-graph-metad-storaged-graphd-v-r-family.png">
         <img
             
             loading="lazy"
@@ -320,7 +323,7 @@
             srcset="https://www-cdn.nebula-graph.com.cn/nebula-blog/nebula-graph-metad-storaged-graphd-v-r-family.png, https://www-cdn.nebula-graph.com.cn/nebula-blog/nebula-graph-metad-storaged-graphd-v-r-family.png 1.5x, https://www-cdn.nebula-graph.com.cn/nebula-blog/nebula-graph-metad-storaged-graphd-v-r-family.png 2x"
             sizes="auto"
             alt="https://www-cdn.nebula-graph.com.cn/nebula-blog/nebula-graph-metad-storaged-graphd-v-r-family.png">
-    </a></p>
+    </a></figure></p>
 <p>最后，我们知道 Nebula Operator 是一个在 K8s 集群中按照配置，自动创建、维护、扩缩容 Nebula 集群的 K8s 控制面的应用，它需要抽象一部分内部资源相关的配置，这就包括了 GraphD 和 StorageD 实例的实际地址，他们是被配置的地址实际上是 <a href="https://kubernetes.io/zh/docs/concepts/services-networking/service/#headless-services" target="_blank" rel="noopener noreferrer">headless service 地址</a>。</p>
 <p>而这些地址（如下）默认是没法被 k8s 外部网络访问的，所以针对 GraphD、MetaD 我们可以方便创建服务将其暴露出来。</p>
 <div class="highlight"><div class="chroma">
@@ -416,7 +419,7 @@
 <pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">curl -sL nebula-kind.siwei.io/install.sh <span class="p">|</span> bash
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p><a class="lightgallery" href="https://github.com/wey-gu/nebula-operator-kind/raw/main/images/install_success.webp" title="install_success" data-thumbnail="https://github.com/wey-gu/nebula-operator-kind/raw/main/images/install_success.webp">
+</div><p><figure><a class="lightgallery" href="https://github.com/wey-gu/nebula-operator-kind/raw/main/images/install_success.webp" title="install_success" data-thumbnail="https://github.com/wey-gu/nebula-operator-kind/raw/main/images/install_success.webp">
         <img
             
             loading="lazy"
@@ -424,7 +427,7 @@
             srcset="https://github.com/wey-gu/nebula-operator-kind/raw/main/images/install_success.webp, https://github.com/wey-gu/nebula-operator-kind/raw/main/images/install_success.webp 1.5x, https://github.com/wey-gu/nebula-operator-kind/raw/main/images/install_success.webp 2x"
             sizes="auto"
             alt="https://github.com/wey-gu/nebula-operator-kind/raw/main/images/install_success.webp">
-    </a></p>
+    </a></figure></p>
 <p>第二步，照着工具文档里的 <a href="https://github.com/wey-gu/nebula-operator-kind#whats-next" target="_blank" rel="noopener noreferrer">what&rsquo;s next</a></p>
 <p>a. 用 console 连接集群，并加载示例数据集</p>
 <p>b. <a href="https://github.com/wey-gu/nebula-operator-kind/blob/main/README.md#try-nebula-algorithm" target="_blank" rel="noopener noreferrer">在这个 k8s 里跑一个图算法</a></p>
@@ -564,7 +567,7 @@
         srcset="/graph-enabled-infra-ops/featured-image.webp, /graph-enabled-infra-ops/featured-image.webp 1.5x, /graph-enabled-infra-ops/featured-image.webp 2x"
         sizes="auto"
         alt="/graph-enabled-infra-ops/featured-image.webp"
-        title="一文了解 K8s 部署的 Nebula Graph 集群的 Nebula-Algorithm 使用方法。" height="200" width="400"></a>
+        title="一文了解 K8s 部署的 Nebula Graph 集群的 Nebula-Algorithm 使用方法。" height="200"   width="400" ></a>
             </div><h2 class="related-title">
                 <a href="/graph-enabled-infra-ops/">图数据库驱动的基础设施运维示例</a>
             </h2>
@@ -578,7 +581,7 @@
         srcset="/nebulagraph-sns/featured-image.webp, /nebulagraph-sns/featured-image.webp 1.5x, /nebulagraph-sns/featured-image.webp 2x"
         sizes="auto"
         alt="/nebulagraph-sns/featured-image.webp"
-        title="一文了解 K8s 部署的 Nebula Graph 集群的 Nebula-Algorithm 使用方法。" height="200" width="400"></a>
+        title="一文了解 K8s 部署的 Nebula Graph 集群的 Nebula-Algorithm 使用方法。" height="200"   width="400" ></a>
             </div><h2 class="related-title">
                 <a href="/nebulagraph-sns/">图数据库的社交网络应用</a>
             </h2>
@@ -592,7 +595,7 @@
         srcset="/chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.webp, /chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.webp 1.5x, /chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.webp 2x"
         sizes="auto"
         alt="/chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.webp"
-        title="一文了解 K8s 部署的 Nebula Graph 集群的 Nebula-Algorithm 使用方法。" height="200" width="400"></a>
+        title="一文了解 K8s 部署的 Nebula Graph 集群的 Nebula-Algorithm 使用方法。" height="200"   width="400" ></a>
             </div><h2 class="related-title">
                 <a href="/chatgpt-and-nebulagraph-predict-fifa-world-cup/">chatGPT 加 NebulaGraph 预测 2022 世界杯冠军球队</a>
             </h2>
@@ -606,7 +609,7 @@
         srcset="/data-lineage-oss-ref-solution/featured-image.webp, /data-lineage-oss-ref-solution/featured-image.webp 1.5x, /data-lineage-oss-ref-solution/featured-image.webp 2x"
         sizes="auto"
         alt="/data-lineage-oss-ref-solution/featured-image.webp"
-        title="一文了解 K8s 部署的 Nebula Graph 集群的 Nebula-Algorithm 使用方法。" height="200" width="400"></a>
+        title="一文了解 K8s 部署的 Nebula Graph 集群的 Nebula-Algorithm 使用方法。" height="200"   width="400" ></a>
             </div><h2 class="related-title">
                 <a href="/data-lineage-oss-ref-solution/">基于开源技术栈的数据血缘、治理参考解决方案</a>
             </h2>
@@ -620,7 +623,7 @@
         srcset="/apisix-and-nebulagraph/featured-image.webp, /apisix-and-nebulagraph/featured-image.webp 1.5x, /apisix-and-nebulagraph/featured-image.webp 2x"
         sizes="auto"
         alt="/apisix-and-nebulagraph/featured-image.webp"
-        title="一文了解 K8s 部署的 Nebula Graph 集群的 Nebula-Algorithm 使用方法。" height="200" width="400"></a>
+        title="一文了解 K8s 部署的 Nebula Graph 集群的 Nebula-Algorithm 使用方法。" height="200"   width="400" ></a>
             </div><h2 class="related-title">
                 <a href="/apisix-and-nebulagraph/">NebulaGraph 的云原生 API 网关最佳实践</a>
             </h2>
@@ -663,7 +666,7 @@
             </noscript></div></article></div>
         </main><footer class="footer">
         <div class="footer-container"><div class="footer-line">
-                    由 <a href="https://gohugo.io/" target="_blank" rel="noopener noreferrer" title="Hugo 0.110.0">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreferrer" title="DoIt 0.3.0"><i class="far fa-edit fa-fw"></i> DoIt</a>
+                    由 <a href="https://gohugo.io/" target="_blank" rel="noopener noreferrer" title="Hugo 0.111.3">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreferrer" title="DoIt 0.3.0"><i class="far fa-edit fa-fw"></i> DoIt</a>
                 </div><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2018 - 2023</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="https://siwei.io" target="_blank" rel="noopener noreferrer">Wey Gu</a></span>&nbsp;|&nbsp;<span class="license"><a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">CC BY-NC 4.0</a></span></div>
             <div class="footer-line"></div>
             <div class="footer-line">

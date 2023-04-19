@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="zh-CN">
 
@@ -47,12 +49,13 @@
 </head>
 
 <body header-desktop="fixed" header-mobile="auto"><script type="text/javascript">
-        function setTheme(theme) {document.body.setAttribute('theme', theme); document.documentElement.style.setProperty('color-scheme', theme === 'light' ? 'light' : 'dark');}
+        function setTheme(theme) {document.body.setAttribute('theme', theme); document.documentElement.style.setProperty('color-scheme', theme === 'light' ? 'light' : 'dark'); window.theme = theme;   window.isDark = window.theme !== 'light' }
         function saveTheme(theme) {window.localStorage && localStorage.setItem('theme', theme);}
         function getMeta(metaName) {const metas = document.getElementsByTagName('meta'); for (let i = 0; i < metas.length; i++) if (metas[i].getAttribute('name') === metaName) return metas[i]; return '';}
         if (window.localStorage && localStorage.getItem('theme')) {let theme = localStorage.getItem('theme');theme === 'light' || theme === 'dark' || theme === 'black' ? setTheme(theme) : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light')); } else { if ('auto' === 'light' || 'auto' === 'dark' || 'auto' === 'black') setTheme('auto'), saveTheme('auto'); else saveTheme('auto'), window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light');}
         let metaColors = {'light': '#f8f8f8','dark': '#252627','black': '#000000'}
         getMeta('theme-color').content = metaColors[document.body.getAttribute('theme')];
+        window.switchThemeEventSet = new Set()
     </script>
     <div id="back-to-top"></div>
     <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
@@ -177,7 +180,7 @@
     </li>
   </ol>
 </nav></div>
-    </div><script>document.getElementsByTagName("main")[0].setAttribute("pageStyle", "normal")</script><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC", "true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">从零到一：如何构建一个基于知识图谱的智能问答助手？</h1><div class="post-meta">
+    </div><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC", "true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">从零到一：如何构建一个基于知识图谱的智能问答助手？</h1><div class="post-meta">
             <div class="post-meta-line">
                 <span class="post-author"><i class="author fas fa-user-circle fa-fw"></i><a href="https://siwei.io" title="Author" target="_blank" rel="noopener noreferrer author" class="author">Wey Gu</a>
                 </span>&nbsp;<span class="post-category">收录于 </span>&nbsp;<span class="post-category">类别 <a href="/categories/nebula-graph/"><i class="far fa-folder fa-fw"></i>Nebula Graph</a>&nbsp;<a href="/categories/mini-project/"><i class="far fa-folder fa-fw"></i>Mini Project</a></span></div>
@@ -190,7 +193,7 @@
         srcset="/siwi/featured-image.webp, /siwi/featured-image.webp 1.5x, /siwi/featured-image.webp 2x"
         sizes="auto"
         alt="/siwi/featured-image.webp"
-        title="如何利用图数据库从0-1构建一个特定领域问答助手？本文手把手带你构建一个简易版的篮球领域智能问答机器人。" height="922" width="1756"></div><div class="details toc" id="toc-static"  kept="">
+        title="如何利用图数据库从0-1构建一个特定领域问答助手？本文手把手带你构建一个简易版的篮球领域智能问答机器人。" height="922"   width="1756" ></div><div class="details toc" id="toc-static"  kept="">
                 <div class="details-summary toc-title">
                     <span>目录</span>
                     <span><i class="details-icon fas fa-angle-right"></i></span>
@@ -276,7 +279,7 @@
 <blockquote>
 <p>💡：美团技术团队在<a href="https://tech.meituan.com/2021/11/03/knowledge-based-question-answering-in-meituan.html" target="_blank" rel="noopener noreferrer">这篇文章</a>里分享了他们的真实世界实践，下图是美团结合了机器学习和 NLP 的方案。</p>
 </blockquote>
-<p><a class="lightgallery" href="https://tva1.sinaimg.cn/large/008i3skNly1gw13r5dsw2j31g30u0430.jpg" title="美团KBQA解决方案" data-thumbnail="https://tva1.sinaimg.cn/large/008i3skNly1gw13r5dsw2j31g30u0430.jpg">
+<p><figure><a class="lightgallery" href="https://tva1.sinaimg.cn/large/008i3skNly1gw13r5dsw2j31g30u0430.jpg" title="美团KBQA解决方案" data-thumbnail="https://tva1.sinaimg.cn/large/008i3skNly1gw13r5dsw2j31g30u0430.jpg">
         <img
             
             loading="lazy"
@@ -284,7 +287,7 @@
             srcset="https://tva1.sinaimg.cn/large/008i3skNly1gw13r5dsw2j31g30u0430.jpg, https://tva1.sinaimg.cn/large/008i3skNly1gw13r5dsw2j31g30u0430.jpg 1.5x, https://tva1.sinaimg.cn/large/008i3skNly1gw13r5dsw2j31g30u0430.jpg 2x"
             sizes="auto"
             alt="https://tva1.sinaimg.cn/large/008i3skNly1gw13r5dsw2j31g30u0430.jpg">
-    </a></p>
+    </a></figure></p>
 <p>而在 Siwi 里，我们一切从简，单独选择了语义分析这条路，它的特点是需要人为去标注或者编码一些问题类型的查询方式，但实际上在大多数场景下，尤其单一领域图谱的场景下反而是轻量却效果不差的方案，也是一个便于新手理解 KBQA 的合适的入门方式。</p>
 <p>除了核心的问答部分，我还为 Siwi 增加了语音识别和语音回答（感谢浏览器接口标准的发展）的功能，于是，这个项目的结构和问答调用流程就是这样的了：一个语音问题自上而下分别经过三个部分：</p>
 <ul>
@@ -378,7 +381,7 @@
 <p>💡：这个数据集在 Nebula 社区上有一个 <a href="https://nebula-graph.com.cn/demo/" target="_blank" rel="noopener noreferrer">在线体验</a> 环境，任何人都无需登录，通过<a href="https://docs.nebula-graph.com.cn/2.6.1/nebula-studio/about-studio/st-ug-what-is-graph-studio/" target="_blank" rel="noopener noreferrer">Nebula Graph Studio</a> 可视化探索篮球图谱。</p>
 </blockquote>
 <p>下图就是这个图谱的可视化探索截图，可以看到左边的中心节点勇士队（Warriors）有杜兰特（Durant）还有其他几个队员在其中服役（serve）；除了服役之外，还可以看到队员和队员之中也有关注（follow）的关系存在。</p>
-<p><a class="lightgallery" href="https://nebula-website-cn.oss-cn-hangzhou.aliyuncs.com/nebula-website/images/demo/demo1.png" title="篮球图谱" data-thumbnail="https://nebula-website-cn.oss-cn-hangzhou.aliyuncs.com/nebula-website/images/demo/demo1.png">
+<p><figure><a class="lightgallery" href="https://nebula-website-cn.oss-cn-hangzhou.aliyuncs.com/nebula-website/images/demo/demo1.png" title="篮球图谱" data-thumbnail="https://nebula-website-cn.oss-cn-hangzhou.aliyuncs.com/nebula-website/images/demo/demo1.png">
         <img
             
             loading="lazy"
@@ -386,7 +389,7 @@
             srcset="https://nebula-website-cn.oss-cn-hangzhou.aliyuncs.com/nebula-website/images/demo/demo1.png, https://nebula-website-cn.oss-cn-hangzhou.aliyuncs.com/nebula-website/images/demo/demo1.png 1.5x, https://nebula-website-cn.oss-cn-hangzhou.aliyuncs.com/nebula-website/images/demo/demo1.png 2x"
             sizes="auto"
             alt="https://nebula-website-cn.oss-cn-hangzhou.aliyuncs.com/nebula-website/images/demo/demo1.png">
-    </a></p>
+    </a></figure></p>
 <p>有了这个知识图谱，咱们接下来就在它之上搭一个简单的基于语法解析的 QA 系统吧😁。</p>
 <h2 id="siwi-backend" class="headerLink">
     <a href="#siwi-backend" class="header-mark"></a>4 Siwi-backend</h2><div class="highlight"><div class="chroma">
@@ -1017,7 +1020,7 @@
 </span></span></code></pre></td></tr></table>
 </div>
 </div><p>之后，我们会看到这样的提示：</p>
-<p><a class="lightgallery" href="https://github.com/wey-gu/nebula-up/raw/main/images/nebula-up-demo-shell.png" title="https://github.com/wey-gu/nebula-up/raw/main/images/nebula-up-demo-shell.png" data-thumbnail="https://github.com/wey-gu/nebula-up/raw/main/images/nebula-up-demo-shell.png">
+<p><figure><a class="lightgallery" href="https://github.com/wey-gu/nebula-up/raw/main/images/nebula-up-demo-shell.png" title="https://github.com/wey-gu/nebula-up/raw/main/images/nebula-up-demo-shell.png" data-thumbnail="https://github.com/wey-gu/nebula-up/raw/main/images/nebula-up-demo-shell.png">
         <img
             
             loading="lazy"
@@ -1025,7 +1028,7 @@
             srcset="https://github.com/wey-gu/nebula-up/raw/main/images/nebula-up-demo-shell.png, https://github.com/wey-gu/nebula-up/raw/main/images/nebula-up-demo-shell.png 1.5x, https://github.com/wey-gu/nebula-up/raw/main/images/nebula-up-demo-shell.png 2x"
             sizes="auto"
             alt="https://github.com/wey-gu/nebula-up/raw/main/images/nebula-up-demo-shell.png">
-    </a></p>
+    </a></figure></p>
 <p>按照提示，我们可以通过这个命令进入到有 Nebula Console 的容器里：</p>
 <blockquote>
 <p>💡：<a href="https://github.com/vesoft-inc/nebula-console" target="_blank" rel="noopener noreferrer">Nebula Console</a> 是命令行访问 Nebula Graph 图数据库的客户端，支持 Linux，Windows 和 macOS，下载地址：<a href="https://github.com/vesoft-inc/nebula-console/releases" target="_blank" rel="noopener noreferrer">这里</a></p>
@@ -1098,7 +1101,7 @@
 </div><p>至此，我们就启动了一个 Nebula Graph 图数据库，还在里边加载了篮球的知识图谱！</p>
 <blockquote>
 <p>💡：还记得前边我们提到的 <a href="https://nebula-graph.com.cn/demo/" target="_blank" rel="noopener noreferrer">在线体验</a> 环境么？现在，我们可以在这个利用 Nebula-UP 部署了 Nebula 的环境里启动自己的 Nebula Studio 啦，按照上边 Nebula-UP 的提示：http://&lt;本机IP&gt;:7001 就是它的地址，然后大家可以参考<a href="https://docs.nebula-graph.com.cn/2.6.1/nebula-studio/deploy-connect/st-ug-connect/" target="_blank" rel="noopener noreferrer">文档</a>和<a href="https://www.bilibili.com/video/BV1hq4y1177e" target="_blank" rel="noopener noreferrer">在线体验介绍</a>去了解更多。</p>
-<p><a class="lightgallery" href="https://nebula-website-cn.oss-cn-hangzhou.aliyuncs.com/nebula-website/images/demo/demo1.png" title="studio" data-thumbnail="https://nebula-website-cn.oss-cn-hangzhou.aliyuncs.com/nebula-website/images/demo/demo1.png">
+<p><figure><a class="lightgallery" href="https://nebula-website-cn.oss-cn-hangzhou.aliyuncs.com/nebula-website/images/demo/demo1.png" title="studio" data-thumbnail="https://nebula-website-cn.oss-cn-hangzhou.aliyuncs.com/nebula-website/images/demo/demo1.png">
         <img
             
             loading="lazy"
@@ -1106,7 +1109,7 @@
             srcset="https://nebula-website-cn.oss-cn-hangzhou.aliyuncs.com/nebula-website/images/demo/demo1.png, https://nebula-website-cn.oss-cn-hangzhou.aliyuncs.com/nebula-website/images/demo/demo1.png 1.5x, https://nebula-website-cn.oss-cn-hangzhou.aliyuncs.com/nebula-website/images/demo/demo1.png 2x"
             sizes="auto"
             alt="https://nebula-website-cn.oss-cn-hangzhou.aliyuncs.com/nebula-website/images/demo/demo1.png">
-    </a></p>
+    </a></figure></p>
 </blockquote>
 <h4 id="启动-siwi-backend" class="headerLink">
     <a href="#%e5%90%af%e5%8a%a8-siwi-backend" class="header-mark"></a>4.3.2 启动 Siwi-backend</h4><p>大家可以直接 clone 我的代码：<code>git clone https://github.com/wey-gu/nebula-siwi/</code></p>
@@ -1144,7 +1147,7 @@
 </span></span></code></pre></td></tr></table>
 </div>
 </div><p>启动之后，我们可以另外开窗口，通过 cURL 去发起问题给 backend，更多细节大家可以参考 GitHub 上的 README：</p>
-<p><a href="https://github.com/wey-gu/nebula-siwi/blob/main/images/backend-demo.webp" target="_blank" rel="noopener noreferrer"><a class="lightgallery" href="https://github.com/wey-gu/nebula-siwi/raw/main/images/backend-demo.webp" title="backend-demo" data-thumbnail="https://github.com/wey-gu/nebula-siwi/raw/main/images/backend-demo.webp">
+<p><a href="https://github.com/wey-gu/nebula-siwi/blob/main/images/backend-demo.webp" target="_blank" rel="noopener noreferrer"><figure><a class="lightgallery" href="https://github.com/wey-gu/nebula-siwi/raw/main/images/backend-demo.webp" title="backend-demo" data-thumbnail="https://github.com/wey-gu/nebula-siwi/raw/main/images/backend-demo.webp">
         <img
             
             loading="lazy"
@@ -1152,7 +1155,7 @@
             srcset="https://github.com/wey-gu/nebula-siwi/raw/main/images/backend-demo.webp, https://github.com/wey-gu/nebula-siwi/raw/main/images/backend-demo.webp 1.5x, https://github.com/wey-gu/nebula-siwi/raw/main/images/backend-demo.webp 2x"
             sizes="auto"
             alt="https://github.com/wey-gu/nebula-siwi/raw/main/images/backend-demo.webp">
-    </a></a></p>
+    </a></figure></a></p>
 <p>至此，我们已经写好了 QA 系统的重要的代码啦，大家是不是对一个 KBQA 的构成有了更清晰的概念了呢？</p>
 <p>接下来，我们为它增加一个界面！</p>
 <h2 id="siwi-frontend" class="headerLink">
@@ -1191,7 +1194,7 @@
 </span></span><span class="line"><span class="cl"><span class="kr">import</span> <span class="p">{</span> <span class="nx">VueBotUI</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">&#39;vue-bot-ui&#39;</span>
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p><a href="https://github.com/wey-gu/nebula-siwi/blob/main/src/siwi_frontend/images/demo.webp" target="_blank" rel="noopener noreferrer"><a class="lightgallery" href="https://github.com/wey-gu/nebula-siwi/raw/main/src/siwi_frontend/images/demo.webp" title="demo" data-thumbnail="https://github.com/wey-gu/nebula-siwi/raw/main/src/siwi_frontend/images/demo.webp">
+</div><p><a href="https://github.com/wey-gu/nebula-siwi/blob/main/src/siwi_frontend/images/demo.webp" target="_blank" rel="noopener noreferrer"><figure><a class="lightgallery" href="https://github.com/wey-gu/nebula-siwi/raw/main/src/siwi_frontend/images/demo.webp" title="demo" data-thumbnail="https://github.com/wey-gu/nebula-siwi/raw/main/src/siwi_frontend/images/demo.webp">
         <img
             
             loading="lazy"
@@ -1199,7 +1202,7 @@
             srcset="https://github.com/wey-gu/nebula-siwi/raw/main/src/siwi_frontend/images/demo.webp, https://github.com/wey-gu/nebula-siwi/raw/main/src/siwi_frontend/images/demo.webp 1.5x, https://github.com/wey-gu/nebula-siwi/raw/main/src/siwi_frontend/images/demo.webp 2x"
             sizes="auto"
             alt="https://github.com/wey-gu/nebula-siwi/raw/main/src/siwi_frontend/images/demo.webp">
-    </a></a></p>
+    </a></figure></a></p>
 <p>注意到那个小飞机按钮了吧，它是发出问题请求的按键，我们要在按下它的时候对后端做出请求。</p>
 <h3 id="访问后端" class="headerLink">
     <a href="#%e8%ae%bf%e9%97%ae%e5%90%8e%e7%ab%af" class="header-mark"></a>5.2 访问后端</h3><p>这部分用到了<a href="https://github.com/axios/axios" target="_blank" rel="noopener noreferrer">Axios</a>，它是浏览器里访问其他地址的 HTTP 客户端。</p>
@@ -1549,7 +1552,7 @@
         srcset="/graph-enabled-infra-ops/featured-image.webp, /graph-enabled-infra-ops/featured-image.webp 1.5x, /graph-enabled-infra-ops/featured-image.webp 2x"
         sizes="auto"
         alt="/graph-enabled-infra-ops/featured-image.webp"
-        title="如何利用图数据库从0-1构建一个特定领域问答助手？本文手把手带你构建一个简易版的篮球领域智能问答机器人。" height="200" width="400"></a>
+        title="如何利用图数据库从0-1构建一个特定领域问答助手？本文手把手带你构建一个简易版的篮球领域智能问答机器人。" height="200"   width="400" ></a>
             </div><h2 class="related-title">
                 <a href="/graph-enabled-infra-ops/">图数据库驱动的基础设施运维示例</a>
             </h2>
@@ -1563,7 +1566,7 @@
         srcset="/nebulagraph-sns/featured-image.webp, /nebulagraph-sns/featured-image.webp 1.5x, /nebulagraph-sns/featured-image.webp 2x"
         sizes="auto"
         alt="/nebulagraph-sns/featured-image.webp"
-        title="如何利用图数据库从0-1构建一个特定领域问答助手？本文手把手带你构建一个简易版的篮球领域智能问答机器人。" height="200" width="400"></a>
+        title="如何利用图数据库从0-1构建一个特定领域问答助手？本文手把手带你构建一个简易版的篮球领域智能问答机器人。" height="200"   width="400" ></a>
             </div><h2 class="related-title">
                 <a href="/nebulagraph-sns/">图数据库的社交网络应用</a>
             </h2>
@@ -1577,7 +1580,7 @@
         srcset="/chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.webp, /chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.webp 1.5x, /chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.webp 2x"
         sizes="auto"
         alt="/chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.webp"
-        title="如何利用图数据库从0-1构建一个特定领域问答助手？本文手把手带你构建一个简易版的篮球领域智能问答机器人。" height="200" width="400"></a>
+        title="如何利用图数据库从0-1构建一个特定领域问答助手？本文手把手带你构建一个简易版的篮球领域智能问答机器人。" height="200"   width="400" ></a>
             </div><h2 class="related-title">
                 <a href="/chatgpt-and-nebulagraph-predict-fifa-world-cup/">chatGPT 加 NebulaGraph 预测 2022 世界杯冠军球队</a>
             </h2>
@@ -1591,7 +1594,7 @@
         srcset="/data-lineage-oss-ref-solution/featured-image.webp, /data-lineage-oss-ref-solution/featured-image.webp 1.5x, /data-lineage-oss-ref-solution/featured-image.webp 2x"
         sizes="auto"
         alt="/data-lineage-oss-ref-solution/featured-image.webp"
-        title="如何利用图数据库从0-1构建一个特定领域问答助手？本文手把手带你构建一个简易版的篮球领域智能问答机器人。" height="200" width="400"></a>
+        title="如何利用图数据库从0-1构建一个特定领域问答助手？本文手把手带你构建一个简易版的篮球领域智能问答机器人。" height="200"   width="400" ></a>
             </div><h2 class="related-title">
                 <a href="/data-lineage-oss-ref-solution/">基于开源技术栈的数据血缘、治理参考解决方案</a>
             </h2>
@@ -1605,7 +1608,7 @@
         srcset="/apisix-and-nebulagraph/featured-image.webp, /apisix-and-nebulagraph/featured-image.webp 1.5x, /apisix-and-nebulagraph/featured-image.webp 2x"
         sizes="auto"
         alt="/apisix-and-nebulagraph/featured-image.webp"
-        title="如何利用图数据库从0-1构建一个特定领域问答助手？本文手把手带你构建一个简易版的篮球领域智能问答机器人。" height="200" width="400"></a>
+        title="如何利用图数据库从0-1构建一个特定领域问答助手？本文手把手带你构建一个简易版的篮球领域智能问答机器人。" height="200"   width="400" ></a>
             </div><h2 class="related-title">
                 <a href="/apisix-and-nebulagraph/">NebulaGraph 的云原生 API 网关最佳实践</a>
             </h2>
@@ -1648,7 +1651,7 @@
             </noscript></div></article></div>
         </main><footer class="footer">
         <div class="footer-container"><div class="footer-line">
-                    由 <a href="https://gohugo.io/" target="_blank" rel="noopener noreferrer" title="Hugo 0.110.0">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreferrer" title="DoIt 0.3.0"><i class="far fa-edit fa-fw"></i> DoIt</a>
+                    由 <a href="https://gohugo.io/" target="_blank" rel="noopener noreferrer" title="Hugo 0.111.3">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreferrer" title="DoIt 0.3.0"><i class="far fa-edit fa-fw"></i> DoIt</a>
                 </div><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2018 - 2023</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="https://siwei.io" target="_blank" rel="noopener noreferrer">Wey Gu</a></span>&nbsp;|&nbsp;<span class="license"><a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">CC BY-NC 4.0</a></span></div>
             <div class="footer-line"></div>
             <div class="footer-line">

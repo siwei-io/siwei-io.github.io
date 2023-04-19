@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="zh-CN">
 
@@ -47,12 +49,13 @@
 </head>
 
 <body header-desktop="fixed" header-mobile="auto"><script type="text/javascript">
-        function setTheme(theme) {document.body.setAttribute('theme', theme); document.documentElement.style.setProperty('color-scheme', theme === 'light' ? 'light' : 'dark');}
+        function setTheme(theme) {document.body.setAttribute('theme', theme); document.documentElement.style.setProperty('color-scheme', theme === 'light' ? 'light' : 'dark'); window.theme = theme;   window.isDark = window.theme !== 'light' }
         function saveTheme(theme) {window.localStorage && localStorage.setItem('theme', theme);}
         function getMeta(metaName) {const metas = document.getElementsByTagName('meta'); for (let i = 0; i < metas.length; i++) if (metas[i].getAttribute('name') === metaName) return metas[i]; return '';}
         if (window.localStorage && localStorage.getItem('theme')) {let theme = localStorage.getItem('theme');theme === 'light' || theme === 'dark' || theme === 'black' ? setTheme(theme) : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light')); } else { if ('auto' === 'light' || 'auto' === 'dark' || 'auto' === 'black') setTheme('auto'), saveTheme('auto'); else saveTheme('auto'), window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light');}
         let metaColors = {'light': '#f8f8f8','dark': '#252627','black': '#000000'}
         getMeta('theme-color').content = metaColors[document.body.getAttribute('theme')];
+        window.switchThemeEventSet = new Set()
     </script>
     <div id="back-to-top"></div>
     <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
@@ -194,7 +197,7 @@
     </li>
   </ol>
 </nav></div>
-    </div><script>document.getElementsByTagName("main")[0].setAttribute("pageStyle", "normal")</script><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC", "true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">NebulaGraph 内核贡献开发指南</h1><div class="post-meta">
+    </div><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC", "true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">NebulaGraph 内核贡献开发指南</h1><div class="post-meta">
             <div class="post-meta-line">
                 <span class="post-author"><i class="author fas fa-user-circle fa-fw"></i><a href="https://siwei.io" title="Author" target="_blank" rel="noopener noreferrer author" class="author">Wey Gu</a>
                 </span>&nbsp;<span class="post-category">收录于 </span>&nbsp;<span class="post-category">类别 <a href="/categories/nebula-graph/"><i class="far fa-folder fa-fw"></i>Nebula Graph</a></span></div>
@@ -207,7 +210,7 @@
         srcset="/nebulagraph-hacking-guide/featured-image.webp, /nebulagraph-hacking-guide/featured-image.webp 1.5x, /nebulagraph-hacking-guide/featured-image.webp 2x"
         sizes="auto"
         alt="/nebulagraph-hacking-guide/featured-image.webp"
-        title="本文是一个快速了解为 NebulaGraph 内核贡献代码、构建、Debug 的一站式指南。" height="914" width="1738"></div><div class="details toc" id="toc-static"  kept="">
+        title="本文是一个快速了解为 NebulaGraph 内核贡献代码、构建、Debug 的一站式指南。" height="914"   width="1738" ></div><div class="details toc" id="toc-static"  kept="">
                 <div class="details-summary toc-title">
                     <span>目录</span>
                     <span><i class="details-icon fas fa-angle-right"></i></span>
@@ -280,7 +283,7 @@
     <a href="#nebulagraph-%e7%9a%84%e6%9e%b6%e6%9e%84%e7%ae%80%e4%bb%8b" class="header-mark"></a>1 NebulaGraph 的架构简介</h2><p>为了方便对 NebulaGraph 尚未了解的读者也能快速直接从贡献代码为起点了解它，我把开发、贡献内核代码入手所需要的基本架构知识也在这里以最小信息量的形式总结一下，作为前导知识，请资深的 NebulaGraph 玩家直接跳过这一章节。</p>
 <h3 id="服务进程" class="headerLink">
     <a href="#%e6%9c%8d%e5%8a%a1%e8%bf%9b%e7%a8%8b" class="header-mark"></a>1.1 服务、进程</h3><p>NebulaGraph 的架构和 Google Spanner，TiDB 很相似，核心部分只有三种服务、进程：Graph 服务、Meta 服务和 Storage 服务。它们之间彼此通过 TCP 之上的 Thrift RPC 协议进行通信。</p>
-<p><a class="lightgallery" href="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/nebula-graph-architecture-1.png" title="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/nebula-graph-architecture-1.png" data-thumbnail="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/nebula-graph-architecture-1.png">
+<p><figure><a class="lightgallery" href="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/nebula-graph-architecture-1.png" title="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/nebula-graph-architecture-1.png" data-thumbnail="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/nebula-graph-architecture-1.png">
         <img
             
             loading="lazy"
@@ -288,7 +291,7 @@
             srcset="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/nebula-graph-architecture-1.png, https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/nebula-graph-architecture-1.png 1.5x, https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/nebula-graph-architecture-1.png 2x"
             sizes="auto"
             alt="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/nebula-graph-architecture-1.png">
-    </a></p>
+    </a></figure></p>
 <h3 id="计算层与存储层" class="headerLink">
     <a href="#%e8%ae%a1%e7%ae%97%e5%b1%82%e4%b8%8e%e5%ad%98%e5%82%a8%e5%b1%82" class="header-mark"></a>1.2 计算层与存储层</h3><p>NebulaGraph 是存储与计算分离的架构，它的 Meta 服务和 Storage 服务共同组成了存储层，Graph 服务是内核提供的计算层。</p>
 <p>这样的设计使得 NebulaGraph 的集群部署可以灵活按需分配计算、存储的资源，比如我们可以为同一个集群中创建不同配置的两组 Graph 服务实例、用来面向不同类型的业务。</p>
@@ -297,7 +300,7 @@
     <a href="#graph-service-nebula-graphd" class="header-mark"></a>1.2.1 Graph Service: nebula-graphd</h4><p>Graph 服务是对外接受图库登录、图查询请求、集群管理操作、schema 定义所直接连接的服务，他的进程名字叫 graphd，表示 nebula graph daemon。</p>
 <p>Graph 服务的每一个进程是无状态的，这使得横向扩缩 Graph 服务的实例非常灵活、简单。</p>
 <p>Graph 服务也叫 Query Engine，其内部和传统的数据库系统的设计非常相似，分为：解析、校验、计划、执行几部分。</p>
-<p><a class="lightgallery" href="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/query-engine-architecture.png" title="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/query-engine-architecture.png" data-thumbnail="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/query-engine-architecture.png">
+<p><figure><a class="lightgallery" href="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/query-engine-architecture.png" title="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/query-engine-architecture.png" data-thumbnail="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/query-engine-architecture.png">
         <img
             
             loading="lazy"
@@ -305,7 +308,7 @@
             srcset="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/query-engine-architecture.png, https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/query-engine-architecture.png 1.5x, https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/query-engine-architecture.png 2x"
             sizes="auto"
             alt="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/query-engine-architecture.png">
-    </a></p>
+    </a></figure></p>
 <h4 id="meta-service-nebula-metad" class="headerLink">
     <a href="#meta-service-nebula-metad" class="header-mark"></a>1.2.2 Meta Service: nebula-metad</h4><p>Meta 服务顾名思义负责元数据管理，进程名字叫 metad。这些元数据包括：</p>
 <ul>
@@ -315,7 +318,7 @@
 <li>图空间中的数据分布</li>
 </ul>
 <p>Meta 服务的进程可以单实例部署，在非单机部署的场景下，为了数据、服务的高 SLA ，我们可以奇数多个实例的部署，通常来说 3 个 nebula-metad 就足够了，三个 nebula-metad 通过 RAFT 共识协议构成一个集群提供服务。</p>
-<p><a class="lightgallery" href="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/meta-architecture1.png" title="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/meta-architecture1.png" data-thumbnail="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/meta-architecture1.png">
+<p><figure><a class="lightgallery" href="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/meta-architecture1.png" title="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/meta-architecture1.png" data-thumbnail="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/meta-architecture1.png">
         <img
             
             loading="lazy"
@@ -323,11 +326,11 @@
             srcset="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/meta-architecture1.png, https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/meta-architecture1.png 1.5x, https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/meta-architecture1.png 2x"
             sizes="auto"
             alt="https://docs-cdn.nebula-graph.com.cn/docs-2.0/1.introduction/2.nebula-graph-architecture/meta-architecture1.png">
-    </a></p>
+    </a></figure></p>
 <h4 id="storage-service-nebula-storaged" class="headerLink">
     <a href="#storage-service-nebula-storaged" class="header-mark"></a>1.2.3 Storage Service: nebula-storaged</h4><p>Storage 服务存储所有的图数据，进程名字叫 storaged。storaged 分布式地存储图数据，为 Graph 内部的图查询执行期提供底层的图语义存储接口，方便 Storage 客户端通过 Thrift RPC 协议面向涉及的 storaged 示例进行图语义的读写。</p>
 <p>当 NebulaGraph 中图空间的副本数大于 1 的时候，每一个分区都会在不同 storaged 示例上有副本，副本之间则通过 RAFT 协议协调同步与读写。</p>
-<p><a class="lightgallery" href="https://www-cdn.nebula-graph.com.cn/nebula-blog/nebula-reading-storage-architecture.png" title="https://www-cdn.nebula-graph.com.cn/nebula-blog/nebula-reading-storage-architecture.png" data-thumbnail="https://www-cdn.nebula-graph.com.cn/nebula-blog/nebula-reading-storage-architecture.png">
+<p><figure><a class="lightgallery" href="https://www-cdn.nebula-graph.com.cn/nebula-blog/nebula-reading-storage-architecture.png" title="https://www-cdn.nebula-graph.com.cn/nebula-blog/nebula-reading-storage-architecture.png" data-thumbnail="https://www-cdn.nebula-graph.com.cn/nebula-blog/nebula-reading-storage-architecture.png">
         <img
             
             loading="lazy"
@@ -335,7 +338,7 @@
             srcset="https://www-cdn.nebula-graph.com.cn/nebula-blog/nebula-reading-storage-architecture.png, https://www-cdn.nebula-graph.com.cn/nebula-blog/nebula-reading-storage-architecture.png 1.5x, https://www-cdn.nebula-graph.com.cn/nebula-blog/nebula-reading-storage-architecture.png 2x"
             sizes="auto"
             alt="https://www-cdn.nebula-graph.com.cn/nebula-blog/nebula-reading-storage-architecture.png">
-    </a></p>
+    </a></figure></p>
 <blockquote>
 <p>参考 <a href="https://docs.nebula-graph.com.cn/master/1.introduction/3.nebula-graph-architecture/1.architecture-overview/" target="_blank" rel="noopener noreferrer">文档：架构介绍</a>，了解更多详情；</p>
 <p>推荐阅读社区官方播客的架构系列文章：<a href="https://www.nebula-graph.com.cn/tags/%E6%9E%B6%E6%9E%84%E7%B3%BB%E5%88%97" target="_blank" rel="noopener noreferrer">nebula-graph.com.cn/tags/架构系列</a>。</p>
@@ -738,7 +741,7 @@
 </div>
 </div><h4 id="在个人远程分叉分支上创建-pr" class="headerLink">
     <a href="#%e5%9c%a8%e4%b8%aa%e4%ba%ba%e8%bf%9c%e7%a8%8b%e5%88%86%e5%8f%89%e5%88%86%e6%94%af%e4%b8%8a%e5%88%9b%e5%bb%ba-pr" class="header-mark"></a>5.1.3 在个人远程分叉分支上创建 PR</h4><p>这时候，我们访问这个远程分支：https://github.com/wey-gu/nebula/tree/fn_JSON_EXTRACT ，就能找到 Open PR 的入口：</p>
-<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/197544575-c04a06cf-b867-409c-832e-f3d893fea784.png" title="https://user-images.githubusercontent.com/1651790/197544575-c04a06cf-b867-409c-832e-f3d893fea784.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/197544575-c04a06cf-b867-409c-832e-f3d893fea784.png">
+<p><figure><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/197544575-c04a06cf-b867-409c-832e-f3d893fea784.png" title="https://user-images.githubusercontent.com/1651790/197544575-c04a06cf-b867-409c-832e-f3d893fea784.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/197544575-c04a06cf-b867-409c-832e-f3d893fea784.png">
         <img
             
             loading="lazy"
@@ -746,9 +749,9 @@
             srcset="https://user-images.githubusercontent.com/1651790/197544575-c04a06cf-b867-409c-832e-f3d893fea784.png, https://user-images.githubusercontent.com/1651790/197544575-c04a06cf-b867-409c-832e-f3d893fea784.png 1.5x, https://user-images.githubusercontent.com/1651790/197544575-c04a06cf-b867-409c-832e-f3d893fea784.png 2x"
             sizes="auto"
             alt="https://user-images.githubusercontent.com/1651790/197544575-c04a06cf-b867-409c-832e-f3d893fea784.png">
-    </a></p>
+    </a></figure></p>
 <p>然后点击 Open pull request 按钮，就进入到创建 PR 的界面了，这和在一般的论坛里提交一个帖子是很类似的：</p>
-<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/197545824-93706cc7-32a9-4638-84eb-26573106aa28.png" title="https://user-images.githubusercontent.com/1651790/197545824-93706cc7-32a9-4638-84eb-26573106aa28.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/197545824-93706cc7-32a9-4638-84eb-26573106aa28.png">
+<p><figure><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/197545824-93706cc7-32a9-4638-84eb-26573106aa28.png" title="https://user-images.githubusercontent.com/1651790/197545824-93706cc7-32a9-4638-84eb-26573106aa28.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/197545824-93706cc7-32a9-4638-84eb-26573106aa28.png">
         <img
             
             loading="lazy"
@@ -756,7 +759,7 @@
             srcset="https://user-images.githubusercontent.com/1651790/197545824-93706cc7-32a9-4638-84eb-26573106aa28.png, https://user-images.githubusercontent.com/1651790/197545824-93706cc7-32a9-4638-84eb-26573106aa28.png 1.5x, https://user-images.githubusercontent.com/1651790/197545824-93706cc7-32a9-4638-84eb-26573106aa28.png 2x"
             sizes="auto"
             alt="https://user-images.githubusercontent.com/1651790/197545824-93706cc7-32a9-4638-84eb-26573106aa28.png">
-    </a></p>
+    </a></figure></p>
 <p>提交之后，我们可以等待、或者邀请其他人来做代码的审查（review），往往其他的贡献者都能从他们的角度给出一些代码修改的建议和提示，我们需要经过几轮的代码修改、讨论之后使得代码达到最佳的状态。</p>
 <p>而这些审查者中除了社区的贡献者（人类）之外，还有一些自动化的机器人，他们会在代码库中自动化的通过持续集成（CI）的方式运行一些自动化的审查工作，可能包括以下几种：</p>
 <ul>
@@ -765,7 +768,7 @@
 <li>test：各种层面的测试检查任务</li>
 </ul>
 <p>通常来说，这些所有的自动化审查机器人所代表的任务也需要全都通过，代码的状态才能被认为是可以合并的，而不出意外，我首次提交的代码果然有测试的失败。</p>
-<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/197549538-4bba79b5-6b0a-42f4-b287-55061c08cbe8.png" title="https://user-images.githubusercontent.com/1651790/197549538-4bba79b5-6b0a-42f4-b287-55061c08cbe8.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/197549538-4bba79b5-6b0a-42f4-b287-55061c08cbe8.png">
+<p><figure><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/197549538-4bba79b5-6b0a-42f4-b287-55061c08cbe8.png" title="https://user-images.githubusercontent.com/1651790/197549538-4bba79b5-6b0a-42f4-b287-55061c08cbe8.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/197549538-4bba79b5-6b0a-42f4-b287-55061c08cbe8.png">
         <img
             
             loading="lazy"
@@ -773,7 +776,7 @@
             srcset="https://user-images.githubusercontent.com/1651790/197549538-4bba79b5-6b0a-42f4-b287-55061c08cbe8.png, https://user-images.githubusercontent.com/1651790/197549538-4bba79b5-6b0a-42f4-b287-55061c08cbe8.png 1.5x, https://user-images.githubusercontent.com/1651790/197549538-4bba79b5-6b0a-42f4-b287-55061c08cbe8.png 2x"
             sizes="auto"
             alt="https://user-images.githubusercontent.com/1651790/197549538-4bba79b5-6b0a-42f4-b287-55061c08cbe8.png">
-    </a></p>
+    </a></figure></p>
 <h3 id="调试-ci-测试代码" class="headerLink">
     <a href="#%e8%b0%83%e8%af%95-ci-%e6%b5%8b%e8%af%95%e4%bb%a3%e7%a0%81" class="header-mark"></a>5.2 调试 CI 测试代码</h3><p>NebulaGraph 里所有的 CI 测试代码也都能在本地被触发，并且（显然）都有被单独触发的方式，我们需要掌握它们而不是在每次修改一个小的测试修复之后提交到服务器上等着 CI 做全量的运行（这样常常几十分钟就这么浪费掉了）。</p>
 <h4 id="ctest" class="headerLink">
@@ -878,7 +881,7 @@
 </div><p>成功！</p>
 <p>于是，我把新的更改提交到远程分支上，在 PR 的网页中，可以看到 CI 已经在新的提交的触发下重新编译、执行了，过一会儿果然都 pass 了，于是我兴高采烈地等待着两位以上的审查者帮忙批准代码，然后合并它！</p>
 <p>但是，我收到了新的建议：</p>
-<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/197553025-82f1e7e5-b8a8-4729-a9b8-0f13a34adfed.png" title="https://user-images.githubusercontent.com/1651790/197553025-82f1e7e5-b8a8-4729-a9b8-0f13a34adfed.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/197553025-82f1e7e5-b8a8-4729-a9b8-0f13a34adfed.png">
+<p><figure><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/197553025-82f1e7e5-b8a8-4729-a9b8-0f13a34adfed.png" title="https://user-images.githubusercontent.com/1651790/197553025-82f1e7e5-b8a8-4729-a9b8-0f13a34adfed.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/197553025-82f1e7e5-b8a8-4729-a9b8-0f13a34adfed.png">
         <img
             
             loading="lazy"
@@ -886,7 +889,7 @@
             srcset="https://user-images.githubusercontent.com/1651790/197553025-82f1e7e5-b8a8-4729-a9b8-0f13a34adfed.png, https://user-images.githubusercontent.com/1651790/197553025-82f1e7e5-b8a8-4729-a9b8-0f13a34adfed.png 1.5x, https://user-images.githubusercontent.com/1651790/197553025-82f1e7e5-b8a8-4729-a9b8-0f13a34adfed.png 2x"
             sizes="auto"
             alt="https://user-images.githubusercontent.com/1651790/197553025-82f1e7e5-b8a8-4729-a9b8-0f13a34adfed.png">
-    </a></p>
+    </a></figure></p>
 <p>另一位贡献者请我添加 TCK 的测试用例。</p>
 <h4 id="tck" class="headerLink">
     <a href="#tck" class="header-mark"></a>5.2.2 TCK</h4><p>TCK 的全称是 The Cypher Technology Compatibility Kit，它是 NebulaGraph 从 OpenCypher 社区继承演进而来的一套测试框架，我们用 Python 做了测试用例格式兼容的实现。</p>
@@ -995,7 +998,7 @@
 </blockquote>
 <h3 id="邀请再次-review" class="headerLink">
     <a href="#%e9%82%80%e8%af%b7%e5%86%8d%e6%ac%a1-review" class="header-mark"></a>5.3 邀请再次 review</h3><p>待我们把需要的测试调通、再次提交 PR 并且 CI 用例全都通过之后，我们可以再次邀请之前帮助审查代码的同学做做最后的查看，如果一切都顺利，代码就会被合并了！</p>
-<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/197557709-2c851a03-d001-4fc9-bc5a-b858219fbded.png" title="https://user-images.githubusercontent.com/1651790/197557709-2c851a03-d001-4fc9-bc5a-b858219fbded.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/197557709-2c851a03-d001-4fc9-bc5a-b858219fbded.png">
+<p><figure><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/197557709-2c851a03-d001-4fc9-bc5a-b858219fbded.png" title="https://user-images.githubusercontent.com/1651790/197557709-2c851a03-d001-4fc9-bc5a-b858219fbded.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/197557709-2c851a03-d001-4fc9-bc5a-b858219fbded.png">
         <img
             
             loading="lazy"
@@ -1003,7 +1006,7 @@
             srcset="https://user-images.githubusercontent.com/1651790/197557709-2c851a03-d001-4fc9-bc5a-b858219fbded.png, https://user-images.githubusercontent.com/1651790/197557709-2c851a03-d001-4fc9-bc5a-b858219fbded.png 1.5x, https://user-images.githubusercontent.com/1651790/197557709-2c851a03-d001-4fc9-bc5a-b858219fbded.png 2x"
             sizes="auto"
             alt="https://user-images.githubusercontent.com/1651790/197557709-2c851a03-d001-4fc9-bc5a-b858219fbded.png">
-    </a></p>
+    </a></figure></p>
 <blockquote>
 <p>题图来自 <a href="https://unsplash.com/photos/TGEWJXylgJk" target="_blank" rel="noopener noreferrer">Jon</a></p>
 </blockquote></div>
@@ -1022,7 +1025,7 @@
         srcset="/build-open-communication-infra/featured-image.webp, /build-open-communication-infra/featured-image.webp 1.5x, /build-open-communication-infra/featured-image.webp 2x"
         sizes="auto"
         alt="/build-open-communication-infra/featured-image.webp"
-        title="本文是一个快速了解为 NebulaGraph 内核贡献代码、构建、Debug 的一站式指南。" height="200" width="400"></a>
+        title="本文是一个快速了解为 NebulaGraph 内核贡献代码、构建、Debug 的一站式指南。" height="200"   width="400" ></a>
             </div><h2 class="related-title">
                 <a href="/build-open-communication-infra/">连接微信群、Slack 和 GitHub：社区开放沟通的基础设施搭建</a>
             </h2>
@@ -1036,7 +1039,7 @@
         srcset="/ngql-execution-plan/featured-image.webp, /ngql-execution-plan/featured-image.webp 1.5x, /ngql-execution-plan/featured-image.webp 2x"
         sizes="auto"
         alt="/ngql-execution-plan/featured-image.webp"
-        title="本文是一个快速了解为 NebulaGraph 内核贡献代码、构建、Debug 的一站式指南。" height="200" width="400"></a>
+        title="本文是一个快速了解为 NebulaGraph 内核贡献代码、构建、Debug 的一站式指南。" height="200"   width="400" ></a>
             </div><h2 class="related-title">
                 <a href="/ngql-execution-plan/">nGQL 简明教程，第二期 nGQL 执行计划详解与调优</a>
             </h2>
@@ -1050,7 +1053,7 @@
         srcset="/ngql-tutorial/featured-image.webp, /ngql-tutorial/featured-image.webp 1.5x, /ngql-tutorial/featured-image.webp 2x"
         sizes="auto"
         alt="/ngql-tutorial/featured-image.webp"
-        title="本文是一个快速了解为 NebulaGraph 内核贡献代码、构建、Debug 的一站式指南。" height="200" width="400"></a>
+        title="本文是一个快速了解为 NebulaGraph 内核贡献代码、构建、Debug 的一站式指南。" height="200"   width="400" ></a>
             </div><h2 class="related-title">
                 <a href="/ngql-tutorial/">nGQL 简明教程，第一期</a>
             </h2>
@@ -1093,7 +1096,7 @@
             </noscript></div></article></div>
         </main><footer class="footer">
         <div class="footer-container"><div class="footer-line">
-                    由 <a href="https://gohugo.io/" target="_blank" rel="noopener noreferrer" title="Hugo 0.110.0">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreferrer" title="DoIt 0.3.0"><i class="far fa-edit fa-fw"></i> DoIt</a>
+                    由 <a href="https://gohugo.io/" target="_blank" rel="noopener noreferrer" title="Hugo 0.111.3">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreferrer" title="DoIt 0.3.0"><i class="far fa-edit fa-fw"></i> DoIt</a>
                 </div><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2018 - 2023</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="https://siwei.io" target="_blank" rel="noopener noreferrer">Wey Gu</a></span>&nbsp;|&nbsp;<span class="license"><a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">CC BY-NC 4.0</a></span></div>
             <div class="footer-line"></div>
             <div class="footer-line">

@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -47,12 +49,13 @@
 </head>
 
 <body header-desktop="fixed" header-mobile="auto"><script type="text/javascript">
-        function setTheme(theme) {document.body.setAttribute('theme', theme); document.documentElement.style.setProperty('color-scheme', theme === 'light' ? 'light' : 'dark');}
+        function setTheme(theme) {document.body.setAttribute('theme', theme); document.documentElement.style.setProperty('color-scheme', theme === 'light' ? 'light' : 'dark'); window.theme = theme;   window.isDark = window.theme !== 'light' }
         function saveTheme(theme) {window.localStorage && localStorage.setItem('theme', theme);}
         function getMeta(metaName) {const metas = document.getElementsByTagName('meta'); for (let i = 0; i < metas.length; i++) if (metas[i].getAttribute('name') === metaName) return metas[i]; return '';}
         if (window.localStorage && localStorage.getItem('theme')) {let theme = localStorage.getItem('theme');theme === 'light' || theme === 'dark' || theme === 'black' ? setTheme(theme) : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light')); } else { if ('auto' === 'light' || 'auto' === 'dark' || 'auto' === 'black') setTheme('auto'), saveTheme('auto'); else saveTheme('auto'), window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light');}
         let metaColors = {'light': '#f8f8f8','dark': '#252627','black': '#000000'}
         getMeta('theme-color').content = metaColors[document.body.getAttribute('theme')];
+        window.switchThemeEventSet = new Set()
     </script>
     <div id="back-to-top"></div>
     <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
@@ -166,7 +169,7 @@
     </li>
   </ol>
 </nav></div>
-    </div><script>document.getElementsByTagName("main")[0].setAttribute("pageStyle", "normal")</script><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC", "true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Nebula Exchange SST 2.x Hands-on Guide</h1><div class="post-meta">
+    </div><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC", "true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Nebula Exchange SST 2.x Hands-on Guide</h1><div class="post-meta">
             <div class="post-meta-line">
                 <span class="post-author"><i class="author fas fa-user-circle fa-fw"></i><a href="https://siwei.io" title="Author" target="_blank" rel="noopener noreferrer author" class="author">Wey Gu</a>
                 </span>&nbsp;<span class="post-category">included in </span>&nbsp;<span class="post-category">category <a href="/en/categories/nebula-graph/"><i class="far fa-folder fa-fw"></i>Nebula Graph</a></span></div>
@@ -179,7 +182,7 @@
         srcset="/en/nebula-exchange-sst-2.x/featured-image.webp, /en/nebula-exchange-sst-2.x/featured-image.webp 1.5x, /en/nebula-exchange-sst-2.x/featured-image.webp 2x"
         sizes="auto"
         alt="/en/nebula-exchange-sst-2.x/featured-image.webp"
-        title="这篇文章带大家以最小方式，快速趟一下 Nebula Exchange 中 SST 写入方式的步骤。" height="900" width="1738"></div><div class="details toc" id="toc-static"  kept="">
+        title="这篇文章带大家以最小方式，快速趟一下 Nebula Exchange 中 SST 写入方式的步骤。" height="900"   width="1738" ></div><div class="details toc" id="toc-static"  kept="">
                 <div class="details-summary toc-title">
                     <span>Contents</span>
                     <span><i class="details-icon fas fa-angle-right"></i></span>
@@ -221,15 +224,15 @@
 <h2 id="什么是-nebula-exchange-" class="headerLink">
     <a href="#%e4%bb%80%e4%b9%88%e6%98%af-nebula-exchange-" class="header-mark"></a>1 什么是 Nebula Exchange ?</h2><p>之前我在 <a href="https://siwei.io/sketches/nebula-data-import-options/" target="_blank" rel="noopener noreferrer">Nebula Data Import Options</a> 之中介绍过，<a href="https://github.com/vesoft-inc/nebula-spark-utils/tree/master/nebula-exchange" target="_blank" rel="noopener noreferrer">Nebula Exchange</a> 是一个 Nebula Graph 社区开源的 Spark Applicaiton，它专门用来支持批量或者流式地把数据导入 Nebula Graph Database 之中。</p>
 <p>Nebula Exchange 支持多种多样的数据源（从 Apache Parquet, ORC, JSON, CSV, HBase, Hive MaxCompute 到 Neo4j, MySQL, ClickHouse, 再有 Kafka, Pulsar，更多的数据源也在不断增加之中）。</p>
-<p><a class="lightgallery" href="/en/nebula-exchange-sst-2.x/nebula-exchange-digram.webp" title="nebula-exchange-digram" data-thumbnail="/en/nebula-exchange-sst-2.x/nebula-exchange-digram.webp">
+<p><figure><a class="lightgallery" href="/en/nebula-exchange-sst-2.x/nebula-exchange-digram.webp" title="nebula-exchange-digram" data-thumbnail="/en/nebula-exchange-sst-2.x/nebula-exchange-digram.webp">
         <img
             
             loading="lazy"
-            src="nebula-exchange-digram.webp"
-            srcset="/en/nebula-exchange-sst-2.x/nebula-exchange-digram.webp, nebula-exchange-digram.webp 1.5x, /en/nebula-exchange-sst-2.x/nebula-exchange-digram.webp 2x"
+            src="/en/nebula-exchange-sst-2.x/nebula-exchange-digram.webp"
+            srcset="/en/nebula-exchange-sst-2.x/nebula-exchange-digram.webp, /en/nebula-exchange-sst-2.x/nebula-exchange-digram.webp 1.5x, /en/nebula-exchange-sst-2.x/nebula-exchange-digram.webp 2x"
             sizes="auto"
             alt="/en/nebula-exchange-sst-2.x/nebula-exchange-digram.webp">
-    </a></p>
+    </a></figure></p>
 <p>如上图所示，在 Exchange 内部，从除了不同 Reader 可以读取不同数据源之外，在数据经过 Processor 处理之后通过 Writer写入（sink） Nebula Graph 图数据库的时候，除了走正常的 ServerBaseWriter 的写入流程之外，它还可以绕过整个写入流程，利用 Spark 的计算能力并行生成底层 RocksDB 的 SST 文件，从而实现超高性能的数据导入，这个 SST 文件导入的场景就是本文带大家上手熟悉的部分。</p>
 <blockquote>
 <p>详细信息请参阅：<a href="https://docs.nebula-graph.com.cn/master/nebula-exchange/about-exchange/ex-ug-what-is-exchange/" target="_blank" rel="noopener noreferrer">Nebula Graph 手册:什么是 Nebula Exchange</a></p>
@@ -259,7 +262,7 @@
 <pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">curl -fsSL nebula-up.siwei.io/install.sh <span class="p">|</span> bash
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p><a class="lightgallery" href="https://github.com/wey-gu/nebula-up/raw/main/images/nebula-up-demo-shell.png" title="nebula-up" data-thumbnail="https://github.com/wey-gu/nebula-up/raw/main/images/nebula-up-demo-shell.png">
+</div><p><figure><a class="lightgallery" href="https://github.com/wey-gu/nebula-up/raw/main/images/nebula-up-demo-shell.png" title="nebula-up" data-thumbnail="https://github.com/wey-gu/nebula-up/raw/main/images/nebula-up-demo-shell.png">
         <img
             
             loading="lazy"
@@ -267,7 +270,7 @@
             srcset="https://github.com/wey-gu/nebula-up/raw/main/images/nebula-up-demo-shell.png, https://github.com/wey-gu/nebula-up/raw/main/images/nebula-up-demo-shell.png 1.5x, https://github.com/wey-gu/nebula-up/raw/main/images/nebula-up-demo-shell.png 2x"
             sizes="auto"
             alt="https://github.com/wey-gu/nebula-up/raw/main/images/nebula-up-demo-shell.png">
-    </a></p>
+    </a></figure></p>
 <p>待部署成功之后，我们需要对环境做一些修改，这里我做的修改其实就是两点：</p>
 <ol>
 <li>只保留一个 metaD 服务</li>
@@ -1487,7 +1490,7 @@
         srcset="/en/nebulagraph-sns/featured-image.webp, /en/nebulagraph-sns/featured-image.webp 1.5x, /en/nebulagraph-sns/featured-image.webp 2x"
         sizes="auto"
         alt="/en/nebulagraph-sns/featured-image.webp"
-        title="这篇文章带大家以最小方式，快速趟一下 Nebula Exchange 中 SST 写入方式的步骤。" height="200" width="400"></a>
+        title="这篇文章带大家以最小方式，快速趟一下 Nebula Exchange 中 SST 写入方式的步骤。" height="200"   width="400" ></a>
             </div><h2 class="related-title">
                 <a href="/en/nebulagraph-sns/">Social Network with NebulaGraph</a>
             </h2>
@@ -1501,7 +1504,7 @@
         srcset="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.webp, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.webp 1.5x, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.webp 2x"
         sizes="auto"
         alt="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.webp"
-        title="这篇文章带大家以最小方式，快速趟一下 Nebula Exchange 中 SST 写入方式的步骤。" height="200" width="400"></a>
+        title="这篇文章带大家以最小方式，快速趟一下 Nebula Exchange 中 SST 写入方式的步骤。" height="200"   width="400" ></a>
             </div><h2 class="related-title">
                 <a href="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/">Use ChatGPT and Nebulagraph to Predict Fifa World Cup</a>
             </h2>
@@ -1515,7 +1518,7 @@
         srcset="/en/nebulagraph-etl-dbt/featured-image.webp, /en/nebulagraph-etl-dbt/featured-image.webp 1.5x, /en/nebulagraph-etl-dbt/featured-image.webp 2x"
         sizes="auto"
         alt="/en/nebulagraph-etl-dbt/featured-image.webp"
-        title="这篇文章带大家以最小方式，快速趟一下 Nebula Exchange 中 SST 写入方式的步骤。" height="200" width="400"></a>
+        title="这篇文章带大家以最小方式，快速趟一下 Nebula Exchange 中 SST 写入方式的步骤。" height="200"   width="400" ></a>
             </div><h2 class="related-title">
                 <a href="/en/nebulagraph-etl-dbt/">Tabular Data ETL to NebulaGraph with dbt</a>
             </h2>
@@ -1529,7 +1532,7 @@
         srcset="/en/fraud-detection-with-nebulagraph/featured-image.webp, /en/fraud-detection-with-nebulagraph/featured-image.webp 1.5x, /en/fraud-detection-with-nebulagraph/featured-image.webp 2x"
         sizes="auto"
         alt="/en/fraud-detection-with-nebulagraph/featured-image.webp"
-        title="这篇文章带大家以最小方式，快速趟一下 Nebula Exchange 中 SST 写入方式的步骤。" height="200" width="400"></a>
+        title="这篇文章带大家以最小方式，快速趟一下 Nebula Exchange 中 SST 写入方式的步骤。" height="200"   width="400" ></a>
             </div><h2 class="related-title">
                 <a href="/en/fraud-detection-with-nebulagraph/">Fraud Detection with NebulaGraph GraphDatabase in action</a>
             </h2>
@@ -1543,7 +1546,7 @@
         srcset="/en/data-lineage-oss-ref-solution/featured-image.webp, /en/data-lineage-oss-ref-solution/featured-image.webp 1.5x, /en/data-lineage-oss-ref-solution/featured-image.webp 2x"
         sizes="auto"
         alt="/en/data-lineage-oss-ref-solution/featured-image.webp"
-        title="这篇文章带大家以最小方式，快速趟一下 Nebula Exchange 中 SST 写入方式的步骤。" height="200" width="400"></a>
+        title="这篇文章带大家以最小方式，快速趟一下 Nebula Exchange 中 SST 写入方式的步骤。" height="200"   width="400" ></a>
             </div><h2 class="related-title">
                 <a href="/en/data-lineage-oss-ref-solution/">A Data Lineage OSS Reference Solution</a>
             </h2>
@@ -1586,7 +1589,7 @@
             </noscript></div></article></div>
         </main><footer class="footer">
         <div class="footer-container"><div class="footer-line">
-                    Powered by <a href="https://gohugo.io/" target="_blank" rel="noopener noreferrer" title="Hugo 0.110.0">Hugo</a>&nbsp;|&nbsp;Theme - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreferrer" title="DoIt 0.3.0"><i class="far fa-edit fa-fw"></i> DoIt</a>
+                    Powered by <a href="https://gohugo.io/" target="_blank" rel="noopener noreferrer" title="Hugo 0.111.3">Hugo</a>&nbsp;|&nbsp;Theme - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreferrer" title="DoIt 0.3.0"><i class="far fa-edit fa-fw"></i> DoIt</a>
                 </div><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2018 - 2023</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="https://siwei.io" target="_blank" rel="noopener noreferrer">Wey Gu</a></span>&nbsp;|&nbsp;<span class="license"><a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">CC BY-NC 4.0</a></span></div>
             <div class="footer-line"></div>
             <div class="footer-line">

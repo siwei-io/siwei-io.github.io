@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -47,12 +49,13 @@
 </head>
 
 <body header-desktop="fixed" header-mobile="auto"><script type="text/javascript">
-        function setTheme(theme) {document.body.setAttribute('theme', theme); document.documentElement.style.setProperty('color-scheme', theme === 'light' ? 'light' : 'dark');}
+        function setTheme(theme) {document.body.setAttribute('theme', theme); document.documentElement.style.setProperty('color-scheme', theme === 'light' ? 'light' : 'dark'); window.theme = theme;   window.isDark = window.theme !== 'light' }
         function saveTheme(theme) {window.localStorage && localStorage.setItem('theme', theme);}
         function getMeta(metaName) {const metas = document.getElementsByTagName('meta'); for (let i = 0; i < metas.length; i++) if (metas[i].getAttribute('name') === metaName) return metas[i]; return '';}
         if (window.localStorage && localStorage.getItem('theme')) {let theme = localStorage.getItem('theme');theme === 'light' || theme === 'dark' || theme === 'black' ? setTheme(theme) : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light')); } else { if ('auto' === 'light' || 'auto' === 'dark' || 'auto' === 'black') setTheme('auto'), saveTheme('auto'); else saveTheme('auto'), window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light');}
         let metaColors = {'light': '#f8f8f8','dark': '#252627','black': '#000000'}
         getMeta('theme-color').content = metaColors[document.body.getAttribute('theme')];
+        window.switchThemeEventSet = new Set()
     </script>
     <div id="back-to-top"></div>
     <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
@@ -221,7 +224,7 @@
     </li>
   </ol>
 </nav></div>
-    </div><script>document.getElementsByTagName("main")[0].setAttribute("pageStyle", "normal")</script><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC", "true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">A Data Lineage OSS Reference Solution</h1><div class="post-meta">
+    </div><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC", "true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">A Data Lineage OSS Reference Solution</h1><div class="post-meta">
             <div class="post-meta-line">
                 <span class="post-author"><i class="author fas fa-user-circle fa-fw"></i><a href="https://siwei.io" title="Author" target="_blank" rel="noopener noreferrer author" class="author">Wey Gu</a>
                 </span>&nbsp;<span class="post-category">included in </span>&nbsp;<span class="post-category">categories <a href="/en/categories/nebula-graph/"><i class="far fa-folder fa-fw"></i>Nebula Graph</a>&nbsp;<a href="/en/categories/amundsen/"><i class="far fa-folder fa-fw"></i>Amundsen</a></span></div>
@@ -234,7 +237,7 @@
         srcset="/en/data-lineage-oss-ref-solution/featured-image.webp, /en/data-lineage-oss-ref-solution/featured-image.webp 1.5x, /en/data-lineage-oss-ref-solution/featured-image.webp 2x"
         sizes="auto"
         alt="/en/data-lineage-oss-ref-solution/featured-image.webp"
-        title="I would like to share my opinionated reference data infra stack with some of those best open-source projects with modern ETL, Dashboard, Metadata Governance, and Data Lineage Management." height="872" width="1730"></div><div class="details toc" id="toc-static"  kept="">
+        title="I would like to share my opinionated reference data infra stack with some of those best open-source projects with modern ETL, Dashboard, Metadata Governance, and Data Lineage Management." height="872"   width="1730" ></div><div class="details toc" id="toc-static"  kept="">
                 <div class="details-summary toc-title">
                     <span>Contents</span>
                     <span><i class="details-icon fas fa-angle-right"></i></span>
@@ -361,7 +364,7 @@
 <p>Then I came to create an opinionated reference data infra stack with some of those best open-source projects put together. Hopefully, those who were gonna define and iterate their own fashion of Graph Model on Nebula Graph and create in-house Metadata and data linage extracting pipelines can benefit from this project to have a relatively polished, beautifully designed, Metadata Governance system out of the box with a fully evolved graph model.</p>
 <p>To make the reference project self-contained and runnable, I tried to put layers of data infra stack more than just pure metadata related ones, thus, maybe it will help new data engineers who would like to try and see how far had open-source pushed a modern data lab to.</p>
 <p>This is a diagram of all the components in this reference data stack, where I see most of them as Metadata Sources:</p>
-<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg" title="diagram-of-ref-project" data-thumbnail="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg">
+<p><figure><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg" title="diagram-of-ref-project" data-thumbnail="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg">
         <img
             
             loading="lazy"
@@ -369,7 +372,7 @@
             srcset="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg, https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg 1.5x, https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg 2x"
             sizes="auto"
             alt="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg">
-    </a></p>
+    </a></figure></p>
 <h3 id="the-data-stack" class="headerLink">
     <a href="#the-data-stack" class="header-mark"></a>2.2 The Data Stack</h3><p>Then, let&rsquo;s introduce the components.</p>
 <h4 id="database-and-data-warehouse" class="headerLink">
@@ -388,7 +391,7 @@
 <p>✅ - T: dbt</p>
 <h4 id="data-visualization" class="headerLink">
     <a href="#data-visualization" class="header-mark"></a>2.2.4 Data Visualization</h4><p>How about creating dashboards, charts, and tables for getting the insights into all the data?</p>
-<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/172800854-8e01acae-696d-4e07-8e3e-a7d34dec8278.png" title="https://user-images.githubusercontent.com/1651790/172800854-8e01acae-696d-4e07-8e3e-a7d34dec8278.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/172800854-8e01acae-696d-4e07-8e3e-a7d34dec8278.png">
+<p><figure><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/172800854-8e01acae-696d-4e07-8e3e-a7d34dec8278.png" title="https://user-images.githubusercontent.com/1651790/172800854-8e01acae-696d-4e07-8e3e-a7d34dec8278.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/172800854-8e01acae-696d-4e07-8e3e-a7d34dec8278.png">
         <img
             
             loading="lazy"
@@ -396,7 +399,7 @@
             srcset="https://user-images.githubusercontent.com/1651790/172800854-8e01acae-696d-4e07-8e3e-a7d34dec8278.png, https://user-images.githubusercontent.com/1651790/172800854-8e01acae-696d-4e07-8e3e-a7d34dec8278.png 1.5x, https://user-images.githubusercontent.com/1651790/172800854-8e01acae-696d-4e07-8e3e-a7d34dec8278.png 2x"
             sizes="auto"
             alt="https://user-images.githubusercontent.com/1651790/172800854-8e01acae-696d-4e07-8e3e-a7d34dec8278.png">
-    </a></p>
+    </a></figure></p>
 <p><a href="https://superset.apache.org/" target="_blank" rel="noopener noreferrer">Apache Superset</a> is one of the greatest visualization platforms we could choose from, and we just add it to our packet!</p>
 <p>✅ - Dashboard: Apache Superset</p>
 <h4 id="job-orchestration" class="headerLink">
@@ -405,7 +408,7 @@
 <h4 id="metadata-governance" class="headerLink">
     <a href="#metadata-governance" class="header-mark"></a>2.2.6 Metadata governance</h4><p>With more components and data being introduced to a data infra, there will be massive metadata in all lifecycle of databases, tables, schemas, dashboards, DAGs, applications, and their administrators and teams could be collectively managed, connected, and discovered.</p>
 <p><a href="https://www.amundsen.io/amundsen/" target="_blank" rel="noopener noreferrer">Linux Foundation Amundsen</a> is one of the best projects solving this problem.</p>
-<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/172801018-ecd67fa9-2743-451f-8734-b14f2a814199.png" title="https://user-images.githubusercontent.com/1651790/172801018-ecd67fa9-2743-451f-8734-b14f2a814199.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/172801018-ecd67fa9-2743-451f-8734-b14f2a814199.png">
+<p><figure><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/172801018-ecd67fa9-2743-451f-8734-b14f2a814199.png" title="https://user-images.githubusercontent.com/1651790/172801018-ecd67fa9-2743-451f-8734-b14f2a814199.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/172801018-ecd67fa9-2743-451f-8734-b14f2a814199.png">
         <img
             
             loading="lazy"
@@ -413,7 +416,7 @@
             srcset="https://user-images.githubusercontent.com/1651790/172801018-ecd67fa9-2743-451f-8734-b14f2a814199.png, https://user-images.githubusercontent.com/1651790/172801018-ecd67fa9-2743-451f-8734-b14f2a814199.png 1.5x, https://user-images.githubusercontent.com/1651790/172801018-ecd67fa9-2743-451f-8734-b14f2a814199.png 2x"
             sizes="auto"
             alt="https://user-images.githubusercontent.com/1651790/172801018-ecd67fa9-2743-451f-8734-b14f2a814199.png">
-    </a></p>
+    </a></figure></p>
 <p>✅ - Data Discovery: Linux Foundation Amundsen</p>
 <p>With a graph database as the source of truth to accelerate the multi-hop queries together with elasticsearch as the full-text search engine, Amundsen indexes all the metadata and their lineage smoothly, and beautifully in the next level.</p>
 <p>By default, <a href="https://neo4j.org/" target="_blank" rel="noopener noreferrer">neo4j</a> was used as the graph database, while I will be using <a href="http://nebula-graph.io/" target="_blank" rel="noopener noreferrer">Nebula Graph</a> instead in this project due to I am more familiar with the latter.</p>
@@ -615,7 +618,7 @@
 </div>
 </div></blockquote>
 <p>Now, I assumed you had finished trying out <code>singer_dbt_jaffle</code> following its <a href="https://github.com/pnadolny13/meltano_example_implementations/tree/main/meltano_projects/singer_dbt_jaffle" target="_blank" rel="noopener noreferrer">README.md</a>, and we could connect to the Postgres to see the loaded and transformed data being reflected as follow, the screenshot is from the SQLTool of VS Code:</p>
-<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png" title="https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png">
+<p><figure><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png" title="https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png">
         <img
             
             loading="lazy"
@@ -623,7 +626,7 @@
             srcset="https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png, https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png 1.5x, https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png 2x"
             sizes="auto"
             alt="https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png">
-    </a></p>
+    </a></figure></p>
 <h3 id="setup-a-bi-platform-for-dashboard" class="headerLink">
     <a href="#setup-a-bi-platform-for-dashboard" class="header-mark"></a>3.3 Setup a BI Platform for Dashboard</h3><p>Now, we have the data in data warehouses, with ETL toolchains to pipe different data sources into it. How could those data be consumed?</p>
 <p>BI tools like the dashboard could be one way to help us get insights from the data.</p>
@@ -753,7 +756,7 @@
 <li>Access Superset in a web browser via http://localhost:8088/</li>
 </ul>
 <p>We should now see Superset Web Interface:</p>
-<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168570300-186b56a5-58e8-4ff1-bc06-89fd77d74166.png" title="https://user-images.githubusercontent.com/1651790/168570300-186b56a5-58e8-4ff1-bc06-89fd77d74166.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168570300-186b56a5-58e8-4ff1-bc06-89fd77d74166.png">
+<p><figure><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168570300-186b56a5-58e8-4ff1-bc06-89fd77d74166.png" title="https://user-images.githubusercontent.com/1651790/168570300-186b56a5-58e8-4ff1-bc06-89fd77d74166.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168570300-186b56a5-58e8-4ff1-bc06-89fd77d74166.png">
         <img
             
             loading="lazy"
@@ -761,13 +764,13 @@
             srcset="https://user-images.githubusercontent.com/1651790/168570300-186b56a5-58e8-4ff1-bc06-89fd77d74166.png, https://user-images.githubusercontent.com/1651790/168570300-186b56a5-58e8-4ff1-bc06-89fd77d74166.png 1.5x, https://user-images.githubusercontent.com/1651790/168570300-186b56a5-58e8-4ff1-bc06-89fd77d74166.png 2x"
             sizes="auto"
             alt="https://user-images.githubusercontent.com/1651790/168570300-186b56a5-58e8-4ff1-bc06-89fd77d74166.png">
-    </a></p>
+    </a></figure></p>
 <h4 id="create-a-dashboard" class="headerLink">
     <a href="#create-a-dashboard" class="header-mark"></a>3.3.2 Create a Dashboard!</h4><p>Let&rsquo;s try to create a Dashboard on the ETL data in Postgres defined in this Meltano project:</p>
 <ul>
 <li>Click <code>+ DASHBOARD</code>, fill a dashboard name, then click <code>SAVE</code>, then clieck <code>+ CREATE A NEW CHART</code></li>
 </ul>
-<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168570363-c6b4f929-2aad-4f03-8e3e-b1b61f560ce5.png" title="https://user-images.githubusercontent.com/1651790/168570363-c6b4f929-2aad-4f03-8e3e-b1b61f560ce5.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168570363-c6b4f929-2aad-4f03-8e3e-b1b61f560ce5.png">
+<p><figure><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168570363-c6b4f929-2aad-4f03-8e3e-b1b61f560ce5.png" title="https://user-images.githubusercontent.com/1651790/168570363-c6b4f929-2aad-4f03-8e3e-b1b61f560ce5.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168570363-c6b4f929-2aad-4f03-8e3e-b1b61f560ce5.png">
         <img
             
             loading="lazy"
@@ -775,11 +778,11 @@
             srcset="https://user-images.githubusercontent.com/1651790/168570363-c6b4f929-2aad-4f03-8e3e-b1b61f560ce5.png, https://user-images.githubusercontent.com/1651790/168570363-c6b4f929-2aad-4f03-8e3e-b1b61f560ce5.png 1.5x, https://user-images.githubusercontent.com/1651790/168570363-c6b4f929-2aad-4f03-8e3e-b1b61f560ce5.png 2x"
             sizes="auto"
             alt="https://user-images.githubusercontent.com/1651790/168570363-c6b4f929-2aad-4f03-8e3e-b1b61f560ce5.png">
-    </a></p>
+    </a></figure></p>
 <ul>
 <li>In new chart view, we should select a chart type and DATASET. Here, I selected <code>orders</code> table as the data source and <code>Pie Chart</code> chart type:</li>
 </ul>
-<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168570927-9559a2a1-fed7-43be-9f6a-f6fb3c263830.png" title="https://user-images.githubusercontent.com/1651790/168570927-9559a2a1-fed7-43be-9f6a-f6fb3c263830.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168570927-9559a2a1-fed7-43be-9f6a-f6fb3c263830.png">
+<p><figure><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168570927-9559a2a1-fed7-43be-9f6a-f6fb3c263830.png" title="https://user-images.githubusercontent.com/1651790/168570927-9559a2a1-fed7-43be-9f6a-f6fb3c263830.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168570927-9559a2a1-fed7-43be-9f6a-f6fb3c263830.png">
         <img
             
             loading="lazy"
@@ -787,11 +790,11 @@
             srcset="https://user-images.githubusercontent.com/1651790/168570927-9559a2a1-fed7-43be-9f6a-f6fb3c263830.png, https://user-images.githubusercontent.com/1651790/168570927-9559a2a1-fed7-43be-9f6a-f6fb3c263830.png 1.5x, https://user-images.githubusercontent.com/1651790/168570927-9559a2a1-fed7-43be-9f6a-f6fb3c263830.png 2x"
             sizes="auto"
             alt="https://user-images.githubusercontent.com/1651790/168570927-9559a2a1-fed7-43be-9f6a-f6fb3c263830.png">
-    </a></p>
+    </a></figure></p>
 <ul>
 <li>After clicking <code>CREATE NEW CHART</code>, we are in the chart defination view, where, I selected <code>Query</code> of <code>status</code> as <code>DIMENSIONS</code>, and <code>COUNT(amount)</code> as <code>METRIC</code>. Thus, we could see a Pie Chart per order status&rsquo;s distribution.</li>
 </ul>
-<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168571130-a65ba88e-1ebe-4699-8783-08e5ecf54a0c.png" title="https://user-images.githubusercontent.com/1651790/168571130-a65ba88e-1ebe-4699-8783-08e5ecf54a0c.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168571130-a65ba88e-1ebe-4699-8783-08e5ecf54a0c.png">
+<p><figure><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168571130-a65ba88e-1ebe-4699-8783-08e5ecf54a0c.png" title="https://user-images.githubusercontent.com/1651790/168571130-a65ba88e-1ebe-4699-8783-08e5ecf54a0c.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168571130-a65ba88e-1ebe-4699-8783-08e5ecf54a0c.png">
         <img
             
             loading="lazy"
@@ -799,11 +802,11 @@
             srcset="https://user-images.githubusercontent.com/1651790/168571130-a65ba88e-1ebe-4699-8783-08e5ecf54a0c.png, https://user-images.githubusercontent.com/1651790/168571130-a65ba88e-1ebe-4699-8783-08e5ecf54a0c.png 1.5x, https://user-images.githubusercontent.com/1651790/168571130-a65ba88e-1ebe-4699-8783-08e5ecf54a0c.png 2x"
             sizes="auto"
             alt="https://user-images.githubusercontent.com/1651790/168571130-a65ba88e-1ebe-4699-8783-08e5ecf54a0c.png">
-    </a></p>
+    </a></figure></p>
 <ul>
 <li>Click <code>SAVE</code> , it will ask which dashboard this chart should be added to, after it&rsquo;s selected, click <code>SAVE &amp; GO TO DASHBOARD</code>.</li>
 </ul>
-<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168571301-8ae69983-eda8-4e75-99cf-6904f583fc7c.png" title="https://user-images.githubusercontent.com/1651790/168571301-8ae69983-eda8-4e75-99cf-6904f583fc7c.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168571301-8ae69983-eda8-4e75-99cf-6904f583fc7c.png">
+<p><figure><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168571301-8ae69983-eda8-4e75-99cf-6904f583fc7c.png" title="https://user-images.githubusercontent.com/1651790/168571301-8ae69983-eda8-4e75-99cf-6904f583fc7c.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168571301-8ae69983-eda8-4e75-99cf-6904f583fc7c.png">
         <img
             
             loading="lazy"
@@ -811,11 +814,11 @@
             srcset="https://user-images.githubusercontent.com/1651790/168571301-8ae69983-eda8-4e75-99cf-6904f583fc7c.png, https://user-images.githubusercontent.com/1651790/168571301-8ae69983-eda8-4e75-99cf-6904f583fc7c.png 1.5x, https://user-images.githubusercontent.com/1651790/168571301-8ae69983-eda8-4e75-99cf-6904f583fc7c.png 2x"
             sizes="auto"
             alt="https://user-images.githubusercontent.com/1651790/168571301-8ae69983-eda8-4e75-99cf-6904f583fc7c.png">
-    </a></p>
+    </a></figure></p>
 <ul>
 <li>Then, in the dashboard, we coulds see all charts there. You could see that I added another chart showing customer order count distribution, too:</li>
 </ul>
-<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168571878-30a77057-1f66-448a-9bbd-0dedcee24cc9.png" title="https://user-images.githubusercontent.com/1651790/168571878-30a77057-1f66-448a-9bbd-0dedcee24cc9.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168571878-30a77057-1f66-448a-9bbd-0dedcee24cc9.png">
+<p><figure><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168571878-30a77057-1f66-448a-9bbd-0dedcee24cc9.png" title="https://user-images.githubusercontent.com/1651790/168571878-30a77057-1f66-448a-9bbd-0dedcee24cc9.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168571878-30a77057-1f66-448a-9bbd-0dedcee24cc9.png">
         <img
             
             loading="lazy"
@@ -823,11 +826,11 @@
             srcset="https://user-images.githubusercontent.com/1651790/168571878-30a77057-1f66-448a-9bbd-0dedcee24cc9.png, https://user-images.githubusercontent.com/1651790/168571878-30a77057-1f66-448a-9bbd-0dedcee24cc9.png 1.5x, https://user-images.githubusercontent.com/1651790/168571878-30a77057-1f66-448a-9bbd-0dedcee24cc9.png 2x"
             sizes="auto"
             alt="https://user-images.githubusercontent.com/1651790/168571878-30a77057-1f66-448a-9bbd-0dedcee24cc9.png">
-    </a></p>
+    </a></figure></p>
 <ul>
 <li>We could set the refresh inteval, or download the dashboard as you wish by clicking the <code>···</code> button.</li>
 </ul>
-<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168573874-b5d57919-2866-4b3c-a4e5-55b6e6ef342e.png" title="https://user-images.githubusercontent.com/1651790/168573874-b5d57919-2866-4b3c-a4e5-55b6e6ef342e.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168573874-b5d57919-2866-4b3c-a4e5-55b6e6ef342e.png">
+<p><figure><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168573874-b5d57919-2866-4b3c-a4e5-55b6e6ef342e.png" title="https://user-images.githubusercontent.com/1651790/168573874-b5d57919-2866-4b3c-a4e5-55b6e6ef342e.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168573874-b5d57919-2866-4b3c-a4e5-55b6e6ef342e.png">
         <img
             
             loading="lazy"
@@ -835,7 +838,7 @@
             srcset="https://user-images.githubusercontent.com/1651790/168573874-b5d57919-2866-4b3c-a4e5-55b6e6ef342e.png, https://user-images.githubusercontent.com/1651790/168573874-b5d57919-2866-4b3c-a4e5-55b6e6ef342e.png 1.5x, https://user-images.githubusercontent.com/1651790/168573874-b5d57919-2866-4b3c-a4e5-55b6e6ef342e.png 2x"
             sizes="auto"
             alt="https://user-images.githubusercontent.com/1651790/168573874-b5d57919-2866-4b3c-a4e5-55b6e6ef342e.png">
-    </a></p>
+    </a></figure></p>
 <p>It&rsquo;s quite cool, ah? For now, we have a simple but typical data stack like any hobby data lab with everything open-source!</p>
 <p>Imagine we have 100 datasets in CSV, 200 tables in Data warehouse and a couple of data engineers running different projects that consume, generate different application, dashboard, and databases. When someone would like to discovery some of those table, dataset, dashboard and pipelines running across them, and then even modify some of them, it&rsquo;s proven to be quite costly in both communicationand engineering.</p>
 <p>Here comes the main part of our reference project: Metadata Discovery.</p>
@@ -973,7 +976,7 @@
 </span></span></code></pre></td></tr></table>
 </div>
 </div><p>Then we could view UI at <a href="http://localhost:5000/" target="_blank" rel="noopener noreferrer"><code>http://localhost:5000</code></a> and try to search <code>test</code>, it should return some results.</p>
-<p><a class="lightgallery" href="https://github.com/amundsen-io/amundsen/raw/master/docs/img/search-page.png" title="https://github.com/amundsen-io/amundsen/raw/master/docs/img/search-page.png" data-thumbnail="https://github.com/amundsen-io/amundsen/raw/master/docs/img/search-page.png">
+<p><figure><a class="lightgallery" href="https://github.com/amundsen-io/amundsen/raw/master/docs/img/search-page.png" title="https://github.com/amundsen-io/amundsen/raw/master/docs/img/search-page.png" data-thumbnail="https://github.com/amundsen-io/amundsen/raw/master/docs/img/search-page.png">
         <img
             
             loading="lazy"
@@ -981,7 +984,7 @@
             srcset="https://github.com/amundsen-io/amundsen/raw/master/docs/img/search-page.png, https://github.com/amundsen-io/amundsen/raw/master/docs/img/search-page.png 1.5x, https://github.com/amundsen-io/amundsen/raw/master/docs/img/search-page.png 2x"
             sizes="auto"
             alt="https://github.com/amundsen-io/amundsen/raw/master/docs/img/search-page.png">
-    </a></p>
+    </a></figure></p>
 <p>Then you could click and explore those dummy metadata loaded to Amundsen during the <code>sample_data_loader_nebula.py</code> on your own.</p>
 <p>Additionally, you could access the Graph Database with Nebula Studio(http://localhost:7001).</p>
 <blockquote>
@@ -1086,7 +1089,7 @@
 </div><h2 id="connecting-the-dots-metadata-discovery" class="headerLink">
     <a href="#connecting-the-dots-metadata-discovery" class="header-mark"></a>4 Connecting the dots, Metadata Discovery</h2><p>With the basic environment being set up, let&rsquo;s put everything together.</p>
 <p>Remember we had ELT some data to PostgreSQL as this?</p>
-<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png" title="https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png">
+<p><figure><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png" title="https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png">
         <img
             
             loading="lazy"
@@ -1094,7 +1097,7 @@
             srcset="https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png, https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png 1.5x, https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png 2x"
             sizes="auto"
             alt="https://user-images.githubusercontent.com/1651790/167540494-01e3dbd2-6ab1-41d2-998e-3b79f755bdc7.png">
-    </a></p>
+    </a></figure></p>
 <p>How could we let Amundsen discover metadata regarding those data and ETL?</p>
 <h3 id="extracting-postgres-metadata" class="headerLink">
     <a href="#extracting-postgres-metadata" class="header-mark"></a>4.1 Extracting Postgres metadata</h3><p>We started on the data source: Postgres, first.</p>
@@ -1178,7 +1181,7 @@
 </blockquote>
 <h4 id="verify-the-postgres-extraction" class="headerLink">
     <a href="#verify-the-postgres-extraction" class="header-mark"></a>4.1.2 Verify the Postgres Extraction</h4><p>Search <code>payments</code> or directly visit http://localhost:5000/table_detail/warehouse/postgres/public/payments, you could see the metadata from our Postgres like:</p>
-<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168475180-ebfaa188-268c-4fbe-a614-135d56d07e5d.png" title="https://user-images.githubusercontent.com/1651790/168475180-ebfaa188-268c-4fbe-a614-135d56d07e5d.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168475180-ebfaa188-268c-4fbe-a614-135d56d07e5d.png">
+<p><figure><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168475180-ebfaa188-268c-4fbe-a614-135d56d07e5d.png" title="https://user-images.githubusercontent.com/1651790/168475180-ebfaa188-268c-4fbe-a614-135d56d07e5d.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168475180-ebfaa188-268c-4fbe-a614-135d56d07e5d.png">
         <img
             
             loading="lazy"
@@ -1186,7 +1189,7 @@
             srcset="https://user-images.githubusercontent.com/1651790/168475180-ebfaa188-268c-4fbe-a614-135d56d07e5d.png, https://user-images.githubusercontent.com/1651790/168475180-ebfaa188-268c-4fbe-a614-135d56d07e5d.png 1.5x, https://user-images.githubusercontent.com/1651790/168475180-ebfaa188-268c-4fbe-a614-135d56d07e5d.png 2x"
             sizes="auto"
             alt="https://user-images.githubusercontent.com/1651790/168475180-ebfaa188-268c-4fbe-a614-135d56d07e5d.png">
-    </a></p>
+    </a></figure></p>
 <p>Then, metadata management actions like adding tags, owners, and descriptions could be done easily as it was in the above screen capture, too.</p>
 <h3 id="extracting-dbt-metadata" class="headerLink">
     <a href="#extracting-dbt-metadata" class="header-mark"></a>4.2 Extracting dbt metadata</h3><p>Actually, we could also pull metadata from <a href="https://www.getdbt.com/" target="_blank" rel="noopener noreferrer">dbt</a> itself.</p>
@@ -1289,7 +1292,7 @@
 </div>
 </div><h4 id="verify-the-dbt-extraction" class="headerLink">
     <a href="#verify-the-dbt-extraction" class="header-mark"></a>4.2.2 Verify the dbt Extraction</h4><p>Search <code>dbt_demo</code> or visit http://localhost:5000/table_detail/dbt_demo/snowflake/public/raw_inventory_value to see:</p>
-<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168479864-2f73ea73-265f-4cd2-999f-e7effbaf3ec1.png" title="https://user-images.githubusercontent.com/1651790/168479864-2f73ea73-265f-4cd2-999f-e7effbaf3ec1.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168479864-2f73ea73-265f-4cd2-999f-e7effbaf3ec1.png">
+<p><figure><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168479864-2f73ea73-265f-4cd2-999f-e7effbaf3ec1.png" title="https://user-images.githubusercontent.com/1651790/168479864-2f73ea73-265f-4cd2-999f-e7effbaf3ec1.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168479864-2f73ea73-265f-4cd2-999f-e7effbaf3ec1.png">
         <img
             
             loading="lazy"
@@ -1297,7 +1300,7 @@
             srcset="https://user-images.githubusercontent.com/1651790/168479864-2f73ea73-265f-4cd2-999f-e7effbaf3ec1.png, https://user-images.githubusercontent.com/1651790/168479864-2f73ea73-265f-4cd2-999f-e7effbaf3ec1.png 1.5x, https://user-images.githubusercontent.com/1651790/168479864-2f73ea73-265f-4cd2-999f-e7effbaf3ec1.png 2x"
             sizes="auto"
             alt="https://user-images.githubusercontent.com/1651790/168479864-2f73ea73-265f-4cd2-999f-e7effbaf3ec1.png">
-    </a></p>
+    </a></figure></p>
 <blockquote>
 <p>Tips: we could optionally enable debug logging to see what had been sent to Elasticsearch and Nebula Graph!</p>
 <div class="highlight"><div class="chroma">
@@ -1313,7 +1316,7 @@
 </div></blockquote>
 <p>Or, alternatively, explore the imported data in Nebula Studio:</p>
 <p>First, click &ldquo;Start with Vertices&rdquo;, fill in the vertex id: <code>snowflake://dbt_demo.public/fact_warehouse_inventory</code></p>
-<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168480047-26c28cde-5df8-40af-8da4-6ab0203094e2.png" title="https://user-images.githubusercontent.com/1651790/168480047-26c28cde-5df8-40af-8da4-6ab0203094e2.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168480047-26c28cde-5df8-40af-8da4-6ab0203094e2.png">
+<p><figure><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168480047-26c28cde-5df8-40af-8da4-6ab0203094e2.png" title="https://user-images.githubusercontent.com/1651790/168480047-26c28cde-5df8-40af-8da4-6ab0203094e2.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168480047-26c28cde-5df8-40af-8da4-6ab0203094e2.png">
         <img
             
             loading="lazy"
@@ -1321,13 +1324,13 @@
             srcset="https://user-images.githubusercontent.com/1651790/168480047-26c28cde-5df8-40af-8da4-6ab0203094e2.png, https://user-images.githubusercontent.com/1651790/168480047-26c28cde-5df8-40af-8da4-6ab0203094e2.png 1.5x, https://user-images.githubusercontent.com/1651790/168480047-26c28cde-5df8-40af-8da4-6ab0203094e2.png 2x"
             sizes="auto"
             alt="https://user-images.githubusercontent.com/1651790/168480047-26c28cde-5df8-40af-8da4-6ab0203094e2.png">
-    </a></p>
+    </a></figure></p>
 <p>Then, we could see the vertex being shown as the pink dot. Let&rsquo;s modify the <code>Expand</code> options with:</p>
 <ul>
 <li>Direction: Bidirect</li>
 <li>Steps: Single with 3</li>
 </ul>
-<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168480101-7b7b5824-06d9-4155-87c9-798db0dc7612.png" title="https://user-images.githubusercontent.com/1651790/168480101-7b7b5824-06d9-4155-87c9-798db0dc7612.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168480101-7b7b5824-06d9-4155-87c9-798db0dc7612.png">
+<p><figure><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168480101-7b7b5824-06d9-4155-87c9-798db0dc7612.png" title="https://user-images.githubusercontent.com/1651790/168480101-7b7b5824-06d9-4155-87c9-798db0dc7612.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168480101-7b7b5824-06d9-4155-87c9-798db0dc7612.png">
         <img
             
             loading="lazy"
@@ -1335,9 +1338,9 @@
             srcset="https://user-images.githubusercontent.com/1651790/168480101-7b7b5824-06d9-4155-87c9-798db0dc7612.png, https://user-images.githubusercontent.com/1651790/168480101-7b7b5824-06d9-4155-87c9-798db0dc7612.png 1.5x, https://user-images.githubusercontent.com/1651790/168480101-7b7b5824-06d9-4155-87c9-798db0dc7612.png 2x"
             sizes="auto"
             alt="https://user-images.githubusercontent.com/1651790/168480101-7b7b5824-06d9-4155-87c9-798db0dc7612.png">
-    </a></p>
+    </a></figure></p>
 <p>And double click the vertex(dot), it will expand 3 steps in bidirection:</p>
-<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168480280-1dc88d1b-1f1e-48fd-9997-972965522ef5.png" title="https://user-images.githubusercontent.com/1651790/168480280-1dc88d1b-1f1e-48fd-9997-972965522ef5.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168480280-1dc88d1b-1f1e-48fd-9997-972965522ef5.png">
+<p><figure><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168480280-1dc88d1b-1f1e-48fd-9997-972965522ef5.png" title="https://user-images.githubusercontent.com/1651790/168480280-1dc88d1b-1f1e-48fd-9997-972965522ef5.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168480280-1dc88d1b-1f1e-48fd-9997-972965522ef5.png">
         <img
             
             loading="lazy"
@@ -1345,13 +1348,13 @@
             srcset="https://user-images.githubusercontent.com/1651790/168480280-1dc88d1b-1f1e-48fd-9997-972965522ef5.png, https://user-images.githubusercontent.com/1651790/168480280-1dc88d1b-1f1e-48fd-9997-972965522ef5.png 1.5x, https://user-images.githubusercontent.com/1651790/168480280-1dc88d1b-1f1e-48fd-9997-972965522ef5.png 2x"
             sizes="auto"
             alt="https://user-images.githubusercontent.com/1651790/168480280-1dc88d1b-1f1e-48fd-9997-972965522ef5.png">
-    </a></p>
+    </a></figure></p>
 <p>From this graph view, the insight of the metadata is extremely easy to be explored, right?</p>
 <blockquote>
 <p>Tips, you may like to click the 👁 icon to select some properties to be shown, which was done by me before capturing the screen as above.</p>
 </blockquote>
 <p>And, what we had seen in the Nebula Studio echoes the data model of Amundsen metadata service, too:</p>
-<p><a class="lightgallery" href="https://www.amundsen.io/amundsen/img/graph_model.png" title="https://www.amundsen.io/amundsen/img/graph_model.png" data-thumbnail="https://www.amundsen.io/amundsen/img/graph_model.png">
+<p><figure><a class="lightgallery" href="https://www.amundsen.io/amundsen/img/graph_model.png" title="https://www.amundsen.io/amundsen/img/graph_model.png" data-thumbnail="https://www.amundsen.io/amundsen/img/graph_model.png">
         <img
             
             loading="lazy"
@@ -1359,7 +1362,7 @@
             srcset="https://www.amundsen.io/amundsen/img/graph_model.png, https://www.amundsen.io/amundsen/img/graph_model.png 1.5x, https://www.amundsen.io/amundsen/img/graph_model.png 2x"
             sizes="auto"
             alt="https://www.amundsen.io/amundsen/img/graph_model.png">
-    </a></p>
+    </a></figure></p>
 <p>Finally, remember we had leveraged dbt to transform some data in meltano, and the menifest file path is <code>.meltano/transformers/dbt/target/catalog.json</code>, you can try create a databuilder job to import it.</p>
 <h3 id="extracting-superset-metadata" class="headerLink">
     <a href="#extracting-superset-metadata" class="header-mark"></a>4.3 Extracting Superset metadata</h3><p><a href="https://www.amundsen.io/amundsen/databuilder/databuilder/extractor/dashboard/apache_superset/apache_superset_metadata_extractor.py" target="_blank" rel="noopener noreferrer">Dashboards</a>, <a href="https://www.amundsen.io/amundsen/databuilder/databuilder/extractor/dashboard/apache_superset/apache_superset_chart_extractor.py" target="_blank" rel="noopener noreferrer">Charts</a> and the <a href="https://www.amundsen.io/amundsen/databuilder/databuilder/extractor/dashboard/apache_superset/apache_superset_table_extractor.py" target="_blank" rel="noopener noreferrer">relationships with Tables</a> can be extracted by Amundsen data builder, as we already setup a Superset Dashboard, let&rsquo;s try ingesting its metadata.</p>
@@ -1418,7 +1421,7 @@
 </div>
 </div><h4 id="verify-the-superset-dashboard-extraction" class="headerLink">
     <a href="#verify-the-superset-dashboard-extraction" class="header-mark"></a>4.3.2 Verify the Superset Dashboard Extraction</h4><p>By searching it in Amundsen, we could the Dashboard info now. And we could verify it from Nebula Studio, too.</p>
-<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168719624-738323dd-4c6e-475f-a370-f149181c6184.png" title="https://user-images.githubusercontent.com/1651790/168719624-738323dd-4c6e-475f-a370-f149181c6184.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168719624-738323dd-4c6e-475f-a370-f149181c6184.png">
+<p><figure><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168719624-738323dd-4c6e-475f-a370-f149181c6184.png" title="https://user-images.githubusercontent.com/1651790/168719624-738323dd-4c6e-475f-a370-f149181c6184.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168719624-738323dd-4c6e-475f-a370-f149181c6184.png">
         <img
             
             loading="lazy"
@@ -1426,10 +1429,10 @@
             srcset="https://user-images.githubusercontent.com/1651790/168719624-738323dd-4c6e-475f-a370-f149181c6184.png, https://user-images.githubusercontent.com/1651790/168719624-738323dd-4c6e-475f-a370-f149181c6184.png 1.5x, https://user-images.githubusercontent.com/1651790/168719624-738323dd-4c6e-475f-a370-f149181c6184.png 2x"
             sizes="auto"
             alt="https://user-images.githubusercontent.com/1651790/168719624-738323dd-4c6e-475f-a370-f149181c6184.png">
-    </a></p>
+    </a></figure></p>
 <blockquote>
 <p>Note, see also the Dashboard&rsquo;s model in Amundsen from <a href="https://www.amundsen.io/amundsen/databuilder/docs/dashboard_ingestion_guide/" target="_blank" rel="noopener noreferrer">the dashboard ingestion guide</a>:</p>
-<p><a class="lightgallery" href="https://www.amundsen.io/amundsen/databuilder/docs/assets/dashboard_graph_modeling.png?raw=true" title="dashboard_graph_modeling" data-thumbnail="https://www.amundsen.io/amundsen/databuilder/docs/assets/dashboard_graph_modeling.png?raw=true">
+<p><figure><a class="lightgallery" href="https://www.amundsen.io/amundsen/databuilder/docs/assets/dashboard_graph_modeling.png?raw=true" title="dashboard_graph_modeling" data-thumbnail="https://www.amundsen.io/amundsen/databuilder/docs/assets/dashboard_graph_modeling.png?raw=true">
         <img
             
             loading="lazy"
@@ -1437,11 +1440,11 @@
             srcset="https://www.amundsen.io/amundsen/databuilder/docs/assets/dashboard_graph_modeling.png?raw=true, https://www.amundsen.io/amundsen/databuilder/docs/assets/dashboard_graph_modeling.png?raw=true 1.5x, https://www.amundsen.io/amundsen/databuilder/docs/assets/dashboard_graph_modeling.png?raw=true 2x"
             sizes="auto"
             alt="https://www.amundsen.io/amundsen/databuilder/docs/assets/dashboard_graph_modeling.png?raw=true">
-    </a></p>
+    </a></figure></p>
 </blockquote>
 <h3 id="preview-data-with-superset" class="headerLink">
     <a href="#preview-data-with-superset" class="header-mark"></a>4.4 Preview data with Superset</h3><p>Superset could be used to preview Table Data like this. Corresponding documentation could be referred <a href="https://www.amundsen.io/amundsen/frontend/docs/configuration/#preview-client" target="_blank" rel="noopener noreferrer">here</a>, where the API of <code>/superset/sql_json/</code> will be called by Amundsen Frontend.</p>
-<p><a class="lightgallery" href="https://github.com/amundsen-io/amundsenfrontendlibrary/blob/master/docs/img/data_preview.png?raw=true" title="https://github.com/amundsen-io/amundsenfrontendlibrary/blob/master/docs/img/data_preview.png?raw=true" data-thumbnail="https://github.com/amundsen-io/amundsenfrontendlibrary/blob/master/docs/img/data_preview.png?raw=true">
+<p><figure><a class="lightgallery" href="https://github.com/amundsen-io/amundsenfrontendlibrary/blob/master/docs/img/data_preview.png?raw=true" title="https://github.com/amundsen-io/amundsenfrontendlibrary/blob/master/docs/img/data_preview.png?raw=true" data-thumbnail="https://github.com/amundsen-io/amundsenfrontendlibrary/blob/master/docs/img/data_preview.png?raw=true">
         <img
             
             loading="lazy"
@@ -1449,7 +1452,7 @@
             srcset="https://github.com/amundsen-io/amundsenfrontendlibrary/blob/master/docs/img/data_preview.png?raw=true, https://github.com/amundsen-io/amundsenfrontendlibrary/blob/master/docs/img/data_preview.png?raw=true 1.5x, https://github.com/amundsen-io/amundsenfrontendlibrary/blob/master/docs/img/data_preview.png?raw=true 2x"
             sizes="auto"
             alt="https://github.com/amundsen-io/amundsenfrontendlibrary/blob/master/docs/img/data_preview.png?raw=true">
-    </a></p>
+    </a></figure></p>
 <h3 id="enable-data-lineage" class="headerLink">
     <a href="#enable-data-lineage" class="header-mark"></a>4.5 Enable Data lineage</h3><p>By default, data lineage was not enabled, we could enable it by:</p>
 <ol start="0">
@@ -1526,7 +1529,7 @@
 </span></span></code></pre></td></tr></table>
 </div>
 </div><p>After that, we could visit http://localhost:5000/lineage/table/gold/hive/test_schema/test_table1 to see the <code>Lineage</code> is shown as:</p>
-<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168838731-79d0e3bc-439e-4f6b-8ef7-83b37e9bcb12.png" title="https://user-images.githubusercontent.com/1651790/168838731-79d0e3bc-439e-4f6b-8ef7-83b37e9bcb12.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168838731-79d0e3bc-439e-4f6b-8ef7-83b37e9bcb12.png">
+<p><figure><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168838731-79d0e3bc-439e-4f6b-8ef7-83b37e9bcb12.png" title="https://user-images.githubusercontent.com/1651790/168838731-79d0e3bc-439e-4f6b-8ef7-83b37e9bcb12.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168838731-79d0e3bc-439e-4f6b-8ef7-83b37e9bcb12.png">
         <img
             
             loading="lazy"
@@ -1534,9 +1537,9 @@
             srcset="https://user-images.githubusercontent.com/1651790/168838731-79d0e3bc-439e-4f6b-8ef7-83b37e9bcb12.png, https://user-images.githubusercontent.com/1651790/168838731-79d0e3bc-439e-4f6b-8ef7-83b37e9bcb12.png 1.5x, https://user-images.githubusercontent.com/1651790/168838731-79d0e3bc-439e-4f6b-8ef7-83b37e9bcb12.png 2x"
             sizes="auto"
             alt="https://user-images.githubusercontent.com/1651790/168838731-79d0e3bc-439e-4f6b-8ef7-83b37e9bcb12.png">
-    </a></p>
+    </a></figure></p>
 <p>We could click <code>Downstream</code>(if there is) to see downstream resources of this table:</p>
-<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168839251-efd523af-d729-44cf-a40b-fa83a0852654.png" title="https://user-images.githubusercontent.com/1651790/168839251-efd523af-d729-44cf-a40b-fa83a0852654.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168839251-efd523af-d729-44cf-a40b-fa83a0852654.png">
+<p><figure><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168839251-efd523af-d729-44cf-a40b-fa83a0852654.png" title="https://user-images.githubusercontent.com/1651790/168839251-efd523af-d729-44cf-a40b-fa83a0852654.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168839251-efd523af-d729-44cf-a40b-fa83a0852654.png">
         <img
             
             loading="lazy"
@@ -1544,9 +1547,9 @@
             srcset="https://user-images.githubusercontent.com/1651790/168839251-efd523af-d729-44cf-a40b-fa83a0852654.png, https://user-images.githubusercontent.com/1651790/168839251-efd523af-d729-44cf-a40b-fa83a0852654.png 1.5x, https://user-images.githubusercontent.com/1651790/168839251-efd523af-d729-44cf-a40b-fa83a0852654.png 2x"
             sizes="auto"
             alt="https://user-images.githubusercontent.com/1651790/168839251-efd523af-d729-44cf-a40b-fa83a0852654.png">
-    </a></p>
+    </a></figure></p>
 <p>Or click Lineage to see the graph:</p>
-<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168838814-e6ff5152-c24b-470e-a46a-48f183ba7201.png" title="https://user-images.githubusercontent.com/1651790/168838814-e6ff5152-c24b-470e-a46a-48f183ba7201.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168838814-e6ff5152-c24b-470e-a46a-48f183ba7201.png">
+<p><figure><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168838814-e6ff5152-c24b-470e-a46a-48f183ba7201.png" title="https://user-images.githubusercontent.com/1651790/168838814-e6ff5152-c24b-470e-a46a-48f183ba7201.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168838814-e6ff5152-c24b-470e-a46a-48f183ba7201.png">
         <img
             
             loading="lazy"
@@ -1554,7 +1557,7 @@
             srcset="https://user-images.githubusercontent.com/1651790/168838814-e6ff5152-c24b-470e-a46a-48f183ba7201.png, https://user-images.githubusercontent.com/1651790/168838814-e6ff5152-c24b-470e-a46a-48f183ba7201.png 1.5x, https://user-images.githubusercontent.com/1651790/168838814-e6ff5152-c24b-470e-a46a-48f183ba7201.png 2x"
             sizes="auto"
             alt="https://user-images.githubusercontent.com/1651790/168838814-e6ff5152-c24b-470e-a46a-48f183ba7201.png">
-    </a></p>
+    </a></figure></p>
 <p>There are API for lineage query, too. Here is an example to query that with cURL, where we leverage the netshoot container as we did before for user creation.</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
@@ -1643,7 +1646,7 @@
 </div><ul>
 <li>We could now even query it in Nebula Graph Studio&rsquo;s console, and click <code>View Subgraphs</code> to make it rendered in a graph view then.</li>
 </ul>
-<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168844882-ca3d0587-7946-4e17-8264-9dc973a44673.png" title="https://user-images.githubusercontent.com/1651790/168844882-ca3d0587-7946-4e17-8264-9dc973a44673.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168844882-ca3d0587-7946-4e17-8264-9dc973a44673.png">
+<p><figure><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168844882-ca3d0587-7946-4e17-8264-9dc973a44673.png" title="https://user-images.githubusercontent.com/1651790/168844882-ca3d0587-7946-4e17-8264-9dc973a44673.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168844882-ca3d0587-7946-4e17-8264-9dc973a44673.png">
         <img
             
             loading="lazy"
@@ -1651,8 +1654,8 @@
             srcset="https://user-images.githubusercontent.com/1651790/168844882-ca3d0587-7946-4e17-8264-9dc973a44673.png, https://user-images.githubusercontent.com/1651790/168844882-ca3d0587-7946-4e17-8264-9dc973a44673.png 1.5x, https://user-images.githubusercontent.com/1651790/168844882-ca3d0587-7946-4e17-8264-9dc973a44673.png 2x"
             sizes="auto"
             alt="https://user-images.githubusercontent.com/1651790/168844882-ca3d0587-7946-4e17-8264-9dc973a44673.png">
-    </a></p>
-<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168845155-b0e7a5ce-3ddf-4cc9-89a3-aaf1bbb0f5ec.png" title="https://user-images.githubusercontent.com/1651790/168845155-b0e7a5ce-3ddf-4cc9-89a3-aaf1bbb0f5ec.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168845155-b0e7a5ce-3ddf-4cc9-89a3-aaf1bbb0f5ec.png">
+    </a></figure></p>
+<p><figure><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168845155-b0e7a5ce-3ddf-4cc9-89a3-aaf1bbb0f5ec.png" title="https://user-images.githubusercontent.com/1651790/168845155-b0e7a5ce-3ddf-4cc9-89a3-aaf1bbb0f5ec.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/168845155-b0e7a5ce-3ddf-4cc9-89a3-aaf1bbb0f5ec.png">
         <img
             
             loading="lazy"
@@ -1660,7 +1663,7 @@
             srcset="https://user-images.githubusercontent.com/1651790/168845155-b0e7a5ce-3ddf-4cc9-89a3-aaf1bbb0f5ec.png, https://user-images.githubusercontent.com/1651790/168845155-b0e7a5ce-3ddf-4cc9-89a3-aaf1bbb0f5ec.png 1.5x, https://user-images.githubusercontent.com/1651790/168845155-b0e7a5ce-3ddf-4cc9-89a3-aaf1bbb0f5ec.png 2x"
             sizes="auto"
             alt="https://user-images.githubusercontent.com/1651790/168845155-b0e7a5ce-3ddf-4cc9-89a3-aaf1bbb0f5ec.png">
-    </a></p>
+    </a></figure></p>
 <h4 id="extract-data-lineage" class="headerLink">
     <a href="#extract-data-lineage" class="header-mark"></a>4.5.2 Extract Data Lineage</h4><h5 id="dbt" class="headerLink">
     <a href="#dbt" class="header-mark"></a>4.5.2.1 Dbt</h5><p>As mentioned above, <a href="https://www.amundsen.io/amundsen/databuilder/#dbtextractor" target="_blank" rel="noopener noreferrer">DbtExtractor</a> will extract table level lineage, together with other information defined in the dbt ETL pipeline.</p>
@@ -1703,7 +1706,7 @@
 <li>Consume, manage, and discover metadata from Frontend UI(with Superset for preview) or API</li>
 <li>Have more possibilities, flexibility, and insights on Nebula Graph from queries and UI</li>
 </ul>
-<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg" title="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg" data-thumbnail="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg">
+<p><figure><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg" title="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg" data-thumbnail="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg">
         <img
             
             loading="lazy"
@@ -1711,7 +1714,7 @@
             srcset="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg, https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg 1.5x, https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg 2x"
             sizes="auto"
             alt="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg">
-    </a></p>
+    </a></figure></p>
 <h3 id="upstream-projects" class="headerLink">
     <a href="#upstream-projects" class="header-mark"></a>5.1 Upstream Projects</h3><p>All projects used in this reference project are listed below in lexicographic order.</p>
 <ul>
@@ -1743,7 +1746,7 @@
         srcset="/en/nebulagraph-sns/featured-image.webp, /en/nebulagraph-sns/featured-image.webp 1.5x, /en/nebulagraph-sns/featured-image.webp 2x"
         sizes="auto"
         alt="/en/nebulagraph-sns/featured-image.webp"
-        title="I would like to share my opinionated reference data infra stack with some of those best open-source projects with modern ETL, Dashboard, Metadata Governance, and Data Lineage Management." height="200" width="400"></a>
+        title="I would like to share my opinionated reference data infra stack with some of those best open-source projects with modern ETL, Dashboard, Metadata Governance, and Data Lineage Management." height="200"   width="400" ></a>
             </div><h2 class="related-title">
                 <a href="/en/nebulagraph-sns/">Social Network with NebulaGraph</a>
             </h2>
@@ -1757,7 +1760,7 @@
         srcset="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.webp, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.webp 1.5x, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.webp 2x"
         sizes="auto"
         alt="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.webp"
-        title="I would like to share my opinionated reference data infra stack with some of those best open-source projects with modern ETL, Dashboard, Metadata Governance, and Data Lineage Management." height="200" width="400"></a>
+        title="I would like to share my opinionated reference data infra stack with some of those best open-source projects with modern ETL, Dashboard, Metadata Governance, and Data Lineage Management." height="200"   width="400" ></a>
             </div><h2 class="related-title">
                 <a href="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/">Use ChatGPT and Nebulagraph to Predict Fifa World Cup</a>
             </h2>
@@ -1771,7 +1774,7 @@
         srcset="/en/nebulagraph-etl-dbt/featured-image.webp, /en/nebulagraph-etl-dbt/featured-image.webp 1.5x, /en/nebulagraph-etl-dbt/featured-image.webp 2x"
         sizes="auto"
         alt="/en/nebulagraph-etl-dbt/featured-image.webp"
-        title="I would like to share my opinionated reference data infra stack with some of those best open-source projects with modern ETL, Dashboard, Metadata Governance, and Data Lineage Management." height="200" width="400"></a>
+        title="I would like to share my opinionated reference data infra stack with some of those best open-source projects with modern ETL, Dashboard, Metadata Governance, and Data Lineage Management." height="200"   width="400" ></a>
             </div><h2 class="related-title">
                 <a href="/en/nebulagraph-etl-dbt/">Tabular Data ETL to NebulaGraph with dbt</a>
             </h2>
@@ -1785,7 +1788,7 @@
         srcset="/en/fraud-detection-with-nebulagraph/featured-image.webp, /en/fraud-detection-with-nebulagraph/featured-image.webp 1.5x, /en/fraud-detection-with-nebulagraph/featured-image.webp 2x"
         sizes="auto"
         alt="/en/fraud-detection-with-nebulagraph/featured-image.webp"
-        title="I would like to share my opinionated reference data infra stack with some of those best open-source projects with modern ETL, Dashboard, Metadata Governance, and Data Lineage Management." height="200" width="400"></a>
+        title="I would like to share my opinionated reference data infra stack with some of those best open-source projects with modern ETL, Dashboard, Metadata Governance, and Data Lineage Management." height="200"   width="400" ></a>
             </div><h2 class="related-title">
                 <a href="/en/fraud-detection-with-nebulagraph/">Fraud Detection with NebulaGraph GraphDatabase in action</a>
             </h2>
@@ -1799,7 +1802,7 @@
         srcset="/en/spark-on-nebula-graph/featured-image.webp, /en/spark-on-nebula-graph/featured-image.webp 1.5x, /en/spark-on-nebula-graph/featured-image.webp 2x"
         sizes="auto"
         alt="/en/spark-on-nebula-graph/featured-image.webp"
-        title="I would like to share my opinionated reference data infra stack with some of those best open-source projects with modern ETL, Dashboard, Metadata Governance, and Data Lineage Management." height="200" width="400"></a>
+        title="I would like to share my opinionated reference data infra stack with some of those best open-source projects with modern ETL, Dashboard, Metadata Governance, and Data Lineage Management." height="200"   width="400" ></a>
             </div><h2 class="related-title">
                 <a href="/en/spark-on-nebula-graph/">Spark on Nebula Graph</a>
             </h2>
@@ -1842,7 +1845,7 @@
             </noscript></div></article></div>
         </main><footer class="footer">
         <div class="footer-container"><div class="footer-line">
-                    Powered by <a href="https://gohugo.io/" target="_blank" rel="noopener noreferrer" title="Hugo 0.110.0">Hugo</a>&nbsp;|&nbsp;Theme - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreferrer" title="DoIt 0.3.0"><i class="far fa-edit fa-fw"></i> DoIt</a>
+                    Powered by <a href="https://gohugo.io/" target="_blank" rel="noopener noreferrer" title="Hugo 0.111.3">Hugo</a>&nbsp;|&nbsp;Theme - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreferrer" title="DoIt 0.3.0"><i class="far fa-edit fa-fw"></i> DoIt</a>
                 </div><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2018 - 2023</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="https://siwei.io" target="_blank" rel="noopener noreferrer">Wey Gu</a></span>&nbsp;|&nbsp;<span class="license"><a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">CC BY-NC 4.0</a></span></div>
             <div class="footer-line"></div>
             <div class="footer-line">

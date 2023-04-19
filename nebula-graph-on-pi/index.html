@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="zh-CN">
 
@@ -47,12 +49,13 @@
 </head>
 
 <body header-desktop="fixed" header-mobile="auto"><script type="text/javascript">
-        function setTheme(theme) {document.body.setAttribute('theme', theme); document.documentElement.style.setProperty('color-scheme', theme === 'light' ? 'light' : 'dark');}
+        function setTheme(theme) {document.body.setAttribute('theme', theme); document.documentElement.style.setProperty('color-scheme', theme === 'light' ? 'light' : 'dark'); window.theme = theme;   window.isDark = window.theme !== 'light' }
         function saveTheme(theme) {window.localStorage && localStorage.setItem('theme', theme);}
         function getMeta(metaName) {const metas = document.getElementsByTagName('meta'); for (let i = 0; i < metas.length; i++) if (metas[i].getAttribute('name') === metaName) return metas[i]; return '';}
         if (window.localStorage && localStorage.getItem('theme')) {let theme = localStorage.getItem('theme');theme === 'light' || theme === 'dark' || theme === 'black' ? setTheme(theme) : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light')); } else { if ('auto' === 'light' || 'auto' === 'dark' || 'auto' === 'black') setTheme('auto'), saveTheme('auto'); else saveTheme('auto'), window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light');}
         let metaColors = {'light': '#f8f8f8','dark': '#252627','black': '#000000'}
         getMeta('theme-color').content = metaColors[document.body.getAttribute('theme')];
+        window.switchThemeEventSet = new Set()
     </script>
     <div id="back-to-top"></div>
     <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
@@ -146,7 +149,7 @@
     <li><a href="#附录安装-ubuntu-server-在-rock-pi-3a-上">附录：安装 Ubuntu Server 在 Rock Pi 3A 上</a></li>
   </ol>
 </nav></div>
-    </div><script>document.getElementsByTagName("main")[0].setAttribute("pageStyle", "normal")</script><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC", "true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Nebula Graph on Pi</h1><div class="post-meta">
+    </div><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC", "true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Nebula Graph on Pi</h1><div class="post-meta">
             <div class="post-meta-line">
                 <span class="post-author"><i class="author fas fa-user-circle fa-fw"></i><a href="https://siwei.io" title="Author" target="_blank" rel="noopener noreferrer author" class="author">Wey Gu</a>
                 </span>&nbsp;<span class="post-category">收录于 </span>&nbsp;<span class="post-category">类别 <a href="/categories/nebula-graph/"><i class="far fa-folder fa-fw"></i>Nebula Graph</a></span></div>
@@ -159,7 +162,7 @@
         srcset="/nebula-graph-on-pi/featured-image.webp, /nebula-graph-on-pi/featured-image.webp 1.5x, /nebula-graph-on-pi/featured-image.webp 2x"
         sizes="auto"
         alt="/nebula-graph-on-pi/featured-image.webp"
-        title="得益于 Nebula 的原生 ARM64v8 的支持，在树莓派等 ARM 单板上跑 Nebula Graph 也非常容易。" height="908" width="1736"></div><div class="details toc" id="toc-static"  kept="">
+        title="得益于 Nebula 的原生 ARM64v8 的支持，在树莓派等 ARM 单板上跑 Nebula Graph 也非常容易。" height="908"   width="1736" ></div><div class="details toc" id="toc-static"  kept="">
                 <div class="details-summary toc-title">
                     <span>目录</span>
                     <span><i class="details-icon fas fa-angle-right"></i></span>
@@ -184,25 +187,25 @@
     <a href="#%e8%83%8c%e6%99%af" class="header-mark"></a>1 背景</h2><p>最近，在 Nebula Graph 社区 Yee 老师的（再）一次修复了 Nebula Graph 的构建依赖的 ARM 支持问题（<a href="https://github.com/vesoft-inc/nebula-third-party/pull/37" target="_blank" rel="noopener noreferrer">nebula-third-party#37</a>）之后，我们又可以愉快地在 M1 Mac 上玩这个分布式开源图数据库了。</p>
 <p>苦于树莓派的价格，一直没找机会把 Nebula 跑在小板子上玩玩。至于为什么要跑在树莓派上我的回答当然是 <del>Because I can</del> 在非常非常边缘计算的场景下（这里挖个坑，我一定要找一个这样的场景分享出来）。</p>
 <p>终于，一周多之前在 <a href="https://twitter.com/laixintao" target="_blank" rel="noopener noreferrer">@laixintao</a> 和 <a href="https://twitter.com/andelf/status/1504295476958404608" target="_blank" rel="noopener noreferrer">@andelf</a> 的一个讨论下我决定找一个树莓派的 alternative，最后下单了 <a href="https://wiki.radxa.com/Rock3/" target="_blank" rel="noopener noreferrer">Rock Pi 3A</a>，在因为深圳疫情影响下拖到了这个礼拜才终于发货了！</p>
-<p><a class="lightgallery" href="/nebula-graph-on-pi/tweet-RPi-alternative.webp" title="tweet-RPi-alternative" data-thumbnail="/nebula-graph-on-pi/tweet-RPi-alternative.webp">
+<p><figure><a class="lightgallery" href="/nebula-graph-on-pi/tweet-RPi-alternative.webp" title="tweet-RPi-alternative" data-thumbnail="/nebula-graph-on-pi/tweet-RPi-alternative.webp">
         <img
             
             loading="lazy"
-            src="tweet-RPi-alternative.webp"
-            srcset="/nebula-graph-on-pi/tweet-RPi-alternative.webp, tweet-RPi-alternative.webp 1.5x, /nebula-graph-on-pi/tweet-RPi-alternative.webp 2x"
+            src="/nebula-graph-on-pi/tweet-RPi-alternative.webp"
+            srcset="/nebula-graph-on-pi/tweet-RPi-alternative.webp, /nebula-graph-on-pi/tweet-RPi-alternative.webp 1.5x, /nebula-graph-on-pi/tweet-RPi-alternative.webp 2x"
             sizes="auto"
             alt="/nebula-graph-on-pi/tweet-RPi-alternative.webp">
-    </a></p>
+    </a></figure></p>
 <p>它看起来真的很棒！</p>
-<p><a class="lightgallery" href="/nebula-graph-on-pi/rockspi_before.webp" title="rockspi_before" data-thumbnail="/nebula-graph-on-pi/rockspi_before.webp">
+<p><figure><a class="lightgallery" href="/nebula-graph-on-pi/rockspi_before.webp" title="rockspi_before" data-thumbnail="/nebula-graph-on-pi/rockspi_before.webp">
         <img
             
             loading="lazy"
-            src="rockspi_before.webp"
-            srcset="/nebula-graph-on-pi/rockspi_before.webp, rockspi_before.webp 1.5x, /nebula-graph-on-pi/rockspi_before.webp 2x"
+            src="/nebula-graph-on-pi/rockspi_before.webp"
+            srcset="/nebula-graph-on-pi/rockspi_before.webp, /nebula-graph-on-pi/rockspi_before.webp 1.5x, /nebula-graph-on-pi/rockspi_before.webp 2x"
             sizes="auto"
             alt="/nebula-graph-on-pi/rockspi_before.webp">
-    </a></p>
+    </a></figure></p>
 <h2 id="在-arm64-板子上装-nebula-graph-图数据库" class="headerLink">
     <a href="#%e5%9c%a8-arm64-%e6%9d%bf%e5%ad%90%e4%b8%8a%e8%a3%85-nebula-graph-%e5%9b%be%e6%95%b0%e6%8d%ae%e5%ba%93" class="header-mark"></a>2 在 ARM64 板子上装 Nebula Graph 图数据库</h2><blockquote>
 <p>实际上 Nebula Graph 在 3.0 之后提供了一个<a href="https://docs.nebula-graph.com.cn/3.0.1/4.deployment-and-installation/standalone-deployment/" target="_blank" rel="noopener noreferrer">单机版</a>，这使得 Nebula 在边缘计算情况下有了更小的 footprint，不过这次我还没有使用这个版本，下次试试再给大家分享。</p>
@@ -330,15 +333,15 @@
 </div>
 </div><p>Check this out and&hellip;</p>
 <p>Happy Graphing!</p>
-<p><a class="lightgallery" href="/nebula-graph-on-pi/Nebula-on-Pi.webp" title="Nebula-on-Pi" data-thumbnail="/nebula-graph-on-pi/Nebula-on-Pi.webp">
+<p><figure><a class="lightgallery" href="/nebula-graph-on-pi/Nebula-on-Pi.webp" title="Nebula-on-Pi" data-thumbnail="/nebula-graph-on-pi/Nebula-on-Pi.webp">
         <img
             
             loading="lazy"
-            src="Nebula-on-Pi.webp"
-            srcset="/nebula-graph-on-pi/Nebula-on-Pi.webp, Nebula-on-Pi.webp 1.5x, /nebula-graph-on-pi/Nebula-on-Pi.webp 2x"
+            src="/nebula-graph-on-pi/Nebula-on-Pi.webp"
+            srcset="/nebula-graph-on-pi/Nebula-on-Pi.webp, /nebula-graph-on-pi/Nebula-on-Pi.webp 1.5x, /nebula-graph-on-pi/Nebula-on-Pi.webp 2x"
             sizes="auto"
             alt="/nebula-graph-on-pi/Nebula-on-Pi.webp">
-    </a></p>
+    </a></figure></p>
 <h2 id="附录安装-ubuntu-server-在-rock-pi-3a-上" class="headerLink">
     <a href="#%e9%99%84%e5%bd%95%e5%ae%89%e8%a3%85-ubuntu-server-%e5%9c%a8-rock-pi-3a-%e4%b8%8a" class="header-mark"></a>3 附录：安装 Ubuntu Server 在 Rock Pi 3A 上</h2><ul>
 <li>
@@ -369,7 +372,7 @@
         srcset="/graph-enabled-infra-ops/featured-image.webp, /graph-enabled-infra-ops/featured-image.webp 1.5x, /graph-enabled-infra-ops/featured-image.webp 2x"
         sizes="auto"
         alt="/graph-enabled-infra-ops/featured-image.webp"
-        title="得益于 Nebula 的原生 ARM64v8 的支持，在树莓派等 ARM 单板上跑 Nebula Graph 也非常容易。" height="200" width="400"></a>
+        title="得益于 Nebula 的原生 ARM64v8 的支持，在树莓派等 ARM 单板上跑 Nebula Graph 也非常容易。" height="200"   width="400" ></a>
             </div><h2 class="related-title">
                 <a href="/graph-enabled-infra-ops/">图数据库驱动的基础设施运维示例</a>
             </h2>
@@ -383,7 +386,7 @@
         srcset="/nebulagraph-sns/featured-image.webp, /nebulagraph-sns/featured-image.webp 1.5x, /nebulagraph-sns/featured-image.webp 2x"
         sizes="auto"
         alt="/nebulagraph-sns/featured-image.webp"
-        title="得益于 Nebula 的原生 ARM64v8 的支持，在树莓派等 ARM 单板上跑 Nebula Graph 也非常容易。" height="200" width="400"></a>
+        title="得益于 Nebula 的原生 ARM64v8 的支持，在树莓派等 ARM 单板上跑 Nebula Graph 也非常容易。" height="200"   width="400" ></a>
             </div><h2 class="related-title">
                 <a href="/nebulagraph-sns/">图数据库的社交网络应用</a>
             </h2>
@@ -397,7 +400,7 @@
         srcset="/chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.webp, /chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.webp 1.5x, /chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.webp 2x"
         sizes="auto"
         alt="/chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.webp"
-        title="得益于 Nebula 的原生 ARM64v8 的支持，在树莓派等 ARM 单板上跑 Nebula Graph 也非常容易。" height="200" width="400"></a>
+        title="得益于 Nebula 的原生 ARM64v8 的支持，在树莓派等 ARM 单板上跑 Nebula Graph 也非常容易。" height="200"   width="400" ></a>
             </div><h2 class="related-title">
                 <a href="/chatgpt-and-nebulagraph-predict-fifa-world-cup/">chatGPT 加 NebulaGraph 预测 2022 世界杯冠军球队</a>
             </h2>
@@ -411,7 +414,7 @@
         srcset="/data-lineage-oss-ref-solution/featured-image.webp, /data-lineage-oss-ref-solution/featured-image.webp 1.5x, /data-lineage-oss-ref-solution/featured-image.webp 2x"
         sizes="auto"
         alt="/data-lineage-oss-ref-solution/featured-image.webp"
-        title="得益于 Nebula 的原生 ARM64v8 的支持，在树莓派等 ARM 单板上跑 Nebula Graph 也非常容易。" height="200" width="400"></a>
+        title="得益于 Nebula 的原生 ARM64v8 的支持，在树莓派等 ARM 单板上跑 Nebula Graph 也非常容易。" height="200"   width="400" ></a>
             </div><h2 class="related-title">
                 <a href="/data-lineage-oss-ref-solution/">基于开源技术栈的数据血缘、治理参考解决方案</a>
             </h2>
@@ -425,7 +428,7 @@
         srcset="/apisix-and-nebulagraph/featured-image.webp, /apisix-and-nebulagraph/featured-image.webp 1.5x, /apisix-and-nebulagraph/featured-image.webp 2x"
         sizes="auto"
         alt="/apisix-and-nebulagraph/featured-image.webp"
-        title="得益于 Nebula 的原生 ARM64v8 的支持，在树莓派等 ARM 单板上跑 Nebula Graph 也非常容易。" height="200" width="400"></a>
+        title="得益于 Nebula 的原生 ARM64v8 的支持，在树莓派等 ARM 单板上跑 Nebula Graph 也非常容易。" height="200"   width="400" ></a>
             </div><h2 class="related-title">
                 <a href="/apisix-and-nebulagraph/">NebulaGraph 的云原生 API 网关最佳实践</a>
             </h2>
@@ -468,7 +471,7 @@
             </noscript></div></article></div>
         </main><footer class="footer">
         <div class="footer-container"><div class="footer-line">
-                    由 <a href="https://gohugo.io/" target="_blank" rel="noopener noreferrer" title="Hugo 0.110.0">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreferrer" title="DoIt 0.3.0"><i class="far fa-edit fa-fw"></i> DoIt</a>
+                    由 <a href="https://gohugo.io/" target="_blank" rel="noopener noreferrer" title="Hugo 0.111.3">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreferrer" title="DoIt 0.3.0"><i class="far fa-edit fa-fw"></i> DoIt</a>
                 </div><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2018 - 2023</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="https://siwei.io" target="_blank" rel="noopener noreferrer">Wey Gu</a></span>&nbsp;|&nbsp;<span class="license"><a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">CC BY-NC 4.0</a></span></div>
             <div class="footer-line"></div>
             <div class="footer-line">

@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="zh-CN">
 
@@ -47,12 +49,13 @@
 </head>
 
 <body header-desktop="fixed" header-mobile="auto"><script type="text/javascript">
-        function setTheme(theme) {document.body.setAttribute('theme', theme); document.documentElement.style.setProperty('color-scheme', theme === 'light' ? 'light' : 'dark');}
+        function setTheme(theme) {document.body.setAttribute('theme', theme); document.documentElement.style.setProperty('color-scheme', theme === 'light' ? 'light' : 'dark'); window.theme = theme;   window.isDark = window.theme !== 'light' }
         function saveTheme(theme) {window.localStorage && localStorage.setItem('theme', theme);}
         function getMeta(metaName) {const metas = document.getElementsByTagName('meta'); for (let i = 0; i < metas.length; i++) if (metas[i].getAttribute('name') === metaName) return metas[i]; return '';}
         if (window.localStorage && localStorage.getItem('theme')) {let theme = localStorage.getItem('theme');theme === 'light' || theme === 'dark' || theme === 'black' ? setTheme(theme) : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light')); } else { if ('auto' === 'light' || 'auto' === 'dark' || 'auto' === 'black') setTheme('auto'), saveTheme('auto'); else saveTheme('auto'), window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light');}
         let metaColors = {'light': '#f8f8f8','dark': '#252627','black': '#000000'}
         getMeta('theme-color').content = metaColors[document.body.getAttribute('theme')];
+        window.switchThemeEventSet = new Set()
     </script>
     <div id="back-to-top"></div>
     <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
@@ -148,7 +151,7 @@
     <li><a href="#回顾">回顾</a></li>
   </ol>
 </nav></div>
-    </div><script>document.getElementsByTagName("main")[0].setAttribute("pageStyle", "normal")</script><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC", "true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Nebula Graph 索引详解</h1><div class="post-meta">
+    </div><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC", "true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Nebula Graph 索引详解</h1><div class="post-meta">
             <div class="post-meta-line">
                 <span class="post-author"><i class="author fas fa-user-circle fa-fw"></i><a href="https://siwei.io" title="Author" target="_blank" rel="noopener noreferrer author" class="author">Wey Gu</a>
                 </span>&nbsp;<span class="post-category">收录于 </span>&nbsp;<span class="post-category">类别 <a href="/categories/nebula-graph/"><i class="far fa-folder fa-fw"></i>Nebula Graph</a></span></div>
@@ -161,7 +164,7 @@
         srcset="/nebula-index-explained/featured-image.webp, /nebula-index-explained/featured-image.webp 1.5x, /nebula-index-explained/featured-image.webp 2x"
         sizes="auto"
         alt="/nebula-index-explained/featured-image.webp"
-        title="找不到索引？为什么我要创建 NebulaGraph 索引？什么时候要用到 NebulaGraph 原生索引，一文把这些搞清楚。" height="914" width="1738"></div><div class="details toc" id="toc-static"  kept="">
+        title="找不到索引？为什么我要创建 NebulaGraph 索引？什么时候要用到 NebulaGraph 原生索引，一文把这些搞清楚。" height="914"   width="1738" ></div><div class="details toc" id="toc-static"  kept="">
                 <div class="details-summary toc-title">
                     <span>目录</span>
                     <span><i class="details-icon fas fa-angle-right"></i></span>
@@ -299,24 +302,24 @@
 </thead>
 <tbody>
 <tr>
-<td><a class="lightgallery" href="/nebula-index-explained/query-based-on-index.webp" title="query-based-on-index" data-thumbnail="/nebula-index-explained/query-based-on-index.webp">
+<td><figure><a class="lightgallery" href="/nebula-index-explained/query-based-on-index.webp" title="query-based-on-index" data-thumbnail="/nebula-index-explained/query-based-on-index.webp">
         <img
             
             loading="lazy"
-            src="query-based-on-index.webp"
-            srcset="/nebula-index-explained/query-based-on-index.webp, query-based-on-index.webp 1.5x, /nebula-index-explained/query-based-on-index.webp 2x"
+            src="/nebula-index-explained/query-based-on-index.webp"
+            srcset="/nebula-index-explained/query-based-on-index.webp, /nebula-index-explained/query-based-on-index.webp 1.5x, /nebula-index-explained/query-based-on-index.webp 2x"
             sizes="auto"
             alt="/nebula-index-explained/query-based-on-index.webp">
-    </a></td>
-<td><a class="lightgallery" href="/nebula-index-explained/query-requires-no-index.webp" title="query-requires-no-index" data-thumbnail="/nebula-index-explained/query-requires-no-index.webp">
+    </a></figure></td>
+<td><figure><a class="lightgallery" href="/nebula-index-explained/query-requires-no-index.webp" title="query-requires-no-index" data-thumbnail="/nebula-index-explained/query-requires-no-index.webp">
         <img
             
             loading="lazy"
-            src="query-requires-no-index.webp"
-            srcset="/nebula-index-explained/query-requires-no-index.webp, query-requires-no-index.webp 1.5x, /nebula-index-explained/query-requires-no-index.webp 2x"
+            src="/nebula-index-explained/query-requires-no-index.webp"
+            srcset="/nebula-index-explained/query-requires-no-index.webp, /nebula-index-explained/query-requires-no-index.webp 1.5x, /nebula-index-explained/query-requires-no-index.webp 2x"
             sizes="auto"
             alt="/nebula-index-explained/query-requires-no-index.webp">
-    </a></td>
+    </a></figure></td>
 </tr>
 </tbody>
 </table>
@@ -376,7 +379,7 @@
 </li>
 </ul>
 <p>这些信息也在我的<a href="https://www.siwei.io/sketch-notes/" target="_blank" rel="noopener noreferrer">手绘图和视频</a>里可以看到：</p>
-<p><a class="lightgallery" href="https://www.siwei.io/sketches/nebula-index-demystified/nebula-index-demystified.webp" title="https://www.siwei.io/sketches/nebula-index-demystified/nebula-index-demystified.webp" data-thumbnail="https://www.siwei.io/sketches/nebula-index-demystified/nebula-index-demystified.webp">
+<p><figure><a class="lightgallery" href="https://www.siwei.io/sketches/nebula-index-demystified/nebula-index-demystified.webp" title="https://www.siwei.io/sketches/nebula-index-demystified/nebula-index-demystified.webp" data-thumbnail="https://www.siwei.io/sketches/nebula-index-demystified/nebula-index-demystified.webp">
         <img
             
             loading="lazy"
@@ -384,7 +387,7 @@
             srcset="https://www.siwei.io/sketches/nebula-index-demystified/nebula-index-demystified.webp, https://www.siwei.io/sketches/nebula-index-demystified/nebula-index-demystified.webp 1.5x, https://www.siwei.io/sketches/nebula-index-demystified/nebula-index-demystified.webp 2x"
             sizes="auto"
             alt="https://www.siwei.io/sketches/nebula-index-demystified/nebula-index-demystified.webp">
-    </a></p>
+    </a></figure></p>
 <blockquote>
 <p>因为左匹配的设计，在有更复杂的针对纯属性条件出发查询里涉及到通配、REGEXP这样的全文搜索情况，Nebula Graph 提供了全文索引的功能，它是利用 Raft Listener 去异步将数据写到外部 Elasticsearch 集群之中，并在查询的时候去查 ES 去做到的，见<a href="https://docs.nebula-graph.com.cn/3.0.0/4.deployment-and-installation/6.deploy-text-based-index/2.deploy-es/" target="_blank" rel="noopener noreferrer">文档</a>。</p>
 </blockquote>
@@ -509,7 +512,7 @@
         srcset="/graph-enabled-infra-ops/featured-image.webp, /graph-enabled-infra-ops/featured-image.webp 1.5x, /graph-enabled-infra-ops/featured-image.webp 2x"
         sizes="auto"
         alt="/graph-enabled-infra-ops/featured-image.webp"
-        title="找不到索引？为什么我要创建 NebulaGraph 索引？什么时候要用到 NebulaGraph 原生索引，一文把这些搞清楚。" height="200" width="400"></a>
+        title="找不到索引？为什么我要创建 NebulaGraph 索引？什么时候要用到 NebulaGraph 原生索引，一文把这些搞清楚。" height="200"   width="400" ></a>
             </div><h2 class="related-title">
                 <a href="/graph-enabled-infra-ops/">图数据库驱动的基础设施运维示例</a>
             </h2>
@@ -523,7 +526,7 @@
         srcset="/nebulagraph-sns/featured-image.webp, /nebulagraph-sns/featured-image.webp 1.5x, /nebulagraph-sns/featured-image.webp 2x"
         sizes="auto"
         alt="/nebulagraph-sns/featured-image.webp"
-        title="找不到索引？为什么我要创建 NebulaGraph 索引？什么时候要用到 NebulaGraph 原生索引，一文把这些搞清楚。" height="200" width="400"></a>
+        title="找不到索引？为什么我要创建 NebulaGraph 索引？什么时候要用到 NebulaGraph 原生索引，一文把这些搞清楚。" height="200"   width="400" ></a>
             </div><h2 class="related-title">
                 <a href="/nebulagraph-sns/">图数据库的社交网络应用</a>
             </h2>
@@ -537,7 +540,7 @@
         srcset="/chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.webp, /chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.webp 1.5x, /chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.webp 2x"
         sizes="auto"
         alt="/chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.webp"
-        title="找不到索引？为什么我要创建 NebulaGraph 索引？什么时候要用到 NebulaGraph 原生索引，一文把这些搞清楚。" height="200" width="400"></a>
+        title="找不到索引？为什么我要创建 NebulaGraph 索引？什么时候要用到 NebulaGraph 原生索引，一文把这些搞清楚。" height="200"   width="400" ></a>
             </div><h2 class="related-title">
                 <a href="/chatgpt-and-nebulagraph-predict-fifa-world-cup/">chatGPT 加 NebulaGraph 预测 2022 世界杯冠军球队</a>
             </h2>
@@ -551,7 +554,7 @@
         srcset="/data-lineage-oss-ref-solution/featured-image.webp, /data-lineage-oss-ref-solution/featured-image.webp 1.5x, /data-lineage-oss-ref-solution/featured-image.webp 2x"
         sizes="auto"
         alt="/data-lineage-oss-ref-solution/featured-image.webp"
-        title="找不到索引？为什么我要创建 NebulaGraph 索引？什么时候要用到 NebulaGraph 原生索引，一文把这些搞清楚。" height="200" width="400"></a>
+        title="找不到索引？为什么我要创建 NebulaGraph 索引？什么时候要用到 NebulaGraph 原生索引，一文把这些搞清楚。" height="200"   width="400" ></a>
             </div><h2 class="related-title">
                 <a href="/data-lineage-oss-ref-solution/">基于开源技术栈的数据血缘、治理参考解决方案</a>
             </h2>
@@ -565,7 +568,7 @@
         srcset="/apisix-and-nebulagraph/featured-image.webp, /apisix-and-nebulagraph/featured-image.webp 1.5x, /apisix-and-nebulagraph/featured-image.webp 2x"
         sizes="auto"
         alt="/apisix-and-nebulagraph/featured-image.webp"
-        title="找不到索引？为什么我要创建 NebulaGraph 索引？什么时候要用到 NebulaGraph 原生索引，一文把这些搞清楚。" height="200" width="400"></a>
+        title="找不到索引？为什么我要创建 NebulaGraph 索引？什么时候要用到 NebulaGraph 原生索引，一文把这些搞清楚。" height="200"   width="400" ></a>
             </div><h2 class="related-title">
                 <a href="/apisix-and-nebulagraph/">NebulaGraph 的云原生 API 网关最佳实践</a>
             </h2>
@@ -608,7 +611,7 @@
             </noscript></div></article></div>
         </main><footer class="footer">
         <div class="footer-container"><div class="footer-line">
-                    由 <a href="https://gohugo.io/" target="_blank" rel="noopener noreferrer" title="Hugo 0.110.0">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreferrer" title="DoIt 0.3.0"><i class="far fa-edit fa-fw"></i> DoIt</a>
+                    由 <a href="https://gohugo.io/" target="_blank" rel="noopener noreferrer" title="Hugo 0.111.3">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreferrer" title="DoIt 0.3.0"><i class="far fa-edit fa-fw"></i> DoIt</a>
                 </div><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2018 - 2023</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="https://siwei.io" target="_blank" rel="noopener noreferrer">Wey Gu</a></span>&nbsp;|&nbsp;<span class="license"><a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">CC BY-NC 4.0</a></span></div>
             <div class="footer-line"></div>
             <div class="footer-line">

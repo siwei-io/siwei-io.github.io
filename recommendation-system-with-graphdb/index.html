@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="zh-CN">
 
@@ -47,12 +49,13 @@
 </head>
 
 <body header-desktop="fixed" header-mobile="auto"><script type="text/javascript">
-        function setTheme(theme) {document.body.setAttribute('theme', theme); document.documentElement.style.setProperty('color-scheme', theme === 'light' ? 'light' : 'dark');}
+        function setTheme(theme) {document.body.setAttribute('theme', theme); document.documentElement.style.setProperty('color-scheme', theme === 'light' ? 'light' : 'dark'); window.theme = theme;   window.isDark = window.theme !== 'light' }
         function saveTheme(theme) {window.localStorage && localStorage.setItem('theme', theme);}
         function getMeta(metaName) {const metas = document.getElementsByTagName('meta'); for (let i = 0; i < metas.length; i++) if (metas[i].getAttribute('name') === metaName) return metas[i]; return '';}
         if (window.localStorage && localStorage.getItem('theme')) {let theme = localStorage.getItem('theme');theme === 'light' || theme === 'dark' || theme === 'black' ? setTheme(theme) : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light')); } else { if ('auto' === 'light' || 'auto' === 'dark' || 'auto' === 'black') setTheme('auto'), saveTheme('auto'); else saveTheme('auto'), window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light');}
         let metaColors = {'light': '#f8f8f8','dark': '#252627','black': '#000000'}
         getMeta('theme-color').content = metaColors[document.body.getAttribute('theme')];
+        window.switchThemeEventSet = new Set()
     </script>
     <div id="back-to-top"></div>
     <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
@@ -181,7 +184,7 @@
     </li>
   </ol>
 </nav></div>
-    </div><script>document.getElementsByTagName("main")[0].setAttribute("pageStyle", "normal")</script><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC", "true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">基于图数据库的推荐系统</h1><div class="post-meta">
+    </div><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC", "true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">基于图数据库的推荐系统</h1><div class="post-meta">
             <div class="post-meta-line">
                 <span class="post-author"><i class="author fas fa-user-circle fa-fw"></i><a href="https://siwei.io" title="Author" target="_blank" rel="noopener noreferrer author" class="author">Wey Gu</a>
                 </span>&nbsp;<span class="post-category">收录于 </span>&nbsp;<span class="post-category">类别 <a href="/categories/nebula-graph/"><i class="far fa-folder fa-fw"></i>Nebula Graph</a></span></div>
@@ -194,7 +197,7 @@
         srcset="/recommendation-system-with-graphdb/featured-image.webp, /recommendation-system-with-graphdb/featured-image.webp 1.5x, /recommendation-system-with-graphdb/featured-image.webp 2x"
         sizes="auto"
         alt="/recommendation-system-with-graphdb/featured-image.webp"
-        title="本文是一个基于 NebulaGraph 上图算法、图数据库、机器学习、GNN 的推荐系统方法综述，大部分介绍的方法提供了 Playground 供大家学习。" height="910" width="1738"></div><div class="details toc" id="toc-static"  kept="">
+        title="本文是一个基于 NebulaGraph 上图算法、图数据库、机器学习、GNN 的推荐系统方法综述，大部分介绍的方法提供了 Playground 供大家学习。" height="910"   width="1738" ></div><div class="details toc" id="toc-static"  kept="">
                 <div class="details-summary toc-title">
                     <span>目录</span>
                     <span><i class="details-icon fas fa-angle-right"></i></span>
@@ -342,15 +345,15 @@
 </ul>
 </li>
 </ul>
-<p><a class="lightgallery" href="/recommendation-system-with-graphdb/schema_0.webp" title="schema_0" data-thumbnail="/recommendation-system-with-graphdb/schema_0.webp">
+<p><figure><a class="lightgallery" href="/recommendation-system-with-graphdb/schema_0.webp" title="schema_0" data-thumbnail="/recommendation-system-with-graphdb/schema_0.webp">
         <img
             
             loading="lazy"
-            src="schema_0.webp"
-            srcset="/recommendation-system-with-graphdb/schema_0.webp, schema_0.webp 1.5x, /recommendation-system-with-graphdb/schema_0.webp 2x"
+            src="/recommendation-system-with-graphdb/schema_0.webp"
+            srcset="/recommendation-system-with-graphdb/schema_0.webp, /recommendation-system-with-graphdb/schema_0.webp 1.5x, /recommendation-system-with-graphdb/schema_0.webp 2x"
             sizes="auto"
             alt="/recommendation-system-with-graphdb/schema_0.webp">
-    </a></p>
+    </a></figure></p>
 <p>这个数据的准备、ETL 过程会在另外的文章里详细介绍，在进入下一章节之前，我们可以用 Nebula-Up 一键搭起一个测试的 NebulaGraph 单机集群，然后参考数据集的 GitHub 仓库，一键导入所需数据：</p>
 <blockquote>
 <p>注：</p>
@@ -560,15 +563,15 @@ $$
 </span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">RETURN</span><span class="w"> </span><span class="n">p</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
-</div><p><a class="lightgallery" href="/recommendation-system-with-graphdb/CBF_step0.webp" title="CBF_step0" data-thumbnail="/recommendation-system-with-graphdb/CBF_step0.webp">
+</div><p><figure><a class="lightgallery" href="/recommendation-system-with-graphdb/CBF_step0.webp" title="CBF_step0" data-thumbnail="/recommendation-system-with-graphdb/CBF_step0.webp">
         <img
             
             loading="lazy"
-            src="CBF_step0.webp"
-            srcset="/recommendation-system-with-graphdb/CBF_step0.webp, CBF_step0.webp 1.5x, /recommendation-system-with-graphdb/CBF_step0.webp 2x"
+            src="/recommendation-system-with-graphdb/CBF_step0.webp"
+            srcset="/recommendation-system-with-graphdb/CBF_step0.webp, /recommendation-system-with-graphdb/CBF_step0.webp 1.5x, /recommendation-system-with-graphdb/CBF_step0.webp 2x"
             sizes="auto"
             alt="/recommendation-system-with-graphdb/CBF_step0.webp">
-    </a></p>
+    </a></figure></p>
 </li>
 <li>
 <p>下一步找到这些看过的电影在相同的演员、导演、电影类型的关系上，图谱关联的所有其他电影</p>
@@ -595,15 +598,15 @@ $$
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>可以看到用户看过电影经由演员、类型扩散出好多新的电影</p>
-<p><a class="lightgallery" href="/recommendation-system-with-graphdb/CBF_step1.webp" title="CBF_step1" data-thumbnail="/recommendation-system-with-graphdb/CBF_step1.webp">
+<p><figure><a class="lightgallery" href="/recommendation-system-with-graphdb/CBF_step1.webp" title="CBF_step1" data-thumbnail="/recommendation-system-with-graphdb/CBF_step1.webp">
         <img
             
             loading="lazy"
-            src="CBF_step1.webp"
-            srcset="/recommendation-system-with-graphdb/CBF_step1.webp, CBF_step1.webp 1.5x, /recommendation-system-with-graphdb/CBF_step1.webp 2x"
+            src="/recommendation-system-with-graphdb/CBF_step1.webp"
+            srcset="/recommendation-system-with-graphdb/CBF_step1.webp, /recommendation-system-with-graphdb/CBF_step1.webp 1.5x, /recommendation-system-with-graphdb/CBF_step1.webp 2x"
             sizes="auto"
             alt="/recommendation-system-with-graphdb/CBF_step1.webp">
-    </a></p>
+    </a></figure></p>
 </li>
 <li>
 <p>在得到这些待推荐电影以及推荐路径之后，通过 Jaccard 系数与用户在路径第一条边上的评分综合评定之后，得到了最终的结果，这里我们把结果再可视化一下：取得它们和用户之间的路径并渲染出来</p>
@@ -692,15 +695,15 @@ $$
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>哇，我们可以很清晰地看到推荐的理由路径（喜欢星战，进而由多条共同的类型、演员、导演引导出未观看的几部星战电影），这其实就是 CBF 的优势之一：天然具有较好的可解释性。</p>
-<p><a class="lightgallery" href="/recommendation-system-with-graphdb/CBF_step2.webp" title="CBF_step2" data-thumbnail="/recommendation-system-with-graphdb/CBF_step2.webp">
+<p><figure><a class="lightgallery" href="/recommendation-system-with-graphdb/CBF_step2.webp" title="CBF_step2" data-thumbnail="/recommendation-system-with-graphdb/CBF_step2.webp">
         <img
             
             loading="lazy"
-            src="CBF_step2.webp"
-            srcset="/recommendation-system-with-graphdb/CBF_step2.webp, CBF_step2.webp 1.5x, /recommendation-system-with-graphdb/CBF_step2.webp 2x"
+            src="/recommendation-system-with-graphdb/CBF_step2.webp"
+            srcset="/recommendation-system-with-graphdb/CBF_step2.webp, /recommendation-system-with-graphdb/CBF_step2.webp 1.5x, /recommendation-system-with-graphdb/CBF_step2.webp 2x"
             sizes="auto"
             alt="/recommendation-system-with-graphdb/CBF_step2.webp">
-    </a></p>
+    </a></figure></p>
 </li>
 </ul>
 <h4 id="基于记忆的协同过滤" class="headerLink">
@@ -863,15 +866,15 @@ $$
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>它们是：</p>
-<p><a class="lightgallery" href="/recommendation-system-with-graphdb/ItemCF_step0.webp" title="ItemCF_step0" data-thumbnail="/recommendation-system-with-graphdb/ItemCF_step0.webp">
+<p><figure><a class="lightgallery" href="/recommendation-system-with-graphdb/ItemCF_step0.webp" title="ItemCF_step0" data-thumbnail="/recommendation-system-with-graphdb/ItemCF_step0.webp">
         <img
             
             loading="lazy"
-            src="ItemCF_step0.webp"
-            srcset="/recommendation-system-with-graphdb/ItemCF_step0.webp, ItemCF_step0.webp 1.5x, /recommendation-system-with-graphdb/ItemCF_step0.webp 2x"
+            src="/recommendation-system-with-graphdb/ItemCF_step0.webp"
+            srcset="/recommendation-system-with-graphdb/ItemCF_step0.webp, /recommendation-system-with-graphdb/ItemCF_step0.webp 1.5x, /recommendation-system-with-graphdb/ItemCF_step0.webp 2x"
             sizes="auto"
             alt="/recommendation-system-with-graphdb/ItemCF_step0.webp">
-    </a></p>
+    </a></figure></p>
 </li>
 <li>
 <p>经由用户的高评分电影，找到其他给出高评分用户所看过的新的高评分电影，修改结果为路径</p>
@@ -898,15 +901,15 @@ $$
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>可以看到待推荐的电影在路径的右边末端，中间连接着的都是其他用户的推荐记录，它的模式和 CBF 真的很像，只不过关联的关系不是具体的内容，而是行为。</p>
-<p><a class="lightgallery" href="/recommendation-system-with-graphdb/ItemCF_step1.webp" title="ItemCF_step1" data-thumbnail="/recommendation-system-with-graphdb/ItemCF_step1.webp">
+<p><figure><a class="lightgallery" href="/recommendation-system-with-graphdb/ItemCF_step1.webp" title="ItemCF_step1" data-thumbnail="/recommendation-system-with-graphdb/ItemCF_step1.webp">
         <img
             
             loading="lazy"
-            src="ItemCF_step1.webp"
-            srcset="/recommendation-system-with-graphdb/ItemCF_step1.webp, ItemCF_step1.webp 1.5x, /recommendation-system-with-graphdb/ItemCF_step1.webp 2x"
+            src="/recommendation-system-with-graphdb/ItemCF_step1.webp"
+            srcset="/recommendation-system-with-graphdb/ItemCF_step1.webp, /recommendation-system-with-graphdb/ItemCF_step1.webp 1.5x, /recommendation-system-with-graphdb/ItemCF_step1.webp 2x"
             sizes="auto"
             alt="/recommendation-system-with-graphdb/ItemCF_step1.webp">
-    </a></p>
+    </a></figure></p>
 </li>
 <li>
 <p>在对看过的电影与新的电影，藉由用户的评分，在图上做 Jaccard 相似性运算，得出每一对看过的电影和待推荐新电影之间的 Jaccard 系数之后。把用户对看过电影的评分作为加权系数，针对其到每一个新电影之间的 Jaccard 系数加权评分，获得排序后的推荐电影列表，我们同样改造一下最终的查询为路径，并渲染前 500 条路径：</p>
@@ -999,15 +1002,15 @@ $$
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>可以看出最北推荐的两个电影是被几乎所有看过并给出中高评分的用户共同看过的中高评分电影</p>
-<p><a class="lightgallery" href="/recommendation-system-with-graphdb/ItemCF_step2.webp" title="ItemCF_step2" data-thumbnail="/recommendation-system-with-graphdb/ItemCF_step2.webp">
+<p><figure><a class="lightgallery" href="/recommendation-system-with-graphdb/ItemCF_step2.webp" title="ItemCF_step2" data-thumbnail="/recommendation-system-with-graphdb/ItemCF_step2.webp">
         <img
             
             loading="lazy"
-            src="ItemCF_step2.webp"
-            srcset="/recommendation-system-with-graphdb/ItemCF_step2.webp, ItemCF_step2.webp 1.5x, /recommendation-system-with-graphdb/ItemCF_step2.webp 2x"
+            src="/recommendation-system-with-graphdb/ItemCF_step2.webp"
+            srcset="/recommendation-system-with-graphdb/ItemCF_step2.webp, /recommendation-system-with-graphdb/ItemCF_step2.webp 1.5x, /recommendation-system-with-graphdb/ItemCF_step2.webp 2x"
             sizes="auto"
             alt="/recommendation-system-with-graphdb/ItemCF_step2.webp">
-    </a></p>
+    </a></figure></p>
 </li>
 </ul>
 <h5 id="关于高评分" class="headerLink">
@@ -1161,15 +1164,15 @@ $$
 </span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">RETURN</span><span class="w"> </span><span class="n">p</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
-</div><p><a class="lightgallery" href="/recommendation-system-with-graphdb/UserCF_step0.webp" title="UserCF_step0" data-thumbnail="/recommendation-system-with-graphdb/UserCF_step0.webp">
+</div><p><figure><a class="lightgallery" href="/recommendation-system-with-graphdb/UserCF_step0.webp" title="UserCF_step0" data-thumbnail="/recommendation-system-with-graphdb/UserCF_step0.webp">
         <img
             
             loading="lazy"
-            src="UserCF_step0.webp"
-            srcset="/recommendation-system-with-graphdb/UserCF_step0.webp, UserCF_step0.webp 1.5x, /recommendation-system-with-graphdb/UserCF_step0.webp 2x"
+            src="/recommendation-system-with-graphdb/UserCF_step0.webp"
+            srcset="/recommendation-system-with-graphdb/UserCF_step0.webp, /recommendation-system-with-graphdb/UserCF_step0.webp 1.5x, /recommendation-system-with-graphdb/UserCF_step0.webp 2x"
             sizes="auto"
             alt="/recommendation-system-with-graphdb/UserCF_step0.webp">
-    </a></p>
+    </a></figure></p>
 </li>
 <li>
 <p>运算 Pearson Correlation Coefficient 得到和推荐用户兴趣接近的用户，输出这些接近的用户</p>
@@ -1222,15 +1225,15 @@ $$
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>我们给他们标记一下颜色：</p>
-<p><a class="lightgallery" href="/recommendation-system-with-graphdb/UserCF_step1.webp" title="UserCF_step1" data-thumbnail="/recommendation-system-with-graphdb/UserCF_step1.webp">
+<p><figure><a class="lightgallery" href="/recommendation-system-with-graphdb/UserCF_step1.webp" title="UserCF_step1" data-thumbnail="/recommendation-system-with-graphdb/UserCF_step1.webp">
         <img
             
             loading="lazy"
-            src="UserCF_step1.webp"
-            srcset="/recommendation-system-with-graphdb/UserCF_step1.webp, UserCF_step1.webp 1.5x, /recommendation-system-with-graphdb/UserCF_step1.webp 2x"
+            src="/recommendation-system-with-graphdb/UserCF_step1.webp"
+            srcset="/recommendation-system-with-graphdb/UserCF_step1.webp, /recommendation-system-with-graphdb/UserCF_step1.webp 1.5x, /recommendation-system-with-graphdb/UserCF_step1.webp 2x"
             sizes="auto"
             alt="/recommendation-system-with-graphdb/UserCF_step1.webp">
-    </a></p>
+    </a></figure></p>
 </li>
 <li>
 <p>通过兴趣接近用户得到高评分未观看电影，根据观看用户的 Pearson Correlation Coefficient 加权，排序得推荐电影列表。我们把结果输出为这些相似用户的高评分电影路径：</p>
@@ -1291,15 +1294,15 @@ $$
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>得到的结果，我们增量渲染到画布上可以得到：这些 UserCF 推荐而得的电影在路径末端：</p>
-<p><a class="lightgallery" href="/recommendation-system-with-graphdb/UserCF_step2.webp" title="UserCF_step2" data-thumbnail="/recommendation-system-with-graphdb/UserCF_step2.webp">
+<p><figure><a class="lightgallery" href="/recommendation-system-with-graphdb/UserCF_step2.webp" title="UserCF_step2" data-thumbnail="/recommendation-system-with-graphdb/UserCF_step2.webp">
         <img
             
             loading="lazy"
-            src="UserCF_step2.webp"
-            srcset="/recommendation-system-with-graphdb/UserCF_step2.webp, UserCF_step2.webp 1.5x, /recommendation-system-with-graphdb/UserCF_step2.webp 2x"
+            src="/recommendation-system-with-graphdb/UserCF_step2.webp"
+            srcset="/recommendation-system-with-graphdb/UserCF_step2.webp, /recommendation-system-with-graphdb/UserCF_step2.webp 1.5x, /recommendation-system-with-graphdb/UserCF_step2.webp 2x"
             sizes="auto"
             alt="/recommendation-system-with-graphdb/UserCF_step2.webp">
-    </a></p>
+    </a></figure></p>
 <p>在可视化中，相似用户的高评分未观看电影被推荐的思想是不是一目了然了呢？</p>
 </li>
 </ul>
@@ -1359,29 +1362,29 @@ $$
 </ul>
 </li>
 </ul>
-<p><a class="lightgallery" href="/recommendation-system-with-graphdb/PinSAGE_RecommendationSystem.svg" title="PinSAGE_RecommendationSystem" data-thumbnail="/recommendation-system-with-graphdb/PinSAGE_RecommendationSystem.svg">
+<p><figure><a class="lightgallery" href="/recommendation-system-with-graphdb/PinSAGE_RecommendationSystem.svg" title="PinSAGE_RecommendationSystem" data-thumbnail="/recommendation-system-with-graphdb/PinSAGE_RecommendationSystem.svg">
         <img
             
             loading="lazy"
-            src="PinSAGE_RecommendationSystem.svg"
-            srcset="/recommendation-system-with-graphdb/PinSAGE_RecommendationSystem.svg, PinSAGE_RecommendationSystem.svg 1.5x, /recommendation-system-with-graphdb/PinSAGE_RecommendationSystem.svg 2x"
+            src="/recommendation-system-with-graphdb/PinSAGE_RecommendationSystem.svg"
+            srcset="/recommendation-system-with-graphdb/PinSAGE_RecommendationSystem.svg, /recommendation-system-with-graphdb/PinSAGE_RecommendationSystem.svg 1.5x, /recommendation-system-with-graphdb/PinSAGE_RecommendationSystem.svg 2x"
             sizes="auto"
             alt="/recommendation-system-with-graphdb/PinSAGE_RecommendationSystem.svg">
-    </a></p>
+    </a></figure></p>
 <p>篇幅关系，本章我就不给出端到端的实例代码了，后续有机会我会尽量做一个 demo 出来的。</p>
 <h3 id="推荐系统可解释性" class="headerLink">
     <a href="#%e6%8e%a8%e8%8d%90%e7%b3%bb%e7%bb%9f%e5%8f%af%e8%a7%a3%e9%87%8a%e6%80%a7" class="header-mark"></a>1.3 推荐系统可解释性</h3><p>在结束本章之前，再举一个图数据库在推荐系统中的典型应用：推荐理由。</p>
 <p>下图是美团、大众点评中的一个常见的搜索、推荐结果，现代推荐系统的复杂度是非常大的，一方面由很多方法自身的特性决定，另一方面最终的推荐可能是多个系统协同获得最终结果排名，这使得我们很难对推荐结果进行解释。</p>
 <p>得益于被推荐用户和物件、以及他们的各种各样画像最终形成的知识图谱，我们只需要在图谱中对推荐结果进行“路径查找”就可以获得很有意义的解释，像是如下截图的“在北京喜欢北京菜的山东老乡都说这家店很赞”就是这样获得的解释。</p>
-<p><a class="lightgallery" href="/recommendation-system-with-graphdb/reasoning.webp" title="reasoning" data-thumbnail="/recommendation-system-with-graphdb/reasoning.webp">
+<p><figure><a class="lightgallery" href="/recommendation-system-with-graphdb/reasoning.webp" title="reasoning" data-thumbnail="/recommendation-system-with-graphdb/reasoning.webp">
         <img
             
             loading="lazy"
-            src="reasoning.webp"
-            srcset="/recommendation-system-with-graphdb/reasoning.webp, reasoning.webp 1.5x, /recommendation-system-with-graphdb/reasoning.webp 2x"
+            src="/recommendation-system-with-graphdb/reasoning.webp"
+            srcset="/recommendation-system-with-graphdb/reasoning.webp, /recommendation-system-with-graphdb/reasoning.webp 1.5x, /recommendation-system-with-graphdb/reasoning.webp 2x"
             sizes="auto"
             alt="/recommendation-system-with-graphdb/reasoning.webp">
-    </a></p>
+    </a></figure></p>
 <blockquote>
 <p>图片来源：https://tech.meituan.com/2021/04/01/nebula-graph-practice-in-meituan.html</p>
 </blockquote>
@@ -1462,15 +1465,15 @@ $$
 <ul>
 <li>曾经喜欢的星战电影的大部分演职人员都也参与了这部和同样是“奥斯卡获奖”且“经典”的电影。</li>
 </ul>
-<p><a class="lightgallery" href="/recommendation-system-with-graphdb/reasoning_movie.webp" title="reasoning_movie" data-thumbnail="/recommendation-system-with-graphdb/reasoning_movie.webp">
+<p><figure><a class="lightgallery" href="/recommendation-system-with-graphdb/reasoning_movie.webp" title="reasoning_movie" data-thumbnail="/recommendation-system-with-graphdb/reasoning_movie.webp">
         <img
             
             loading="lazy"
-            src="reasoning_movie.webp"
-            srcset="/recommendation-system-with-graphdb/reasoning_movie.webp, reasoning_movie.webp 1.5x, /recommendation-system-with-graphdb/reasoning_movie.webp 2x"
+            src="/recommendation-system-with-graphdb/reasoning_movie.webp"
+            srcset="/recommendation-system-with-graphdb/reasoning_movie.webp, /recommendation-system-with-graphdb/reasoning_movie.webp 1.5x, /recommendation-system-with-graphdb/reasoning_movie.webp 2x"
             sizes="auto"
             alt="/recommendation-system-with-graphdb/reasoning_movie.webp">
-    </a></p>
+    </a></figure></p>
 <h3 id="总结" class="headerLink">
     <a href="#%e6%80%bb%e7%bb%93" class="header-mark"></a>1.4 总结</h3><p>现在，我们知道图数据库作为推荐系统中信息的最终形式：知识存在，可以适用在不同类型方法上，尽管很多方法中，图库不一定是最终落地系统方案的最流行选择，图数据库所带来的可视化洞察的潜力还是非常大的。</p>
 <p>同时，构建的综合知识图谱上的解释、推理能力与一些实时要求高的图方法中（比如 GNN的基于模型方法），能起到带来独一无二的作用。</p>
@@ -1490,7 +1493,7 @@ $$
         srcset="/graph-enabled-infra-ops/featured-image.webp, /graph-enabled-infra-ops/featured-image.webp 1.5x, /graph-enabled-infra-ops/featured-image.webp 2x"
         sizes="auto"
         alt="/graph-enabled-infra-ops/featured-image.webp"
-        title="本文是一个基于 NebulaGraph 上图算法、图数据库、机器学习、GNN 的推荐系统方法综述，大部分介绍的方法提供了 Playground 供大家学习。" height="200" width="400"></a>
+        title="本文是一个基于 NebulaGraph 上图算法、图数据库、机器学习、GNN 的推荐系统方法综述，大部分介绍的方法提供了 Playground 供大家学习。" height="200"   width="400" ></a>
             </div><h2 class="related-title">
                 <a href="/graph-enabled-infra-ops/">图数据库驱动的基础设施运维示例</a>
             </h2>
@@ -1504,7 +1507,7 @@ $$
         srcset="/nebulagraph-sns/featured-image.webp, /nebulagraph-sns/featured-image.webp 1.5x, /nebulagraph-sns/featured-image.webp 2x"
         sizes="auto"
         alt="/nebulagraph-sns/featured-image.webp"
-        title="本文是一个基于 NebulaGraph 上图算法、图数据库、机器学习、GNN 的推荐系统方法综述，大部分介绍的方法提供了 Playground 供大家学习。" height="200" width="400"></a>
+        title="本文是一个基于 NebulaGraph 上图算法、图数据库、机器学习、GNN 的推荐系统方法综述，大部分介绍的方法提供了 Playground 供大家学习。" height="200"   width="400" ></a>
             </div><h2 class="related-title">
                 <a href="/nebulagraph-sns/">图数据库的社交网络应用</a>
             </h2>
@@ -1518,7 +1521,7 @@ $$
         srcset="/chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.webp, /chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.webp 1.5x, /chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.webp 2x"
         sizes="auto"
         alt="/chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.webp"
-        title="本文是一个基于 NebulaGraph 上图算法、图数据库、机器学习、GNN 的推荐系统方法综述，大部分介绍的方法提供了 Playground 供大家学习。" height="200" width="400"></a>
+        title="本文是一个基于 NebulaGraph 上图算法、图数据库、机器学习、GNN 的推荐系统方法综述，大部分介绍的方法提供了 Playground 供大家学习。" height="200"   width="400" ></a>
             </div><h2 class="related-title">
                 <a href="/chatgpt-and-nebulagraph-predict-fifa-world-cup/">chatGPT 加 NebulaGraph 预测 2022 世界杯冠军球队</a>
             </h2>
@@ -1532,7 +1535,7 @@ $$
         srcset="/data-lineage-oss-ref-solution/featured-image.webp, /data-lineage-oss-ref-solution/featured-image.webp 1.5x, /data-lineage-oss-ref-solution/featured-image.webp 2x"
         sizes="auto"
         alt="/data-lineage-oss-ref-solution/featured-image.webp"
-        title="本文是一个基于 NebulaGraph 上图算法、图数据库、机器学习、GNN 的推荐系统方法综述，大部分介绍的方法提供了 Playground 供大家学习。" height="200" width="400"></a>
+        title="本文是一个基于 NebulaGraph 上图算法、图数据库、机器学习、GNN 的推荐系统方法综述，大部分介绍的方法提供了 Playground 供大家学习。" height="200"   width="400" ></a>
             </div><h2 class="related-title">
                 <a href="/data-lineage-oss-ref-solution/">基于开源技术栈的数据血缘、治理参考解决方案</a>
             </h2>
@@ -1546,7 +1549,7 @@ $$
         srcset="/apisix-and-nebulagraph/featured-image.webp, /apisix-and-nebulagraph/featured-image.webp 1.5x, /apisix-and-nebulagraph/featured-image.webp 2x"
         sizes="auto"
         alt="/apisix-and-nebulagraph/featured-image.webp"
-        title="本文是一个基于 NebulaGraph 上图算法、图数据库、机器学习、GNN 的推荐系统方法综述，大部分介绍的方法提供了 Playground 供大家学习。" height="200" width="400"></a>
+        title="本文是一个基于 NebulaGraph 上图算法、图数据库、机器学习、GNN 的推荐系统方法综述，大部分介绍的方法提供了 Playground 供大家学习。" height="200"   width="400" ></a>
             </div><h2 class="related-title">
                 <a href="/apisix-and-nebulagraph/">NebulaGraph 的云原生 API 网关最佳实践</a>
             </h2>
@@ -1589,7 +1592,7 @@ $$
             </noscript></div></article></div>
         </main><footer class="footer">
         <div class="footer-container"><div class="footer-line">
-                    由 <a href="https://gohugo.io/" target="_blank" rel="noopener noreferrer" title="Hugo 0.110.0">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreferrer" title="DoIt 0.3.0"><i class="far fa-edit fa-fw"></i> DoIt</a>
+                    由 <a href="https://gohugo.io/" target="_blank" rel="noopener noreferrer" title="Hugo 0.111.3">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreferrer" title="DoIt 0.3.0"><i class="far fa-edit fa-fw"></i> DoIt</a>
                 </div><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2018 - 2023</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="https://siwei.io" target="_blank" rel="noopener noreferrer">Wey Gu</a></span>&nbsp;|&nbsp;<span class="license"><a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">CC BY-NC 4.0</a></span></div>
             <div class="footer-line"></div>
             <div class="footer-line">

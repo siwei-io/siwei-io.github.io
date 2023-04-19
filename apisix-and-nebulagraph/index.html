@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="zh-CN">
 
@@ -47,12 +49,13 @@
 </head>
 
 <body header-desktop="fixed" header-mobile="auto"><script type="text/javascript">
-        function setTheme(theme) {document.body.setAttribute('theme', theme); document.documentElement.style.setProperty('color-scheme', theme === 'light' ? 'light' : 'dark');}
+        function setTheme(theme) {document.body.setAttribute('theme', theme); document.documentElement.style.setProperty('color-scheme', theme === 'light' ? 'light' : 'dark'); window.theme = theme;   window.isDark = window.theme !== 'light' }
         function saveTheme(theme) {window.localStorage && localStorage.setItem('theme', theme);}
         function getMeta(metaName) {const metas = document.getElementsByTagName('meta'); for (let i = 0; i < metas.length; i++) if (metas[i].getAttribute('name') === metaName) return metas[i]; return '';}
         if (window.localStorage && localStorage.getItem('theme')) {let theme = localStorage.getItem('theme');theme === 'light' || theme === 'dark' || theme === 'black' ? setTheme(theme) : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light')); } else { if ('auto' === 'light' || 'auto' === 'dark' || 'auto' === 'black') setTheme('auto'), saveTheme('auto'); else saveTheme('auto'), window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light');}
         let metaColors = {'light': '#f8f8f8','dark': '#252627','black': '#000000'}
         getMeta('theme-color').content = metaColors[document.body.getAttribute('theme')];
+        window.switchThemeEventSet = new Set()
     </script>
     <div id="back-to-top"></div>
     <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
@@ -174,7 +177,7 @@
     <li><a href="#一些坑">一些坑</a></li>
   </ol>
 </nav></div>
-    </div><script>document.getElementsByTagName("main")[0].setAttribute("pageStyle", "normal")</script><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC", "true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">NebulaGraph 的云原生 API 网关最佳实践</h1><div class="post-meta">
+    </div><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC", "true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">NebulaGraph 的云原生 API 网关最佳实践</h1><div class="post-meta">
             <div class="post-meta-line">
                 <span class="post-author"><i class="author fas fa-user-circle fa-fw"></i><a href="https://siwei.io" title="Author" target="_blank" rel="noopener noreferrer author" class="author">Wey Gu</a>
                 </span>&nbsp;<span class="post-category">收录于 </span>&nbsp;<span class="post-category">类别 <a href="/categories/nebula-graph/"><i class="far fa-folder fa-fw"></i>Nebula Graph</a></span></div>
@@ -187,7 +190,7 @@
         srcset="/apisix-and-nebulagraph/featured-image.webp, /apisix-and-nebulagraph/featured-image.webp 1.5x, /apisix-and-nebulagraph/featured-image.webp 2x"
         sizes="auto"
         alt="/apisix-and-nebulagraph/featured-image.webp"
-        title="本文介绍了利用开源 API 网关 APISIX 加速 NebulaGraph 多个场景的落地最佳实践：负载均衡、暴露存储接口与 TLS Termination。" height="916" width="1720"></div><div class="details toc" id="toc-static"  kept="">
+        title="本文介绍了利用开源 API 网关 APISIX 加速 NebulaGraph 多个场景的落地最佳实践：负载均衡、暴露存储接口与 TLS Termination。" height="916"   width="1720" ></div><div class="details toc" id="toc-static"  kept="">
                 <div class="details-summary toc-title">
                     <span>目录</span>
                     <span><i class="details-icon fas fa-angle-right"></i></span>
@@ -285,7 +288,7 @@
 <h3 id="查询接口负载均衡" class="headerLink">
     <a href="#%e6%9f%a5%e8%af%a2%e6%8e%a5%e5%8f%a3%e8%b4%9f%e8%bd%bd%e5%9d%87%e8%a1%a1" class="header-mark"></a>3.1 查询接口负载均衡</h3><p>首先是图数据库查询接口（GraphD）的负载均衡与高可用的问题。</p>
 <p>NebulaGraph 内核由三种服务组成：GraphD、MetaD 和 StorageD：</p>
-<p><a class="lightgallery" href="https://docs-cdn.nebula-graph.com.cn/figures/nebula-graph-architecture_3.png" title="https://docs-cdn.nebula-graph.com.cn/figures/nebula-graph-architecture_3.png" data-thumbnail="https://docs-cdn.nebula-graph.com.cn/figures/nebula-graph-architecture_3.png">
+<p><figure><a class="lightgallery" href="https://docs-cdn.nebula-graph.com.cn/figures/nebula-graph-architecture_3.png" title="https://docs-cdn.nebula-graph.com.cn/figures/nebula-graph-architecture_3.png" data-thumbnail="https://docs-cdn.nebula-graph.com.cn/figures/nebula-graph-architecture_3.png">
         <img
             
             loading="lazy"
@@ -293,7 +296,7 @@
             srcset="https://docs-cdn.nebula-graph.com.cn/figures/nebula-graph-architecture_3.png, https://docs-cdn.nebula-graph.com.cn/figures/nebula-graph-architecture_3.png 1.5x, https://docs-cdn.nebula-graph.com.cn/figures/nebula-graph-architecture_3.png 2x"
             sizes="auto"
             alt="https://docs-cdn.nebula-graph.com.cn/figures/nebula-graph-architecture_3.png">
-    </a></p>
+    </a></figure></p>
 <p>所以，在默认情况下，集群只会暴露 GraphD 的接口，提供给客户端连接，执行 nGQL 的查询。</p>
 <p>这其中，GraphD 是无状态的，这意味着我们可以在多个 GraphD 之间做负载均衡。这里，我们有两种方法：基于客户端的（Client-Side LB），与基于代理的。</p>
 <h4 id="客户端的负载均衡" class="headerLink">
@@ -963,7 +966,7 @@
 </span></span></code></pre></td></tr></table>
 </div>
 </div><p>浏览器访问 http://10.1.1.168:8080/ssl/list ，账号密码都是 <code>admin</code> ，点击 <code>Create</code> 按钮，将刚刚生成的证书导入到 APISIX 之中。</p>
-<p><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/202471244-7081b37e-1e8f-4298-8887-db2feefe74a2.png" title="https://user-images.githubusercontent.com/1651790/202471244-7081b37e-1e8f-4298-8887-db2feefe74a2.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/202471244-7081b37e-1e8f-4298-8887-db2feefe74a2.png">
+<p><figure><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/202471244-7081b37e-1e8f-4298-8887-db2feefe74a2.png" title="https://user-images.githubusercontent.com/1651790/202471244-7081b37e-1e8f-4298-8887-db2feefe74a2.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/202471244-7081b37e-1e8f-4298-8887-db2feefe74a2.png">
         <img
             
             loading="lazy"
@@ -971,7 +974,7 @@
             srcset="https://user-images.githubusercontent.com/1651790/202471244-7081b37e-1e8f-4298-8887-db2feefe74a2.png, https://user-images.githubusercontent.com/1651790/202471244-7081b37e-1e8f-4298-8887-db2feefe74a2.png 1.5x, https://user-images.githubusercontent.com/1651790/202471244-7081b37e-1e8f-4298-8887-db2feefe74a2.png 2x"
             sizes="auto"
             alt="https://user-images.githubusercontent.com/1651790/202471244-7081b37e-1e8f-4298-8887-db2feefe74a2.png">
-    </a></p>
+    </a></figure></p>
 <h4 id="增加-apisix-的-nodeport-service" class="headerLink">
     <a href="#%e5%a2%9e%e5%8a%a0-apisix-%e7%9a%84-nodeport-service" class="header-mark"></a>4.4.3 增加 APISIX 的 NodePort Service</h4><p>创建一个 NodePort Service，用于暴露 APISIX 的 9779 端口，这样，我们就可以通过外部的 IP 地址访问到 APISIX 了。</p>
 <div class="highlight"><div class="chroma">
@@ -1280,7 +1283,7 @@
         srcset="/graph-enabled-infra-ops/featured-image.webp, /graph-enabled-infra-ops/featured-image.webp 1.5x, /graph-enabled-infra-ops/featured-image.webp 2x"
         sizes="auto"
         alt="/graph-enabled-infra-ops/featured-image.webp"
-        title="本文介绍了利用开源 API 网关 APISIX 加速 NebulaGraph 多个场景的落地最佳实践：负载均衡、暴露存储接口与 TLS Termination。" height="200" width="400"></a>
+        title="本文介绍了利用开源 API 网关 APISIX 加速 NebulaGraph 多个场景的落地最佳实践：负载均衡、暴露存储接口与 TLS Termination。" height="200"   width="400" ></a>
             </div><h2 class="related-title">
                 <a href="/graph-enabled-infra-ops/">图数据库驱动的基础设施运维示例</a>
             </h2>
@@ -1294,7 +1297,7 @@
         srcset="/nebulagraph-sns/featured-image.webp, /nebulagraph-sns/featured-image.webp 1.5x, /nebulagraph-sns/featured-image.webp 2x"
         sizes="auto"
         alt="/nebulagraph-sns/featured-image.webp"
-        title="本文介绍了利用开源 API 网关 APISIX 加速 NebulaGraph 多个场景的落地最佳实践：负载均衡、暴露存储接口与 TLS Termination。" height="200" width="400"></a>
+        title="本文介绍了利用开源 API 网关 APISIX 加速 NebulaGraph 多个场景的落地最佳实践：负载均衡、暴露存储接口与 TLS Termination。" height="200"   width="400" ></a>
             </div><h2 class="related-title">
                 <a href="/nebulagraph-sns/">图数据库的社交网络应用</a>
             </h2>
@@ -1308,7 +1311,7 @@
         srcset="/chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.webp, /chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.webp 1.5x, /chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.webp 2x"
         sizes="auto"
         alt="/chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.webp"
-        title="本文介绍了利用开源 API 网关 APISIX 加速 NebulaGraph 多个场景的落地最佳实践：负载均衡、暴露存储接口与 TLS Termination。" height="200" width="400"></a>
+        title="本文介绍了利用开源 API 网关 APISIX 加速 NebulaGraph 多个场景的落地最佳实践：负载均衡、暴露存储接口与 TLS Termination。" height="200"   width="400" ></a>
             </div><h2 class="related-title">
                 <a href="/chatgpt-and-nebulagraph-predict-fifa-world-cup/">chatGPT 加 NebulaGraph 预测 2022 世界杯冠军球队</a>
             </h2>
@@ -1322,7 +1325,7 @@
         srcset="/data-lineage-oss-ref-solution/featured-image.webp, /data-lineage-oss-ref-solution/featured-image.webp 1.5x, /data-lineage-oss-ref-solution/featured-image.webp 2x"
         sizes="auto"
         alt="/data-lineage-oss-ref-solution/featured-image.webp"
-        title="本文介绍了利用开源 API 网关 APISIX 加速 NebulaGraph 多个场景的落地最佳实践：负载均衡、暴露存储接口与 TLS Termination。" height="200" width="400"></a>
+        title="本文介绍了利用开源 API 网关 APISIX 加速 NebulaGraph 多个场景的落地最佳实践：负载均衡、暴露存储接口与 TLS Termination。" height="200"   width="400" ></a>
             </div><h2 class="related-title">
                 <a href="/data-lineage-oss-ref-solution/">基于开源技术栈的数据血缘、治理参考解决方案</a>
             </h2>
@@ -1336,7 +1339,7 @@
         srcset="/nebulagraph-etl-dbt/featured-image.webp, /nebulagraph-etl-dbt/featured-image.webp 1.5x, /nebulagraph-etl-dbt/featured-image.webp 2x"
         sizes="auto"
         alt="/nebulagraph-etl-dbt/featured-image.webp"
-        title="本文介绍了利用开源 API 网关 APISIX 加速 NebulaGraph 多个场景的落地最佳实践：负载均衡、暴露存储接口与 TLS Termination。" height="200" width="400"></a>
+        title="本文介绍了利用开源 API 网关 APISIX 加速 NebulaGraph 多个场景的落地最佳实践：负载均衡、暴露存储接口与 TLS Termination。" height="200"   width="400" ></a>
             </div><h2 class="related-title">
                 <a href="/nebulagraph-etl-dbt/">利用 dbt，基于表结构的 Nebulagraph 图建模与 ETL</a>
             </h2>
@@ -1379,7 +1382,7 @@
             </noscript></div></article></div>
         </main><footer class="footer">
         <div class="footer-container"><div class="footer-line">
-                    由 <a href="https://gohugo.io/" target="_blank" rel="noopener noreferrer" title="Hugo 0.110.0">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreferrer" title="DoIt 0.3.0"><i class="far fa-edit fa-fw"></i> DoIt</a>
+                    由 <a href="https://gohugo.io/" target="_blank" rel="noopener noreferrer" title="Hugo 0.111.3">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreferrer" title="DoIt 0.3.0"><i class="far fa-edit fa-fw"></i> DoIt</a>
                 </div><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2018 - 2023</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="https://siwei.io" target="_blank" rel="noopener noreferrer">Wey Gu</a></span>&nbsp;|&nbsp;<span class="license"><a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">CC BY-NC 4.0</a></span></div>
             <div class="footer-line"></div>
             <div class="footer-line">
