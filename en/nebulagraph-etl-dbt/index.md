@@ -192,7 +192,6 @@ Now the modeling puts the two tables like this figure:
 
 ![modeling_omdb_movielens](modeling_omdb_movielens.webp)
 
-
 ### Graph Modeling (Property Graph)
 
 To summarize, we need to aggregate different tables (or CSV files in table form) from multiple data sources, such that the correspondence is shown in the figure: where the blue dashed line indicates the source of data information for the vertices in the graph, and the pink dashed line indicates the source of edge information.
