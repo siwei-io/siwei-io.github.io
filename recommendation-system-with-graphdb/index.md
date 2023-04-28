@@ -495,7 +495,7 @@ WITH u_sim, watched_movies_id, u_mean, avg(e1.rate) AS u_sim_mean, e AS e_
 
 UNWIND e_ AS e
 WITH sum((e.e0.rate - u_mean) * (e.e1.rate - u_sim_mean) ) AS numerator,
-     sqrt(sum(exp2(e.e0.rate - u_mean)) * sum(exp2(e.e1.rate - u_sim_mean))) AS denominator,
+     sqrt(sum(pow((e.e0.rate - u_mean),2))) * sum(pow((e.e1.rate - u_sim_mean),2))) AS denominator,
      u_sim, watched_movies_id WHERE denominator != 0
 
 // 取 pearson_cc 最大的 50 个相似用户
@@ -554,7 +554,7 @@ RETURN recomm, sum(pearson_cc) AS sim_score ORDER BY sim_score DESC LIMIT 50
   
   UNWIND e_ AS e
   WITH sum((e.e0.rate - u_mean) * (e.e1.rate - u_sim_mean) ) AS numerator,
-       sqrt(sum(exp2(e.e0.rate - u_mean)) * sum(exp2(e.e1.rate - u_sim_mean))) AS denominator,
+       sqrt(sum(pow((e.e0.rate - u_mean),2))) * sum(pow((e.e1.rate - u_sim_mean),2))) AS denominator,
        u_sim, watched_movies_id WHERE denominator != 0
   
   // 取 pearson_cc 最大的 50 个相似用户
@@ -584,7 +584,7 @@ RETURN recomm, sum(pearson_cc) AS sim_score ORDER BY sim_score DESC LIMIT 50
   
   UNWIND e_ AS e
   WITH sum((e.e0.rate - u_mean) * (e.e1.rate - u_sim_mean) ) AS numerator,
-       sqrt(sum(exp2(e.e0.rate - u_mean)) * sum(exp2(e.e1.rate - u_sim_mean))) AS denominator,
+       sqrt(sum(pow((e.e0.rate - u_mean),2))) * sum(pow((e.e1.rate - u_sim_mean),2))) AS denominator,
        u_sim, watched_movies_id WHERE denominator != 0
   
   // 取 pearson_cc 最大的 50 个相似用户
