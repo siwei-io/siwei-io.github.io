@@ -495,7 +495,7 @@ WITH u_sim, watched_movies_id, u_mean, avg(e1.rate) AS u_sim_mean, e AS e_
 
 UNWIND e_ AS e
 WITH sum((e.e0.rate - u_mean) * (e.e1.rate - u_sim_mean) ) AS numerator,
-     sqrt(sum(pow((e.e0.rate - u_mean),2))) * sum(pow((e.e1.rate - u_sim_mean),2))) AS denominator,
+     sqrt(sum(pow((e.e0.rate - u_mean),2))) * sqrt(sum(pow((e.e1.rate - u_sim_mean),2))) AS denominator,
      u_sim, watched_movies_id WHERE denominator != 0
 
 // 取 pearson_cc 最大的 50 个相似用户
@@ -509,18 +509,18 @@ RETURN recomm, sum(pearson_cc) AS sim_score ORDER BY sim_score DESC LIMIT 50
 
 结果：
 
-| recomm                                 | sim_score          |
-| :------------------------------------- | :----------------- |
-| ("120880" :movie{name: "I The Movie"}) | 33.018868012270396 |
-| ("167058" :movie{name: "We"})          | 22.38531462958867  |
-| ("12768" :movie{name: "We"})           | 22.38531462958867  |
-| ("55207" :movie{name: "Silence"})      | 22.342886447570585 |
-| ("170339" :movie{name: "Silence"})     | 22.342886447570585 |
-| ("114707" :movie{name: "Raid"})        | 21.384280909249796 |
-| ("10" :movie{name: "Star Wars"})       | 19.51546960750133  |
-| ("11" :movie{name: "Star Wars"})       | 19.515469607501327 |
-| ("64957" :movie{name: "Mat"})          | 18.142639694676603 |
-| ("187689" :movie{name: "Sin"})         | 18.078111338733557 |
+| recomm                                       | sim_score |
+| :------------------------------------------- | :-------- |
+| ("64957" :movie{name: "Mother"})             | 14        |
+| ("10" :movie{name: "Star Wars"})             | 13        |
+| ("11" :movie{name: "Star Wars: A New Hope"}) | 13        |
+| ("55207" :movie{name: "Silence"})            | 12        |
+| ("170339" :movie{name: "Silence"})           | 12        |
+| ("9807" :movie{name: "Aladdin"})             | 8         |
+| ("45375" :movie{name: "X"})                  | 7         |
+| ("87944" :movie{name: "Robin Hood"})         | 6         |
+| ("473" :movie{name: "Pi"})                   | 6         |
+| ("807" :movie{name: "Seven"})                | 6         |
 
 ##### 可视化分析 UserCF
 
@@ -554,7 +554,7 @@ RETURN recomm, sum(pearson_cc) AS sim_score ORDER BY sim_score DESC LIMIT 50
   
   UNWIND e_ AS e
   WITH sum((e.e0.rate - u_mean) * (e.e1.rate - u_sim_mean) ) AS numerator,
-       sqrt(sum(pow((e.e0.rate - u_mean),2))) * sum(pow((e.e1.rate - u_sim_mean),2))) AS denominator,
+       sqrt(sum(pow((e.e0.rate - u_mean),2))) * sqrt(sum(pow((e.e1.rate - u_sim_mean),2))) AS denominator,
        u_sim, watched_movies_id WHERE denominator != 0
   
   // 取 pearson_cc 最大的 50 个相似用户
@@ -563,7 +563,7 @@ RETURN recomm, sum(pearson_cc) AS sim_score ORDER BY sim_score DESC LIMIT 50
   RETURN u_sim
   ```
 
-  我们给他们标记一下颜色：
+  我们增量渲染，并给他们标记一下颜色：
 
   ![UserCF_step1](UserCF_step1.webp)
 
@@ -584,7 +584,7 @@ RETURN recomm, sum(pearson_cc) AS sim_score ORDER BY sim_score DESC LIMIT 50
   
   UNWIND e_ AS e
   WITH sum((e.e0.rate - u_mean) * (e.e1.rate - u_sim_mean) ) AS numerator,
-       sqrt(sum(pow((e.e0.rate - u_mean),2))) * sum(pow((e.e1.rate - u_sim_mean),2))) AS denominator,
+       sqrt(sum(pow((e.e0.rate - u_mean),2))) * sqrt(sum(pow((e.e1.rate - u_sim_mean),2))) AS denominator,
        u_sim, watched_movies_id WHERE denominator != 0
   
   // 取 pearson_cc 最大的 50 个相似用户
