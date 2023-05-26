@@ -23,7 +23,7 @@ ng_ai 的全名是：Nebulagraph AI Suite，顾名思义，它是在 NebulaGraph
 为了让 NebulaGraph 社区的同学拥有顺滑的算法体验，ng_ai 有以下特点：
 
 - 与 NebulaGraph 紧密结合，方便从其中读、写图数据
-- 支持多引擎、后端，目前支持 Spark（NebulaGraph Algorithm）、NetworkX，之后会支持 (DGL)[https://www.dgl.ai/]、(PyG)[https://pytorch-geometric.readthedocs.io/en/latest/]
+- 支持多引擎、后端，目前支持 Spark（NebulaGraph Algorithm）、NetworkX，之后会支持 [DGL](https://www.dgl.ai/)、[PyG](https://pytorch-geometric.readthedocs.io/en/latest/)
 - 友好、符合直觉的 API 设计
 - 与 NebulaGraph 的 UDF 无缝结合，支持从 Query 中调用 ng_ai 任务
 - 友好的自定义算法接口，方便用户自己实现算法（尚未完成）

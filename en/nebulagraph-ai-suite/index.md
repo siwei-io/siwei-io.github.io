@@ -351,7 +351,7 @@ ng_ai is completely built in public, and we welcome everyone in the community to
 
 We have prepared a one-click deployment of NebulaGraph + Studio + ng_ai in Jupyter environment, you only need to search NebulaGraph from the Extension of Docker Desktop to try it out.
 
-- Install (NebulaGraph Docker Extension)[https://www.docker.com/blog/distributed-cloud-native-graph-database-nebulagraph-docker-extension/]
+- Install [NebulaGraph Docker Extension](https://www.docker.com/blog/distributed-cloud-native-graph-database-nebulagraph-docker-extension/)
 
 Search NebulaGraph from docker extension marketplace, and install it.
 
