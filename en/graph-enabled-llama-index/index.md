@@ -120,7 +120,7 @@ A knowledge graph is a way of organizing and connecting information in a graph f
 
 It looks like this:
 
-<iframe src="nebulagraph_draw.html" style="height:500px;width:800px" title="Graph"></iframe>
+<iframe src="harry_potter_graph.html" style="height:500px;width:800px" title="Graph"></iframe>
 
 But how could Knowledge Graph help?
 
