@@ -1,0 +1,545 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noodp" />
+    <title>Graph Enabled Llama Index - siwei.io</title><meta name="Description" content="How Graph could help build better In-context Learning LLM Applications."><meta property="og:title" content="Graph Enabled Llama Index" />
+<meta property="og:description" content="How Graph could help build better In-context Learning LLM Applications." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://siwei.io/en/graph-enabled-llama-index/" /><meta property="og:image" content="https://siwei.io/en/graph-enabled-llama-index/featured-image.png"/><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2023-06-01T14:52:53+08:00" />
+<meta property="article:modified_time" content="2023-06-01T14:52:53+08:00" /><meta property="og:site_name" content="siwei.io" />
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://siwei.io/en/graph-enabled-llama-index/featured-image.png"/>
+<meta name="twitter:title" content="Graph Enabled Llama Index"/>
+<meta name="twitter:description" content="How Graph could help build better In-context Learning LLM Applications."/>
+<meta name="application-name" content="DoIt">
+<meta name="apple-mobile-web-app-title" content="DoIt">
+
+<meta name="theme-color" content="#f8f8f8"><meta name="msapplication-TileColor" content="#da532c"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="manifest" href="/site.webmanifest"><link rel="canonical" href="https://siwei.io/en/graph-enabled-llama-index/" /><link rel="prev" href="https://siwei.io/en/nebulagraph-ai-suite/" /><link rel="stylesheet" href="/lib/normalize/normalize.min.css"><link rel="stylesheet" href="/css/color.css"><link rel="stylesheet" href="/css/style.min.css"><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/fontawesome-free/all.min.css">
+        <noscript><link rel="stylesheet" href="/lib/fontawesome-free/all.min.css"></noscript><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/animate/animate.min.css">
+        <noscript><link rel="stylesheet" href="/lib/animate/animate.min.css"></noscript>
+    
+    
+    
+    <meta name="baidu-site-verification" content="code-4R67zl7SwH" /><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "Graph Enabled Llama Index",
+        "inLanguage": "en",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "https:\/\/siwei.io\/en\/graph-enabled-llama-index\/"
+        },"image": ["https:\/\/siwei.io\/images\/site-feature-image.webp"],"genre": "posts","keywords": "Nebula Graph, LLM, Llama-Index, In-context Learning","wordcount":  1782 ,
+        "url": "https:\/\/siwei.io\/en\/graph-enabled-llama-index\/","datePublished": "2023-06-01T14:52:53+08:00","dateModified": "2023-06-01T14:52:53+08:00","license": "This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.","publisher": {
+            "@type": "Organization",
+            "name": "Wey Gu","logo": "https:\/\/siwei.io\/images\/site-feature-image.webp"},"author": {
+                "@type": "Person",
+                "name": "Wey Gu"
+            },"description": "How Graph could help build better In-context Learning LLM Applications."
+    }
+    </script><script src="//instant.page/5.1.1" defer type="module" integrity="sha384-MWfCL6g1OTGsbSwfuMHc8+8J2u71/LA8dzlIN3ycajckxuZZmF+DNjdm7O6H3PSq"></script>
+</head>
+
+<body header-desktop="fixed" header-mobile="auto"><script type="text/javascript">
+        function setTheme(theme) {document.body.setAttribute('theme', theme); document.documentElement.style.setProperty('color-scheme', theme === 'light' ? 'light' : 'dark'); window.theme = theme;   window.isDark = window.theme !== 'light' }
+        function saveTheme(theme) {window.localStorage && localStorage.setItem('theme', theme);}
+        function getMeta(metaName) {const metas = document.getElementsByTagName('meta'); for (let i = 0; i < metas.length; i++) if (metas[i].getAttribute('name') === metaName) return metas[i]; return '';}
+        if (window.localStorage && localStorage.getItem('theme')) {let theme = localStorage.getItem('theme');theme === 'light' || theme === 'dark' || theme === 'black' ? setTheme(theme) : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light')); } else { if ('auto' === 'light' || 'auto' === 'dark' || 'auto' === 'black') setTheme('auto'), saveTheme('auto'); else saveTheme('auto'), window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light');}
+        let metaColors = {'light': '#f8f8f8','dark': '#252627','black': '#000000'}
+        getMeta('theme-color').content = metaColors[document.body.getAttribute('theme')];
+        window.switchThemeEventSet = new Set()
+    </script>
+    <div id="back-to-top"></div>
+    <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/en/" title="siwei.io"><span class="header-title-pre"><i class='fas fa-code-branch'></i></span>siwei.io</a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="/en/about/"> About </a><a class="menu-item" href="/en/projects/"> Project </a><a class="menu-item" href="/en/sketch-notes/"> Sketches </a><a class="menu-item" href="/en/posts/"> Blog </a><a class="menu-item" href="/en/cources/"> Hands-on </a><a class="menu-item" href="/en/talk/"> Talks </a><a class="menu-item" href="https://vesoft.com/en/careers/" rel="noopener noreferrer" target="_blank"> Hire </a><a class="menu-item" href="/en/about/#contact"> Contact </a><span class="menu-item delimiter"></span><a href="#" class="menu-item language" title="Select Language">🌏 English<i class="fas fa-chevron-right fa-fw"></i>
+                        <select class="language-select" title="Select Language" id="language-select-desktop" onchange="location = this.value;"><option value="/en/graph-enabled-llama-index/" selected>🌏 English</option></select>
+                    </a><span class="menu-item search" id="search-desktop">
+                        <input type="text" placeholder="Search titles or contents..." id="search-input-desktop">
+                        <a href="#" class="search-button search-toggle" id="search-toggle-desktop" title="Search">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="#" class="search-button search-clear" id="search-clear-desktop" title="Clear">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-desktop">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </span><a href="#" class="menu-item theme-select" title="Switch Theme">
+                    <i class="fas fa-adjust fa-fw"></i>
+                    <select class="color-theme-select" id="theme-select-desktop" title="Switch Theme">
+                        <option value="light">Light</option>
+                        <option value="dark">Dark</option>
+                        <option value="black">Black</option>
+                        <option value="auto">Auto</option>
+                    </select>
+                </a></div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="/en/" title="siwei.io"><span class="header-title-pre"><i class='fas fa-code-branch'></i></span>siwei.io</a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><div class="search-wrapper">
+                    <div class="search mobile" id="search-mobile">
+                        <input type="text" placeholder="Search titles or contents..." id="search-input-mobile">
+                        <a href="#" class="search-button search-toggle" id="search-toggle-mobile" title="Search">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="#" class="search-button search-clear" id="search-clear-mobile" title="Clear">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-mobile">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </div>
+                    <a href="#" class="search-cancel" id="search-cancel-mobile">
+                        Cancel
+                    </a>
+                </div><a class="menu-item" href="/en/about/" title="">About</a><a class="menu-item" href="/en/projects/" title="">Project</a><a class="menu-item" href="/en/sketch-notes/" title="">Sketches</a><a class="menu-item" href="/en/posts/" title="">Blog</a><a class="menu-item" href="/en/cources/" title="">Hands-on</a><a class="menu-item" href="/en/talk/" title="">Talks</a><a class="menu-item" href="https://vesoft.com/en/careers/" title="" rel="noopener noreferrer" target="_blank">Hire</a><a class="menu-item" href="/en/about/#contact" title="">Contact</a><a href="#" class="menu-item theme-select" title="Switch Theme">
+                <i class="fas fa-adjust fa-fw"></i>
+                <select class="color-theme-select" id="theme-select-mobile" title="Switch Theme">
+                    <option value="light">Light</option>
+                    <option value="dark">Dark</option>
+                    <option value="black">Black</option>
+                    <option value="auto">Auto</option>
+                </select>
+            </a><a href="#" class="menu-item" title="Select Language">🌏 English<i class="fas fa-chevron-right fa-fw"></i>
+                    <select class="language-select" title="Select Language" onchange="location = this.value;"><option value="/en/graph-enabled-llama-index/" selected>🌏 English</option></select>
+                </a></div>
+    </div>
+</header>
+<div class="search-dropdown desktop">
+    <div id="search-dropdown-desktop"></div>
+</div>
+<div class="search-dropdown mobile">
+    <div id="search-dropdown-mobile"></div>
+</div>
+<main class="main">
+            <div class="container"><div class="toc" id="toc-auto">
+        <h2 class="toc-title">Contents</h2>
+        <div class="toc-content" id="toc-content-auto"><nav id="TableOfContents">
+  <ol>
+    <li><a href="#llm-app-paradigms">LLM App Paradigms</a></li>
+    <li><a href="#llama-index-interface-between-data-and-llm">Llama Index: Interface between data and LLM</a>
+      <ol>
+        <li><a href="#in-context-learning">In-context learning</a></li>
+        <li><a href="#embedding">Embedding</a></li>
+        <li><a href="#llama-index">Llama Index</a></li>
+      </ol>
+    </li>
+    <li><a href="#the-problem-of-doc-split-and-embeddings">The problem of doc split and embeddings</a></li>
+    <li><a href="#knowledge-graph">Knowledge Graph</a></li>
+    <li><a href="#combination-of-embeddings-and-knowledge-graph">Combination of embeddings and Knowledge Graph</a></li>
+    <li><a href="#progress-of-knowledge-graph-in-llama-index">Progress of Knowledge Graph in Llama Index</a></li>
+  </ol>
+</nav></div>
+    </div><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC", "true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Graph Enabled Llama Index</h1><div class="post-meta">
+            <div class="post-meta-line">
+                <span class="post-author"><i class="author fas fa-user-circle fa-fw"></i><a href="https://siwei.io" title="Author" target="_blank" rel="noopener noreferrer author" class="author">Wey Gu</a>
+                </span>&nbsp;<span class="post-category">included in </span>&nbsp;<span class="post-category">category <a href="/en/categories/nebula-graph/"><i class="far fa-folder fa-fw"></i>Nebula Graph</a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime="2023-06-01">2023-06-01</time>&nbsp;<i class="far fa-edit fa-fw"></i>&nbsp;<time datetime="2023-06-01">2023-06-01</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;1782 words&nbsp;
+                <i class="far fa-clock fa-fw"></i>&nbsp;9 minutes&nbsp;</div>
+        </div><div class="featured-image"><img
+        
+        loading="eager"
+        src="/en/graph-enabled-llama-index/featured-image.webp"
+        srcset="/en/graph-enabled-llama-index/featured-image.webp, /en/graph-enabled-llama-index/featured-image.webp 1.5x, /en/graph-enabled-llama-index/featured-image.webp 2x"
+        sizes="auto"
+        alt="/en/graph-enabled-llama-index/featured-image.webp"
+        title="How Graph could help build better In-context Learning LLM Applications." height="874"   width="1734" ></div><div class="details toc" id="toc-static"  kept="">
+                <div class="details-summary toc-title">
+                    <span>Contents</span>
+                    <span><i class="details-icon fas fa-angle-right"></i></span>
+                </div>
+                <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ol>
+    <li><a href="#llm-app-paradigms">LLM App Paradigms</a></li>
+    <li><a href="#llama-index-interface-between-data-and-llm">Llama Index: Interface between data and LLM</a>
+      <ol>
+        <li><a href="#in-context-learning">In-context learning</a></li>
+        <li><a href="#embedding">Embedding</a></li>
+        <li><a href="#llama-index">Llama Index</a></li>
+      </ol>
+    </li>
+    <li><a href="#the-problem-of-doc-split-and-embeddings">The problem of doc split and embeddings</a></li>
+    <li><a href="#knowledge-graph">Knowledge Graph</a></li>
+    <li><a href="#combination-of-embeddings-and-knowledge-graph">Combination of embeddings and Knowledge Graph</a></li>
+    <li><a href="#progress-of-knowledge-graph-in-llama-index">Progress of Knowledge Graph in Llama Index</a></li>
+  </ol>
+</nav></div>
+            </div><div class="content" id="content"><blockquote>
+<p>How Graph could help build better In-context Learning LLM Applications.</p>
+</blockquote>
+<h2 id="llm-app-paradigms" class="headerLink">
+    <a href="#llm-app-paradigms" class="header-mark"></a>1 LLM App Paradigms</h2><p>As a big improvement in Cognitive intelligence, LLM had changed many industries, in a way that we didn&rsquo;t expect to automate, accelerate or enable. Seeing new LLM-enabled applications being created every day, we are all still exploring new methods and use cases for leveraging this magic.</p>
+<p>One of the most typical patterns to bring LLM into the loop is to ask LLM to understand things based on proprietory/ certain domain knowledge. For now, there are two paradigms we could add that knowledge to LLM: fine-tuning and <a href="https://en.wikipedia.org/wiki/In-context_learning_%28natural_language_processing%29" target="_blank" rel="noopener noreferrer">in-context learning</a>.</p>
+<p>Fine-tuning refers to performing add-on training on LLM models with extra knowledge, whereas in-context learning is to adding some extra piece of knowledge to the query prompt. What we observe now is that <a href="https://arxiv.org/abs/2305.16938" target="_blank" rel="noopener noreferrer">in-context learning has gained popularity over Fine-tuning due to its simplicity</a>.</p>
+<p>And in this blog, I&rsquo;ll share what we had been doing around the in-context learning approach.</p>
+<h2 id="llama-index-interface-between-data-and-llm" class="headerLink">
+    <a href="#llama-index-interface-between-data-and-llm" class="header-mark"></a>2 Llama Index: Interface between data and LLM</h2><h3 id="in-context-learning" class="headerLink">
+    <a href="#in-context-learning" class="header-mark"></a>2.1 In-context learning</h3><p>The basic idea of in-context learning is to use existing LLM(not updated) to handle special tasks toward specific knowledge datasets.</p>
+<p>For instance, to build an application to answer any questions about one person, or even act as one&rsquo;s digital avatar, we can apply in-context learning to an autobiography book with LLM. In practice, the application will construct a prompt with the question from the user and some information &ldquo;searched&rdquo; from the book, then query the LLM for an answer.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">┌───────┐         ┌─────────────────┐         ┌─────────┐
+</span></span><span class="line"><span class="cl">│       │         │ Docs/Knowledge  │         │         │
+</span></span><span class="line"><span class="cl">│       │         └─────────────────┘         │         │
+</span></span><span class="line"><span class="cl">│ User  │─────────────────────────────────────▶   LLM   │
+</span></span><span class="line"><span class="cl">│       │                                     │         │
+</span></span><span class="line"><span class="cl">│       │                                     │         │
+</span></span><span class="line"><span class="cl">└───────┘                                     └─────────┘
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>One of the most performant ways to enable this searching approach to get the related info from the Docs/Knowledge(the book in the above example) for the special task, is to leverage Embeddings.</p>
+<h3 id="embedding" class="headerLink">
+    <a href="#embedding" class="header-mark"></a>2.2 Embedding</h3><p>The embedding normally refers to a way to map real word things into a vector in a multidimensional space, for instance, we could map images into a space of (64 x 64) dimension, and if we are doing it well enough, the distance between the two images can reflect the similarity of them.</p>
+<p>Another example of embedding is the word2vec algorithm, which literally maps every word into a vector, for instance, and if the embedding is good enough, we could have addition and subtraction on them, we may have:</p>
+<ul>
+<li><code>vec(apple) + vec(pie) =~ vec(&quot;apple apie&quot;)</code></li>
+</ul>
+<p>Or the vector measure of <code>vec(apple) + vec(pie) - vec(&quot;apple apie&quot;)</code> tends to be 0:</p>
+<ul>
+<li><code>|vec(apple) + vec(pie) - vec(&quot;apple apie&quot;)| =~ 0</code></li>
+</ul>
+<p>Similarly, we could have &ldquo;pear&rdquo; should be closer than &ldquo;dinosaur&rdquo; to &ldquo;apple&rdquo;:</p>
+<ul>
+<li><code>|vec(apple) - vec(pear)| &lt; |vec(apple) - vec(dinosaur)|</code></li>
+</ul>
+<p>With that, we could in theory search for pieces of the book which are more related to a given question. And the basic process is:</p>
+<ul>
+<li>Split the book into small pieces, create the embedding per each piece, and store them</li>
+<li>When a question comes, compute the embedding of the question</li>
+<li>Find top-K similar embeddings of pieces of the book by calculating the distance</li>
+<li>Construct the prompt with both the question and the pieces of the book</li>
+<li>Query the LLM with the prompt</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">                  ┌────┬────┬────┬────┐                  
+</span></span><span class="line"><span class="cl">                  │ 1  │ 2  │ 3  │ 4  │                  
+</span></span><span class="line"><span class="cl">                  ├────┴────┴────┴────┤                  
+</span></span><span class="line"><span class="cl">                  │  Docs/Knowledge   │                  
+</span></span><span class="line"><span class="cl">┌───────┐         │        ...        │       ┌─────────┐
+</span></span><span class="line"><span class="cl">│       │         ├────┬────┬────┬────┤       │         │
+</span></span><span class="line"><span class="cl">│       │         │ 95 │ 96 │    │    │       │         │
+</span></span><span class="line"><span class="cl">│       │         └────┴────┴────┴────┘       │         │
+</span></span><span class="line"><span class="cl">│ User  │─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─▶   LLM   │
+</span></span><span class="line"><span class="cl">│       │                                     │         │
+</span></span><span class="line"><span class="cl">│       │                                     │         │
+</span></span><span class="line"><span class="cl">└───────┘    ┌ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┐  └─────────┘
+</span></span><span class="line"><span class="cl">    │          ┌──────────────────────────┐        ▲     
+</span></span><span class="line"><span class="cl">    └────────┼▶│  Tell me ....., please   │├───────┘     
+</span></span><span class="line"><span class="cl">               └──────────────────────────┘              
+</span></span><span class="line"><span class="cl">             │ ┌────┐ ┌────┐               │             
+</span></span><span class="line"><span class="cl">               │ 3  │ │ 96 │                             
+</span></span><span class="line"><span class="cl">             │ └────┘ └────┘               │             
+</span></span><span class="line"><span class="cl">              ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ 
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="llama-index" class="headerLink">
+    <a href="#llama-index" class="header-mark"></a>2.3 Llama Index</h3><p>Llama Index is such an open-source toolkit to help in-context learning in best practice:</p>
+<ul>
+<li>It comes with <a href="https://llamahub.ai/" target="_blank" rel="noopener noreferrer">a bunch of data loaders</a> to serialize docs/knowledge in a unified format, think of PDF, Wikipedia Page, notion, Twitter, etc, and we don&rsquo;t have to deal with the preprocessing, split the data into pieces, etc, on our own.</li>
+<li>It helps create the Embedding(and some other form of the index) for us and stores the embeddings(in memory or <a href="https://github.com/openai/openai-cookbook/blob/main/examples/vector_databases/Using_vector_databases_for_embeddings_search.ipynb" target="_blank" rel="noopener noreferrer">vector databases</a>), too, with one line of code.</li>
+<li>It comes out of the box with prompts and other engineering points, so that we don&rsquo;t have to create and study from scratch, for instance, <a href="https://twitter.com/jerryjliu0/status/1663213212932902913" target="_blank" rel="noopener noreferrer">create a chatbot on existing data with 4 lines of code</a>.</li>
+</ul>
+<h2 id="the-problem-of-doc-split-and-embeddings" class="headerLink">
+    <a href="#the-problem-of-doc-split-and-embeddings" class="header-mark"></a>3 The problem of doc split and embeddings</h2><p>The embedding and vector search worked well in many cases, while there are still challenges in some cases, and one of them is it could lose global context/cross-node context.</p>
+<p>Think of we are asking &ldquo;Please tell me things about the author and foo.&rdquo;, and in this book, the piece with numbers: 1, 3, 6, 19~25, 30~44, and 96~99 are all about the topic of foo. In this case, the simple way of searching top-k embedding of the pieces of the book may not work well because we normally only take a few top-related pieces, which loses many contexts.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">┌────┬────┬────┬────┐
+</span></span><span class="line"><span class="cl">│ 1  │ 2  │ 3  │ 4  │
+</span></span><span class="line"><span class="cl">├────┴────┴────┴────┤
+</span></span><span class="line"><span class="cl">│  Docs/Knowledge   │
+</span></span><span class="line"><span class="cl">│        ...        │
+</span></span><span class="line"><span class="cl">├────┬────┬────┬────┤
+</span></span><span class="line"><span class="cl">│ 95 │ 96 │    │    │
+</span></span><span class="line"><span class="cl">└────┴────┴────┴────┘
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>The mitigation for that, for instance with Llama Index is to create <a href="https://gpt-index.readthedocs.io/en/latest/how_to/index_structs/composability.html" target="_blank" rel="noopener noreferrer">composite</a> <a href="https://gpt-index.readthedocs.io/en/latest/guides/primer/index_guide.html" target="_blank" rel="noopener noreferrer">indices</a>, where the VectorStore is only part of it, combining with that, we could define a summary index and/or a tree index, etc to <a href="https://gpt-index.readthedocs.io/en/latest/guides/tutorials/unified_query.html" target="_blank" rel="noopener noreferrer">route different types of questions to different indices</a>, thus to avoid risking the loss of global context when the question required it.</p>
+<p>Or, with the help of Knowledge Graph, we could do something differently.</p>
+<h2 id="knowledge-graph" class="headerLink">
+    <a href="#knowledge-graph" class="header-mark"></a>4 Knowledge Graph</h2><p>The term Knowledge Graph was initially coined by <a href="https://blog.google/products/search/introducing-knowledge-graph-things-not/" target="_blank" rel="noopener noreferrer">Google in May 2012</a> as part of its efforts to enhance search results and provide more contextual information to users. The Knowledge Graph was designed to understand the relationships between entities and provide direct answers to queries rather than just returning a list of relevant web pages.</p>
+<p>A knowledge graph is a way of organizing and connecting information in a graph format, where nodes represent entities, and edges represent the relationships between those entities. The graph structure allows for efficient storage, retrieval, and analysis of data.</p>
+<p>It looks like this:</p>
+<iframe src="nebulagraph_draw.html" style="height:500px;width:800px" title="Graph"></iframe>
+<p>But how could Knowledge Graph help?</p>
+<h2 id="combination-of-embeddings-and-knowledge-graph" class="headerLink">
+    <a href="#combination-of-embeddings-and-knowledge-graph" class="header-mark"></a>5 Combination of embeddings and Knowledge Graph</h2><p>The general idea here is a knowledge graph, as the refined format of the information, can be queried/searched in way smaller granularity than the split we could do on raw data/docs. Thus, by not replacing the large pieces of the data, but combining the two, we can search queries that require global/cross-node context better.</p>
+<p>See the following diagram, assume the question is about <code>x</code>, and 20 of all the pieces of the data are highly related to it. We could now still get the top 3 pieces of the doc(say, no. 1, 2, and 96) as the main context to be sent, apart from that, we ask for two hops of graph traversal around <code>x</code> from the knowledge graph, then the full context will be:</p>
+<ul>
+<li>The question &ldquo;Tell me things about the author and x&rdquo;</li>
+<li>Raw doc from piece number 1, 2, and 96, in Llama Index, it&rsquo;s called node 1, node 2, and node 96.</li>
+<li>Knowledge 10 triplets contain &ldquo;x&rdquo; in two-depths graph traversal:
+<ul>
+<li>x -&gt; y(from node 1)</li>
+<li>x -&gt; a(from node 2)</li>
+<li>x -&gt; m(from <strong>node 4</strong>)</li>
+<li>x &lt;- b-&gt; c(from <strong>node 95</strong>)</li>
+<li>x -&gt; d(from node 96)</li>
+<li>n -&gt; x(from <strong>node 98</strong>)</li>
+<li>x &lt;- z &lt;- i(from <strong>node 1 and node 3</strong>)</li>
+<li>x &lt;- z &lt;- b(from <strong>node 1 and node 95</strong>)</li>
+</ul>
+</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">┌──────────────────┬──────────────────┬──────────────────┬──────────────────┐
+</span></span><span class="line"><span class="cl">│ .─.       .─.    │  .─.       .─.   │            .─.   │  .─.       .─.   │
+</span></span><span class="line"><span class="cl">│( x )─────▶ y )   │ ( x )─────▶ a )  │           ( j )  │ ( m )◀────( x )  │
+</span></span><span class="line"><span class="cl">│ `▲&#39;       `─&#39;    │  `─&#39;       `─&#39;   │            `─&#39;   │  `─&#39;       `─&#39;   │
+</span></span><span class="line"><span class="cl">│  │     1         │        2         │        3    │    │        4         │
+</span></span><span class="line"><span class="cl">│ .─.              │                  │            .▼.   │                  │
+</span></span><span class="line"><span class="cl">│( z )─────────────┼──────────────────┼──────────▶( i )─┐│                  │
+</span></span><span class="line"><span class="cl">│ `◀────┐          │                  │            `─&#39;  ││                  │
+</span></span><span class="line"><span class="cl">├───────┼──────────┴──────────────────┴─────────────────┼┴──────────────────┤
+</span></span><span class="line"><span class="cl">│       │                      Docs/Knowledge           │                   │
+</span></span><span class="line"><span class="cl">│       │                            ...                │                   │
+</span></span><span class="line"><span class="cl">│       │                                               │                   │
+</span></span><span class="line"><span class="cl">├───────┼──────────┬──────────────────┬─────────────────┼┬──────────────────┤
+</span></span><span class="line"><span class="cl">│  .─.  └──────.   │  .─.             │                 ││  .─.             │
+</span></span><span class="line"><span class="cl">│ ( x ◀─────( b )  │ ( x )            │                 └┼▶( n )            │
+</span></span><span class="line"><span class="cl">│  `─&#39;       `─&#39;   │  `─&#39;             │                  │  `─&#39;             │
+</span></span><span class="line"><span class="cl">│        95   │    │   │    96        │                  │   │    98        │
+</span></span><span class="line"><span class="cl">│            .▼.   │  .▼.             │                  │   ▼              │
+</span></span><span class="line"><span class="cl">│           ( c )  │ ( d )            │                  │  .─.             │
+</span></span><span class="line"><span class="cl">│            `─&#39;   │  `─&#39;             │                  │ ( x )            │
+</span></span><span class="line"><span class="cl">└──────────────────┴──────────────────┴──────────────────┴──`─&#39;─────────────┘
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>And clearly, the refined information related to topic <code>x</code> that comes from both other nodes and across the nodes is included in the context to build the prompt of in-context learning.</p>
+<h2 id="progress-of-knowledge-graph-in-llama-index" class="headerLink">
+    <a href="#progress-of-knowledge-graph-in-llama-index" class="header-mark"></a>6 Progress of Knowledge Graph in Llama Index</h2><p>The Knowledge Graph abstraction was initially introduced to Llama Index by <a href="https://github.com/jerryjliu/llama_index/pull/433" target="_blank" rel="noopener noreferrer">William F.H.</a> where the triplets in the knowledge graph were associated with the docs with keywords and stored in memory, then <a href="https://github.com/jerryjliu/llama_index/pull/487" target="_blank" rel="noopener noreferrer">Logan Markewich</a> enhanced it by adding embedding per triplets, too.</p>
+<p>Recently, in the last couple of weeks, I had been <a href="https://github.com/jerryjliu/llama_index/issues/1318" target="_blank" rel="noopener noreferrer">working with the community</a> on bringing the &ldquo;GraphStore&rdquo; storage context to Llama Index and thus introducing external storage of Knowledge Graph, the first implementation is NebulaGraph the Open-Source Distributed Graph Database that I had been working on since 2021.</p>
+<p>During the implementation of this, the option to traverse multiple hops of the graph, and the option to collect more key entities on top-k nodes(to search in the knowledge graph to enable more global context) was introduced, and we are still refining the changes.</p>
+<p>With GraphStore introduced, it also makes it possible to perform in-context learning from an existing knowledge graph, combined with other indices, this is also quite promising due to the knowledge graph being considered with high Information density than other structured data.</p>
+<p>I will be updating the knowledge graph-related work on Llama Index in this blog in the upcoming weeks, and will then create end-to-end demo projects and tutorials, after the PR is merged, stay tuned!</p></div>
+
+        
+
+
+<h2>Related Content</h2>
+<div class="related-container">
+    <div class="related-item-container">
+            <div class="related-image">
+                <a href="/en/nebulagraph-ai-suite/"><img
+        
+        loading="lazy"
+        src="/en/nebulagraph-ai-suite/featured-image.webp"
+        srcset="/en/nebulagraph-ai-suite/featured-image.webp, /en/nebulagraph-ai-suite/featured-image.webp 1.5x, /en/nebulagraph-ai-suite/featured-image.webp 2x"
+        sizes="auto"
+        alt="/en/nebulagraph-ai-suite/featured-image.webp"
+        title="How Graph could help build better In-context Learning LLM Applications." height="200"   width="400" ></a>
+            </div><h2 class="related-title">
+                <a href="/en/nebulagraph-ai-suite/">Nebulagraph Artificial Intelligence Suite</a>
+            </h2>
+        </div>
+    <div class="related-item-container">
+            <div class="related-image">
+                <a href="/en/nebulagraph-sns/"><img
+        
+        loading="lazy"
+        src="/en/nebulagraph-sns/featured-image.webp"
+        srcset="/en/nebulagraph-sns/featured-image.webp, /en/nebulagraph-sns/featured-image.webp 1.5x, /en/nebulagraph-sns/featured-image.webp 2x"
+        sizes="auto"
+        alt="/en/nebulagraph-sns/featured-image.webp"
+        title="How Graph could help build better In-context Learning LLM Applications." height="200"   width="400" ></a>
+            </div><h2 class="related-title">
+                <a href="/en/nebulagraph-sns/">Social Network with NebulaGraph</a>
+            </h2>
+        </div>
+    <div class="related-item-container">
+            <div class="related-image">
+                <a href="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/"><img
+        
+        loading="lazy"
+        src="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.webp"
+        srcset="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.webp, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.webp 1.5x, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.webp 2x"
+        sizes="auto"
+        alt="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.webp"
+        title="How Graph could help build better In-context Learning LLM Applications." height="200"   width="400" ></a>
+            </div><h2 class="related-title">
+                <a href="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/">Use ChatGPT and Nebulagraph to Predict Fifa World Cup</a>
+            </h2>
+        </div>
+    <div class="related-item-container">
+            <div class="related-image">
+                <a href="/en/nebulagraph-etl-dbt/"><img
+        
+        loading="lazy"
+        src="/en/nebulagraph-etl-dbt/featured-image.webp"
+        srcset="/en/nebulagraph-etl-dbt/featured-image.webp, /en/nebulagraph-etl-dbt/featured-image.webp 1.5x, /en/nebulagraph-etl-dbt/featured-image.webp 2x"
+        sizes="auto"
+        alt="/en/nebulagraph-etl-dbt/featured-image.webp"
+        title="How Graph could help build better In-context Learning LLM Applications." height="200"   width="400" ></a>
+            </div><h2 class="related-title">
+                <a href="/en/nebulagraph-etl-dbt/">Tabular Data ETL to NebulaGraph with dbt</a>
+            </h2>
+        </div>
+    <div class="related-item-container">
+            <div class="related-image">
+                <a href="/en/fraud-detection-with-nebulagraph/"><img
+        
+        loading="lazy"
+        src="/en/fraud-detection-with-nebulagraph/featured-image.webp"
+        srcset="/en/fraud-detection-with-nebulagraph/featured-image.webp, /en/fraud-detection-with-nebulagraph/featured-image.webp 1.5x, /en/fraud-detection-with-nebulagraph/featured-image.webp 2x"
+        sizes="auto"
+        alt="/en/fraud-detection-with-nebulagraph/featured-image.webp"
+        title="How Graph could help build better In-context Learning LLM Applications." height="200"   width="400" ></a>
+            </div><h2 class="related-title">
+                <a href="/en/fraud-detection-with-nebulagraph/">Fraud Detection with NebulaGraph GraphDatabase in action</a>
+            </h2>
+        </div>
+    
+
+</div>
+
+<div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>Updated on 2023-06-01</span>
+            </div>
+            <div class="post-info-license"></div>
+        </div>
+        <div class="post-info-line">
+            <div class="post-info-md"><span><a class="link-to-mardown" href=/en/graph-enabled-llama-index/index.md target="_blank" rel="noopener noreferrer">Read markdown</a>
+                    </span><span>|&nbsp;<a class="link-to-report" href=https://github.com/siwei-io/siwei-io.github.io/issues/new?title=[bug]%20Graph+Enabled+Llama+Index&body=|Field|Value|%0A|-|-|%0A|Title|Graph+Enabled+Llama+Index|%0A|Url|https://siwei.io/en/graph-enabled-llama-index/|%0A|Filename|posts/graph-enabled-llama-index/index.en.md| target="_blank" rel="noopener noreferrer">Report issue</a>
+                    </span></div>
+            <div class="post-info-share">
+                <span><a href="#" title="Share on Twitter" data-sharer="twitter" data-url="https://siwei.io/en/graph-enabled-llama-index/" data-title="Graph Enabled Llama Index" data-via="wey_gu" data-hashtags="Nebula Graph,LLM,Llama-Index,In-context Learning"><i class="fab fa-twitter fa-fw"></i></a><a href="#" title="Share on Facebook" data-sharer="facebook" data-url="https://siwei.io/en/graph-enabled-llama-index/" data-hashtag="Nebula Graph"><i class="fab fa-facebook-square fa-fw"></i></a><a href="#" title="Share on Hacker News" data-sharer="hackernews" data-url="https://siwei.io/en/graph-enabled-llama-index/" data-title="Graph Enabled Llama Index"><i class="fab fa-hacker-news fa-fw"></i></a><a href="#" title="Share on Line" data-sharer="line" data-url="https://siwei.io/en/graph-enabled-llama-index/" data-title="Graph Enabled Llama Index"><i data-svg-src="/lib/simple-icons/icons/line.min.svg"></i></a><a href="#" title="Share on 微博" data-sharer="weibo" data-url="https://siwei.io/en/graph-enabled-llama-index/" data-title="Graph Enabled Llama Index" data-image="featured-image.webp" data-ralateuid="siweigu"><i class="fab fa-weibo fa-fw"></i></a><a href="#" title="Share on Telegram" data-sharer="telegram" data-url="https://siwei.io/en/graph-enabled-llama-index/" data-title="Graph Enabled Llama Index" data-web><i class="fab fa-telegram-plane fa-fw"></i></a></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section class="post-tags"><i class="fas fa-tags fa-fw"></i>&nbsp;<a href="/en/tags/nebula-graph/">Nebula Graph</a>,&nbsp;<a href="/en/tags/llm/">LLM</a>,&nbsp;<a href="/en/tags/llama-index/">Llama-Index</a>,&nbsp;<a href="/en/tags/in-context-learning/">In-context Learning</a></section>
+        <section>
+            <span><a href="javascript:void(0);" onclick="window.history.back();">Back</a></span>&nbsp;|&nbsp;<span><a href="/en/">Home</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/en/nebulagraph-ai-suite/" class="prev" rel="prev" title="Nebulagraph Artificial Intelligence Suite"><i class="fas fa-angle-left fa-fw"></i>Nebulagraph Artificial Intelligence Suite</a></div>
+</div>
+<div id="comments"><div id="giscus"></div><noscript>
+                Please enable JavaScript to view the comments powered by <a href="https://giscus.app/">giscus</a>.
+            </noscript></div></article></div>
+        </main><footer class="footer">
+        <div class="footer-container"><div class="footer-line">
+                    Powered by <a href="https://gohugo.io/" target="_blank" rel="noopener noreferrer" title="Hugo 0.111.3">Hugo</a>&nbsp;|&nbsp;Theme - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreferrer" title="DoIt 0.3.0"><i class="far fa-edit fa-fw"></i> DoIt</a>
+                </div><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2018 - 2023</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="https://siwei.io" target="_blank" rel="noopener noreferrer">Wey Gu</a></span>&nbsp;|&nbsp;<span class="license"><a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">CC BY-NC 4.0</a></span></div>
+            <div class="footer-line"></div>
+            <div class="footer-line">
+            </div>
+        </div><script>
+                    if('serviceWorker' in navigator) {
+                        navigator.serviceWorker
+                            .register('/sw.min.js', { scope: '/' })
+                            .then(function(registration) {
+                            });
+                
+                        navigator.serviceWorker
+                            .ready
+                            .then(function(registration) {
+                            });
+                    }
+                </script></footer></div>
+
+    <div id="fixed-buttons"><a href="#back-to-top" id="back-to-top-button" class="fixed-button" title="Back to Top">
+            <i class="fas fa-arrow-up fa-fw"></i>
+        </a><a href="#" id="view-comments" class="fixed-button" title="View Comments">
+            <i class="fas fa-comment fa-fw"></i>
+        </a>
+    </div><div class="assets"><link rel="stylesheet" href="/lib/katex/katex.min.css"><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/katex/copy-tex.min.css">
+        <noscript><link rel="stylesheet" href="/lib/katex/copy-tex.min.css"></noscript><script type="text/javascript">window.config={"code":{"copyTitle":"Copy to clipboard","maxShownLines":10},"comment":{"giscus":{"darkTheme":"dark","dataCategory":"Comments","dataCategoryId":"DIC_kwDOFhiy8c4CQeuu","dataEmitMetadata":"1","dataInputPosition":"bottom","dataLang":"en","dataMapping":"title","dataReactionsEnabled":"1","dataRepo":"siwei-io/siwei-io.github.io","dataRepoId":"MDEwOlJlcG9zaXRvcnkzNzA3MTc0MjU=","dataStrict":"1","lightTheme":"light"}},"math":{"delimiters":[{"display":true,"left":"$$","right":"$$"},{"display":true,"left":"\\[","right":"\\]"},{"display":false,"left":"$","right":"$"},{"display":false,"left":"\\(","right":"\\)"}],"strict":false},"search":{"distance":100,"findAllMatches":false,"fuseIndexURL":"/en/index.json","highlightTag":"em","ignoreFieldNorm":false,"ignoreLocation":true,"isCaseSensitive":false,"location":0,"maxResultLength":10,"minMatchCharLength":2,"noResultsFound":"No results found","snippetLength":300,"threshold":0.1,"type":"fuse","useExtendedSearch":false},"sharerjs":true,"table":{"sort":true}};</script><script type="text/javascript" src="/js/giscus.min.js" defer></script><script type="text/javascript" src="/lib/tablesort/tablesort.min.js"></script><script type="text/javascript" src="/lib/clipboard/clipboard.min.js"></script><script type="text/javascript" src="/lib/sharer/sharer.min.js"></script><script type="text/javascript" src="/lib/katex/katex.min.js" defer></script><script type="text/javascript" src="/lib/katex/auto-render.min.js" defer></script><script type="text/javascript" src="/lib/katex/copy-tex.min.js" defer></script><script type="text/javascript" src="/lib/katex/mhchem.min.js" defer></script><script type="text/javascript" src="/js/katex.min.js" defer></script><script type="text/javascript" src="/js/theme.min.js" defer></script><script type="text/javascript">
+            window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());
+            gtag('config', 'G-DYTTVYCRS2', { 'anonymize_ip': true });
+        </script><script type="text/javascript" src="https://www.googletagmanager.com/gtag/js?id=G-DYTTVYCRS2" async></script></div>
+</body>
+
+</html>

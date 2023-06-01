@@ -4,7 +4,228 @@
         <link>https://siwei.io/en/categories/nebula-graph/</link>
         <description>Nebula Graph - Category - siwei.io</description>
         <generator>Hugo -- gohugo.io</generator><language>en</language><managingEditor>weyl.gu@gmail.com (Wey Gu)</managingEditor>
-            <webMaster>weyl.gu@gmail.com (Wey Gu)</webMaster><copyright>This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.</copyright><lastBuildDate>Tue, 02 May 2023 16:37:28 &#43;0800</lastBuildDate><atom:link href="https://siwei.io/en/categories/nebula-graph/" rel="self" type="application/rss+xml" /><item>
+            <webMaster>weyl.gu@gmail.com (Wey Gu)</webMaster><copyright>This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.</copyright><lastBuildDate>Thu, 01 Jun 2023 14:52:53 &#43;0800</lastBuildDate><atom:link href="https://siwei.io/en/categories/nebula-graph/" rel="self" type="application/rss+xml" /><item>
+    <title>Graph Enabled Llama Index</title>
+    <link>https://siwei.io/en/graph-enabled-llama-index/</link>
+    <pubDate>Thu, 01 Jun 2023 14:52:53 &#43;0800</pubDate><author>
+        <name>Wey Gu</name>
+    </author><guid>https://siwei.io/en/graph-enabled-llama-index/</guid>
+    <description><![CDATA[<div class="featured-image">
+                <img src="/en/graph-enabled-llama-index/featured-image.webp" referrerpolicy="no-referrer">
+            </div><blockquote>
+<p>How Graph could help build better In-context Learning LLM Applications.</p>
+</blockquote>
+<h2 id="llm-app-paradigms" class="headerLink">
+    <a href="#llm-app-paradigms" class="header-mark"></a>1 LLM App Paradigms</h2><p>As a big improvement in Cognitive intelligence, LLM had changed many industries, in a way that we didn&rsquo;t expect to automate, accelerate or enable. Seeing new LLM-enabled applications being created every day, we are all still exploring new methods and use cases for leveraging this magic.</p>
+<p>One of the most typical patterns to bring LLM into the loop is to ask LLM to understand things based on proprietory/ certain domain knowledge. For now, there are two paradigms we could add that knowledge to LLM: fine-tuning and <a href="https://en.wikipedia.org/wiki/In-context_learning_%28natural_language_processing%29" target="_blank" rel="noopener noreferrer">in-context learning</a>.</p>
+<p>Fine-tuning refers to performing add-on training on LLM models with extra knowledge, whereas in-context learning is to adding some extra piece of knowledge to the query prompt. What we observe now is that <a href="https://arxiv.org/abs/2305.16938" target="_blank" rel="noopener noreferrer">in-context learning has gained popularity over Fine-tuning due to its simplicity</a>.</p>
+<p>And in this blog, I&rsquo;ll share what we had been doing around the in-context learning approach.</p>
+<h2 id="llama-index-interface-between-data-and-llm" class="headerLink">
+    <a href="#llama-index-interface-between-data-and-llm" class="header-mark"></a>2 Llama Index: Interface between data and LLM</h2><h3 id="in-context-learning" class="headerLink">
+    <a href="#in-context-learning" class="header-mark"></a>2.1 In-context learning</h3><p>The basic idea of in-context learning is to use existing LLM(not updated) to handle special tasks toward specific knowledge datasets.</p>
+<p>For instance, to build an application to answer any questions about one person, or even act as one&rsquo;s digital avatar, we can apply in-context learning to an autobiography book with LLM. In practice, the application will construct a prompt with the question from the user and some information &ldquo;searched&rdquo; from the book, then query the LLM for an answer.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">┌───────┐         ┌─────────────────┐         ┌─────────┐
+</span></span><span class="line"><span class="cl">│       │         │ Docs/Knowledge  │         │         │
+</span></span><span class="line"><span class="cl">│       │         └─────────────────┘         │         │
+</span></span><span class="line"><span class="cl">│ User  │─────────────────────────────────────▶   LLM   │
+</span></span><span class="line"><span class="cl">│       │                                     │         │
+</span></span><span class="line"><span class="cl">│       │                                     │         │
+</span></span><span class="line"><span class="cl">└───────┘                                     └─────────┘
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>One of the most performant ways to enable this searching approach to get the related info from the Docs/Knowledge(the book in the above example) for the special task, is to leverage Embeddings.</p>
+<h3 id="embedding" class="headerLink">
+    <a href="#embedding" class="header-mark"></a>2.2 Embedding</h3><p>The embedding normally refers to a way to map real word things into a vector in a multidimensional space, for instance, we could map images into a space of (64 x 64) dimension, and if we are doing it well enough, the distance between the two images can reflect the similarity of them.</p>
+<p>Another example of embedding is the word2vec algorithm, which literally maps every word into a vector, for instance, and if the embedding is good enough, we could have addition and subtraction on them, we may have:</p>
+<ul>
+<li><code>vec(apple) + vec(pie) =~ vec(&quot;apple apie&quot;)</code></li>
+</ul>
+<p>Or the vector measure of <code>vec(apple) + vec(pie) - vec(&quot;apple apie&quot;)</code> tends to be 0:</p>
+<ul>
+<li><code>|vec(apple) + vec(pie) - vec(&quot;apple apie&quot;)| =~ 0</code></li>
+</ul>
+<p>Similarly, we could have &ldquo;pear&rdquo; should be closer than &ldquo;dinosaur&rdquo; to &ldquo;apple&rdquo;:</p>
+<ul>
+<li><code>|vec(apple) - vec(pear)| &lt; |vec(apple) - vec(dinosaur)|</code></li>
+</ul>
+<p>With that, we could in theory search for pieces of the book which are more related to a given question. And the basic process is:</p>
+<ul>
+<li>Split the book into small pieces, create the embedding per each piece, and store them</li>
+<li>When a question comes, compute the embedding of the question</li>
+<li>Find top-K similar embeddings of pieces of the book by calculating the distance</li>
+<li>Construct the prompt with both the question and the pieces of the book</li>
+<li>Query the LLM with the prompt</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">                  ┌────┬────┬────┬────┐                  
+</span></span><span class="line"><span class="cl">                  │ 1  │ 2  │ 3  │ 4  │                  
+</span></span><span class="line"><span class="cl">                  ├────┴────┴────┴────┤                  
+</span></span><span class="line"><span class="cl">                  │  Docs/Knowledge   │                  
+</span></span><span class="line"><span class="cl">┌───────┐         │        ...        │       ┌─────────┐
+</span></span><span class="line"><span class="cl">│       │         ├────┬────┬────┬────┤       │         │
+</span></span><span class="line"><span class="cl">│       │         │ 95 │ 96 │    │    │       │         │
+</span></span><span class="line"><span class="cl">│       │         └────┴────┴────┴────┘       │         │
+</span></span><span class="line"><span class="cl">│ User  │─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─▶   LLM   │
+</span></span><span class="line"><span class="cl">│       │                                     │         │
+</span></span><span class="line"><span class="cl">│       │                                     │         │
+</span></span><span class="line"><span class="cl">└───────┘    ┌ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┐  └─────────┘
+</span></span><span class="line"><span class="cl">    │          ┌──────────────────────────┐        ▲     
+</span></span><span class="line"><span class="cl">    └────────┼▶│  Tell me ....., please   │├───────┘     
+</span></span><span class="line"><span class="cl">               └──────────────────────────┘              
+</span></span><span class="line"><span class="cl">             │ ┌────┐ ┌────┐               │             
+</span></span><span class="line"><span class="cl">               │ 3  │ │ 96 │                             
+</span></span><span class="line"><span class="cl">             │ └────┘ └────┘               │             
+</span></span><span class="line"><span class="cl">              ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ 
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="llama-index" class="headerLink">
+    <a href="#llama-index" class="header-mark"></a>2.3 Llama Index</h3><p>Llama Index is such an open-source toolkit to help in-context learning in best practice:</p>
+<ul>
+<li>It comes with <a href="https://llamahub.ai/" target="_blank" rel="noopener noreferrer">a bunch of data loaders</a> to serialize docs/knowledge in a unified format, think of PDF, Wikipedia Page, notion, Twitter, etc, and we don&rsquo;t have to deal with the preprocessing, split the data into pieces, etc, on our own.</li>
+<li>It helps create the Embedding(and some other form of the index) for us and stores the embeddings(in memory or <a href="https://github.com/openai/openai-cookbook/blob/main/examples/vector_databases/Using_vector_databases_for_embeddings_search.ipynb" target="_blank" rel="noopener noreferrer">vector databases</a>), too, with one line of code.</li>
+<li>It comes out of the box with prompts and other engineering points, so that we don&rsquo;t have to create and study from scratch, for instance, <a href="https://twitter.com/jerryjliu0/status/1663213212932902913" target="_blank" rel="noopener noreferrer">create a chatbot on existing data with 4 lines of code</a>.</li>
+</ul>
+<h2 id="the-problem-of-doc-split-and-embeddings" class="headerLink">
+    <a href="#the-problem-of-doc-split-and-embeddings" class="header-mark"></a>3 The problem of doc split and embeddings</h2><p>The embedding and vector search worked well in many cases, while there are still challenges in some cases, and one of them is it could lose global context/cross-node context.</p>
+<p>Think of we are asking &ldquo;Please tell me things about the author and foo.&rdquo;, and in this book, the piece with numbers: 1, 3, 6, 19~25, 30~44, and 96~99 are all about the topic of foo. In this case, the simple way of searching top-k embedding of the pieces of the book may not work well because we normally only take a few top-related pieces, which loses many contexts.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">┌────┬────┬────┬────┐
+</span></span><span class="line"><span class="cl">│ 1  │ 2  │ 3  │ 4  │
+</span></span><span class="line"><span class="cl">├────┴────┴────┴────┤
+</span></span><span class="line"><span class="cl">│  Docs/Knowledge   │
+</span></span><span class="line"><span class="cl">│        ...        │
+</span></span><span class="line"><span class="cl">├────┬────┬────┬────┤
+</span></span><span class="line"><span class="cl">│ 95 │ 96 │    │    │
+</span></span><span class="line"><span class="cl">└────┴────┴────┴────┘
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>The mitigation for that, for instance with Llama Index is to create <a href="https://gpt-index.readthedocs.io/en/latest/how_to/index_structs/composability.html" target="_blank" rel="noopener noreferrer">composite</a> <a href="https://gpt-index.readthedocs.io/en/latest/guides/primer/index_guide.html" target="_blank" rel="noopener noreferrer">indices</a>, where the VectorStore is only part of it, combining with that, we could define a summary index and/or a tree index, etc to <a href="https://gpt-index.readthedocs.io/en/latest/guides/tutorials/unified_query.html" target="_blank" rel="noopener noreferrer">route different types of questions to different indices</a>, thus to avoid risking the loss of global context when the question required it.</p>
+<p>Or, with the help of Knowledge Graph, we could do something differently.</p>
+<h2 id="knowledge-graph" class="headerLink">
+    <a href="#knowledge-graph" class="header-mark"></a>4 Knowledge Graph</h2><p>The term Knowledge Graph was initially coined by <a href="https://blog.google/products/search/introducing-knowledge-graph-things-not/" target="_blank" rel="noopener noreferrer">Google in May 2012</a> as part of its efforts to enhance search results and provide more contextual information to users. The Knowledge Graph was designed to understand the relationships between entities and provide direct answers to queries rather than just returning a list of relevant web pages.</p>
+<p>A knowledge graph is a way of organizing and connecting information in a graph format, where nodes represent entities, and edges represent the relationships between those entities. The graph structure allows for efficient storage, retrieval, and analysis of data.</p>
+<p>It looks like this:</p>
+<iframe src="nebulagraph_draw.html" style="height:500px;width:800px" title="Graph"></iframe>
+<p>But how could Knowledge Graph help?</p>
+<h2 id="combination-of-embeddings-and-knowledge-graph" class="headerLink">
+    <a href="#combination-of-embeddings-and-knowledge-graph" class="header-mark"></a>5 Combination of embeddings and Knowledge Graph</h2><p>The general idea here is a knowledge graph, as the refined format of the information, can be queried/searched in way smaller granularity than the split we could do on raw data/docs. Thus, by not replacing the large pieces of the data, but combining the two, we can search queries that require global/cross-node context better.</p>
+<p>See the following diagram, assume the question is about <code>x</code>, and 20 of all the pieces of the data are highly related to it. We could now still get the top 3 pieces of the doc(say, no. 1, 2, and 96) as the main context to be sent, apart from that, we ask for two hops of graph traversal around <code>x</code> from the knowledge graph, then the full context will be:</p>
+<ul>
+<li>The question &ldquo;Tell me things about the author and x&rdquo;</li>
+<li>Raw doc from piece number 1, 2, and 96, in Llama Index, it&rsquo;s called node 1, node 2, and node 96.</li>
+<li>Knowledge 10 triplets contain &ldquo;x&rdquo; in two-depths graph traversal:
+<ul>
+<li>x -&gt; y(from node 1)</li>
+<li>x -&gt; a(from node 2)</li>
+<li>x -&gt; m(from <strong>node 4</strong>)</li>
+<li>x &lt;- b-&gt; c(from <strong>node 95</strong>)</li>
+<li>x -&gt; d(from node 96)</li>
+<li>n -&gt; x(from <strong>node 98</strong>)</li>
+<li>x &lt;- z &lt;- i(from <strong>node 1 and node 3</strong>)</li>
+<li>x &lt;- z &lt;- b(from <strong>node 1 and node 95</strong>)</li>
+</ul>
+</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">┌──────────────────┬──────────────────┬──────────────────┬──────────────────┐
+</span></span><span class="line"><span class="cl">│ .─.       .─.    │  .─.       .─.   │            .─.   │  .─.       .─.   │
+</span></span><span class="line"><span class="cl">│( x )─────▶ y )   │ ( x )─────▶ a )  │           ( j )  │ ( m )◀────( x )  │
+</span></span><span class="line"><span class="cl">│ `▲&#39;       `─&#39;    │  `─&#39;       `─&#39;   │            `─&#39;   │  `─&#39;       `─&#39;   │
+</span></span><span class="line"><span class="cl">│  │     1         │        2         │        3    │    │        4         │
+</span></span><span class="line"><span class="cl">│ .─.              │                  │            .▼.   │                  │
+</span></span><span class="line"><span class="cl">│( z )─────────────┼──────────────────┼──────────▶( i )─┐│                  │
+</span></span><span class="line"><span class="cl">│ `◀────┐          │                  │            `─&#39;  ││                  │
+</span></span><span class="line"><span class="cl">├───────┼──────────┴──────────────────┴─────────────────┼┴──────────────────┤
+</span></span><span class="line"><span class="cl">│       │                      Docs/Knowledge           │                   │
+</span></span><span class="line"><span class="cl">│       │                            ...                │                   │
+</span></span><span class="line"><span class="cl">│       │                                               │                   │
+</span></span><span class="line"><span class="cl">├───────┼──────────┬──────────────────┬─────────────────┼┬──────────────────┤
+</span></span><span class="line"><span class="cl">│  .─.  └──────.   │  .─.             │                 ││  .─.             │
+</span></span><span class="line"><span class="cl">│ ( x ◀─────( b )  │ ( x )            │                 └┼▶( n )            │
+</span></span><span class="line"><span class="cl">│  `─&#39;       `─&#39;   │  `─&#39;             │                  │  `─&#39;             │
+</span></span><span class="line"><span class="cl">│        95   │    │   │    96        │                  │   │    98        │
+</span></span><span class="line"><span class="cl">│            .▼.   │  .▼.             │                  │   ▼              │
+</span></span><span class="line"><span class="cl">│           ( c )  │ ( d )            │                  │  .─.             │
+</span></span><span class="line"><span class="cl">│            `─&#39;   │  `─&#39;             │                  │ ( x )            │
+</span></span><span class="line"><span class="cl">└──────────────────┴──────────────────┴──────────────────┴──`─&#39;─────────────┘
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>And clearly, the refined information related to topic <code>x</code> that comes from both other nodes and across the nodes is included in the context to build the prompt of in-context learning.</p>
+<h2 id="progress-of-knowledge-graph-in-llama-index" class="headerLink">
+    <a href="#progress-of-knowledge-graph-in-llama-index" class="header-mark"></a>6 Progress of Knowledge Graph in Llama Index</h2><p>The Knowledge Graph abstraction was initially introduced to Llama Index by <a href="https://github.com/jerryjliu/llama_index/pull/433" target="_blank" rel="noopener noreferrer">William F.H.</a> where the triplets in the knowledge graph were associated with the docs with keywords and stored in memory, then <a href="https://github.com/jerryjliu/llama_index/pull/487" target="_blank" rel="noopener noreferrer">Logan Markewich</a> enhanced it by adding embedding per triplets, too.</p>
+<p>Recently, in the last couple of weeks, I had been <a href="https://github.com/jerryjliu/llama_index/issues/1318" target="_blank" rel="noopener noreferrer">working with the community</a> on bringing the &ldquo;GraphStore&rdquo; storage context to Llama Index and thus introducing external storage of Knowledge Graph, the first implementation is NebulaGraph the Open-Source Distributed Graph Database that I had been working on since 2021.</p>
+<p>During the implementation of this, the option to traverse multiple hops of the graph, and the option to collect more key entities on top-k nodes(to search in the knowledge graph to enable more global context) was introduced, and we are still refining the changes.</p>
+<p>With GraphStore introduced, it also makes it possible to perform in-context learning from an existing knowledge graph, combined with other indices, this is also quite promising due to the knowledge graph being considered with high Information density than other structured data.</p>
+<p>I will be updating the knowledge graph-related work on Llama Index in this blog in the upcoming weeks, and will then create end-to-end demo projects and tutorials, after the PR is merged, stay tuned!</p>]]></description>
+</item><item>
     <title>Nebulagraph Artificial Intelligence Suite</title>
     <link>https://siwei.io/en/nebulagraph-ai-suite/</link>
     <pubDate>Tue, 02 May 2023 16:37:28 &#43;0800</pubDate><author>
@@ -9788,319 +10009,5 @@ GraphSAGE 是针对同构图，且边无 feature 的算法，而我们当下的 
 </span></span></code></pre></td></tr></table>
 </div>
 </div>]]></description>
-</item><item>
-    <title>Nebula Index Explained</title>
-    <link>https://siwei.io/en/nebula-index-explained/</link>
-    <pubDate>Sun, 20 Feb 2022 16:35:53 &#43;0800</pubDate><author>
-        <name>Wey Gu</name>
-    </author><guid>https://siwei.io/en/nebula-index-explained/</guid>
-    <description><![CDATA[<div class="featured-image">
-                <img src="/en/nebula-index-explained/featured-image.webp" referrerpolicy="no-referrer">
-            </div><blockquote>
-<p>Nebula Graph Native Index explained, why <code>index not found</code>? When should I use Nebula Index and full-text index?</p>
-</blockquote>
-<p>The term of Nebula Graph Index is quite similar to the index in RDBMS, while, they are not the same. It&rsquo;s noticed that when getting started with Nebula Graph, the index confused some of the users in first glance on the following</p>
-<ul>
-<li>What exactly Nebula Graph Index is.</li>
-<li>When I should use it.</li>
-<li>How it impacts the performance.</li>
-</ul>
-<p>Today I&rsquo;m gonna walk you through the index in Nebula Graph.</p>
-<p>Let&rsquo;s get started!</p>
-<h2 id="what-exactly-nebula-graph-index-is" class="headerLink">
-    <a href="#what-exactly-nebula-graph-index-is" class="header-mark"></a>1 What exactly Nebula Graph Index is</h2><p>TL;DR, Nebula Graph Index is only to be used to enable the graph query to be <strong>started from</strong> conditions on <strong>properties</strong> of vertices or edges, instead of vertexID.</p>
-<p>It&rsquo;s only used in a starting entry of a graph query. If a query is in pattern: (a-&gt;b-&gt;c, where c in condition-foobar) graph walk, due to the only filtering <code>condition-foobar</code> is on <code>c</code>, this query under the hood will be started to seek <code>c</code>, and then it walks through the reversed <code>-&gt;</code> to <code>b</code>, finally to <code>a</code>. Thus, the Nebula Graph Index will be used and only be possbily used in seeking c, when <code>condition-foobar</code> is not like <code>id(c) == &quot;foobar&quot;</code> but <code>c.property_x == &quot;foobar&quot;</code>.</p>
-<h3 id="index-is-used-only-for-starting-point-seek" class="headerLink">
-    <a href="#index-is-used-only-for-starting-point-seek" class="header-mark"></a>1.1 Index is used only for starting point seek</h3><p>We know that in RDBMS, an INDEX is to create a duplicated sorted DATA to enable QUERY with condition filtering on the sorted data, to <strong>accelerate the query in read</strong> and involves extra writes during the write.</p>
-<blockquote>
-<p>Note: in RDBMS/Tabular DB, an INDEX on some columns means to create extra data that are sorted on those columns to make query with those columns&rsquo; condition to be scanned faster, rather than scanning from the original table data sorted based on the key only.</p>
-</blockquote>
-<p>In Nebula Graph, the INDEX is to create a duplicated sorted <strong>Vertex/Edge PROP DATA</strong> to <strong>enable starting point seek of a QUERY</strong>(it&rsquo;s a prerequisite rather than help accelerate it).</p>
-<p>Not all of the queries relied on index, here are some examples, let&rsquo;s call them pure-property-condition-start queries:</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span><span class="lnt">7
-</span><span class="lnt">8
-</span><span class="lnt">9
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="line"><span class="cl"><span class="c1">#### Queries relying on Nebula Graph Index
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1"># query 0 pure-property-condition-start query
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">LOOKUP</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="o">`</span><span class="n">tag1</span><span class="o">`</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">col1</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">col2</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&#34;foo&#34;</span><span class="w"> </span><span class="err">\</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">YIELD</span><span class="w"> </span><span class="o">`</span><span class="n">tag1</span><span class="o">`</span><span class="p">.</span><span class="n">col1</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">col1</span><span class="p">,</span><span class="w"> </span><span class="o">`</span><span class="n">tag1</span><span class="o">`</span><span class="p">.</span><span class="n">col3</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">col3</span><span class="p">;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1"># query 1 pure-property-condition-start query
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">v</span><span class="p">:</span><span class="o">`</span><span class="n">player</span><span class="o">`</span><span class="w"> </span><span class="err">{</span><span class="w"> </span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;Tim Duncan&#39;</span><span class="w"> </span><span class="err">}</span><span class="p">)</span><span class="o">--&gt;</span><span class="p">(</span><span class="n">v2</span><span class="p">:</span><span class="o">`</span><span class="n">player</span><span class="o">`</span><span class="p">)</span><span class="w"> </span><span class="err">\</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">RETURN</span><span class="w"> </span><span class="n">v2</span><span class="p">.</span><span class="o">`</span><span class="n">player</span><span class="o">`</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">Name</span><span class="p">;</span><span class="w">
-</span></span></span></code></pre></td></tr></table>
-</div>
-</div><p>In both <code>query 0</code> and <code>query 1</code>, the pattern is to &ldquo;Find VID/EDGE only based on given the propertiy condtions&rdquo;. On the contrary, the starting point are VertexID based instead in <code>query 2</code> and <code>query 3</code>:</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="line"><span class="cl"><span class="c1">#### Queries not based on Nebula Graph Index
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1"># query 2, walk query starting from given vertex VID: &#34;player100&#34;
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">GO</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="s2">&#34;player100&#34;</span><span class="w"> </span><span class="n">OVER</span><span class="w"> </span><span class="n">follow</span><span class="w"> </span><span class="n">REVERSELY</span><span class="w"> </span><span class="err">\</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">YIELD</span><span class="w"> </span><span class="nf">src</span><span class="p">(</span><span class="n">edge</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="err">\</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">GO</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="err">$</span><span class="o">-</span><span class="p">.</span><span class="n">id</span><span class="w"> </span><span class="n">OVER</span><span class="w"> </span><span class="n">serve</span><span class="w"> </span><span class="err">\</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">WHERE</span><span class="w"> </span><span class="nf">properties</span><span class="p">(</span><span class="err">$</span><span class="o">^</span><span class="p">).</span><span class="n">age</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">20</span><span class="w"> </span><span class="err">\</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">YIELD</span><span class="w"> </span><span class="nf">properties</span><span class="p">(</span><span class="err">$</span><span class="o">^</span><span class="p">).</span><span class="n">name</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">FriendOf</span><span class="p">,</span><span class="w"> </span><span class="nf">properties</span><span class="p">(</span><span class="err">$$</span><span class="p">).</span><span class="n">name</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">Team</span><span class="p">;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1"># query 3, walk query starting from given vertex VID: &#34;player101&#34; or &#34;player102&#34;
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">v</span><span class="p">:</span><span class="o">`</span><span class="n">player</span><span class="o">`</span><span class="w"> </span><span class="err">{</span><span class="w"> </span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;Tim Duncan&#39;</span><span class="w"> </span><span class="err">}</span><span class="p">)</span><span class="o">--</span><span class="p">(</span><span class="n">v2</span><span class="p">)</span><span class="w"> </span><span class="err">\</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">WHERE</span><span class="w"> </span><span class="nf">id</span><span class="p">(</span><span class="n">v2</span><span class="p">)</span><span class="w"> </span><span class="k">IN</span><span class="w"> </span><span class="p">[</span><span class="s2">&#34;player101&#34;</span><span class="p">,</span><span class="w"> </span><span class="s2">&#34;player102&#34;</span><span class="p">]</span><span class="w"> </span><span class="err">\</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">RETURN</span><span class="w"> </span><span class="n">v2</span><span class="p">.</span><span class="o">`</span><span class="n">player</span><span class="o">`</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">Name</span><span class="p">;</span><span class="w">
-</span></span></span></code></pre></td></tr></table>
-</div>
-</div><p>If we look into <code>query 1</code> and <code>query 3</code>, which shared condition on vertex on <code>tag:player</code> are both <code>{ name: 'Tim Duncan' }</code> though, they are differenciated in starting points:</p>
-<p>For <code>query 3</code> , the index is not required as the query will be started from known vertex ID in <code>[&quot;player101&quot;, &quot;player102&quot;]</code> and thus:</p>
-<ul>
-<li>It&rsquo;ll directly fetch vertex Data from <code>v2</code>&rsquo;s vertex IDs</li>
-<li>then to GetNeighbors(): walk through edges of <code>v2</code>, GetVertices() for next hop: <code>v</code> and filter based on property: <code>name</code></li>
-</ul>
-<p>For <code>query 1</code> , the query has to start from <code>v</code> due to no known vertex IDs were provided:</p>
-<ul>
-<li>It&rsquo;ll do IndexScan() first to find all vertices only with property condtion of <code>{ name: 'Tim Duncan' }</code></li>
-<li>Then, GetNeighbors(): walk through edges of <code>v</code>, GetVertices() for next hop: <code>v2</code></li>
-</ul>
-<p>Now, we could know the whole point that matters here is on <strong>whether to know the vertexID</strong>. And the above differences could be shown in their execution plans with PROFILE or EXPLAIN like the follow:</p>
-<table>
-<thead>
-<tr>
-<th><code>query 1</code>, requires index(on tag: player), pure prop condition query as starting point</th>
-<th><code>query 3</code>, no index required, query starting from known vertex IDs</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><figure><a class="lightgallery" href="/en/nebula-index-explained/query-based-on-index.webp" title="query-based-on-index" data-thumbnail="/en/nebula-index-explained/query-based-on-index.webp">
-        <img
-            
-            loading="lazy"
-            src="/en/nebula-index-explained/query-based-on-index.webp"
-            srcset="/en/nebula-index-explained/query-based-on-index.webp, /en/nebula-index-explained/query-based-on-index.webp 1.5x, /en/nebula-index-explained/query-based-on-index.webp 2x"
-            sizes="auto"
-            alt="/en/nebula-index-explained/query-based-on-index.webp">
-    </a></figure></td>
-<td><figure><a class="lightgallery" href="/en/nebula-index-explained/query-requires-no-index.webp" title="query-requires-no-index" data-thumbnail="/en/nebula-index-explained/query-requires-no-index.webp">
-        <img
-            
-            loading="lazy"
-            src="/en/nebula-index-explained/query-requires-no-index.webp"
-            srcset="/en/nebula-index-explained/query-requires-no-index.webp, /en/nebula-index-explained/query-requires-no-index.webp 1.5x, /en/nebula-index-explained/query-requires-no-index.webp 2x"
-            sizes="auto"
-            alt="/en/nebula-index-explained/query-requires-no-index.webp">
-    </a></figure></td>
-</tr>
-</tbody>
-</table>
-<h3 id="why-nebula-graph-index-is-enabler-rather-than-an-accelerater" class="headerLink">
-    <a href="#why-nebula-graph-index-is-enabler-rather-than-an-accelerater" class="header-mark"></a>1.2 Why Nebula Graph index is enabler rather than an accelerater</h3><p>Can&rsquo;t those queries be done without indexes?</p>
-<p>It&rsquo;s possible in theory with full scan, but disabled without index.</p>
-<p>The reason is Nebula Graph stores data in a distributed and graph-oriented way, the full scan of data was condiserred too expensive to be allowed.</p>
-<blockquote>
-<p>Note: from v3.0, it&rsquo;s possible to do TopN Scan without INDEX, where the <code>LIMIT &lt;n&gt;</code> is used, this is different from the fullscan case(INDEX is a must), which will be explained later.</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="line"><span class="cl"><span class="c1"># sample vertex
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">v</span><span class="p">:</span><span class="o">`</span><span class="n">team</span><span class="o">`</span><span class="p">)</span><span class="w"> </span><span class="k">RETURN</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="k">LIMIT</span><span class="w"> </span><span class="mi">3</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1"># or sample edge
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">MATCH</span><span class="w"> </span><span class="p">()</span><span class="o">-</span><span class="p">[</span><span class="n">e</span><span class="p">:</span><span class="o">`</span><span class="n">follow</span><span class="o">`</span><span class="p">]</span><span class="o">-&gt;</span><span class="p">()</span><span class="w"> </span><span class="k">RETURN</span><span class="w"> </span><span class="n">e</span><span class="w"> </span><span class="k">LIMIT</span><span class="w"> </span><span class="mi">3</span><span class="w">
-</span></span></span></code></pre></td></tr></table>
-</div>
-</div></blockquote>
-<h3 id="why-starting-point-only" class="headerLink">
-    <a href="#why-starting-point-only" class="header-mark"></a>1.3 Why starting point only</h3><p>Index data is not used in terversal. It could confuse use to think of index is to sorting data based on properties, does it accelerate the terversal with property condition filtering? The answer is, no.</p>
-<p>In Nebula Graph, the data is structured in a way to enable fast graph-terversal, which is already indexed/sorted on vertex ID(for both vertex and edge) in raw data, where terversal(underlying in storage, it&rsquo;s calling GetNeighbors interface) of given vertex is cheap and fast due to the locality/stored continuously(pysically linked).</p>
-<p>So in summary:</p>
-<blockquote>
-<p>Nebula Graph Index is sorted prop data to find the starting vertex or edge on given pure prop conditions.</p>
-</blockquote>
-<h2 id="facts-on-nebula-graph-index" class="headerLink">
-    <a href="#facts-on-nebula-graph-index" class="header-mark"></a>2 Facts on Nebula Graph Index</h2><p>To understand more details/limitations/cost of Nebula, let&rsquo;s reveal more on its design and here are some facts in short:</p>
-<ul>
-<li>
-<p>Index Data is stored and sharded together with Vertex Data</p>
-</li>
-<li>
-<p>It&rsquo;s <strong>Left Match</strong> based only: It&rsquo;s RocksDB Prefix Scan under the hood</p>
-</li>
-<li>
-<p>Effect on write and read path(to see its cost):</p>
-<ul>
-<li>Write Path: Extra Data written + Extra Read request introduced</li>
-<li>Read Path: RBO(Rule based optimization), Fan Out(to all shards)</li>
-</ul>
-</li>
-<li>
-<p>Data Full Scan LIMIT Sample(not full scan) is supported without Index</p>
-<ul>
-<li>
-<p><code>LOOKUP ON t YIELD t.name | LIMIT 1</code></p>
-</li>
-<li>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="line"><span class="cl"><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">v</span><span class="p">:</span><span class="o">`</span><span class="n">player</span><span class="o">`</span><span class="w"> </span><span class="err">{</span><span class="w"> </span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;Tim Duncan&#39;</span><span class="w"> </span><span class="err">}</span><span class="p">)</span><span class="o">--&gt;</span><span class="p">(</span><span class="n">v2</span><span class="p">:</span><span class="o">`</span><span class="n">player</span><span class="o">`</span><span class="p">)</span><span class="w"> </span><span class="err">\</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">RETURN</span><span class="w"> </span><span class="n">v2</span><span class="p">.</span><span class="o">`</span><span class="n">player</span><span class="o">`</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">Name</span><span class="w"> </span><span class="k">LIMIT</span><span class="w"> </span><span class="mi">3</span><span class="p">;</span><span class="w">
-</span></span></span></code></pre></td></tr></table>
-</div>
-</div></li>
-</ul>
-</li>
-</ul>
-<p>The key info can be seen from one of my <a href="https://www.siwei.io/en/sketch-notes/" target="_blank" rel="noopener noreferrer">sketch notes</a>:</p>
-<p><figure><a class="lightgallery" href="https://www.siwei.io/sketches/nebula-index-demystified/nebula-index-demystified-en.webp" title="https://www.siwei.io/sketches/nebula-index-demystified/nebula-index-demystified-en.webp" data-thumbnail="https://www.siwei.io/sketches/nebula-index-demystified/nebula-index-demystified-en.webp">
-        <img
-            
-            loading="lazy"
-            src="https://www.siwei.io/sketches/nebula-index-demystified/nebula-index-demystified-en.webp"
-            srcset="https://www.siwei.io/sketches/nebula-index-demystified/nebula-index-demystified-en.webp, https://www.siwei.io/sketches/nebula-index-demystified/nebula-index-demystified-en.webp 1.5x, https://www.siwei.io/sketches/nebula-index-demystified/nebula-index-demystified-en.webp 2x"
-            sizes="auto"
-            alt="https://www.siwei.io/sketches/nebula-index-demystified/nebula-index-demystified-en.webp">
-    </a></figure></p>
-<blockquote>
-<p>We should notice that only the left match is supported in pure-property-condition-start queries. For queries like wildcard or reguler-expression, Full-text Index/Search is to be used, where an external elastic search is integrated with nebula: please check <a href="https://docs.nebula-graph.io/3.1.0/4.deployment-and-installation/6.deploy-text-based-index/2.deploy-es/" target="_blank" rel="noopener noreferrer">Nebula Graph Full text index</a> for more.</p>
-</blockquote>
-<p>Within this sketch note, more highlights are:</p>
-<ul>
-<li>
-<p>It&rsquo;s a Local Index Design</p>
-<ul>
-<li>The index is stored and shared locally together with the graph data.</li>
-<li>It&rsquo;s sorting based on prop value, and the index search is underlying a rocksDB prefix scan, that&rsquo;s why only left match is supported.</li>
-</ul>
-</li>
-<li>
-<p>There is cost in the write path</p>
-<ul>
-<li>The index enables the RDBMS-like Prop Condition Based Query with cost in the write path including not only the extra write, but also, random read, to ensure the data consistency.</li>
-<li>Index Data write is done in a sync way</li>
-</ul>
-</li>
-<li>
-<p>For Read path:</p>
-<ul>
-<li>In pure-property-condition-start queries, in GraphD, the index will be selected with Rule-based-optimization like this example, where, in a rule, the col2 to be sorted first is considered optimal with the condition: col2 equals &lsquo;foo&rsquo;.</li>
-<li>After the index was chosen, index-scan request will be fanout to storageD instances, and in the case of filters like LIMIT N, it will be pushed down to the storage side to reduce data payload.
-<ul>
-<li>Note: it was not shown in the sketch but actually from v3.0, the nebula graph allows LIMIT N Sample Prop condition query like this w/o index, which is underlying pushing down the LIMIT filter to storage side.</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-<p>Take aways:</p>
-<ul>
-<li>Use index only when we have to, as it&rsquo;s costly in write cases and if limit N sample is the only needed case and it&rsquo;s fast enough, we can use that instead.</li>
-<li>Index is left match
-<ul>
-<li>composite index order matters, should be created carefully.</li>
-<li>for full-text search use case, use <a href="https://docs.nebula-graph.io/3.1.0/4.deployment-and-installation/6.deploy-text-based-index/2.deploy-es/" target="_blank" rel="noopener noreferrer">full-text index</a> instead.</li>
-</ul>
-</li>
-</ul>
-<h2 id="how-to-use-the-index" class="headerLink">
-    <a href="#how-to-use-the-index" class="header-mark"></a>3 How to use the index</h2><p>We should always refer to the <a href="https://docs.nebula-graph.io/3.1.0/3.ngql-guide/14.native-index-statements/" target="_blank" rel="noopener noreferrer">documentation</a>, and I just put some highlights on this here:</p>
-<ul>
-<li>
-<p>To create an index on a tag or edge type to specify a list of props in the order that we need.</p>
-<ul>
-<li><code>CREATE INDEX</code></li>
-</ul>
-</li>
-<li>
-<p>If an index was created after existing data was inserted, we need to trigger an index async rebuild job, as the index data will be written in sync way only when index is created.</p>
-<ul>
-<li><code>REBUILD INDEX</code></li>
-</ul>
-</li>
-<li>
-<p>We can see the index status after <code>REBUILD INDEX</code> issued.</p>
-<ul>
-<li><code>SHOW INDEX STATUS</code></li>
-</ul>
-</li>
-<li>
-<p>Queries levering index could be LOOKUP, and with the pipeline, in most cases we will do follow-up graph-walk queries like:</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="n">LOOKUP</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="o">`</span><span class="n">player</span><span class="o">`</span><span class="w"> </span><span class="err">\</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">WHERE</span><span class="w"> </span><span class="o">`</span><span class="n">player</span><span class="o">`</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&#34;Kobe Bryant&#34;</span><span class="err">\</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">YIELD</span><span class="w"> </span><span class="n">id</span><span class="p">(</span><span class="n">vertex</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">VertexID</span><span class="p">,</span><span class="w"> </span><span class="n">properties</span><span class="p">(</span><span class="n">vertex</span><span class="p">).</span><span class="n">name</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">|</span><span class="err">\</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">GO</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="err">$</span><span class="o">-</span><span class="p">.</span><span class="n">VertexID</span><span class="w"> </span><span class="n">OVER</span><span class="w"> </span><span class="n">serve</span><span class="w"> </span><span class="err">\</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">YIELD</span><span class="w"> </span><span class="err">$</span><span class="o">-</span><span class="p">.</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">properties</span><span class="p">(</span><span class="n">edge</span><span class="p">).</span><span class="n">start_year</span><span class="p">,</span><span class="w"> </span><span class="n">properties</span><span class="p">(</span><span class="n">edge</span><span class="p">).</span><span class="n">end_year</span><span class="p">,</span><span class="w"> </span><span class="n">properties</span><span class="p">(</span><span class="err">$$</span><span class="p">).</span><span class="n">name</span><span class="p">;</span><span class="w">
-</span></span></span></code></pre></td></tr></table>
-</div>
-</div></li>
-<li>
-<p>Or in MATCH query like this, under the hood, v will be searched on index and v2 will be walked by default graph data structure without involving index.</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="line"><span class="cl"><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">v</span><span class="p">:</span><span class="o">`</span><span class="n">player</span><span class="o">`</span><span class="err">{</span><span class="n">name</span><span class="p">:</span><span class="s2">&#34;Tim Duncan&#34;</span><span class="err">}</span><span class="p">)</span><span class="o">--&gt;</span><span class="p">(</span><span class="n">v2</span><span class="p">:</span><span class="o">`</span><span class="n">player</span><span class="o">`</span><span class="p">)</span><span class="w"> </span><span class="err">\</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">RETURN</span><span class="w"> </span><span class="n">v2</span><span class="p">.</span><span class="o">`</span><span class="n">player</span><span class="o">`</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">Name</span><span class="p">;</span><span class="w">
-</span></span></span></code></pre></td></tr></table>
-</div>
-</div></li>
-</ul>
-<h2 id="recap" class="headerLink">
-    <a href="#recap" class="header-mark"></a>4 Recap</h2><p>Finally, Let&rsquo;s Recap</p>
-<ul>
-<li>INDEX is sorting PROP DATA to enable finding starting point on given PURE PROP CONDITION</li>
-<li>INDEX is <strong>not</strong> for Trevsal</li>
-<li>INDEX is left match, <strong>not</strong> for full-text search</li>
-<li>INDEX has cost on WRITE</li>
-<li>Remember to REBUILD after CREATE INDEX on existing data</li>
-</ul>
-<p>Happy Graphing!</p>
-<p>Feture image credit to <a href="https://unsplash.com/photos/ZiQkhI7417A" target="_blank" rel="noopener noreferrer">Alina</a></p>
-]]></description>
 </item></channel>
 </rss>
