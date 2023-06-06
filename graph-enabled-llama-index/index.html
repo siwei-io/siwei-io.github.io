@@ -1,0 +1,558 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noodp" />
+    <title>图谱驱动的大语言模型 Llama Index - siwei.io</title><meta name="Description" content="如何利用图谱构建更好的 In-context Learning 大语言模型应用。"><meta property="og:title" content="图谱驱动的大语言模型 Llama Index" />
+<meta property="og:description" content="如何利用图谱构建更好的 In-context Learning 大语言模型应用。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://siwei.io/graph-enabled-llama-index/" /><meta property="og:image" content="https://siwei.io/graph-enabled-llama-index/featured-image.png"/><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2023-06-01T14:52:53+08:00" />
+<meta property="article:modified_time" content="2023-06-01T14:52:53+08:00" /><meta property="og:site_name" content="siwei.io" />
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://siwei.io/graph-enabled-llama-index/featured-image.png"/>
+<meta name="twitter:title" content="图谱驱动的大语言模型 Llama Index"/>
+<meta name="twitter:description" content="如何利用图谱构建更好的 In-context Learning 大语言模型应用。"/>
+<meta name="application-name" content="DoIt">
+<meta name="apple-mobile-web-app-title" content="DoIt">
+
+<meta name="theme-color" content="#f8f8f8"><meta name="msapplication-TileColor" content="#da532c"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="manifest" href="/site.webmanifest"><link rel="canonical" href="https://siwei.io/graph-enabled-llama-index/" /><link rel="prev" href="https://siwei.io/nebulagraph-ai-suite/" /><link rel="next" href="https://siwei.io/nebulagraph-in-jupyter-notebook/" />
+<link rel="stylesheet" href="/css/main.css"><link rel="stylesheet" href="/lib/normalize/normalize.min.css"><link rel="stylesheet" href="/css/color.css"><link rel="stylesheet" href="/css/style.min.css"><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/fontawesome-free/all.min.css">
+        <noscript><link rel="stylesheet" href="/lib/fontawesome-free/all.min.css"></noscript><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/animate/animate.min.css">
+        <noscript><link rel="stylesheet" href="/lib/animate/animate.min.css"></noscript>
+    
+    
+    
+    <meta name="baidu-site-verification" content="code-4R67zl7SwH" /><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "图谱驱动的大语言模型 Llama Index",
+        "inLanguage": "zh-CN",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "https:\/\/siwei.io\/graph-enabled-llama-index\/"
+        },"image": ["https:\/\/siwei.io\/images\/site-feature-image.webp"],"genre": "posts","keywords": "Nebula Graph, LLM, Llama-Index, In-context Learning, 大语言模型","wordcount":  4037 ,
+        "url": "https:\/\/siwei.io\/graph-enabled-llama-index\/","datePublished": "2023-06-01T14:52:53+08:00","dateModified": "2023-06-01T14:52:53+08:00","license": "This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.","publisher": {
+            "@type": "Organization",
+            "name": "Wey Gu","logo": "https:\/\/siwei.io\/images\/site-feature-image.webp"},"author": {
+                "@type": "Person",
+                "name": "Wey Gu"
+            },"description": "如何利用图谱构建更好的 In-context Learning 大语言模型应用。"
+    }
+    </script><script src="//instant.page/5.2.0" defer type="module" integrity="sha384-jnZyxPjiipYXnSU0ygqeac2q7CVYMbh84q0uHVRRxEtvFPiQYbXWUorga2aqZJ0z"></script>
+</head>
+
+<body header-desktop="fixed" header-mobile="auto"><script type="text/javascript">
+        function setTheme(theme) {document.body.setAttribute('theme', theme); document.documentElement.style.setProperty('color-scheme', theme === 'light' ? 'light' : 'dark'); window.theme = theme;   window.isDark = window.theme !== 'light' }
+        function saveTheme(theme) {window.localStorage && localStorage.setItem('theme', theme);}
+        function getMeta(metaName) {const metas = document.getElementsByTagName('meta'); for (let i = 0; i < metas.length; i++) if (metas[i].getAttribute('name') === metaName) return metas[i]; return '';}
+        if (window.localStorage && localStorage.getItem('theme')) {let theme = localStorage.getItem('theme');theme === 'light' || theme === 'dark' || theme === 'black' ? setTheme(theme) : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light')); } else { if ('auto' === 'light' || 'auto' === 'dark' || 'auto' === 'black') setTheme('auto'), saveTheme('auto'); else saveTheme('auto'), window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light');}
+        let metaColors = {'light': '#f8f8f8','dark': '#252627','black': '#000000'}
+        getMeta('theme-color').content = metaColors[document.body.getAttribute('theme')];
+        window.switchThemeEventSet = new Set()
+    </script>
+    <div id="back-to-top"></div>
+    <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/" title="siwei.io"><span class="header-title-pre"><i class='fas fa-code-branch'></i></span>siwei.io</a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="/about/"> 关于 </a><a class="menu-item" href="/projects/"> 项目 </a><a class="menu-item" href="/sketch-notes/"> 手绘 </a><a class="menu-item" href="/posts/"> 博客 </a><a class="menu-item" href="/talk/"> 演讲 </a><a class="menu-item" href="/cources/"> 课程 </a><a class="menu-item" href="https://vesoft.com/cn/careers/" rel="noopener noreferrer" target="_blank"> 招聘 </a><a class="menu-item" href="/about/#%E8%81%94%E7%B3%BB%E6%88%91"> 联系 </a><a class="menu-item" href="/path/"> 学习路径 </a><span class="menu-item delimiter"></span><a href="javascript:void(0);" class="menu-item language" title="选择语言">🌏 Chinese<i class="fas fa-chevron-right fa-fw"></i>
+                        <select class="language-select" title="Select Language" id="language-select-desktop" onchange="location = this.value;"><option value="/en/graph-enabled-llama-index/">🌏 English</option><option value="/graph-enabled-llama-index/" selected>🌏 Chinese</option></select>
+                    </a><span class="menu-item search" id="search-desktop">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-desktop">
+                        <a href="javascript:void(0);" class="search-button search-toggle" id="search-toggle-desktop" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="javascript:void(0);" class="search-button search-clear" id="search-clear-desktop" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-desktop">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </span><a href="javascript:void(0);" class="menu-item theme-select" title="切换主题">
+                    <i class="fas fa-adjust fa-fw"></i>
+                    <select class="color-theme-select" id="theme-select-desktop" title="切换主题">
+                        <option value="light">浅色</option>
+                        <option value="dark">深色</option>
+                        <option value="black">黑色</option>
+                        <option value="auto">跟随系统</option>
+                    </select>
+                </a></div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="/" title="siwei.io"><span class="header-title-pre"><i class='fas fa-code-branch'></i></span>siwei.io</a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><div class="search-wrapper">
+                    <div class="search mobile" id="search-mobile">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-mobile">
+                        <a href="javascript:void(0);" class="search-button search-toggle" id="search-toggle-mobile" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="javascript:void(0);" class="search-button search-clear" id="search-clear-mobile" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-mobile">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </div>
+                    <a href="javascript:void(0);" class="search-cancel" id="search-cancel-mobile">
+                        取消
+                    </a>
+                </div><a class="menu-item" href="/about/" title="">关于</a><a class="menu-item" href="/projects/" title="">项目</a><a class="menu-item" href="/sketch-notes/" title="">手绘</a><a class="menu-item" href="/posts/" title="">博客</a><a class="menu-item" href="/talk/" title="">演讲</a><a class="menu-item" href="/cources/" title="">课程</a><a class="menu-item" href="https://vesoft.com/cn/careers/" title="" rel="noopener noreferrer" target="_blank">招聘</a><a class="menu-item" href="/about/#%E8%81%94%E7%B3%BB%E6%88%91" title="">联系</a><a class="menu-item" href="/path/" title="">学习路径</a><a href="javascript:void(0);" class="menu-item theme-select" title="切换主题">
+                <i class="fas fa-adjust fa-fw"></i>
+                <select class="color-theme-select" id="theme-select-mobile" title="切换主题">
+                    <option value="light">浅色</option>
+                    <option value="dark">深色</option>
+                    <option value="black">黑色</option>
+                    <option value="auto">跟随系统</option>
+                </select>
+            </a><a href="javascript:void(0);" class="menu-item" title="选择语言">🌏 Chinese<i class="fas fa-chevron-right fa-fw"></i>
+                    <select class="language-select" title="Select Language" onchange="location = this.value;"><option value="/en/graph-enabled-llama-index/">🌏 English</option><option value="/graph-enabled-llama-index/" selected>🌏 Chinese</option></select>
+                </a></div>
+    </div>
+</header>
+<div class="search-dropdown desktop">
+    <div id="search-dropdown-desktop"></div>
+</div>
+<div class="search-dropdown mobile">
+    <div id="search-dropdown-mobile"></div>
+</div>
+<main class="main">
+            <div class="container"><div class="toc" id="toc-auto">
+        <h2 class="toc-title">目录</h2>
+        <div class="toc-content" id="toc-content-auto"><nav id="TableOfContents">
+  <ol>
+    <li><a href="#llm-应用的范式">LLM 应用的范式</a></li>
+    <li><a href="#llama-index数据与-llm-之间的接口">Llama Index：数据与 LLM 之间的接口</a>
+      <ol>
+        <li><a href="#上下文学习">上下文学习</a></li>
+        <li><a href="#嵌入embedding">嵌入（Embedding）</a></li>
+        <li><a href="#llama-index">Llama Index</a></li>
+      </ol>
+    </li>
+    <li><a href="#文档分割和嵌入的问题">文档分割和嵌入的问题</a></li>
+    <li><a href="#知识图谱">知识图谱</a></li>
+    <li><a href="#嵌入和知识图谱的结合">嵌入和知识图谱的结合</a></li>
+    <li><a href="#llama-index-中的知识图谱进展">Llama Index 中的知识图谱进展</a></li>
+  </ol>
+</nav></div>
+    </div><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC", "true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">图谱驱动的大语言模型 Llama Index</h1><div class="post-meta">
+            <div class="post-meta-line">
+                <span class="post-author"><span class="author fas fa-user-circle fa-fw"></span><a href="https://siwei.io" title="Author" target="_blank" rel="noopener noreferrer author" class="author">Wey Gu</a>
+                </span>&nbsp;<span class="post-category">收录于 </span>&nbsp;<span class="post-category">类别 <a href="/categories/nebula-graph/"><i class="far fa-folder fa-fw"></i>Nebula Graph</a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime="2023-06-01">2023-06-01</time>&nbsp;<i class="far fa-edit fa-fw"></i>&nbsp;<time datetime="2023-06-01">2023-06-01</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;约 4037 字&nbsp;
+                <i class="far fa-clock fa-fw"></i>&nbsp;预计阅读 9 分钟&nbsp;</div>
+        </div><div class="featured-image"><img
+        
+        loading="eager"
+        src="/graph-enabled-llama-index/featured-image.webp"
+        srcset="/graph-enabled-llama-index/featured-image.webp, /graph-enabled-llama-index/featured-image.webp 1.5x, /graph-enabled-llama-index/featured-image.webp 2x"
+        sizes="auto"
+        alt="/graph-enabled-llama-index/featured-image.webp"
+        title="如何利用图谱构建更好的 In-context Learning 大语言模型应用。" height="874"   width="1734" ></div><div class="details toc" id="toc-static"  kept="">
+                <div class="details-summary toc-title">
+                    <span>目录</span>
+                    <span><i class="details-icon fas fa-angle-right"></i></span>
+                </div>
+                <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ol>
+    <li><a href="#llm-应用的范式">LLM 应用的范式</a></li>
+    <li><a href="#llama-index数据与-llm-之间的接口">Llama Index：数据与 LLM 之间的接口</a>
+      <ol>
+        <li><a href="#上下文学习">上下文学习</a></li>
+        <li><a href="#嵌入embedding">嵌入（Embedding）</a></li>
+        <li><a href="#llama-index">Llama Index</a></li>
+      </ol>
+    </li>
+    <li><a href="#文档分割和嵌入的问题">文档分割和嵌入的问题</a></li>
+    <li><a href="#知识图谱">知识图谱</a></li>
+    <li><a href="#嵌入和知识图谱的结合">嵌入和知识图谱的结合</a></li>
+    <li><a href="#llama-index-中的知识图谱进展">Llama Index 中的知识图谱进展</a></li>
+  </ol>
+</nav></div>
+            </div><div class="content" id="content"><blockquote>
+<p>如何利用图谱构建更好的 In-context Learning 大语言模型应用。</p>
+</blockquote>
+<p><a href="https://www.siwei.io/en/graph-enabled-llama-index/" target="_blank" rel="noopener noreferrer">English version</a></p>
+<blockquote>
+<p>注：本文是我最初以英文撰写的，然后麻烦 ChatGPT 帮我翻译成了英文，翻译的 prompt 是：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">In this thread, you are a Chinese Tech blogger to help translate my blog in markdown from English into Chinese, the blog style is clear, fun yet professional. I will paste chapters in markdown to you and you will send back the translated and polished version.
+</span></span></code></pre></td></tr></table>
+</div>
+</div></blockquote>
+<h2 id="llm-应用的范式" class="headerLink">
+    <a href="#llm-%e5%ba%94%e7%94%a8%e7%9a%84%e8%8c%83%e5%bc%8f" class="header-mark"></a>1 LLM 应用的范式</h2><p>作为认知智能的一大突破，LLM 已经改变了许多行业，以一种我们没有预料到的方式进行自动化、加速和启用。每天都会看到新的 LLN 应用被创建出来，我们仍然在探索如何利用这种魔力的新方法和用例。</p>
+<p>将 LLM 引入流程的最典型模式之一是要求 LLM 根据专有的/特定领域的知识理解事物。目前，我们可以向 LLM 添加两种范式以获取这些知识：微调——fine-tune和<a href="https://en.wikipedia.org/wiki/In-context_learning_%28natural_language_processing%29" target="_blank" rel="noopener noreferrer">上下文学习</a>—— in-context learning。</p>
+<p>微调是指对 LLM 模型进行附加训练，以增加额外的知识；而上下文学习是在查询提示中添加一些额外的知识。我们目前观察到，<a href="https://arxiv.org/abs/2305.16938" target="_blank" rel="noopener noreferrer">由于其简单性，上下文学习比微调更受欢迎</a>。</p>
+<p>在本博客中，我将分享我们在上下文学习方法方面所做的工作。</p>
+<h2 id="llama-index数据与-llm-之间的接口" class="headerLink">
+    <a href="#llama-index%e6%95%b0%e6%8d%ae%e4%b8%8e-llm-%e4%b9%8b%e9%97%b4%e7%9a%84%e6%8e%a5%e5%8f%a3" class="header-mark"></a>2 Llama Index：数据与 LLM 之间的接口</h2><h3 id="上下文学习" class="headerLink">
+    <a href="#%e4%b8%8a%e4%b8%8b%e6%96%87%e5%ad%a6%e4%b9%a0" class="header-mark"></a>2.1 上下文学习</h3><p>上下文学习的基本思想是使用现有的 LLM（未更新）来处理特定知识数据集的特殊任务。</p>
+<p>例如，要构建一个可以回答关于某个人的任何问题，甚至扮演一个人的数字化化身的应用程序，我们可以将上下文学习应用于一本自传书籍和 LLM。在实践中，应用程序将使用用户的问题和从书中&quot;搜索&quot;到的一些信息构建提示，然后查询 LLM 来获取答案。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">┌───────┐         ┌─────────────────┐         ┌─────────┐
+</span></span><span class="line"><span class="cl">│       │         │ Docs/Knowledge  │         │         │
+</span></span><span class="line"><span class="cl">│       │         └─────────────────┘         │         │
+</span></span><span class="line"><span class="cl">│ User  │─────────────────────────────────────▶   LLM   │
+</span></span><span class="line"><span class="cl">│       │                                     │         │
+</span></span><span class="line"><span class="cl">│       │                                     │         │
+</span></span><span class="line"><span class="cl">└───────┘                                     └─────────┘
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>在这种搜索方法中，实现从文档/知识（上述示例中的那本书）中获取与特定任务相关信息的最有效方式之一是利用嵌入（Embedding）。</p>
+<h3 id="嵌入embedding" class="headerLink">
+    <a href="#%e5%b5%8c%e5%85%a5embedding" class="header-mark"></a>2.2 嵌入（Embedding）</h3><p>嵌入通常指的是将现实世界的事物映射到多维空间中的向量的方法。例如，我们可以将图像映射到一个（64 x 64）维度的空间中，如果映射足够好，两个图像之间的距离可以反映它们的相似性。</p>
+<p>嵌入的另一个例子是 word2vec 算法，它将每个单词都映射到一个向量中。例如，如果嵌入足够好，我们可以对它们进行加法和减法操作，可能会得到以下结果：</p>
+<ul>
+<li><code>vec(apple) + vec(pie) =~ vec(&quot;apple apie&quot;)</code></li>
+</ul>
+<p>或者向量测量值 <code>vec(apple) + vec(pie) - vec(&quot;apple apie&quot;)</code> 趋近于0：</p>
+<ul>
+<li><code>|vec(apple) + vec(pie) - vec(&quot;apple apie&quot;)| =~ 0</code></li>
+</ul>
+<p>类似地，&ldquo;pear&rdquo; 应该比 &ldquo;dinosaur&rdquo; 更接近 &ldquo;apple&rdquo;：</p>
+<ul>
+<li><code>|vec(apple) - vec(pear)| &lt; |vec(apple) - vec(dinosaur)|</code></li>
+</ul>
+<p>有了这个基础，理论上我们可以搜索与给定问题更相关的书籍片段。基本过程如下：</p>
+<ul>
+<li>将书籍分割为小片段，为每个片段创建嵌入并存储它们</li>
+<li>当有一个问题时，计算问题的嵌入</li>
+<li>通过计算距离找到与书籍片段最相似的前 K 个嵌入</li>
+<li>使用问题和书籍片段构建提示</li>
+<li>使用提示查询 LLM</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">                  ┌────┬────┬────┬────┐                  
+</span></span><span class="line"><span class="cl">                  │ 1  │ 2  │ 3  │ 4  │                  
+</span></span><span class="line"><span class="cl">                  ├────┴────┴────┴────┤                  
+</span></span><span class="line"><span class="cl">                  │  Docs/Knowledge   │                  
+</span></span><span class="line"><span class="cl">┌───────┐         │        ...        │       ┌─────────┐
+</span></span><span class="line"><span class="cl">│       │         ├────┬────┬────┬────┤       │         │
+</span></span><span class="line"><span class="cl">│       │         │ 95 │ 96 │    │    │       │         │
+</span></span><span class="line"><span class="cl">│       │         └────┴────┴────┴────┘       │         │
+</span></span><span class="line"><span class="cl">│ User  │─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─▶   LLM   │
+</span></span><span class="line"><span class="cl">│       │                                     │         │
+</span></span><span class="line"><span class="cl">│       │                                     │         │
+</span></span><span class="line"><span class="cl">└───────┘    ┌ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┐  └─────────┘
+</span></span><span class="line"><span class="cl">    │          ┌──────────────────────────┐        ▲     
+</span></span><span class="line"><span class="cl">    └────────┼▶│  Tell me ....., please   │├───────┘     
+</span></span><span class="line"><span class="cl">               └──────────────────────────┘              
+</span></span><span class="line"><span class="cl">             │ ┌────┐ ┌────┐               │             
+</span></span><span class="line"><span class="cl">               │ 3  │ │ 96 │                             
+</span></span><span class="line"><span class="cl">             │ └────┘ └────┘               │             
+</span></span><span class="line"><span class="cl">              ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ 
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="llama-index" class="headerLink">
+    <a href="#llama-index" class="header-mark"></a>2.3 Llama Index</h3><p>Llama Index 是一个开源工具包，它能帮助我们以最佳实践去做 in-context learning：</p>
+<ul>
+<li>它提供了各种数据加载器，以统一格式序列化文档/知识，例如 PDF、维基百科页面、Notion、Twitter 等等，这样我们可以无需自行处理预处理、将数据分割为片段等操作。</li>
+<li>它还可以帮助我们创建嵌入（以及其他形式的索引），并以一行代码的方式存储嵌入（在内存中或<a href="https://github.com/openai/openai-cookbook/blob/main/examples/vector_databases/Using_vector_databases_for_embeddings_search.ipynb" target="_blank" rel="noopener noreferrer">向量数据库</a>中）。</li>
+<li>它内置了提示和其他工程实现，因此我们无需从头开始创建和研究，例如，<a href="https://twitter.com/jerryjliu0/status/1663213212932902913" target="_blank" rel="noopener noreferrer">用4行代码在现有数据上创建一个聊天机器人</a>。</li>
+</ul>
+<h2 id="文档分割和嵌入的问题" class="headerLink">
+    <a href="#%e6%96%87%e6%a1%a3%e5%88%86%e5%89%b2%e5%92%8c%e5%b5%8c%e5%85%a5%e7%9a%84%e9%97%ae%e9%a2%98" class="header-mark"></a>3 文档分割和嵌入的问题</h2><p>嵌入和向量搜索在许多情况下效果良好，但在某些情况下仍存在挑战，其中之一是可能丢失全局上下文/跨节点上下文。</p>
+<p>想象一下，当查询&quot;请告诉我关于作者和 foo 的事情&quot;，在这本书中，假设编号为 1、3、6、19~25、30~44 和 96~99 的分段都涉及到 foo 这个主题。则在这种情况下，简单地搜索与书籍片段相关的前 k 个嵌入可能效果不尽人意，因为这时候只考虑与之最相关的几个片段（比如 k = 3），从而丢失了许多上下文信息。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">┌────┬────┬────┬────┐
+</span></span><span class="line"><span class="cl">│ 1  │ 2  │ 3  │ 4  │
+</span></span><span class="line"><span class="cl">├────┴────┴────┴────┤
+</span></span><span class="line"><span class="cl">│  Docs/Knowledge   │
+</span></span><span class="line"><span class="cl">│        ...        │
+</span></span><span class="line"><span class="cl">├────┬────┬────┬────┤
+</span></span><span class="line"><span class="cl">│ 95 │ 96 │    │    │
+</span></span><span class="line"><span class="cl">└────┴────┴────┴────┘
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>而解决、缓解这个问题的方法，在 Llama Index 工具的语境下，就是创建<a href="https://gpt-index.readthedocs.io/en/latest/how_to/index_structs/composability.html" target="_blank" rel="noopener noreferrer">组合索引</a>和<a href="https://gpt-index.readthedocs.io/en/latest/guides/primer/index_guide.html" target="_blank" rel="noopener noreferrer">综合索引</a>。</p>
+<p>其中，向量存储（VectorStore）只是其中的一部分。除此之外，我们可以定义一个摘要索引和/或树形索引等，以<a href="https://gpt-index.readthedocs.io/en/latest/guides/tutorials/unified_query.html" target="_blank" rel="noopener noreferrer">将不同类型的问题路由到不同的索引</a>，从而避免在需要全局上下文时丧失它。</p>
+<p>然而，借助知识图谱，我们可以采取更有意思的方法：</p>
+<h2 id="知识图谱" class="headerLink">
+    <a href="#%e7%9f%a5%e8%af%86%e5%9b%be%e8%b0%b1" class="header-mark"></a>4 知识图谱</h2><p>知识图谱这个术语最初由<a href="https://blog.google/products/search/introducing-knowledge-graph-things-not/" target="_blank" rel="noopener noreferrer">谷歌在2012年5月提出</a>，作为其增强搜索结果和向用户提供更多上下文信息的努力的一部分。知识图谱旨在理解实体之间的关系，并直接提供查询的答案，而不仅仅返回相关网页的列表。</p>
+<p>知识图谱是一种以图形格式组织和连接信息的方式，其中节点表示实体，边表示实体之间的关系。图形结构允许高效地存储、检索和分析数据。</p>
+<p>它的结构如下图所示：</p>
+<iframe src="harry_potter_graph.html" style="height:500px;width:800px" title="Graph"></iframe>
+<p>那么知识图谱到底能怎么帮到我们呢？</p>
+<h2 id="嵌入和知识图谱的结合" class="headerLink">
+    <a href="#%e5%b5%8c%e5%85%a5%e5%92%8c%e7%9f%a5%e8%af%86%e5%9b%be%e8%b0%b1%e7%9a%84%e7%bb%93%e5%90%88" class="header-mark"></a>5 嵌入和知识图谱的结合</h2><p>这里的基本思想是，作为信息的精炼格式，知识图谱可以以比我们对原始数据/文档进行的分割更小的粒度进行查询/搜索。因此，通过不替换大块的数据，而是将两者结合起来，我们可以更好地搜索需要全局/跨节点上下文的查询。</p>
+<p>请看下面的图示，假设问题是关于 <code>x</code> 的，所有数据片段中有20个与它高度相关。现在，除了获取主要上下文的前3个文档片段（比如编号为 1、2 和 96 的文档片段），我们还从知识图谱中对 <code>x</code> 进行两次跳转查询，那么完整的上下文将包括：</p>
+<ul>
+<li>问题：&ldquo;Tell me things about the author and x&rdquo;</li>
+<li>来自文档片段编号 1、2 和 96 的原始文档，在 Llama Index 中，它们被称为节点 1、节点 2 和节点 96。</li>
+<li>包含 &ldquo;x&rdquo; 的知识图谱中的 10 个三元组，通过对 <code>x</code> 进行两层深度的图遍历得到：
+<ul>
+<li>x -&gt; y（来自节点 1）</li>
+<li>x -&gt; a（来自节点 2）</li>
+<li>x -&gt; m（来自<strong>节点 4</strong>）</li>
+<li>x &lt;- b-&gt; c（来自<strong>节点 95</strong>）</li>
+<li>x -&gt; d（来自节点 96）</li>
+<li>n -&gt; x（来自<strong>节点 98</strong>）</li>
+<li>x &lt;- z &lt;- i（来自<strong>节点 1 和节点 3</strong>）</li>
+<li>x &lt;- z &lt;- b（来自<strong>节点 1 和节点 95</strong>）</li>
+</ul>
+</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">┌──────────────────┬──────────────────┬──────────────────┬──────────────────┐
+</span></span><span class="line"><span class="cl">│ .─.       .─.    │  .─.       .─.   │            .─.   │  .─.       .─.   │
+</span></span><span class="line"><span class="cl">│( x )─────▶ y )   │ ( x )─────▶ a )  │           ( j )  │ ( m )◀────( x )  │
+</span></span><span class="line"><span class="cl">│ `▲&#39;       `─&#39;    │  `─&#39;       `─&#39;   │            `─&#39;   │  `─&#39;       `─&#39;   │
+</span></span><span class="line"><span class="cl">│  │     1         │        2         │        3    │    │        4         │
+</span></span><span class="line"><span class="cl">│ .─.              │                  │            .▼.   │                  │
+</span></span><span class="line"><span class="cl">│( z )─────────────┼──────────────────┼──────────▶( i )─┐│                  │
+</span></span><span class="line"><span class="cl">│ `◀────┐          │                  │            `─&#39;  ││                  │
+</span></span><span class="line"><span class="cl">├───────┼──────────┴──────────────────┴─────────────────┼┴──────────────────┤
+</span></span><span class="line"><span class="cl">│       │                      Docs/Knowledge           │                   │
+</span></span><span class="line"><span class="cl">│       │                            ...                │                   │
+</span></span><span class="line"><span class="cl">│       │                                               │                   │
+</span></span><span class="line"><span class="cl">├───────┼──────────┬──────────────────┬─────────────────┼┬──────────────────┤
+</span></span><span class="line"><span class="cl">│  .─.  └──────.   │  .─.             │                 ││  .─.             │
+</span></span><span class="line"><span class="cl">│ ( x ◀─────( b )  │ ( x )            │                 └┼▶( n )            │
+</span></span><span class="line"><span class="cl">│  `─&#39;       `─&#39;   │  `─&#39;             │                  │  `─&#39;             │
+</span></span><span class="line"><span class="cl">│        95   │    │   │    96        │                  │   │    98        │
+</span></span><span class="line"><span class="cl">│            .▼.   │  .▼.             │                  │   ▼              │
+</span></span><span class="line"><span class="cl">│           ( c )  │ ( d )            │                  │  .─.             │
+</span></span><span class="line"><span class="cl">│            `─&#39;   │  `─&#39;             │                  │ ( x )            │
+</span></span><span class="line"><span class="cl">└──────────────────┴──────────────────┴──────────────────┴──`─&#39;─────────────┘
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>显然，那些（可能很宝贵的）涉及到主题 <code>x</code> 的精炼信息来自于其他节点以及跨节点的信息，都因为我们引入知识图谱的步骤，而能够被包含在 prompt 中，用于进行上下文学习，从而克服了前边提到的问题。</p>
+<h2 id="llama-index-中的知识图谱进展" class="headerLink">
+    <a href="#llama-index-%e4%b8%ad%e7%9a%84%e7%9f%a5%e8%af%86%e5%9b%be%e8%b0%b1%e8%bf%9b%e5%b1%95" class="header-mark"></a>6 Llama Index 中的知识图谱进展</h2><p>最初，<a href="https://github.com/jerryjliu/llama_index/pull/433" target="_blank" rel="noopener noreferrer">William F.H.</a>将知识图谱的抽象概念引入了 Llama Index，其中知识图谱中的三元组与关键词相关联，并存储在内存中的文档中，随后<a href="https://github.com/jerryjliu/llama_index/pull/487" target="_blank" rel="noopener noreferrer">Logan Markewich</a>还增加了每个三元组的嵌入。</p>
+<p>最近的几周中，我一直在与社区合作，致力于<a href="https://github.com/jerryjliu/llama_index/pull/2581" target="_blank" rel="noopener noreferrer">将 &ldquo;GraphStore&rdquo; 存储上下文引入 Llama Index</a>，从而引入了知识图谱的外部存储。首个实现是使用我自从 2021 年以来一直在开发的开源分布式图数据库 NebulaGraph。</p>
+<p>在实现过程中，还引入了遍历图的多个跳数选项以及在前 k 个节点中收集更多关键实体的选项（用于在知识图谱中搜索以获得更多全局上下文），我们仍在对这些变更进行完善。</p>
+<p>引入 GraphStore 后，还可以从现有的知识图谱中进行上下文学习，并与其他索引结合使用，这也非常有前景，因为知识图谱被认为具有比其他结构化数据更高的信息密度。</p>
+<p>在接下来的几周里，我将在本博客中更新有关 Llama Index 中的知识图谱相关工作的内容，然后在 <a href="https://github.com/jerryjliu/llama_index/pull/2581" target="_blank" rel="noopener noreferrer">PR</a> 合并后，分享端到端的演示项目和教程。请继续关注！</p></div>
+
+        
+
+
+<h2>相关内容</h2>
+<div class="related-container">
+    <div class="related-item-container">
+            <div class="related-image">
+                <a href="/nebulagraph-in-jupyter-notebook/"><img
+        
+        loading="lazy"
+        src="/nebulagraph-in-jupyter-notebook/featured-image.webp"
+        srcset="/nebulagraph-in-jupyter-notebook/featured-image.webp, /nebulagraph-in-jupyter-notebook/featured-image.webp 1.5x, /nebulagraph-in-jupyter-notebook/featured-image.webp 2x"
+        sizes="auto"
+        alt="/nebulagraph-in-jupyter-notebook/featured-image.webp"
+        title="如何利用图谱构建更好的 In-context Learning 大语言模型应用。" height="200"   width="400" ></a>
+            </div><h2 class="related-title">
+                <a href="/nebulagraph-in-jupyter-notebook/">NebulaGraph in Jupyter Notebook</a>
+            </h2>
+        </div>
+    <div class="related-item-container">
+            <div class="related-image">
+                <a href="/nebulagraph-ai-suite/"><img
+        
+        loading="lazy"
+        src="/nebulagraph-ai-suite/featured-image.webp"
+        srcset="/nebulagraph-ai-suite/featured-image.webp, /nebulagraph-ai-suite/featured-image.webp 1.5x, /nebulagraph-ai-suite/featured-image.webp 2x"
+        sizes="auto"
+        alt="/nebulagraph-ai-suite/featured-image.webp"
+        title="如何利用图谱构建更好的 In-context Learning 大语言模型应用。" height="200"   width="400" ></a>
+            </div><h2 class="related-title">
+                <a href="/nebulagraph-ai-suite/">Nebulagraph Artificial Intelligence Suite</a>
+            </h2>
+        </div>
+    <div class="related-item-container">
+            <div class="related-image">
+                <a href="/graph-enabled-infra-ops/"><img
+        
+        loading="lazy"
+        src="/graph-enabled-infra-ops/featured-image.webp"
+        srcset="/graph-enabled-infra-ops/featured-image.webp, /graph-enabled-infra-ops/featured-image.webp 1.5x, /graph-enabled-infra-ops/featured-image.webp 2x"
+        sizes="auto"
+        alt="/graph-enabled-infra-ops/featured-image.webp"
+        title="如何利用图谱构建更好的 In-context Learning 大语言模型应用。" height="200"   width="400" ></a>
+            </div><h2 class="related-title">
+                <a href="/graph-enabled-infra-ops/">图数据库驱动的基础设施运维示例</a>
+            </h2>
+        </div>
+    <div class="related-item-container">
+            <div class="related-image">
+                <a href="/nebulagraph-sns/"><img
+        
+        loading="lazy"
+        src="/nebulagraph-sns/featured-image.webp"
+        srcset="/nebulagraph-sns/featured-image.webp, /nebulagraph-sns/featured-image.webp 1.5x, /nebulagraph-sns/featured-image.webp 2x"
+        sizes="auto"
+        alt="/nebulagraph-sns/featured-image.webp"
+        title="如何利用图谱构建更好的 In-context Learning 大语言模型应用。" height="200"   width="400" ></a>
+            </div><h2 class="related-title">
+                <a href="/nebulagraph-sns/">图数据库的社交网络应用</a>
+            </h2>
+        </div>
+    <div class="related-item-container">
+            <div class="related-image">
+                <a href="/chatgpt-and-nebulagraph-predict-fifa-world-cup/"><img
+        
+        loading="lazy"
+        src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.webp"
+        srcset="/chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.webp, /chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.webp 1.5x, /chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.webp 2x"
+        sizes="auto"
+        alt="/chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.webp"
+        title="如何利用图谱构建更好的 In-context Learning 大语言模型应用。" height="200"   width="400" ></a>
+            </div><h2 class="related-title">
+                <a href="/chatgpt-and-nebulagraph-predict-fifa-world-cup/">chatGPT 加 NebulaGraph 预测 2022 世界杯冠军球队</a>
+            </h2>
+        </div>
+    
+
+</div>
+
+<div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>更新于 2023-06-01</span>
+            </div>
+            <div class="post-info-license"></div>
+        </div>
+        <div class="post-info-line">
+            <div class="post-info-md"><span><a class="link-to-mardown" href=/graph-enabled-llama-index/index.md target="_blank" rel="noopener noreferrer">阅读原始文档</a>
+                    </span><span>|&nbsp;<a class="link-to-report" href=https://github.com/siwei-io/siwei-io.github.io/issues/new?title=[bug]%20%E5%9B%BE%E8%B0%B1%E9%A9%B1%E5%8A%A8%E7%9A%84%E5%A4%A7%E8%AF%AD%E8%A8%80%E6%A8%A1%E5%9E%8B+Llama+Index&body=|Field|Value|%0A|-|-|%0A|Title|%E5%9B%BE%E8%B0%B1%E9%A9%B1%E5%8A%A8%E7%9A%84%E5%A4%A7%E8%AF%AD%E8%A8%80%E6%A8%A1%E5%9E%8B+Llama+Index|%0A|Url|https://siwei.io/graph-enabled-llama-index/|%0A|Filename|posts/graph-enabled-llama-index/index.md| target="_blank" rel="noopener noreferrer">报告问题</a>
+                    </span></div>
+            <div class="post-info-share"><button title="分享到 Twitter" data-sharer="twitter" data-url="https://siwei.io/graph-enabled-llama-index/" data-title="图谱驱动的大语言模型 Llama Index" data-via="wey_gu" data-hashtags="Nebula Graph,LLM,Llama-Index,In-context Learning,大语言模型"><span class="fab fa-twitter fa-fw"></span></button><button title="分享到 Facebook" data-sharer="facebook" data-url="https://siwei.io/graph-enabled-llama-index/" data-hashtag="Nebula Graph"><span class="fab fa-facebook-square fa-fw"></span></button><button title="分享到 Hacker News" data-sharer="hackernews" data-url="https://siwei.io/graph-enabled-llama-index/" data-title="图谱驱动的大语言模型 Llama Index"><span class="fab fa-hacker-news fa-fw"></span></button><button title="分享到 Line" data-sharer="line" data-url="https://siwei.io/graph-enabled-llama-index/" data-title="图谱驱动的大语言模型 Llama Index"><span data-svg-src="/lib/simple-icons/icons/line.min.svg"></span></button><button title="分享到 微博" data-sharer="weibo" data-url="https://siwei.io/graph-enabled-llama-index/" data-title="图谱驱动的大语言模型 Llama Index" data-image="featured-image.webp" data-ralateuid="siweigu"><span class="fab fa-weibo fa-fw"></span></button><button title="分享到 Telegram" data-sharer="telegram" data-url="https://siwei.io/graph-enabled-llama-index/" data-title="图谱驱动的大语言模型 Llama Index" data-web><span class="fab fa-telegram-plane fa-fw"></span></button></div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section class="post-tags"><i class="fas fa-tags fa-fw"></i>&nbsp;<a href="/tags/nebula-graph/">Nebula Graph</a>,&nbsp;<a href="/tags/llm/">LLM</a>,&nbsp;<a href="/tags/llama-index/">Llama-Index</a>,&nbsp;<a href="/tags/in-context-learning/">In-context Learning</a>,&nbsp;<a href="/tags/%E5%A4%A7%E8%AF%AD%E8%A8%80%E6%A8%A1%E5%9E%8B/">大语言模型</a></section>
+        <section>
+            <span><a href="javascript:void(0);" onclick="window.history.back();">返回</a></span>&nbsp;|&nbsp;<span><a href="/">主页</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/nebulagraph-ai-suite/" class="prev" rel="prev" title="Nebulagraph Artificial Intelligence Suite"><i class="fas fa-angle-left fa-fw"></i>Nebulagraph Artificial Intelligence Suite</a>
+            <a href="/nebulagraph-in-jupyter-notebook/" class="next" rel="next" title="NebulaGraph in Jupyter Notebook">NebulaGraph in Jupyter Notebook<i class="fas fa-angle-right fa-fw"></i></a></div>
+</div>
+<div id="comments"><div id="giscus"></div><noscript>
+                Please enable JavaScript to view the comments powered by <a href="https://giscus.app/">giscus</a>.
+            </noscript></div></article></div>
+        </main><footer class="footer">
+        <div class="footer-container"><div class="footer-line">
+                    由 <a href="https://gohugo.io/" target="_blank" rel="noopener noreferrer" title="Hugo 0.111.3">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreferrer" title="DoIt 0.3.0"><i class="far fa-edit fa-fw"></i> DoIt</a>
+                </div><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2018 - 2023</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="https://siwei.io" target="_blank" rel="noopener noreferrer">Wey Gu</a></span>&nbsp;|&nbsp;<span class="license"><a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">CC BY-NC 4.0</a></span></div>
+            <div class="footer-line"></div>
+            <div class="footer-line">
+            </div>
+        </div><script>
+                    if('serviceWorker' in navigator) {
+                        navigator.serviceWorker
+                            .register('/sw.min.js', { scope: '/' })
+                            .then(function(registration) {
+                            });
+                
+                        navigator.serviceWorker
+                            .ready
+                            .then(function(registration) {
+                            });
+                    }
+                </script></footer></div>
+
+    <div id="fixed-buttons"><a href="#back-to-top" id="back-to-top-button" class="fixed-button" title="回到顶部">
+            <i class="fas fa-arrow-up fa-fw"></i>
+        </a><a href="#" id="view-comments" class="fixed-button" title="查看评论">
+            <i class="fas fa-comment fa-fw"></i>
+        </a>
+    </div><div class="assets"><link rel="stylesheet" href="/lib/katex/katex.min.css"><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/katex/copy-tex.min.css">
+        <noscript><link rel="stylesheet" href="/lib/katex/copy-tex.min.css"></noscript><script type="text/javascript">window.config={"code":{"copyTitle":"复制到剪贴板","maxShownLines":10},"comment":{"giscus":{"darkTheme":"dark","dataCategory":"Comments","dataCategoryId":"DIC_kwDOFhiy8c4CQeuu","dataEmitMetadata":"1","dataInputPosition":"bottom","dataLang":"en","dataMapping":"title","dataReactionsEnabled":"1","dataRepo":"siwei-io/siwei-io.github.io","dataRepoId":"MDEwOlJlcG9zaXRvcnkzNzA3MTc0MjU=","dataStrict":"1","lightTheme":"light"}},"math":{"delimiters":[{"display":true,"left":"$$","right":"$$"},{"display":true,"left":"\\[","right":"\\]"},{"display":false,"left":"$","right":"$"},{"display":false,"left":"\\(","right":"\\)"}],"strict":false},"search":{"distance":100,"findAllMatches":false,"fuseIndexURL":"/index.json","highlightTag":"em","ignoreFieldNorm":false,"ignoreLocation":true,"isCaseSensitive":false,"location":0,"maxResultLength":10,"minMatchCharLength":2,"noResultsFound":"没有找到结果","snippetLength":300,"threshold":0.1,"type":"fuse","useExtendedSearch":false},"sharerjs":true,"table":{"sort":true}};</script><script type="text/javascript" src="/lib/tablesort/tablesort.min.js"></script><script type="text/javascript" src="/lib/clipboard/clipboard.min.js"></script><script type="text/javascript" src="/lib/sharer/sharer.min.js"></script><script type="text/javascript" src="/lib/katex/katex.min.js" defer></script><script type="text/javascript" src="/lib/katex/auto-render.min.js" defer></script><script type="text/javascript" src="/lib/katex/copy-tex.min.js" defer></script><script type="text/javascript" src="/lib/katex/mhchem.min.js" defer></script><script type="text/javascript" src="/js/katex.min.js" defer></script><script type="text/javascript" src="/js/theme.min.js" defer></script><script type="text/javascript" src="/js/giscus.min.js" defer></script><script type="text/javascript">
+            window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());
+            gtag('config', 'G-DYTTVYCRS2', { 'anonymize_ip': true });
+        </script><script type="text/javascript" src="https://www.googletagmanager.com/gtag/js?id=G-DYTTVYCRS2" async></script></div>
+</body>
+
+</html>

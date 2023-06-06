@@ -7,6 +7,8 @@
 
 <!--more-->
 
+[Chinese Version](https://www.siwei.io/graph-enabled-llama-index/)
+
 ## LLM App Paradigms
 
 As a big improvement in Cognitive intelligence, LLM had changed many industries, in a way that we didn't expect to automate, accelerate or enable. Seeing new LLM-enabled applications being created every day, we are all still exploring new methods and use cases for leveraging this magic.
