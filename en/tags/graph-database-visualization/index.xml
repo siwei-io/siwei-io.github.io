@@ -1,0 +1,202 @@
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+        <title>Graph Database Visualization - Tag - siwei.io</title>
+        <link>https://siwei.io/en/tags/graph-database-visualization/</link>
+        <description>Graph Database Visualization - Tag - siwei.io</description>
+        <generator>Hugo -- gohugo.io</generator><language>en</language><managingEditor>weyl.gu@gmail.com (Wey Gu)</managingEditor>
+            <webMaster>weyl.gu@gmail.com (Wey Gu)</webMaster><copyright>This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.</copyright><lastBuildDate>Tue, 06 Jun 2023 13:34:52 &#43;0800</lastBuildDate><atom:link href="https://siwei.io/en/tags/graph-database-visualization/" rel="self" type="application/rss+xml" /><item>
+    <title>NebulaGraph in Jupyter Notebook</title>
+    <link>https://siwei.io/en/nebulagraph-in-jupyter-notebook/</link>
+    <pubDate>Tue, 06 Jun 2023 13:34:52 &#43;0800</pubDate><author>
+        <name>Wey Gu</name>
+    </author><guid>https://siwei.io/en/nebulagraph-in-jupyter-notebook/</guid>
+    <description><![CDATA[<div class="featured-image">
+                <img src="/en/nebulagraph-in-jupyter-notebook/featured-image.webp" referrerpolicy="no-referrer">
+            </div><blockquote>
+<p>Introduce the brand new <code>ipython-ngql</code> python package that enhances your ability to connect to NebulaGraph from your Jupyter Notebook or iPython. Now we can do<code>%ngql MATCH p=(n:player)-&gt;() RETURN p</code>  to query from Jupyter Notebook and <code>%ng_draw</code> to render the result.</p>
+</blockquote>
+<p><a href="https://www.siwei.io/nebulagraph-in-jupyter-notebook/" target="_blank" rel="noopener noreferrer">Chinese version</a></p>
+<h2 id="installation" class="headerLink">
+    <a href="#installation" class="header-mark"></a>1 Installation</h2><p>Just do <code>%pip install ipython-ngql</code> from  Jupyter Notebook and load it up via <code>%load_ext ngql</code>:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="o">%</span><span class="n">pip</span> <span class="n">install</span> <span class="n">ipython</span><span class="o">-</span><span class="n">ngql</span>
+</span></span><span class="line"><span class="cl"><span class="o">%</span><span class="n">load_ext</span> <span class="n">ngql</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Then, connect the NebulaGraph with a line like this:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="o">%</span><span class="n">ngql</span> <span class="o">--</span><span class="n">address</span> <span class="mf">127.0.0.1</span> <span class="o">--</span><span class="n">port</span> <span class="mi">9669</span> <span class="o">--</span><span class="n">user</span> <span class="n">root</span> <span class="o">--</span><span class="n">password</span> <span class="n">nebula</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>When connected, the cell will have an output of <code>SHOW SPACES</code>.</p>
+<blockquote>
+<p>💡 Note, you could install NebulaGraph dev env from <a href="https://hub.docker.com/extensions/weygu/nebulagraph-dd-ext" target="_blank" rel="noopener noreferrer">Docker Desktop Extension Marketplace</a> and literally have it ready <a href="https://www.docker.com/blog/distributed-cloud-native-graph-database-nebulagraph-docker-extension/" target="_blank" rel="noopener noreferrer">with one click</a>. Then, within the extension, go to &ldquo;NebulaGraph AI&rdquo; and click  <strong>Install NX Mode</strong> to install NebulaGraph + Jupyter Notebook local dev env.</p>
+<p><figure><a class="lightgallery" href="/en/nebulagraph-in-jupyter-notebook/dd-extension-ai-playground.webp" title="/en/nebulagraph-in-jupyter-notebook/dd-extension-ai-playground.webp" data-thumbnail="/en/nebulagraph-in-jupyter-notebook/dd-extension-ai-playground.webp">
+        <img
+            
+            loading="lazy"
+            src="/en/nebulagraph-in-jupyter-notebook/dd-extension-ai-playground.webp"
+            srcset="/en/nebulagraph-in-jupyter-notebook/dd-extension-ai-playground.webp, /en/nebulagraph-in-jupyter-notebook/dd-extension-ai-playground.webp 1.5x, /en/nebulagraph-in-jupyter-notebook/dd-extension-ai-playground.webp 2x"
+            sizes="auto"
+            alt="/en/nebulagraph-in-jupyter-notebook/dd-extension-ai-playground.webp">
+    </a></figure></p>
+</blockquote>
+<h2 id="query-nebulagraph" class="headerLink">
+    <a href="#query-nebulagraph" class="header-mark"></a>2 Query NebulaGraph</h2><p>We could then do one-liner query with <code>%ngql</code> or multi-line query with <code>%%ngql</code>.</p>
+<h3 id="one-liner-query" class="headerLink">
+    <a href="#one-liner-query" class="header-mark"></a>2.1 One-liner query</h3><p>For instance:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">%ngql USE basketballplayer;
+</span></span><span class="line"><span class="cl">%ngql MATCH (v:player{name:&#34;Tim Duncan&#34;})--&gt;(v2:player) RETURN v2.player.name AS Name;
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="multi-line-query" class="headerLink">
+    <a href="#multi-line-query" class="header-mark"></a>2.2 Multi-line query</h3><p>For instance</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="o">%%</span><span class="n">ngql</span>
+</span></span><span class="line"><span class="cl"><span class="n">ADD</span> <span class="n">HOSTS</span> <span class="s2">&#34;storaged3&#34;</span><span class="p">:</span><span class="mi">9779</span><span class="p">,</span><span class="s2">&#34;storaged4&#34;</span><span class="p">:</span><span class="mi">9779</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">SHOW</span> <span class="n">HOSTS</span><span class="p">;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="draw-the-result" class="headerLink">
+    <a href="#draw-the-result" class="header-mark"></a>3 Draw the result</h2><p>After any query result, we could render it visually with <code>%ng_draw</code>:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="c1"># one query</span>
+</span></span><span class="line"><span class="cl"><span class="o">%</span><span class="n">ngql</span> <span class="n">GET</span> <span class="n">SUBGRAPH</span> <span class="mi">2</span> <span class="n">STEPS</span> <span class="n">FROM</span> <span class="s2">&#34;player101&#34;</span> <span class="n">YIELD</span> <span class="n">VERTICES</span> <span class="n">AS</span> <span class="n">nodes</span><span class="p">,</span> <span class="n">EDGES</span> <span class="n">AS</span> <span class="n">relationships</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="o">%</span><span class="n">ng_draw</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># another query</span>
+</span></span><span class="line"><span class="cl"><span class="o">%</span><span class="n">ngql</span> <span class="n">match</span> <span class="n">p</span><span class="o">=</span><span class="p">(:</span><span class="n">player</span><span class="p">)</span><span class="o">-</span><span class="p">[]</span><span class="o">-&gt;</span><span class="p">()</span> <span class="k">return</span> <span class="n">p</span> <span class="n">LIMIT</span> <span class="mi">5</span>
+</span></span><span class="line"><span class="cl"><span class="o">%</span><span class="n">ng_draw</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>And it&rsquo;ll look like:</p>
+<p><figure><a class="lightgallery" href="/en/nebulagraph-in-jupyter-notebook/render_result.webp" title="render_result" data-thumbnail="/en/nebulagraph-in-jupyter-notebook/render_result.webp">
+        <img
+            
+            loading="lazy"
+            src="/en/nebulagraph-in-jupyter-notebook/render_result.webp"
+            srcset="/en/nebulagraph-in-jupyter-notebook/render_result.webp, /en/nebulagraph-in-jupyter-notebook/render_result.webp 1.5x, /en/nebulagraph-in-jupyter-notebook/render_result.webp 2x"
+            sizes="auto"
+            alt="/en/nebulagraph-in-jupyter-notebook/render_result.webp">
+    </a></figure></p>
+<p>And the renderred result will be in <a href="https://github.com/wey-gu/ipython-ngql/blob/main/examples/nebulagraph_draw_match.html" target="_blank" rel="noopener noreferrer">a single-file html</a>, which could be embeded in web pages like:</p>
+<iframe src="nebulagraph_draw_match.html" style="height:500px;width:800px" title="Graph"></iframe>
+<h2 id="other-functionality" class="headerLink">
+    <a href="#other-functionality" class="header-mark"></a>4 Other functionality</h2><p>We could query  <code>%ngql help</code>  to know more details of options for ipython-ngql. Here also introudce you some small features.</p>
+<h3 id="get-the-pandas-df-query-result" class="headerLink">
+    <a href="#get-the-pandas-df-query-result" class="header-mark"></a>4.1 Get the pandas df query result</h3><p>The result could be read from <code>_</code> like:</p>
+<p><figure><a class="lightgallery" href="/en/nebulagraph-in-jupyter-notebook/load_result.webp" title="load_result" data-thumbnail="/en/nebulagraph-in-jupyter-notebook/load_result.webp">
+        <img
+            
+            loading="lazy"
+            src="/en/nebulagraph-in-jupyter-notebook/load_result.webp"
+            srcset="/en/nebulagraph-in-jupyter-notebook/load_result.webp, /en/nebulagraph-in-jupyter-notebook/load_result.webp 1.5x, /en/nebulagraph-in-jupyter-notebook/load_result.webp 2x"
+            sizes="auto"
+            alt="/en/nebulagraph-in-jupyter-notebook/load_result.webp">
+    </a></figure></p>
+<h3 id="play-with-resultset-result-instead" class="headerLink">
+    <a href="#play-with-resultset-result-instead" class="header-mark"></a>4.2 Play with ResultSet result instead</h3><p>By default, the return result is pandas df, but we could configure it as <code>raw</code> to enable debugging for Python NebulaGraph Application code on query result handling, like:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="p">:</span> <span class="o">%</span><span class="n">config</span> <span class="n">IPythonNGQL</span><span class="o">.</span><span class="n">ngql_result_style</span><span class="o">=</span><span class="s2">&#34;raw&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">In</span> <span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="p">:</span> <span class="o">%%</span><span class="n">ngql</span> <span class="n">USE</span> <span class="n">pokemon_club</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">...</span><span class="p">:</span> <span class="n">GO</span> <span class="n">FROM</span> <span class="s2">&#34;Tom&#34;</span> <span class="n">OVER</span> <span class="n">owns_pokemon</span> <span class="n">YIELD</span> <span class="n">owns_pokemon</span><span class="o">.</span><span class="n">_dst</span> <span class="k">as</span> <span class="n">pokemon_id</span>
+</span></span><span class="line"><span class="cl">    <span class="o">...</span><span class="p">:</span> <span class="o">|</span> <span class="n">GO</span> <span class="n">FROM</span> <span class="err">$</span><span class="o">-.</span><span class="n">pokemon_id</span> <span class="n">OVER</span> <span class="n">owns_pokemon</span> <span class="n">REVERSELY</span> <span class="n">YIELD</span> <span class="n">owns_pokemon</span><span class="o">.</span><span class="n">_dst</span> <span class="n">AS</span> <span class="n">Trainer_Name</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">...</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="o">...</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl"><span class="n">Out</span><span class="p">[</span><span class="mi">3</span><span class="p">]:</span>
+</span></span><span class="line"><span class="cl"><span class="n">ResultSet</span><span class="p">(</span><span class="n">ExecutionResponse</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">error_code</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">latency_in_us</span><span class="o">=</span><span class="mi">3270</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">data</span><span class="o">=</span><span class="n">DataSet</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">        <span class="n">column_names</span><span class="o">=</span><span class="p">[</span><span class="sa">b</span><span class="s1">&#39;Trainer_Name&#39;</span><span class="p">],</span>
+</span></span><span class="line"><span class="cl">        <span class="n">rows</span><span class="o">=</span><span class="p">[</span><span class="n">Row</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">            <span class="n">values</span><span class="o">=</span><span class="p">[</span><span class="n">Value</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">                <span class="n">sVal</span><span class="o">=</span><span class="sa">b</span><span class="s1">&#39;Tom&#39;</span><span class="p">)]),</span>
+</span></span><span class="line"><span class="cl"><span class="o">...</span>
+</span></span><span class="line"><span class="cl">        <span class="n">Row</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">            <span class="n">values</span><span class="o">=</span><span class="p">[</span><span class="n">Value</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">                <span class="n">sVal</span><span class="o">=</span><span class="sa">b</span><span class="s1">&#39;Wey&#39;</span><span class="p">)])]),</span>
+</span></span><span class="line"><span class="cl">    <span class="n">space_name</span><span class="o">=</span><span class="sa">b</span><span class="s1">&#39;pokemon_club&#39;</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">In</span> <span class="p">[</span><span class="mi">4</span><span class="p">]:</span> <span class="n">r</span> <span class="o">=</span> <span class="n">_</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">In</span> <span class="p">[</span><span class="mi">5</span><span class="p">]:</span> <span class="n">r</span><span class="o">.</span><span class="n">column_values</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s1">&#39;Trainer_Name&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">cast</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="n">Out</span><span class="p">[</span><span class="mi">5</span><span class="p">]:</span> <span class="s1">&#39;Tom&#39;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="query-template" class="headerLink">
+    <a href="#query-template" class="header-mark"></a>4.3 Query Template</h3><p>Besides, I brought the template support in <a href="https://jinja.palletsprojects.com/" target="_blank" rel="noopener noreferrer">Jinja2</a>, thus we could do varibales like <code>{{ variable }}</code> :</p>
+<p><figure><a class="lightgallery" href="/en/nebulagraph-in-jupyter-notebook/query_template.webp" title="query_template" data-thumbnail="/en/nebulagraph-in-jupyter-notebook/query_template.webp">
+        <img
+            
+            loading="lazy"
+            src="/en/nebulagraph-in-jupyter-notebook/query_template.webp"
+            srcset="/en/nebulagraph-in-jupyter-notebook/query_template.webp, /en/nebulagraph-in-jupyter-notebook/query_template.webp 1.5x, /en/nebulagraph-in-jupyter-notebook/query_template.webp 2x"
+            sizes="auto"
+            alt="/en/nebulagraph-in-jupyter-notebook/query_template.webp">
+    </a></figure></p>
+<h2 id="future" class="headerLink">
+    <a href="#future" class="header-mark"></a>5 Future</h2><p>I am planning to add more options on the <code>%ng_draw</code> in the future, and it&rsquo;s always welcome for your help to contribute more from <a href="https://github.com/wey-gu/ipython-ngql" target="_blank" rel="noopener noreferrer">https://github.com/wey-gu/ipython-ngql</a>.</p>]]></description>
+</item></channel>
+</rss>
