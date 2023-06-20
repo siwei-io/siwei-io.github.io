@@ -4,9 +4,9 @@
 
 # Hi, this is Wey :)
 
-I am a developer @***[vesoft](https://vesoft.com)*** working as Developer Advocate of [Nebula Graph](https://nebula-graph.com.cn/), the open source distributed Graph Database
+I am a developer @***[vesoft](https://vesoft.com)*** working as Chief Evangelist of [NebulaGraph](https://nebula-graph.io/), the open source distributed Graph Database
 
-I create toolings and content for [Nebula Graph Database](https://github.com/vesoft-inc) to help Developers in the open source community.
+I create toolings and content for [NebulaGraph Database](https://github.com/vesoft-inc) to help Developers in the open source community.
 
 I am working in open source and consider it is a privilege [^1]. It took me a couple of my early career years to figure out that my passion lies in *helping others with my thoughts & the tech/magic I have learned*.
 
@@ -64,7 +64,7 @@ I used to share my notes and thoughts on [note.siwei.info](https://note.siwei.in
 [^1]: I share the same idea with Ahmet Alp Balkan's [tweet](https://twitter.com/ahmetb/status/1362855715367313412):
 {{< tweet "ahmetb" 1362855715367313412 >}}
 
-[^2]: Ericsson's Telco. Infrastructure as a Service product offerring: [Cloud Execution Environment](https://www.ericsson.com/en/portfolio/digital-services/cloud-infrastructure/cloud-execution-environment)
+[^2]: Ericsson's Telco. Infrastructure as a Service product offerring: [Cloud Execution Environment](https://www.ericsson.com/en/portfolio/cloud-software--services/cloud-core/cloud-infrastructure/nfvi/cloud-execution-environment)
 [^3]: System Manager, PDU Cloud: [Job Description](https://www.linkedin.com/jobs/view/2541281375)
 
 

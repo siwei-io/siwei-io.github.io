@@ -4,9 +4,9 @@
 
 # 您好，我是古思为。
 
-我是一个在上海的软件工程师，我在 ***[vesoft](https://vesoft.com)*** 担任 [Nebula Graph](https://nebula-graph.com.cn/)（开源的分布式图数据库）的社区开发者布道师。
+我是一个在上海的软件工程师，我在 ***[vesoft](https://vesoft.com)*** 担任 [NebulaGraph](https://nebula-graph.com.cn/)（开源的分布式图数据库）的首席布道师。
 
-我的工作是通过围绕 [Nebula Graph Database](https://github.com/vesoft-inc) 创作内容，构建工具来改善开发者的学习、开发、社区参与体验。
+我的工作是通过围绕 [NebulaGraph Database](https://github.com/vesoft-inc) 创作内容，构建工具来改善开发者的学习、开发、社区参与体验。
 
 我在开源社区开放的工作，并（花了职业生涯中的前些年意识到）热爱用自己的思想和学到的技术帮助到别人，我认为*这是一种的荣幸和宝贵的机遇*。 [^1]
 
@@ -81,7 +81,7 @@
 [^1]: 我和 Ahmet Alp Balkan 的 [这个推文]( https://twitter.com/ahmetb/status/1362855715367313412) 感同身受：
 {{< tweet "ahmetb" 1362855715367313412 >}}
 
-[^2]: Ericsson's Telco. Infrastructure as a Service product offerring: [Cloud Execution Environment](https://www.ericsson.com/en/portfolio/digital-services/cloud-infrastructure/cloud-execution-environment)
+[^2]: Ericsson's Telco. Infrastructure as a Service product offerring: [Cloud Execution Environment](https://www.ericsson.com/en/portfolio/cloud-software--services/cloud-core/cloud-infrastructure/nfvi/cloud-execution-environment)
 [^3]: System Manager, PDU Cloud: [工作描述]( https://www.linkedin.com/jobs/view/2541281375)
 
 ## 联系我
