@@ -1,0 +1,558 @@
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+        <title>Cloud - 标签 - siwei.io</title>
+        <link>https://siwei.io/tags/cloud/</link>
+        <description>Cloud - 标签 - siwei.io</description>
+        <generator>Hugo -- gohugo.io</generator><language>zh-CN</language><managingEditor>weyl.gu@gmail.com (Wey Gu)</managingEditor>
+            <webMaster>weyl.gu@gmail.com (Wey Gu)</webMaster><copyright>This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.</copyright><lastBuildDate>Mon, 03 May 2021 21:11:04 &#43;0800</lastBuildDate><atom:link href="https://siwei.io/tags/cloud/" rel="self" type="application/rss+xml" /><item>
+    <title>Nebula-Insights，我们基于 Serverless 架构的数据管道方案与代码分享。</title>
+    <link>https://siwei.io/nebula-insights/</link>
+    <pubDate>Mon, 03 May 2021 21:11:04 &#43;0800</pubDate><author>
+        <name>Wey Gu</name>
+    </author><guid>https://siwei.io/nebula-insights/</guid>
+    <description><![CDATA[<div class="featured-image">
+                <img src="/nebula-insights/featured-image.webp" referrerpolicy="no-referrer">
+            </div><blockquote>
+<p>这是我首发在 Datawhale 的<a href="http://datawhale.club/t/topic/2089" target="_blank" rel="noopener noreferrer">文章</a>，介绍我们如何用公有云 Serverless 技术：Google Cloud Scheduler，Google Cloud Functions 和 BigQuery 搭建数据管道，收集探索开源社区洞察。并将全部代码开源在 GitHub。</p>
+</blockquote>
+<blockquote>
+<p>引子
+我们想要收集一些帮助 Nebula Graph 社区运营的 metrics，希望能从不同来源的数据自动化周期性收集、处理、并方便地展现出来做数据驱动分析的基础设施。</p>
+</blockquote>
+<blockquote>
+<p>Nebula Graph 是一个现代的开源分布式图数据库(Graph Database)，欢迎同学们从:</p>
+<ul>
+<li>官网: <a href="https://nebula-graph.com.cn" target="_blank" rel="noopener noreferrer">https://nebula-graph.com.cn </a></li>
+<li>Bilibili: <a href="https://space.bilibili.com/472621355" target="_blank" rel="noopener noreferrer">https://space.bilibili.com/472621355</a></li>
+<li>GitHub:https://github.com/vesoft-inc/nebula-graph
+了解我们哈。</li>
+</ul>
+</blockquote>
+<h2 id="需求" class="headerLink">
+    <a href="#%e9%9c%80%e6%b1%82" class="header-mark"></a>1 需求</h2><ol>
+<li>方便增加新的数据</li>
+<li>数据收集无需人为触发（自动、周期性）</li>
+<li>每天数据量不超过1000条</li>
+<li>数据可以生成 dashboard，也可以支持统计分期 query</li>
+<li>高可用，数据安全</li>
+<li>低预算，尽可能不需要运维人力</li>
+</ol>
+<h3 id="需求分析" class="headerLink">
+    <a href="#%e9%9c%80%e6%b1%82%e5%88%86%e6%9e%90" class="header-mark"></a>1.1 需求分析</h3><p>我们需要搭建一个系统能实现</p>
+<ul>
+<li>一个能周期性触发获取数据的事件的服务: scheduler</li>
+<li>一个触发之后，把数据 ETL 到数据库中的服务: ETL worker</li>
+<li>一个数据仓库</li>
+<li>一个能够把数据库作为源，允许用户 query，展示数据的界面: Data-UI</li>
+</ul>
+<p>这个需求的特点是虽然数据量很小、但是要求服务高可用、安全。因为这种情况下自建服务器还需要保证HA和数据安全会一定会消耗昂贵运维人力，所以我们应该尽量避免在自己维护的服务器中搭建 scheduler, 和数据库。</p>
+<p>最终，我们选择了尽量使用公有云的 aaS 的方案:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">┌──────────────────────────┐
+</span></span><span class="line"><span class="cl">│                          │
+</span></span><span class="line"><span class="cl">│  Google Cloud Scheduler  │
+</span></span><span class="line"><span class="cl">│                          │
+</span></span><span class="line"><span class="cl">└────────────┬─────────────┘
+</span></span><span class="line"><span class="cl">             │                             ┌─────────────────────┐
+</span></span><span class="line"><span class="cl">             │                             │                     │
+</span></span><span class="line"><span class="cl">┌────────────▼─────────────┐   ┌───────────►  GitHub API Server  │
+</span></span><span class="line"><span class="cl">│                          │   │           │                     │
+</span></span><span class="line"><span class="cl">│  Google Cloud Functions  ├───┤           └─────────────────────┘
+</span></span><span class="line"><span class="cl">│                          │   │
+</span></span><span class="line"><span class="cl">└────────────┬─────────────┘   │           ┌─────────────────────────┐
+</span></span><span class="line"><span class="cl">             │                 │           │                         │
+</span></span><span class="line"><span class="cl">             │                 ├───────────►  Docker Hub API Server  │
+</span></span><span class="line"><span class="cl">   ┌─────────▼─────────┐       │           │                         │
+</span></span><span class="line"><span class="cl">   │                   │       │           │                         │
+</span></span><span class="line"><span class="cl">   │  Google BigQuery  │       │           └─────────────────────────┘
+</span></span><span class="line"><span class="cl">   │                   │       ├───────────► ...                   
+</span></span><span class="line"><span class="cl">   └─────────▲─────────┘       │           ┌──────────────────┐
+</span></span><span class="line"><span class="cl">             │                 │           │                  │
+</span></span><span class="line"><span class="cl">             │                 └───────────►  Aliyun OSS API  │
+</span></span><span class="line"><span class="cl">  ┌──────────┴───────────┐                 │                  │
+</span></span><span class="line"><span class="cl">  │                      │                 └──────────────────┘
+</span></span><span class="line"><span class="cl">  │  Google Data Studio  │
+</span></span><span class="line"><span class="cl">  │       ┌──┐           │
+</span></span><span class="line"><span class="cl">  │  ┌──┐ │  │ ┌──┐      │
+</span></span><span class="line"><span class="cl">  │  │  │ │  │ │  │      │
+</span></span><span class="line"><span class="cl">  │  │  │ │  │ │  │      │
+</span></span><span class="line"><span class="cl">  └──┴──┴─┴──┴─┴──┴──────┘
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>因为我个人比较熟悉 Google Cloud Platform(GCP)的原因，加上GCP在大数据处理上比较领先，再加上Google提供的 free tier额度非常大方，以至于在我们这个数据量下，所有workload都会是免费的。
+这个方案最后选择了全栈 Google Cloud，然而，这实际上只是一个参考，同学们完全可以在其他公有云提供商那里找到对应的服务。</p>
+<p>这里我简单介绍一下， Google Cloud Scheduler是自解释的，不用多介绍了。
+而 Google Cloud Functions是GCP的无服务器(serverless)的 Function as a Service服务，它的好处是我们可以把无状态的 event-driven 的 workload 代码放上去，它是按需付费（pay as you go)的，类似的服务还有 Google Cloud Run，后者的区别在于我们提供的是一个docker/container（这使得能支持的运行环境可以使任何能跑在容器里的东西），而 Cloud Functions是把我们的代码文件放上去。他们的效果是类似的，因为我准备用Python来做 ETL的东西，Clouf Functions已经支持了，我就直接选择它了。</p>
+<p>在scheduler里边，我定义了每一天它发一个 pub/sub（类似于kafka，这里google可以保证至少发成功一次）消息给 Cloud Functions，然后 Cloud Functions会去做 ETL的工作。</p>
+<p>这里，实际上我的设计里这个触发的函数调会把数据从API那里获取下来，在内存里处理好之后，存储到在对象存储里为 <code>JSON</code> 文件，然后再调用 Google BigQuery 的 API让 BigQuery直接从对对象存储里拉取 <code>JSON</code> 文件，导入记录到相应的表之中。</p>
+<p><code>Google BigQuery</code> 作为GCP 特别有竞争力的一个产品，是它数据仓库，BigQuery 可以无限扩容，支持海量数据导入，支持 SQL-like 的 query，还自带ML算法，通过SQL就能调用这些算法。它可以和很多GCP以及第三方的组件可以集成起来。</p>
+<p><code>Google Data Studio</code> 是GCP的数据 Insights产品，如果大家用过 Google Analytics 应该已经用过它了。</p>
+<h3 id="数据的获取api" class="headerLink">
+    <a href="#%e6%95%b0%e6%8d%ae%e7%9a%84%e8%8e%b7%e5%8f%96api" class="header-mark"></a>1.2 数据的获取，API</h3><p>我们第一阶段想要收集的数据来源是 GitHub 上，社区项目的统计数据、Docker Hub上，社区镜像的拉取计数，之后，会增加更多维度的数据。</p>
+<ul>
+<li>Github API, ref: <a href="https://pygithub.readthedocs.io" target="_blank" rel="noopener noreferrer">https://pygithub.readthedocs.io</a>
+这里我们利用了一个Github API的一个 Python 封装，下边是在 IDLE/iPython/Jupyter 里尝试的例子</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span><span class="lnt">67
+</span><span class="lnt">68
+</span><span class="lnt">69
+</span><span class="lnt">70
+</span><span class="lnt">71
+</span><span class="lnt">72
+</span><span class="lnt">73
+</span><span class="lnt">74
+</span><span class="lnt">75
+</span><span class="lnt">76
+</span><span class="lnt">77
+</span><span class="lnt">78
+</span><span class="lnt">79
+</span><span class="lnt">80
+</span><span class="lnt">81
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl"># 实例化一个client
+</span></span><span class="line"><span class="cl">g = Github(login_or_token=token, timeout=60, retry=Retry(
+</span></span><span class="line"><span class="cl">           total=10, status_forcelist=(500, 502, 504), backoff_factor=0.3))
+</span></span><span class="line"><span class="cl"># 配置好要获取的repo的信息
+</span></span><span class="line"><span class="cl">org_str = &#34;vesoft-inc&#34;
+</span></span><span class="line"><span class="cl">org = g.get_organization(org_str)
+</span></span><span class="line"><span class="cl">repos = org.get_repos()
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"># 这里repos是一个迭代器，方便看到里边的东西，我们把它 list 一下可以看到所有的repo:
+</span></span><span class="line"><span class="cl">list(repos)
+</span></span><span class="line"><span class="cl">[Repository(full_name=&#34;vesoft-inc/nebula&#34;),
+</span></span><span class="line"><span class="cl"> Repository(full_name=&#34;vesoft-inc/nebula-docs&#34;),
+</span></span><span class="line"><span class="cl"> Repository(full_name=&#34;vesoft-inc/nebula-dev-docker&#34;),
+</span></span><span class="line"><span class="cl"> Repository(full_name=&#34;vesoft-inc/github-statistics&#34;),
+</span></span><span class="line"><span class="cl"> Repository(full_name=&#34;vesoft-inc/nebula-docker-compose&#34;),
+</span></span><span class="line"><span class="cl"> Repository(full_name=&#34;vesoft-inc/nebula-go&#34;),
+</span></span><span class="line"><span class="cl"> Repository(full_name=&#34;vesoft-inc/nebula-java&#34;),
+</span></span><span class="line"><span class="cl"> Repository(full_name=&#34;vesoft-inc/nebula-python&#34;),
+</span></span><span class="line"><span class="cl"> Repository(full_name=&#34;vesoft-inc/nebula-importer&#34;),
+</span></span><span class="line"><span class="cl"> Repository(full_name=&#34;vesoft-inc/nebula-third-party&#34;),
+</span></span><span class="line"><span class="cl"> Repository(full_name=&#34;vesoft-inc/nebula-storage&#34;),
+</span></span><span class="line"><span class="cl"> Repository(full_name=&#34;vesoft-inc/nebula-graph&#34;),
+</span></span><span class="line"><span class="cl"> Repository(full_name=&#34;vesoft-inc/nebula-common&#34;),
+</span></span><span class="line"><span class="cl"> Repository(full_name=&#34;vesoft-inc/nebula-stats-exporter&#34;),
+</span></span><span class="line"><span class="cl"> Repository(full_name=&#34;vesoft-inc/nebula-web-docker&#34;),
+</span></span><span class="line"><span class="cl"> Repository(full_name=&#34;vesoft-inc/nebula-bench&#34;),
+</span></span><span class="line"><span class="cl"> Repository(full_name=&#34;vesoft-inc/nebula-console&#34;),
+</span></span><span class="line"><span class="cl"> Repository(full_name=&#34;vesoft-inc/nebula-docs-cn&#34;),
+</span></span><span class="line"><span class="cl"> Repository(full_name=&#34;vesoft-inc/nebula-chaos&#34;),
+</span></span><span class="line"><span class="cl"> Repository(full_name=&#34;vesoft-inc/nebula-clients&#34;),
+</span></span><span class="line"><span class="cl"> Repository(full_name=&#34;vesoft-inc/nebula-spark-utils&#34;),
+</span></span><span class="line"><span class="cl"> Repository(full_name=&#34;vesoft-inc/nebula-node&#34;),
+</span></span><span class="line"><span class="cl"> Repository(full_name=&#34;vesoft-inc/nebula-rust&#34;),
+</span></span><span class="line"><span class="cl"> Repository(full_name=&#34;vesoft-inc/nebula-cpp&#34;),
+</span></span><span class="line"><span class="cl"> Repository(full_name=&#34;vesoft-inc/nebula-http-gateway&#34;),
+</span></span><span class="line"><span class="cl"> Repository(full_name=&#34;vesoft-inc/nebula-flink-connector&#34;),
+</span></span><span class="line"><span class="cl"> Repository(full_name=&#34;vesoft-inc/nebula-community&#34;),
+</span></span><span class="line"><span class="cl"> Repository(full_name=&#34;vesoft-inc/nebula-br&#34;),
+</span></span><span class="line"><span class="cl"> Repository(full_name=&#34;vesoft-inc/.github&#34;)]
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"># repo0 是 vesoft-inc/nebula 这个repo，我们可以通过 get_clones_traffic，get_views_traffic 来获取过去十几天的 clone，view 统计
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">In [16]: repo0.get_clones_traffic()
+</span></span><span class="line"><span class="cl">Out[16]:
+</span></span><span class="line"><span class="cl">{&#39;count&#39;: 362,
+</span></span><span class="line"><span class="cl"> &#39;uniques&#39;: 150,
+</span></span><span class="line"><span class="cl"> &#39;clones&#39;: [Clones(uniques=5, timestamp=2021-04-06 00:00:00, count=16),
+</span></span><span class="line"><span class="cl">  Clones(uniques=8, timestamp=2021-04-07 00:00:00, count=23),
+</span></span><span class="line"><span class="cl">  Clones(uniques=13, timestamp=2021-04-08 00:00:00, count=30),
+</span></span><span class="line"><span class="cl">  Clones(uniques=33, timestamp=2021-04-09 00:00:00, count=45),
+</span></span><span class="line"><span class="cl">  Clones(uniques=2, timestamp=2021-04-10 00:00:00, count=13),
+</span></span><span class="line"><span class="cl">  Clones(uniques=6, timestamp=2021-04-11 00:00:00, count=19),
+</span></span><span class="line"><span class="cl">  Clones(uniques=15, timestamp=2021-04-12 00:00:00, count=28),
+</span></span><span class="line"><span class="cl">  Clones(uniques=40, timestamp=2021-04-13 00:00:00, count=54),
+</span></span><span class="line"><span class="cl">  Clones(uniques=9, timestamp=2021-04-14 00:00:00, count=21),
+</span></span><span class="line"><span class="cl">  Clones(uniques=10, timestamp=2021-04-15 00:00:00, count=34),
+</span></span><span class="line"><span class="cl">  Clones(uniques=10, timestamp=2021-04-16 00:00:00, count=23),
+</span></span><span class="line"><span class="cl">  Clones(uniques=5, timestamp=2021-04-17 00:00:00, count=17),
+</span></span><span class="line"><span class="cl">  Clones(uniques=2, timestamp=2021-04-18 00:00:00, count=13),
+</span></span><span class="line"><span class="cl">  Clones(uniques=9, timestamp=2021-04-19 00:00:00, count=23),
+</span></span><span class="line"><span class="cl">  Clones(uniques=3, timestamp=2021-04-20 00:00:00, count=3)]}
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">In [17]: repo0.get_views_traffic()
+</span></span><span class="line"><span class="cl">Out[17]:
+</span></span><span class="line"><span class="cl">{&#39;count&#39;: 6019,
+</span></span><span class="line"><span class="cl"> &#39;uniques&#39;: 1134,
+</span></span><span class="line"><span class="cl"> &#39;views&#39;: [View(uniques=52, timestamp=2021-04-06 00:00:00, count=169),
+</span></span><span class="line"><span class="cl">  View(uniques=143, timestamp=2021-04-07 00:00:00, count=569),
+</span></span><span class="line"><span class="cl">  View(uniques=152, timestamp=2021-04-08 00:00:00, count=635),
+</span></span><span class="line"><span class="cl">  View(uniques=134, timestamp=2021-04-09 00:00:00, count=648),
+</span></span><span class="line"><span class="cl">  View(uniques=81, timestamp=2021-04-10 00:00:00, count=318),
+</span></span><span class="line"><span class="cl">  View(uniques=42, timestamp=2021-04-11 00:00:00, count=197),
+</span></span><span class="line"><span class="cl">  View(uniques=127, timestamp=2021-04-12 00:00:00, count=515),
+</span></span><span class="line"><span class="cl">  View(uniques=149, timestamp=2021-04-13 00:00:00, count=580),
+</span></span><span class="line"><span class="cl">  View(uniques=134, timestamp=2021-04-14 00:00:00, count=762),
+</span></span><span class="line"><span class="cl">  View(uniques=141, timestamp=2021-04-15 00:00:00, count=385),
+</span></span><span class="line"><span class="cl">  View(uniques=113, timestamp=2021-04-16 00:00:00, count=284),
+</span></span><span class="line"><span class="cl">  View(uniques=48, timestamp=2021-04-17 00:00:00, count=168),
+</span></span><span class="line"><span class="cl">  View(uniques=35, timestamp=2021-04-18 00:00:00, count=135),
+</span></span><span class="line"><span class="cl">  View(uniques=124, timestamp=2021-04-19 00:00:00, count=492),
+</span></span><span class="line"><span class="cl">  View(uniques=59, timestamp=2021-04-20 00:00:00, count=162)]}
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>除了repo的 <code>clone</code>, <code>view</code>数据，我们还可以获取到 release的数据:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">In [31]: for rel in repo0.get_releases():
+</span></span><span class="line"><span class="cl">    ...:     print(rel)
+</span></span><span class="line"><span class="cl">GitRelease(title=&#34;Nebula Graph v1.2.1&#34;)
+</span></span><span class="line"><span class="cl">GitRelease(title=&#34;Nebula Graph v1.2.0&#34;)
+</span></span><span class="line"><span class="cl">GitRelease(title=&#34;Nebula Graph V1.1.0&#34;)
+</span></span><span class="line"><span class="cl">GitRelease(title=&#34;Nebula Graph v1.0.1&#34;)
+</span></span><span class="line"><span class="cl">GitRelease(title=&#34;V1.0.0 GA&#34;)
+</span></span><span class="line"><span class="cl">GitRelease(title=&#34;Nebula Graph v1.0.0-RC4&#34;)
+</span></span><span class="line"><span class="cl">GitRelease(title=&#34;Nebula Graph v1.0.0-RC3&#34;)
+</span></span><span class="line"><span class="cl">GitRelease(title=&#34;Nebula Graph Release v1.0.0-RC2&#34;)
+</span></span><span class="line"><span class="cl">GitRelease(title=&#34;Nebula Graph v1.0.0-rc1&#34;)
+</span></span><span class="line"><span class="cl">GitRelease(title=&#34;Nebula Graph v1.0.0-beta&#34;)
+</span></span><span class="line"><span class="cl">GitRelease(title=&#34;Nebula Graph v0.1.0&#34;)
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"># 每一个 release 对应一个 git tag，其中会有一个或者多个供下载的 asset
+</span></span><span class="line"><span class="cl">In [33]: release_v121 = rels[0]
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">In [34]: release_v121.tag_name
+</span></span><span class="line"><span class="cl">Out[34]: &#39;v1.2.1&#39;
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">In [35]: list(release_121.get_assets())
+</span></span><span class="line"><span class="cl">Out[35]:
+</span></span><span class="line"><span class="cl">[GitReleaseAsset(url=&#34;https://api.github.com/repos/vesoft-inc/nebula/releases/assets/35056357&#34;),
+</span></span><span class="line"><span class="cl"> GitReleaseAsset(url=&#34;https://api.github.com/repos/vesoft-inc/nebula/releases/assets/35056361&#34;),
+</span></span><span class="line"><span class="cl">...
+</span></span><span class="line"><span class="cl"> GitReleaseAsset(url=&#34;https://api.github.com/repos/vesoft-inc/nebula/releases/assets/35056456&#34;)]
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"># 每一个assset 的下载量和其他metadata也是可以获取的
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">In [40]: assets[0].browser_download_url
+</span></span><span class="line"><span class="cl">Out[40]: &#39;https://github.com/vesoft-inc/nebula/releases/download/v1.2.1/nebula-1.2.1.el6-5.x86_64.rpm&#39;
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">In [41]: assets[0].download_count
+</span></span><span class="line"><span class="cl">Out[41]: 45
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">In [43]: assets[0].name
+</span></span><span class="line"><span class="cl">Out[43]: &#39;nebula-1.2.1.el6-5.x86_64.rpm&#39;
+</span></span></code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>Docker Hub API, ref <a href="https://github.com/amalfra/docker-hub/blob/master/src/libs/docker_hub_client.py" target="_blank" rel="noopener noreferrer">https://github.com/amalfra/docker-hub/blob/master/src/libs/docker_hub_client.py</a>
+这里我们服用了 docker-hub 这个开源小项目中的一个库 <code>docker_hub_client.py</code> 来作为 Docker Hub API的 python wrapper</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="line"><span class="cl"><span class="c1"># 实例化 client
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">In</span><span class="w"> </span><span class="p">[</span><span class="mi">47</span><span class="p">]:</span><span class="w"> </span><span class="n">dh_client</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">DockerHubClient</span><span class="p">()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1"># 获取 `vesoft`之下的repo
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">In</span><span class="w"> </span><span class="p">[</span><span class="mi">48</span><span class="p">]:</span><span class="w"> </span><span class="n">dh_r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dh_client</span><span class="p">.</span><span class="nf">get_repos</span><span class="p">(</span><span class="s2">&#34;vesoft&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">In</span><span class="w"> </span><span class="p">[</span><span class="mi">54</span><span class="p">]:</span><span class="w"> </span><span class="n">dh_r</span><span class="p">[</span><span class="s1">&#39;code&#39;</span><span class="p">]</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">Out</span><span class="p">[</span><span class="mi">54</span><span class="p">]:</span><span class="w"> </span><span class="mi">200</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">In</span><span class="w"> </span><span class="p">[</span><span class="mi">55</span><span class="p">]:</span><span class="w"> </span><span class="n">dh_r</span><span class="p">[</span><span class="s1">&#39;content&#39;</span><span class="p">].</span><span class="k">keys</span><span class="p">()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">Out</span><span class="p">[</span><span class="mi">55</span><span class="p">]:</span><span class="w"> </span><span class="nf">dict_keys</span><span class="p">([</span><span class="s1">&#39;count&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;next&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;previous&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;results&#39;</span><span class="p">])</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1"># 可以看到这一个返回的API里就有所有（如果多的话是需要翻页的）的 image的 start_count, pull_count的数据
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">In</span><span class="w"> </span><span class="p">[</span><span class="mi">58</span><span class="p">]:</span><span class="w"> </span><span class="n">dh_r</span><span class="p">[</span><span class="s1">&#39;content&#39;</span><span class="p">][</span><span class="s1">&#39;results&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">Out</span><span class="p">[</span><span class="mi">58</span><span class="p">]:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="err">{</span><span class="s1">&#39;user&#39;</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;vesoft&#39;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"> </span><span class="s1">&#39;name&#39;</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;nebula-graphd&#39;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"> </span><span class="s1">&#39;namespace&#39;</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;vesoft&#39;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"> </span><span class="s1">&#39;repository_type&#39;</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;image&#39;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"> </span><span class="s1">&#39;status&#39;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"> </span><span class="s1">&#39;description&#39;</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;Nebula Graph Graphd Service Image. https://github.com/vesoft-inc/nebula&#39;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"> </span><span class="s1">&#39;is_private&#39;</span><span class="p">:</span><span class="w"> </span><span class="no">False</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"> </span><span class="s1">&#39;is_automated&#39;</span><span class="p">:</span><span class="w"> </span><span class="no">False</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"> </span><span class="s1">&#39;can_edit&#39;</span><span class="p">:</span><span class="w"> </span><span class="no">False</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"> </span><span class="s1">&#39;star_count&#39;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"> </span><span class="s1">&#39;pull_count&#39;</span><span class="p">:</span><span class="w"> </span><span class="mi">223494</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"> </span><span class="s1">&#39;last_updated&#39;</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;2021-04-19T19:04:20.324010Z&#39;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"> </span><span class="s1">&#39;is_migrated&#39;</span><span class="p">:</span><span class="w"> </span><span class="no">False</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"> </span><span class="s1">&#39;collaborator_count&#39;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"> </span><span class="s1">&#39;affiliation&#39;</span><span class="p">:</span><span class="w"> </span><span class="n">None</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"> </span><span class="s1">&#39;hub_user&#39;</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;vesoft&#39;</span><span class="err">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="实现" class="headerLink">
+    <a href="#%e5%ae%9e%e7%8e%b0" class="header-mark"></a>2 实现</h2><h3 id="计划任务调度-with-cloud-scheduler" class="headerLink">
+    <a href="#%e8%ae%a1%e5%88%92%e4%bb%bb%e5%8a%a1%e8%b0%83%e5%ba%a6-with-cloud-scheduler" class="header-mark"></a>2.1 计划任务调度 with Cloud Scheduler</h3><p>前边提到，<code>Scheduler --&gt; Functions</code> 中间是通过消息队列实现的可靠事件触发，我们需要在 Google Cloud Pub/Sub里创建一个订阅消息，后边我们会把这个订阅消息从 Scheduler 定期发送，并且在 Function创建的时候定义为触发条件。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">$ gcloud pubsub topics create nebula-insights-cron-topic
+</span></span><span class="line"><span class="cl">$ gcloud pubsub subscriptions create cron-sub --topic nebula-insights-cron-topic
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>任务的创建非常直接，在 <a href="https://console.cloud.google.com/cloudscheduler" target="_blank" rel="noopener noreferrer">Scheduler Web Console</a> 上直接图形化操作就可以了，记得要选择触发 Pub/Sub 消息为 <code>cron-sub</code>，消息主题为 <code>nebula-insights-cron-topic</code></p>
+<h3 id="etl-worker-with-python--google-functions" class="headerLink">
+    <a href="#etl-worker-with-python--google-functions" class="header-mark"></a>2.2 ETL Worker with Python + Google Functions</h3><p>当 Scheduler 每天定时发送消息之后，接收方就是我们要定义的 Google Functions了，它的定义如图
+第一步，选择它的触发类型为 Pub/Sub，同时要定义消息的主题和名字。</p>
+<p><figure><a class="lightgallery" href="/nebula-insights/create_functions.png" title="create_functions" data-thumbnail="/nebula-insights/create_functions.png">
+        <img
+            
+            loading="lazy"
+            src="/nebula-insights/create_functions.png"
+            srcset="/nebula-insights/create_functions.png, /nebula-insights/create_functions.png 1.5x, /nebula-insights/create_functions.png 2x"
+            sizes="auto"
+            alt="create_functions">
+    </a></figure></p>
+<p>第二步就是把代码放进去:</p>
+<p><figure><a class="lightgallery" href="/nebula-insights/create_functions_code.png" title="create_functions_code" data-thumbnail="/nebula-insights/create_functions_code.png">
+        <img
+            
+            loading="lazy"
+            src="/nebula-insights/create_functions_code.png"
+            srcset="/nebula-insights/create_functions_code.png, /nebula-insights/create_functions_code.png 1.5x, /nebula-insights/create_functions_code.png 2x"
+            sizes="auto"
+            alt="create_functions_code">
+    </a></figure></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">                                              ┌─────────────────────┐
+</span></span><span class="line"><span class="cl">                                              │                     │
+</span></span><span class="line"><span class="cl">   ┌──────────────────────────┐   ┌───────────►  GitHub API Server  │
+</span></span><span class="line"><span class="cl">   │                          │   │           │                     │
+</span></span><span class="line"><span class="cl">   │  Google Cloud Functions  ◄───►           └─────────────────────┘
+</span></span><span class="line"><span class="cl">   │                          │   │
+</span></span><span class="line"><span class="cl">   └────────────▲─────────────┘   │           ┌─────────────────────────┐
+</span></span><span class="line"><span class="cl">                │                 │           │                         │
+</span></span><span class="line"><span class="cl">                │                 ├───────────►  Docker Hub API Server  │
+</span></span><span class="line"><span class="cl">   ┌────────────▼────────────┐    │           │                         │
+</span></span><span class="line"><span class="cl">   │                         │    │           │                         │
+</span></span><span class="line"><span class="cl">   │  Google Cloud Storage   │    │           └─────────────────────────┘
+</span></span><span class="line"><span class="cl">   │                         │    ...
+</span></span><span class="line"><span class="cl">   └────────────┬────────────┘    │           ┌──────────────────┐
+</span></span><span class="line"><span class="cl">                │                 │           │                  │
+</span></span><span class="line"><span class="cl">                │                 └───────────►  Aliyun OSS API  │
+</span></span><span class="line"><span class="cl">      ┌─────────▼─────────┐                   │                  │
+</span></span><span class="line"><span class="cl">      │                   │                   └──────────────────┘
+</span></span><span class="line"><span class="cl">      │  Google BigQuery  │
+</span></span><span class="line"><span class="cl">      │                   │
+</span></span><span class="line"><span class="cl">      └───────────────────┘
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>这部分的逻辑就是通过前边分析了的API取得信息，然后组装成需要的格式存到 Cloud Storage(对象存储），然后再导入到 BigQuery（数仓）之中，全部代码在GitHub上:
+<a href="https://github.com/wey-gu/nebula-insights/blob/main/functions/data-fetching-0/main.py" target="_blank" rel="noopener noreferrer">https://github.com/wey-gu/nebula-insights/blob/main/functions/data-fetching-0/main.py</a>
+另外，可以参考这个官方教程 <a href="https://cloud.google.com/scheduler/docs/tut-pub-sub" target="_blank" rel="noopener noreferrer">https://cloud.google.com/scheduler/docs/tut-pub-sub</a></p>
+<h3 id="数仓表结构定义" class="headerLink">
+    <a href="#%e6%95%b0%e4%bb%93%e8%a1%a8%e7%bb%93%e6%9e%84%e5%ae%9a%e4%b9%89" class="header-mark"></a>2.3 数仓表结构定义</h3><p>数仓的表结构比较直接，schema的图贴在下边了，值得注意的是，BigQuery支持嵌套的表结构（而不像一般关系型数据库那样需要把这样的逻辑结构用辅助表来表示），在我们这个场景下非常方便，比如release表中的 assets的三个嵌套字段。
+<figure><a class="lightgallery" href="/nebula-insights/bigquery_schema.png" title="bigquery_schema|475x412" data-thumbnail="/nebula-insights/bigquery_schema.png">
+        <img
+            
+            loading="lazy"
+            src="/nebula-insights/bigquery_schema.png"
+            srcset="/nebula-insights/bigquery_schema.png, /nebula-insights/bigquery_schema.png 1.5x, /nebula-insights/bigquery_schema.png 2x"
+            sizes="auto"
+            alt="bigquery_schema|475x412">
+    </a></figure></p>
+<p>更详细的信息可以参考GitHub上的介绍和代码: <a href="https://github.com/wey-gu/nebula-insights#data-etl-bigquery-and-gcs" target="_blank" rel="noopener noreferrer">https://github.com/wey-gu/nebula-insights#data-etl-bigquery-and-gcs</a></p>
+<h3 id="数据可视化" class="headerLink">
+    <a href="#%e6%95%b0%e6%8d%ae%e5%8f%af%e8%a7%86%e5%8c%96" class="header-mark"></a>2.4 数据可视化</h3><p>到这里，我们就可以自动在BigQuery里存有每天收集的不同来源的统计数据啦，有了它，我们可以借助 Data Studio 来生成各式各样的可视化表示。</p>
+<p>参考 <a href="https://cloud.google.com/bigquery/docs/visualize-data-studio" target="_blank" rel="noopener noreferrer">https://cloud.google.com/bigquery/docs/visualize-data-studio</a></p>
+<h2 id="总结" class="headerLink">
+    <a href="#%e6%80%bb%e7%bb%93" class="header-mark"></a>3 总结</h2><p>这样，我们实际上不需要任何认为维护的成本和投入，就搭建了一整个数据的流水线，并且只需要按照数据用量付费，在我们的数据量下，及时考虑未来增加数十个新的量度的收集，我们依然没有达到需要付费的用量，是不是很Cool？
+因为数据同时存在于对象存储与数仓里，我们可以方便随时把数据导入任意其他平台上。</p>
+<p>BigQuery还有一些非常常用的，自带的机器学习的功能，只需要写一个SQL-Like的query就能触发然后获得预测结果，如果我们用到这些功能的话也会回到 datawhale 为同学们继续分享哈。</p>
+<p>第一次做数据工程方面的分享，如果有错误的地方欢迎大家不吝指出哈~~</p>
+<p>谢谢！</p>]]></description>
+</item></channel>
+</rss>

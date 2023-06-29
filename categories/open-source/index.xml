@@ -1,0 +1,140 @@
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+        <title>open-source - 分类 - siwei.io</title>
+        <link>https://siwei.io/categories/open-source/</link>
+        <description>open-source - 分类 - siwei.io</description>
+        <generator>Hugo -- gohugo.io</generator><language>zh-CN</language><managingEditor>weyl.gu@gmail.com (Wey Gu)</managingEditor>
+            <webMaster>weyl.gu@gmail.com (Wey Gu)</webMaster><copyright>This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.</copyright><lastBuildDate>Mon, 19 Dec 2022 19:45:53 &#43;0800</lastBuildDate><atom:link href="https://siwei.io/categories/open-source/" rel="self" type="application/rss+xml" /><item>
+    <title>连接微信群、Slack 和 GitHub：社区开放沟通的基础设施搭建</title>
+    <link>https://siwei.io/build-open-communication-infra/</link>
+    <pubDate>Mon, 19 Dec 2022 19:45:53 &#43;0800</pubDate><author>
+        <name>Wey Gu</name>
+    </author><guid>https://siwei.io/build-open-communication-infra/</guid>
+    <description><![CDATA[<div class="featured-image">
+                <img src="/build-open-communication-infra/featured-image.webp" referrerpolicy="no-referrer">
+            </div><blockquote>
+<p>NebulaGraph 社区如何构建工具让 Slack、WeChat 中宝贵的群聊讨论同步到公共领域</p>
+</blockquote>
+<!--
+
+[TOC]
+
+-->
+<h2 id="要开放不要封闭" class="headerLink">
+    <a href="#%e8%a6%81%e5%bc%80%e6%94%be%e4%b8%8d%e8%a6%81%e5%b0%81%e9%97%ad" class="header-mark"></a>1 要开放，不要封闭</h2><p>在开源社区中，开放的一个重要意义是社区内的沟通、讨论应该是透明、包容并且方便所有成员访问的。这意味着社区中的任何人都应该能够参与讨论和决策过程，并且所有相关信息应该公开和自由地共享。</p>
+<p>在公共场合进行沟通在开源理念中是重要的，正式这种方式使得社区的成员可以进行有效地共同工作，分享想法和反馈，为项目或社区做出贡献。</p>
+<p>为了更清楚表达，我举几个反面的例子：</p>
+<ul>
+<li>
+<p>要求贡献者使用对他们来说难以访问或难以使用的工具可能会妨碍开源社区中的开放沟通。
+这可能是由于多种原因，例如：</p>
+<ul>
+<li>工具可能昂贵或需要许可证，而并非所有贡献者都能负担得起。</li>
+<li>工具可能难以使用或需要很高的技术经验积累，而并非所有贡献者都具备。</li>
+<li>工具可能在某些操作系统或设备上不兼容，这可能使一些贡献者难以访问它们。</li>
+</ul>
+</li>
+<li>
+<p>在不与社区其他成员分享上下文、过程或结果的情况下，只在线下（例如通过当面沟通、IM 或电话会议）进行决策可能会使很重要的知识只被少数贡献者掌握。</p>
+<p>这可能会阻止其他人在这些知识之上做贡献或从中学习，阻碍了开源社区所必需的开放沟通和协作。</p>
+</li>
+<li>
+<p>没有把系统、功能设计和提案信息以公开方式文档化、归档下来，例如只提供某一个公司内网的链接，从而可能伤害开源社区的透明度和包容性。</p>
+<p>因为这样的结果是社区的其他成员很难保持对社区进展的正常了解、就更不用说参与进来做贡献了。为了促进透明度和包容性，开源社区应尽量确保所有重要的信息公开和自由地共享、尽可能保有细节地被公开归档。</p>
+</li>
+</ul>
+<h2 id="挑战" class="headerLink">
+    <a href="#%e6%8c%91%e6%88%98" class="header-mark"></a>2 挑战</h2><p>为了使社区（或工作环境）的沟通保持透明、高效和健康，其实已经存在一些共识，和通用的做法：</p>
+<ul>
+<li>
+<p>异步优于同步，在分布式和全球协作的情况下，同步通信在大多数情况下成本高且效率低。</p>
+<p>因此，推荐使用 GitHub Discussion 和 StackOverflow 进行提问式的沟通。</p>
+</li>
+<li>
+<p>专题（Thread）讨论优于广播（Fan out)，注意力是宝贵的，向所有人群发最终常常导致重要信息没有人真的读。</p>
+<p>因此，我们在 GitHub Discussion 和 Slack 中设有分类、频道。建立 SIG 来讨论一些有趣的主题（并归档沟通的结果），而不是将所有事情带到社区会议广泛讨论。</p>
+</li>
+<li>
+<p>优先选择可搜索/文本、版本控制、协作的方式与工具，并在可能的情况下鼓励成员们给其他人反馈；在基础设施上跟踪文档、设计流程，并且提供评论、review 的能力。</p>
+<p>为此，我们用 etherpad.opendev.org 来记录社区会议文档。</p>
+</li>
+</ul>
+<p>但是，就像我们还是需要同步的沟通、有 IM 和会议的需求一样，还是存在一些特例的情况，我们不能盲目追求异步、绝对的开放的，正如前边提到的，能让更多参与者公平、方便与社区连结本身也是开放的一部分，尽管使用的基础设施是可能是封闭的。事实上，几乎所有的开源社区都在用类似的方式建立他们的开源社区沟通平台：</p>
+<ul>
+<li>
+<p>Slack 在 IM 消息中中支持丰富的格式化（支持 markdown！）和 Thread 系统，其现代化设计和开放/软定义接口使我们的工作流程可能非常优美流畅。</p>
+</li>
+<li>
+<p>与 Slack 相比，微信在技术社区中在许多方面都很不理想（只是因为它不是专为这样场景而设计的！），但在国内，它是社区中所有人都可以访问的唯一平台。每个人都有一个微信账号，而只有很少一部分人会每天查邮件。</p>
+</li>
+</ul>
+<p>于是，我们面临的问题是，在 NebulaGraph 社区中有两个平台承担了沟通的重要部分，但这些信息在几个月后就会消失，它们在短时间内只能被割裂的一部分贡献者看到，而未来没有人或其他平台可以读到、搜到和参考、引用这些有价值的讨论。</p>
+<h2 id="我们摸索的方案" class="headerLink">
+    <a href="#%e6%88%91%e4%bb%ac%e6%91%b8%e7%b4%a2%e7%9a%84%e6%96%b9%e6%a1%88" class="header-mark"></a>3 我们摸索的方案</h2><p>曾经有一段时间，我们会自己手动收集 Slack、微信群里的讨论摘要，定期分享、归档在公共领域，这个方法也确实带来了一些价值，然而，我们最后都没坚持下去，原因很简单：1. 这太费事儿了，完全不 scale；2. 这种摘要其实不好平衡能被归档信息的裁剪程度，有时候细节非常重要却不容易被摘要保留。</p>
+<h3 id="搞定-slack-的信息孤岛" class="headerLink">
+    <a href="#%e6%90%9e%e5%ae%9a-slack-%e7%9a%84%e4%bf%a1%e6%81%af%e5%ad%a4%e5%b2%9b" class="header-mark"></a>3.1 搞定 Slack 的信息孤岛</h3><p>2022 年 10 月，我注意到了 linen.dev 这个开源项目同时也是一个 SaaS 服务，有了它，我们可以把 Discord 和 Slack 中的每个 thread 保留，它整站看起来和 Discord/ Slack 机会样，但是，它完全是可以匿名被访问、引用和被搜索引擎搜索的。</p>
+<p>经过几个月的评估，我们最终决定了订阅 linen.dev 服务。为此，我们可以获得：</p>
+<ul>
+<li>不用去碰现有的 Slack，所有 Slack 的好处都能得以保留</li>
+<li>有了这样一个社区的站点 <a href="https://community-chat.nebula-graph.io/" target="_blank" rel="noopener noreferrer">https://community-chat.nebula-graph.io/</a>，其中，Slack 中的每个公共频道内容都能被匿名访问、能被搜索引擎收录，而访客还可以很容易知道怎么加入我们的 Slack，如图右上角：</li>
+</ul>
+<p><figure><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/208391200-8670f7f7-6e7a-4f62-84d3-3d2594ab9083.png" title="https://user-images.githubusercontent.com/1651790/208391200-8670f7f7-6e7a-4f62-84d3-3d2594ab9083.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/208391200-8670f7f7-6e7a-4f62-84d3-3d2594ab9083.png">
+        <img
+            
+            loading="lazy"
+            src="https://user-images.githubusercontent.com/1651790/208391200-8670f7f7-6e7a-4f62-84d3-3d2594ab9083.png"
+            srcset="https://user-images.githubusercontent.com/1651790/208391200-8670f7f7-6e7a-4f62-84d3-3d2594ab9083.png, https://user-images.githubusercontent.com/1651790/208391200-8670f7f7-6e7a-4f62-84d3-3d2594ab9083.png 1.5x, https://user-images.githubusercontent.com/1651790/208391200-8670f7f7-6e7a-4f62-84d3-3d2594ab9083.png 2x"
+            sizes="auto"
+            alt="https://user-images.githubusercontent.com/1651790/208391200-8670f7f7-6e7a-4f62-84d3-3d2594ab9083.png">
+    </a></figure>
+这个站会实时同步 Slack 里的消息，重要的是，它是面向搜索引擎优化的，你可以搜搜 Kotlin 社区通过 linen 被收录的网页有多少，搜这个：<a href="https://www.google.com/search?q=site%3A&#43;slack-chats.kotlinlang.org" target="_blank" rel="noopener noreferrer">&ldquo;site: slack-chats.kotlinlang.org&rdquo;</a>。</p>
+<ul>
+<li>每一个 thread 都有一个无需登录的只读 URL，我们可以方便去分享、引用它，虽然这件事儿本身就是超链接、URL的作用，但是在现在已经变得非常不容易了，比如<a href="https://www.nytimes.com/2022/09/16/technology/gen-z-tiktok-search-engine.html" target="_blank" rel="noopener noreferrer">这个新闻</a>里提到现在新一代的人们更倾向于在抖音里搜索而不是在公共领域里。
+有了它，我们可以非常开心地在 GitHub 里引用任意一个 Slack 讨论话题：
+<figure><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/208390478-7a7a6213-677b-4385-8b3e-ea57f65ece7b.png" title="https://user-images.githubusercontent.com/1651790/208390478-7a7a6213-677b-4385-8b3e-ea57f65ece7b.png" data-thumbnail="https://user-images.githubusercontent.com/1651790/208390478-7a7a6213-677b-4385-8b3e-ea57f65ece7b.png">
+        <img
+            
+            loading="lazy"
+            src="https://user-images.githubusercontent.com/1651790/208390478-7a7a6213-677b-4385-8b3e-ea57f65ece7b.png"
+            srcset="https://user-images.githubusercontent.com/1651790/208390478-7a7a6213-677b-4385-8b3e-ea57f65ece7b.png, https://user-images.githubusercontent.com/1651790/208390478-7a7a6213-677b-4385-8b3e-ea57f65ece7b.png 1.5x, https://user-images.githubusercontent.com/1651790/208390478-7a7a6213-677b-4385-8b3e-ea57f65ece7b.png 2x"
+            sizes="auto"
+            alt="https://user-images.githubusercontent.com/1651790/208390478-7a7a6213-677b-4385-8b3e-ea57f65ece7b.png">
+    </a></figure></li>
+</ul>
+<p>解决了 Slack 的问题之后，唯一剩下的痛点就是微信群了，每周都有挺多非常宝贵的讨论在社区群中进行却不能被保留下来，真实太令人心疼了，终于有一天，我们决定把这个问题解决。</p>
+<h3 id="解决微信群的信息公开化" class="headerLink">
+    <a href="#%e8%a7%a3%e5%86%b3%e5%be%ae%e4%bf%a1%e7%be%a4%e7%9a%84%e4%bf%a1%e6%81%af%e5%85%ac%e5%bc%80%e5%8c%96" class="header-mark"></a>3.2 解决微信群的信息公开化</h3><p>首先，能不能直接用 Linen 一把梭，同步群消息呢？我确实<a href="https://github.com/Linen-dev/linen.dev/issues/553" target="_blank" rel="noopener noreferrer">在 Linen 社区和他们的 Kam 讨论</a>直接解决 IM 同步的可能，不过到现在，他们都没有优先考虑😭。</p>
+<p>然后，我就在想如果直接把微信同步到 Slack，Linen 不就能把微信的信息也收录了吗？</p>
+<p>在 <a href="https://twitter.com/wey_gu/status/1603307477239750657" target="_blank" rel="noopener noreferrer">Twitter 上</a> 求助黑客/开源社区 + 一番调研确定了没有这样的东西存在之后，我<a href="https://twitter.com/wey_gu/status/1603307477239750657?s=20&amp;t=UG6g_ASQ89QWnMqjLfmdqA" target="_blank" rel="noopener noreferrer">决定搞一个，做成开源项目</a>，我花了一点时间实现了最初的版本。</p>
+<blockquote class="twitter-tweet" data-dnt="true"><p lang="zh" dir="ltr">石头汤来了 👉🏻：<a href="https://t.co/Fdhm9MkoBb">https://t.co/Fdhm9MkoBb</a><a href="https://twitter.com/hashtag/NebulaGraph?src=hash&amp;ref_src=twsrc%5Etfw">#NebulaGraph</a> 社区微信群现在已经会被同步到 slack 了。</p>&mdash; Wey Gu 古思为 (@wey_gu) <a href="https://twitter.com/wey_gu/status/1603307477239750657?ref_src=twsrc%5Etfw">December 15, 2022</a></blockquote>
+<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+
+<p>万万没想到，当我做到把消息从微信同步到 Slack 之后，<a href="https://github.com/Linen-dev/linen.dev/issues/761" target="_blank" rel="noopener noreferrer">随之而来的问题</a>是，通过 Slack API 发出的消息 Linen 并不会收录。</p>
+<p>为此，我放弃了 linen 一把梭的美好愿望，转而考虑把消息同步到其他公共领域，而我第一个想到的就是 GitHub Discussions 之中，又花了周末的下午加晚上，把它做出来了：</p>
+<p><figure><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/208398641-e7e8dcc8-eeaf-4647-8c5c-f37f118094f5.png" title="wechat-to-gh-discussion" data-thumbnail="https://user-images.githubusercontent.com/1651790/208398641-e7e8dcc8-eeaf-4647-8c5c-f37f118094f5.png">
+        <img
+            
+            loading="lazy"
+            src="https://user-images.githubusercontent.com/1651790/208398641-e7e8dcc8-eeaf-4647-8c5c-f37f118094f5.png"
+            srcset="https://user-images.githubusercontent.com/1651790/208398641-e7e8dcc8-eeaf-4647-8c5c-f37f118094f5.png, https://user-images.githubusercontent.com/1651790/208398641-e7e8dcc8-eeaf-4647-8c5c-f37f118094f5.png 1.5x, https://user-images.githubusercontent.com/1651790/208398641-e7e8dcc8-eeaf-4647-8c5c-f37f118094f5.png 2x"
+            sizes="auto"
+            alt="wechat-to-gh-discussion">
+    </a></figure></p>
+<p>现在，这个机器人程序会把配置好的微信群消息同时同步到 Slack 频道和 GitHub Discussion 中给定的标签下的主题中，每一个群一个礼拜是一个主题，所有的消息都是主题下的评论。</p>
+<h3 id="小结" class="headerLink">
+    <a href="#%e5%b0%8f%e7%bb%93" class="header-mark"></a>3.3 小结</h3><p>现在，我们保留了所有 Slack/微信的美好的一面的同时，把它们中的讨论消息历史全都归档、索引并公开到这两个域之下了，是不是很酷呢？</p>
+<ul>
+<li><a href="https://community-chat.nebula-graph.io/" target="_blank" rel="noopener noreferrer">https://community-chat.nebula-graph.io/</a></li>
+<li><a href="https://github.com/vesoft-inc/nebula-community/discussions/categories/wechat-chat-history" target="_blank" rel="noopener noreferrer">https://github.com/vesoft-inc/nebula-community/discussions/categories/wechat-chat-history</a></li>
+</ul>
+<h3 id="后续工作" class="headerLink">
+    <a href="#%e5%90%8e%e7%bb%ad%e5%b7%a5%e4%bd%9c" class="header-mark"></a>3.4 后续工作</h3><p>这个同步微信的项目是 Apache 2.0 协议开源的，并且现在由<a href="https://github.com/wey-gu" target="_blank" rel="noopener noreferrer">我</a>和<a href="https://github.com/frostming" target="_blank" rel="noopener noreferrer">Frost Ming</a>在维护，<a href="https://github.com/wey-gu/chatroom-syncer/issues" target="_blank" rel="noopener noreferrer">这里</a>还有很多待增强、实现的新功能、新任务，欢迎大家来试玩、贡献。让我们一起把开源社区的沟通做的多一点开放、少一点封闭吧~</p>
+<p>项目地址 👉🏻 <a href="https://github.com/wey-gu/chatroom-syncer" target="_blank" rel="noopener noreferrer">https://github.com/wey-gu/chatroom-syncer</a>.</p>
+<h2 id="结论" class="headerLink">
+    <a href="#%e7%bb%93%e8%ae%ba" class="header-mark"></a>4 结论</h2><p>有效的沟通是成功的开源社区的基石，因为它让协作、分享思想与知识、以及所有成员的参与成为可能。为了确保沟通透明、包容和有效，对于开源社区来说，让所有成员有机会参与讨论和决策以及公开自由地分享相关信息是非常重要的。</p>
+<p>我们 NebulaGraph 社区的建设者/贡献者将继续寻找和黑客方法，以开放和良好的方式使人们连接在一起，和大家共建更好的开源、技术社区。</p>
+<blockquote>
+<p>题图版权：<a href="https://unsplash.com/photos/N35J0N8ZglQ" target="_blank" rel="noopener noreferrer">Artem Beliaikin</a></p>
+</blockquote>]]></description>
+</item></channel>
+</rss>

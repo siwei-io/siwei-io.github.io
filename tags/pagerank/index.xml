@@ -1,0 +1,299 @@
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+        <title>PageRank - 标签 - siwei.io</title>
+        <link>https://siwei.io/tags/pagerank/</link>
+        <description>PageRank - 标签 - siwei.io</description>
+        <generator>Hugo -- gohugo.io</generator><language>zh-CN</language><managingEditor>weyl.gu@gmail.com (Wey Gu)</managingEditor>
+            <webMaster>weyl.gu@gmail.com (Wey Gu)</webMaster><copyright>This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.</copyright><lastBuildDate>Tue, 24 Aug 2021 11:22:55 &#43;0800</lastBuildDate><atom:link href="https://siwei.io/tags/pagerank/" rel="self" type="application/rss+xml" /><item>
+    <title>Nebula LiveJournal，上手 LiveJournal 数据集导入 Nebula Graph 与图算法执行</title>
+    <link>https://siwei.io/nebula-livejournal/</link>
+    <pubDate>Tue, 24 Aug 2021 11:22:55 &#43;0800</pubDate><author>
+        <name>Wey Gu</name>
+    </author><guid>https://siwei.io/nebula-livejournal/</guid>
+    <description><![CDATA[<div class="featured-image">
+                <img src="/nebula-livejournal/featured-image.webp" referrerpolicy="no-referrer">
+            </div><blockquote>
+<p>一个导入 Livejournal 数据集到 Nebula Graph 图数据库，并执行 Nebula Algorithm 图算法的过程分享。</p>
+</blockquote>
+<p>Related GitHub Repo: <a href="https://github.com/wey-gu/nebula-LiveJournal" target="_blank" rel="noopener noreferrer">https://github.com/wey-gu/nebula-LiveJournal</a></p>
+<h1 id="nebula-livejournal" class="headerLink">
+    <a href="#nebula-livejournal" class="header-mark"></a>nebula-LiveJournal</h1><p>LiveJournal Dataset is a Social Network Dataset in one file with two columns(FromNodeId, ToNodeId).</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ head soc-LiveJournal1.txt
+</span></span><span class="line"><span class="cl"><span class="c1"># Directed graph (each unordered pair of nodes is saved once): soc-LiveJournal1.txt</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># Directed LiveJournal friednship social network</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># Nodes: 4847571 Edges: 68993773</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># FromNodeId	ToNodeId</span>
+</span></span><span class="line"><span class="cl">0	<span class="m">1</span>
+</span></span><span class="line"><span class="cl">0	<span class="m">2</span>
+</span></span><span class="line"><span class="cl">0	<span class="m">3</span>
+</span></span><span class="line"><span class="cl">0	<span class="m">4</span>
+</span></span><span class="line"><span class="cl">0	<span class="m">5</span>
+</span></span><span class="line"><span class="cl">0	<span class="m">6</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>It could be accessed in <a href="https://snap.stanford.edu/data/soc-LiveJournal1.html" target="_blank" rel="noopener noreferrer">https://snap.stanford.edu/data/soc-LiveJournal1.html</a>.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">Dataset statistics</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">Nodes</td>
+<td>4847571</td>
+</tr>
+<tr>
+<td style="text-align:left">Edges</td>
+<td>68993773</td>
+</tr>
+<tr>
+<td style="text-align:left">Nodes in largest WCC</td>
+<td>4843953 (0.999)</td>
+</tr>
+<tr>
+<td style="text-align:left">Edges in largest WCC</td>
+<td>68983820 (1.000)</td>
+</tr>
+<tr>
+<td style="text-align:left">Nodes in largest SCC</td>
+<td>3828682 (0.790)</td>
+</tr>
+<tr>
+<td style="text-align:left">Edges in largest SCC</td>
+<td>65825429 (0.954)</td>
+</tr>
+<tr>
+<td style="text-align:left">Average clustering coefficient</td>
+<td>0.2742</td>
+</tr>
+<tr>
+<td style="text-align:left">Number of triangles</td>
+<td>285730264</td>
+</tr>
+<tr>
+<td style="text-align:left">Fraction of closed triangles</td>
+<td>0.04266</td>
+</tr>
+<tr>
+<td style="text-align:left">Diameter (longest shortest path)</td>
+<td>16</td>
+</tr>
+<tr>
+<td style="text-align:left">90-percentile effective diameter</td>
+<td>6.5</td>
+</tr>
+</tbody>
+</table>
+<h2 id="dataset-download-and-preprocessing" class="headerLink">
+    <a href="#dataset-download-and-preprocessing" class="header-mark"></a>1 Dataset Download and Preprocessing</h2><h3 id="download" class="headerLink">
+    <a href="#download" class="header-mark"></a>1.1 Download</h3><p>It is accesissiable from the official web page:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ <span class="nb">cd</span> nebula-livejournal/data
+</span></span><span class="line"><span class="cl">$ wget https://snap.stanford.edu/data/soc-LiveJournal1.txt.gz
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Comments in data file should be removed to make the data import tool happy.</p>
+<h3 id="preprocessing" class="headerLink">
+    <a href="#preprocessing" class="header-mark"></a>1.2 Preprocessing</h3><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ gzip -d soc-LiveJournal1.txt.gz
+</span></span><span class="line"><span class="cl">$ sed -i <span class="s1">&#39;1,4d&#39;</span> soc-LiveJournal1.txt
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="import-dataset-to-nebula-graph" class="headerLink">
+    <a href="#import-dataset-to-nebula-graph" class="header-mark"></a>2 Import dataset to Nebula Graph</h2><h3 id="with-nebula-importer" class="headerLink">
+    <a href="#with-nebula-importer" class="header-mark"></a>2.1 With Nebula Importer</h3><p><a href="https://github.com/vesoft-inc/nebula-importer" target="_blank" rel="noopener noreferrer">Nebula-Importer</a> is a Golang Headless import tool for Nebula Graph.</p>
+<p>You may need to edit the config file under <a href="nebula-importer/importer.yaml" rel="">nebula-importer/importer.yaml</a> on Nebula Graph&rsquo;s address and credential。</p>
+<p>Then, Nebula-Importer could be called in Docker as follow:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ <span class="nb">cd</span> nebula-livejournal
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">$ docker run --rm -ti <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    --network<span class="o">=</span>nebula-net <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    -v nebula-importer/importer.yaml:/root/importer.yaml <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    -v data/:/root <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    vesoft/nebula-importer:v2 <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    --config /root/importer.yaml
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Or if you have the binary nebula-importer locally:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ <span class="nb">cd</span> data
+</span></span><span class="line"><span class="cl">$ &lt;path_to_nebula-importer_binary&gt; --config ../nebula-importer/importer.yaml
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="with-nebula-exchange" class="headerLink">
+    <a href="#with-nebula-exchange" class="header-mark"></a>2.2 With Nebula Exchange</h3><p><a href="https://github.com/vesoft-inc/nebula-spark-utils/tree/master/nebula-exchange" target="_blank" rel="noopener noreferrer">Nebula-Exchange</a> is a Spark Application to enable batch and streaming data import from multiple data sources to Nebula Graph.</p>
+<p>To be done. (You can refer to <a href="https://siwei.io/nebula-exchange-sst-2.x/" target="_blank" rel="noopener noreferrer">https://siwei.io/nebula-exchange-sst-2.x/</a>)</p>
+<h2 id="run-algorithms-with-nebula-graph" class="headerLink">
+    <a href="#run-algorithms-with-nebula-graph" class="header-mark"></a>3 Run Algorithms with Nebula Graph</h2><p><a href="https://github.com/vesoft-inc/nebula-spark-utils/tree/master/nebula-algorithm" target="_blank" rel="noopener noreferrer">Nebula-Algorithm</a> is a Spark/GraphX Application to run Graph Algorithms with data consumed from files or a Nebula Graph Cluster.</p>
+<p>Supported Algorithms for now:</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Use Case</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PageRank</td>
+<td>page ranking, important node digging</td>
+</tr>
+<tr>
+<td>Louvain</td>
+<td>community digging, hierarchical clustering</td>
+</tr>
+<tr>
+<td>KCore</td>
+<td>community detection, financial risk control</td>
+</tr>
+<tr>
+<td>LabelPropagation</td>
+<td>community detection, consultation propagation, advertising recommendation</td>
+</tr>
+<tr>
+<td>ConnectedComponent</td>
+<td>community detection, isolated island detection</td>
+</tr>
+<tr>
+<td>StronglyConnectedComponent</td>
+<td>community detection</td>
+</tr>
+<tr>
+<td>ShortestPath</td>
+<td>path plan, network plan</td>
+</tr>
+<tr>
+<td>TriangleCount</td>
+<td>network structure analysis</td>
+</tr>
+<tr>
+<td>BetweennessCentrality</td>
+<td>important node digging, node influence calculation</td>
+</tr>
+<tr>
+<td>DegreeStatic</td>
+<td>graph structure analysis</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ad-hoc-spark-env-setup" class="headerLink">
+    <a href="#ad-hoc-spark-env-setup" class="header-mark"></a>3.1 Ad-hoc Spark Env setup</h3><p>Here I assume the Nebula Graph was bootstraped with <a href="https://github.com/wey-gu/nebula-up" target="_blank" rel="noopener noreferrer">Nebula-Up</a>, thus nebula is running in a Docker Network named <code>nebula-docker-compose_nebula-net</code>.</p>
+<p>Then let&rsquo;s start a single server spark:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker run --name spark-master --network nebula-docker-compose_nebula-net <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    -h spark-master -e <span class="nv">ENABLE_INIT_DAEMON</span><span class="o">=</span><span class="nb">false</span> -d <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    -v nebula-algorithm/:/root <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    bde2020/spark-master:2.4.5-hadoop2.7
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Thus we could make spark application submt inside this container:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker <span class="nb">exec</span> -it spark-master bash
+</span></span><span class="line"><span class="cl"><span class="nb">cd</span> /root/
+</span></span><span class="line"><span class="cl"><span class="c1"># download Nebula-Algorithm Jar Packagem, 2.0.0 for example, for other versions, refer to nebula-algorithm github repo and documentations.</span>
+</span></span><span class="line"><span class="cl">wget https://repo1.maven.org/maven2/com/vesoft/nebula-algorithm/2.0.0/nebula-algorithm-2.0.0.jar
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="run-algorithms" class="headerLink">
+    <a href="#run-algorithms" class="header-mark"></a>3.2 Run Algorithms</h3><p>There are many altorithms supported by Nebula-Algorithm, here some of their configuration files were put under nebula-algorithm as an example.</p>
+<p>Before using them, please first edit and change Nebula Graph Cluster Addresses and credentials.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">vim nebula-altorithm/algo-pagerank.conf
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Then we could enter the spark container and call corresponding algorithms as follow.</p>
+<p>Please adjust your <code>--driver-memeory</code> accordingly, i.e. pagerank altorithm:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">/spark/bin/spark-submit --master <span class="s2">&#34;local&#34;</span> --conf spark.rpc.askTimeout<span class="o">=</span>6000s <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    --class com.vesoft.nebula.algorithm.Main <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    --driver-memory 16g nebula-algorithm-2.0.0.jar <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    -p pagerank.conf
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>After the algorithm finished, the output will be under the path insdie the container defined in conf file:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-toml" data-lang="toml"><span class="line"><span class="cl">    <span class="nx">write</span><span class="err">:</span><span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">resultPath</span><span class="err">:/</span><span class="nx">output</span><span class="err">/</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>题图版权：<a href="https://unsplash.com/photos/eTgMFFzroGc" target="_blank" rel="noopener noreferrer">@sigmund</a></p>
+</blockquote>]]></description>
+</item></channel>
+</rss>

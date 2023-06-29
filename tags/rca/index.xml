@@ -1,0 +1,1108 @@
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+        <title>RCA - 标签 - siwei.io</title>
+        <link>https://siwei.io/tags/rca/</link>
+        <description>RCA - 标签 - siwei.io</description>
+        <generator>Hugo -- gohugo.io</generator><language>zh-CN</language><managingEditor>weyl.gu@gmail.com (Wey Gu)</managingEditor>
+            <webMaster>weyl.gu@gmail.com (Wey Gu)</webMaster><copyright>This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.</copyright><lastBuildDate>Fri, 13 Jan 2023 22:22:44 &#43;0800</lastBuildDate><atom:link href="https://siwei.io/tags/rca/" rel="self" type="application/rss+xml" /><item>
+    <title>图数据库驱动的基础设施运维示例</title>
+    <link>https://siwei.io/graph-enabled-infra-ops/</link>
+    <pubDate>Fri, 13 Jan 2023 22:22:44 &#43;0800</pubDate><author>
+        <name>Wey Gu</name>
+    </author><guid>https://siwei.io/graph-enabled-infra-ops/</guid>
+    <description><![CDATA[<div class="featured-image">
+                <img src="/graph-enabled-infra-ops/featured-image.webp" referrerpolicy="no-referrer">
+            </div><blockquote>
+<p>图技术在大型、复杂基础设施之中 SRE/DevOps 的实践参考，本文以 OpenStack 系统之上的图数据库增强的运维案例为例，揭示图数据库、图算法的智能运维方法，全流程示例代码开源。</p>
+</blockquote>
+<p>因为有一些还未采用图技术的 DevOps/Infra 领域同学在 NebulaGraph 社区询问参考的案例，我最近试着实践了一下如何利用图的能力与优势去帮助在复杂基础设施上构建辅助运维系统，希望能帮助到感兴趣 Infra Ops 领域、同时感兴趣图数据库、图算法的大家，全过程都是可以复现、并且开源的。</p>
+<p>复杂的基础设施运维环境通常包含非常多、不同层面的资源（manifest)，为了能够尽量还原真实世界的复杂环境、又保持这个实例项目的复杂度不会失控，我选择了用一个基础设施平台：OpenStack 作为例子。</p>
+<p>本文实现了 OpenStack 系统上分别利用 Push 和 Pull 两种模式将资源之中被图谱建模的图中点、边信息加载到 NebulaGraph 里的 Graph ETL 管道的路径。</p>
+<p>在图谱之上，本文探索如下用例：</p>
+<ul>
+<li>告警、状态的推理与传导；</li>
+<li>网络直连与互联关系；</li>
+<li>镜像、云盘、快照血缘管理；</li>
+<li>高相关性虚机预警；</li>
+<li>秘钥泄漏的图上风控分析；</li>
+<li>镜像、云盘漏洞范围分析；</li>
+<li>宿主机逃离影响范围分析；</li>
+<li>脆弱依赖资源检测；</li>
+</ul>
+<h2 id="试验环境搭建" class="headerLink">
+    <a href="#%e8%af%95%e9%aa%8c%e7%8e%af%e5%a2%83%e6%90%ad%e5%bb%ba" class="header-mark"></a>1 试验环境搭建</h2><h3 id="背景知识" class="headerLink">
+    <a href="#%e8%83%8c%e6%99%af%e7%9f%a5%e8%af%86" class="header-mark"></a>1.1 背景知识</h3><p>OpenStack 是一个开源的云计算平台，提供了类似于 AWS 的云服务。它提供了一组可插拔的模块，包括了计算，存储和网络等功能，可以帮助用户构建和管理云环境。OpenStack采用分布式架构，支持多种操作系统和硬件平台，可以在企业级和服务提供商级环境中使用。</p>
+<p><figure><a class="lightgallery" href="/graph-enabled-infra-ops/OpenStack-overview-diagram-new.webp" title="OpenStack-overview-diagram-new" data-thumbnail="/graph-enabled-infra-ops/OpenStack-overview-diagram-new.webp">
+        <img
+            
+            loading="lazy"
+            src="/graph-enabled-infra-ops/OpenStack-overview-diagram-new.webp"
+            srcset="/graph-enabled-infra-ops/OpenStack-overview-diagram-new.webp, /graph-enabled-infra-ops/OpenStack-overview-diagram-new.webp 1.5x, /graph-enabled-infra-ops/OpenStack-overview-diagram-new.webp 2x"
+            sizes="auto"
+            alt="OpenStack-overview-diagram-new">
+    </a></figure></p>
+<p>最初由 <em>NASA</em> 和 <em>Rackspace</em> Inc. 发起的 nova （虚拟化计算项目）和 swift （兼容 S3 的对象存储）项目组成，OpenStack 现在由非常多不同的子项目组成：</p>
+<p><figure><a class="lightgallery" href="/graph-enabled-infra-ops/openstack-map-v20221001.webp" title="openstack-map-v20221001" data-thumbnail="/graph-enabled-infra-ops/openstack-map-v20221001.webp">
+        <img
+            
+            loading="lazy"
+            src="/graph-enabled-infra-ops/openstack-map-v20221001.webp"
+            srcset="/graph-enabled-infra-ops/openstack-map-v20221001.webp, /graph-enabled-infra-ops/openstack-map-v20221001.webp 1.5x, /graph-enabled-infra-ops/openstack-map-v20221001.webp 2x"
+            sizes="auto"
+            alt="openstack-map-v20221001">
+    </a></figure></p>
+<p>本实验中，我们设计的 OpenStack 主要项目有：</p>
+<ul>
+<li>Nova 是 OpenStack 的计算服务，用于管理虚拟机。</li>
+<li>Cinder 是 OpenStack 的块存储服务，用于管理云存储。</li>
+<li>Neutron 是 OpenStack 的网络服务，用于管理云网络。</li>
+<li>Glance 是 OpenStack 的镜像服务，用于管理云镜像。</li>
+<li>Horizon 是 OpenStack 的可视化控制台服务。</li>
+</ul>
+<p>除此之外，我还引入了 Vitrage 项目辅助我们收集部分资源数据：</p>
+<ul>
+<li>Vitrage 是 OpenStack 中的一个高级分析和可视化工具，用于分析和可视化 OpenStack 环境中的资源和事件。它可以汇集来自 OpenStack 各个服务的数据，并使用图形化方式展示出来。Vitrage 发现和诊断问题，提高 OpenStack 环境的可用性和可维护性。</li>
+</ul>
+<p>得益于 OpenStack Decouple 的设计理念，Vitrage 可以很容易、无侵入式（只需要修改需要收集的服务两行配置）就可以在 OpenStack 的消息队列中订阅资源信息的 push 消息。</p>
+<p>不过比较遗憾的是 Vitrage 这个项目已经有好多个 release cycle 没有什么大的更新了，应该是比较不活跃的状态了，比如在 zed 里，它的 Vitrage Dashboard 作为 Horizon 插件已经无法正常工作了，本实验只利用它的资源收集能力。</p>
+<h3 id="环境准备搭建" class="headerLink">
+    <a href="#%e7%8e%af%e5%a2%83%e5%87%86%e5%a4%87%e6%90%ad%e5%bb%ba" class="header-mark"></a>1.2 环境准备搭建</h3><h4 id="nebulagraph-集群" class="headerLink">
+    <a href="#nebulagraph-%e9%9b%86%e7%be%a4" class="header-mark"></a>1.2.1 NebulaGraph 集群</h4><p>首次快速试玩安装 NebulaGraph 的话，有这么几个选项：</p>
+<ul>
+<li>阿里云上的 NebulaGraph 企业版（带有企业版独有的满血版可视化工具：Explorer，可以图探索、画布内跑图算法），可以获得一个月所有资源免费使用资格：
+<ul>
+<li>访问 <a href="https://www.siwei.io/try-aliyun" target="_blank" rel="noopener noreferrer">https://www.siwei.io/try-aliyun</a> 获得</li>
+</ul>
+</li>
+<li>Nebula-Up 一键安装 NebulaGraph 开源社区版本，需要一个带有 Docker、Docker Desktop 环境的机器
+<ul>
+<li>访问 <a href="https://github.com/wey-gu/nebula-up" target="_blank" rel="noopener noreferrer">https://github.com/wey-gu/nebula-up</a></li>
+</ul>
+</li>
+<li>有经验的同学可以参考文档进行部署：
+<ul>
+<li>访问 <a href="https://docs.nebula-graph.com.cn/" target="_blank" rel="noopener noreferrer">https://docs.nebula-graph.com.cn/</a></li>
+</ul>
+</li>
+</ul>
+<h4 id="openstack-集群" class="headerLink">
+    <a href="#openstack-%e9%9b%86%e7%be%a4" class="header-mark"></a>1.2.2 OpenStack 集群</h4><blockquote>
+<p>注意：如果大家已经有现成的 OpenStack 集群，这一步可以忽略，您只需要再去安装 OpenStack Vitrage 就好了。</p>
+</blockquote>
+<p>本文需要的 OpenStack 集群是一个多机的环境，为此，我准备了在 Linux Server 上利用 Libvirt 和 Linux Bridge 搭建多个虚拟机用来模拟 OpenStack 的物理机，得益于 CPU 的嵌套虚拟化和 qemu，后边我们完全可以在虚拟机搭建的实验环境中模拟可正常工作的 OpenStack nova instance 虚机。</p>
+<p>整个流程我都放在 <a href="https://github.com/wey-gu/openstack-graph/#environment-setup" target="_blank" rel="noopener noreferrer">https://github.com/wey-gu/openstack-graph/#environment-setup</a> 这里了，感兴趣的同学可以访问、获取。</p>
+<p>虚拟机搭建之后，我们还需要模拟真实的 Infra 环境，创建很多资源：整个过程也在 <a href="https://github.com/wey-gu/openstack-graph/#create-resources-on-openstack" target="_blank" rel="noopener noreferrer">https://github.com/wey-gu/openstack-graph/#create-resources-on-openstack</a> 有详细列出，想要动手操作的同学可以参考来亲自上手一下。</p>
+<p>参考如上步骤操作之后，我们应该可以通过 Horizon Dashboard 查看集群和资源：</p>
+<p>我们创建了几个虚拟机：<figure><a class="lightgallery" href="/graph-enabled-infra-ops/nova_instance.webp" title="nova_instance" data-thumbnail="/graph-enabled-infra-ops/nova_instance.webp">
+        <img
+            
+            loading="lazy"
+            src="/graph-enabled-infra-ops/nova_instance.webp"
+            srcset="/graph-enabled-infra-ops/nova_instance.webp, /graph-enabled-infra-ops/nova_instance.webp 1.5x, /graph-enabled-infra-ops/nova_instance.webp 2x"
+            sizes="auto"
+            alt="nova_instance">
+    </a></figure></p>
+<p>几个网盘，其中四个挂载在不同的虚拟机上</p>
+<p><figure><a class="lightgallery" href="/graph-enabled-infra-ops/cinder_volume.webp" title="cinder_volume" data-thumbnail="/graph-enabled-infra-ops/cinder_volume.webp">
+        <img
+            
+            loading="lazy"
+            src="/graph-enabled-infra-ops/cinder_volume.webp"
+            srcset="/graph-enabled-infra-ops/cinder_volume.webp, /graph-enabled-infra-ops/cinder_volume.webp 1.5x, /graph-enabled-infra-ops/cinder_volume.webp 2x"
+            sizes="auto"
+            alt="cinder_volume">
+    </a></figure></p>
+<p>集群租户的网络拓扑：<figure><a class="lightgallery" href="/graph-enabled-infra-ops/neutron_topology.webp" title="neutron_topology" data-thumbnail="/graph-enabled-infra-ops/neutron_topology.webp">
+        <img
+            
+            loading="lazy"
+            src="/graph-enabled-infra-ops/neutron_topology.webp"
+            srcset="/graph-enabled-infra-ops/neutron_topology.webp, /graph-enabled-infra-ops/neutron_topology.webp 1.5x, /graph-enabled-infra-ops/neutron_topology.webp 2x"
+            sizes="auto"
+            alt="neutron_topology">
+    </a></figure></p>
+<p>我们还能通过 OpenStack Vitrage 的 API/CLI 获得部分主要资源的拓扑：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nb">source</span> openrc admin admin
+</span></span><span class="line"><span class="cl">vitrage topology show --all-tenants
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>它的结果是一个 JSON，里边已经按照边（links）和点（nodes）序列化图结构的数据了。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span><span class="lnt">67
+</span><span class="lnt">68
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;directed&#34;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;graph&#34;</span><span class="p">:</span> <span class="p">{},</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;links&#34;</span><span class="p">:</span> <span class="p">[</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;vitrage_is_deleted&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;relationship_type&#34;</span><span class="p">:</span> <span class="s2">&#34;contains&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;source&#34;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;target&#34;</span><span class="p">:</span> <span class="mi">11</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;key&#34;</span><span class="p">:</span> <span class="s2">&#34;contains&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">},</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;vitrage_is_deleted&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;relationship_type&#34;</span><span class="p">:</span> <span class="s2">&#34;contains&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;source&#34;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;target&#34;</span><span class="p">:</span> <span class="mi">13</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;key&#34;</span><span class="p">:</span> <span class="s2">&#34;contains&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">},</span>
+</span></span><span class="line"><span class="cl"><span class="err">...</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;vitrage_is_deleted&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;relationship_type&#34;</span><span class="p">:</span> <span class="s2">&#34;attached&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;source&#34;</span><span class="p">:</span> <span class="mi">27</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;target&#34;</span><span class="p">:</span> <span class="mi">28</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;key&#34;</span><span class="p">:</span> <span class="s2">&#34;attached&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="p">],</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;multigraph&#34;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;nodes&#34;</span><span class="p">:</span> <span class="p">[</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;node0&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;vitrage_type&#34;</span><span class="p">:</span> <span class="s2">&#34;nova.host&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;vitrage_category&#34;</span><span class="p">:</span> <span class="s2">&#34;RESOURCE&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;vitrage_is_deleted&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;update_timestamp&#34;</span><span class="p">:</span> <span class="s2">&#34;2023-01-13T08:06:48Z&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;vitrage_sample_timestamp&#34;</span><span class="p">:</span> <span class="s2">&#34;2023-01-13T08:06:49Z&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;vitrage_is_placeholder&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;vitrage_id&#34;</span><span class="p">:</span> <span class="s2">&#34;630b4c2c-5347-4073-91a3-255ec18dadfc&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;node0&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;vitrage_cached_id&#34;</span><span class="p">:</span> <span class="s2">&#34;d043d278a6a712909e30e50ca8ec2364&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;is_real_vitrage_id&#34;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;vitrage_aggregated_state&#34;</span><span class="p">:</span> <span class="s2">&#34;AVAILABLE&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;vitrage_operational_state&#34;</span><span class="p">:</span> <span class="s2">&#34;OK&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;vitrage_datasource_name&#34;</span><span class="p">:</span> <span class="s2">&#34;nova.host&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;state&#34;</span><span class="p">:</span> <span class="s2">&#34;available&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;graph_index&#34;</span><span class="p">:</span> <span class="mi">0</span>
+</span></span><span class="line"><span class="cl">    <span class="p">},</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;nova&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;vitrage_type&#34;</span><span class="p">:</span> <span class="s2">&#34;nova.zone&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;vitrage_category&#34;</span><span class="p">:</span> <span class="s2">&#34;RESOURCE&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;vitrage_is_deleted&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;vitrage_sample_timestamp&#34;</span><span class="p">:</span> <span class="s2">&#34;2023-01-12T03:06:48Z&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;vitrage_is_placeholder&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;vitrage_id&#34;</span><span class="p">:</span> <span class="s2">&#34;a1e9c808-dac8-4b59-8f80-f21a90e9869d&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;vitrage_cached_id&#34;</span><span class="p">:</span> <span class="s2">&#34;125f1d8c4451a6385cc2cfa2b0ba45be&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;is_real_vitrage_id&#34;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;vitrage_aggregated_state&#34;</span><span class="p">:</span> <span class="s2">&#34;AVAILABLE&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;vitrage_operational_state&#34;</span><span class="p">:</span> <span class="s2">&#34;OK&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;state&#34;</span><span class="p">:</span> <span class="s2">&#34;available&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;update_timestamp&#34;</span><span class="p">:</span> <span class="s2">&#34;2023-01-12T03:06:48Z&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;nova&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;vitrage_datasource_name&#34;</span><span class="p">:</span> <span class="s2">&#34;nova.zone&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;graph_index&#34;</span><span class="p">:</span> <span class="mi">1</span>
+</span></span><span class="line"><span class="cl">    <span class="p">},</span>
+</span></span><span class="line"><span class="cl"><span class="err">...</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;raw&#34;</span><span class="err">:</span> <span class="kc">true</span>
+</span></span><span class="line"><span class="cl"><span class="err">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="图谱建模" class="headerLink">
+    <a href="#%e5%9b%be%e8%b0%b1%e5%bb%ba%e6%a8%a1" class="header-mark"></a>2 图谱建模</h2><p>本实验环境中，我们考虑纳入如下资源进入图谱：</p>
+<ul>
+<li>nova instance: 是Nova服务中的虚拟机实例，每个nova instance都有自己的配置信息（如CPU、内存、磁盘等），有时候我们就叫它 server 或者 VM、虚机。</li>
+<li>nova host是Nova服务中的物理主机，是nova instance运行的物理环境。nova host上面会运行nova-compute服务，这个服务负责管理和调度nova instance。nova host上面还可能运行其他服务，如网络服务等。</li>
+<li>nova keypair: 是Nova服务中的密钥对，用于访问nova instance</li>
+<li>cinder volume: 是Cinder服务中的云存储卷，可以 attach 到nova instance上做为硬盘</li>
+<li>cinder snapshot: 是Cinder服务中的云存储快照，可以在cinder volume上做快照</li>
+<li>glance image: 是Glance服务中的镜像，可以作为创建nova instance时候的启动硬盘</li>
+<li>neutron network: 是Neutron服务中的网络，可以用于配置nova instance的网络连接</li>
+<li>neutron port: 是Neutron服务中的端口，用来连接nova instance和neutron network之间，在 nova instance 虚拟机上，一个 port 常常对应一个网卡（如果不是 trunk port 的话）。</li>
+</ul>
+<p>他们之间的关系如下：</p>
+<p><figure><a class="lightgallery" href="/graph-enabled-infra-ops/schema_draft.webp" title="schema_draft" data-thumbnail="/graph-enabled-infra-ops/schema_draft.webp">
+        <img
+            
+            loading="lazy"
+            src="/graph-enabled-infra-ops/schema_draft.webp"
+            srcset="/graph-enabled-infra-ops/schema_draft.webp, /graph-enabled-infra-ops/schema_draft.webp 1.5x, /graph-enabled-infra-ops/schema_draft.webp 2x"
+            sizes="auto"
+            alt="schema_draft">
+    </a></figure></p>
+<h2 id="基础设施图-etl" class="headerLink">
+    <a href="#%e5%9f%ba%e7%a1%80%e8%ae%be%e6%96%bd%e5%9b%be-etl" class="header-mark"></a>3 基础设施图 ETL</h2><p>接下来我们解决从基础设施中抽取资源元数据的问题，</p>
+<h3 id="push-模式" class="headerLink">
+    <a href="#push-%e6%a8%a1%e5%bc%8f" class="header-mark"></a>3.1 push 模式</h3><p>这里的 push 指的是基础设施为主语，从资源方向我们的图谱系统主动、事件驱动地发出资源变动的信息。它的好处是资源中的实时性好，但是坏处是依赖基础设施自身，很多非常瘦的、软件定义/可编程程度不高的组件、比如某些硬件设备没有 push 机制，或者像是古老的软件系统不一定能存在 push 的接口，改造起来有侵入性。</p>
+<p>前边提及过，OpenStack 自身是存在 Push hook 的机制的，它的子项目 vitrage 就利用这个机制很优雅地收集系统资源、告警等信息进入图中，类似的机制在其他平台中也是可以实现的。</p>
+<p>本实验中我们就利用 vitrage 的机制去收集一部分图谱中的资源信息，如下图，可以看到 vitrage 会在 OpenStack message bus 中订阅 nova/cinder/neutron 等服务中的资源时间，把事件传入 Entity Queue，经过处理，存储到 Entity Graph 中。</p>
+<p>在此之上，我们可以通过 vitrage API 获取图谱的拓扑，来消费它。</p>
+<blockquote>
+<p>注意：实际上 Vitrage 服务还提供了推理告警、推理状态、定义决策事件的能力，这里我们并没有采用，后边我们在图上做的一些事情甚至还和它的能力有一些重叠。</p>
+</blockquote>
+<p><figure><a class="lightgallery" href="/graph-enabled-infra-ops/vitrage_arch.webp" title="vitrage_arch" data-thumbnail="/graph-enabled-infra-ops/vitrage_arch.webp">
+        <img
+            
+            loading="lazy"
+            src="/graph-enabled-infra-ops/vitrage_arch.webp"
+            srcset="/graph-enabled-infra-ops/vitrage_arch.webp, /graph-enabled-infra-ops/vitrage_arch.webp 1.5x, /graph-enabled-infra-ops/vitrage_arch.webp 2x"
+            sizes="auto"
+            alt="vitrage_arch">
+    </a></figure></p>
+<p>这里我只是用它来展示 push 模式的工作机制，如果没有 Virtrage 这个项目存在，我们也可以比较容易通过 OpenStack 的 oslo.messaging 这个库很容易写出在 Message Bus（可能是 Kafka, RabbitMQ 等不同底层实现）上订阅资源时间的应用，然后把事件通过 Flink/ Kafka/ Pulsar 等方式接驳 NebulaGraph。</p>
+<p>因为 Vitrage 的存在，我就偷懒不用去实现这部分逻辑，只消写一小部分代码调用 Vitrage API 取这个数据就可以了，讽刺的是，从这个角度来看，这其实是一种 pull 的模式了，不用拘泥它本质上算是哪一种方式，至少在资源发起测，我们把它当做 push 模式的例子看待吧。</p>
+<p>这部分从 Vitrage 抓取的代码我放在 <a href="https://github.com/wey-gu/openstack-graph/blob/main/utils/vitrage_to_graph.py" target="_blank" rel="noopener noreferrer">https://github.com/wey-gu/openstack-graph/blob/main/utils/vitrage_to_graph.py</a> 了，调用方式很简单，在有 OpenStack 客户端的环境中，执行它就可以了，比如：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 连到 node0 上</span>
+</span></span><span class="line"><span class="cl">ssh stack@node0_ip
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 进入 devstack 目录</span>
+</span></span><span class="line"><span class="cl"><span class="nb">cd</span> devstack
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 下载 vitrage 中图数据，解析为 NeublaGraph DML/DQL 的工具</span>
+</span></span><span class="line"><span class="cl">wget https://raw.githubusercontent.com/wey-gu/openstack-graph/main/utils/vitrage_to_graph.py
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 执行它</span>
+</span></span><span class="line"><span class="cl">python3 vitrage_to_graph.py
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>执行之后，会生成如下文件：</p>
+<ul>
+<li><code>schema.ngql</code> 图数据的 Schema 定义</li>
+<li><code>vertices/</code> 点数据的文件夹</li>
+<li><code>edges/</code> 边数据的文件夹</li>
+</ul>
+<h3 id="pull-模式" class="headerLink">
+    <a href="#pull-%e6%a8%a1%e5%bc%8f" class="header-mark"></a>3.2 pull 模式</h3><p>反过来，pull 模式是从资源外部定期或者事件驱动地拉取资源，存入图谱的方式。刚好本实验中 vitrage 抓取的资源是有限的，有一些额外的资源我单独写了 python 的代码来主动全量抓取，pull 模式的好处是对资源方没有任何侵入性，只需要调用它的接口获取信息就可以了，坏处则是有的系统不太容易获得增量变化，可能只能全量去取。</p>
+<p>这部分我抓取的关系如下：</p>
+<ul>
+<li>glance_used_by: <code>image -[:used_by]-&gt; instance (get from instance)</code></li>
+<li>glance_created_from: <code>image -[:created_from]-&gt; volume (get from image)</code></li>
+<li>nova_keypair_used_by: <code>keypair -[:used_by]-&gt; instance (get from instance)</code></li>
+<li>cinder_snapshot_created_from: <code>volume snapshot -[:created_from]-&gt; volume (get from snapshot)</code></li>
+<li>cinder_volume_created_from: <code>volume -[:created_from]-&gt; volume snapshot (get from volume)</code></li>
+<li>cinder_volume_created_from: <code>volume -[:created_from]-&gt; image (get from volume)</code></li>
+</ul>
+<p>类似的，它的代码放在 <a href="https://github.com/wey-gu/openstack-graph/blob/main/utils/pull_resources_to_graph.py" target="_blank" rel="noopener noreferrer">https://github.com/wey-gu/openstack-graph/blob/main/utils/pull_resources_to_graph.py</a> 之中，在真实场景下，我们可能会用 Apache Airflow、dagster 甚至是 cron job 等方式定期执行它。</p>
+<p>我们手动执行的方式也很简单：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 连到 node0 上</span>
+</span></span><span class="line"><span class="cl">ssh stack@node0_ip
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 进入 devstack 目录</span>
+</span></span><span class="line"><span class="cl"><span class="nb">cd</span> devstack
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 下载抓取 OpenStack 资源，生成 NeublaGraph DML/DQL 的工具</span>
+</span></span><span class="line"><span class="cl">wget https://raw.githubusercontent.com/wey-gu/openstack-graph/main/utils/pull_resources_to_graph.py.py
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 执行它</span>
+</span></span><span class="line"><span class="cl">python3 pull_resources_to_graph.py
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>执行之后，会生成点、边的 ngql 语句在两个文件夹下：</p>
+<ul>
+<li><code>vertices/</code> 点数据的文件夹</li>
+<li><code>edges/</code> 边数据的文件夹</li>
+</ul>
+<h3 id="加载数据到-nebulagraph" class="headerLink">
+    <a href="#%e5%8a%a0%e8%bd%bd%e6%95%b0%e6%8d%ae%e5%88%b0-nebulagraph" class="header-mark"></a>3.3 加载数据到 NebulaGraph</h3><p>我们只需要在 NebulaGraph Studio Console, Explorer Console 或者 NebulaGraph 命令行 Console 中执行上边生成的 <code>.ngql</code> 文件就好了：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># DDL from vitrage</span>
+</span></span><span class="line"><span class="cl">cat schema.ngql
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># DDL and DML for both push and pull mode data</span>
+</span></span><span class="line"><span class="cl">cat edges/*.ngql
+</span></span><span class="line"><span class="cl">cat vertices/*.ngql
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>之后，在 NebulaGraph 中我们会有一个叫做 <code>openstack</code> 的图空间，用这个查询可以查到所有数据：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">MATCH (n) WITH n LIMIT 1000
+</span></span><span class="line"><span class="cl">OPTIONAL MATCH p=(n)--()
+</span></span><span class="line"><span class="cl">RETURN p, n
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>然后渲染在 explorer 中，手动设置一下数据的图标，就可以看到我们 OpenStack 集群里的所有租户的资源图了：</p>
+<p><figure><a class="lightgallery" href="/graph-enabled-infra-ops/all_graph_view.webp" title="all_graph_view" data-thumbnail="/graph-enabled-infra-ops/all_graph_view.webp">
+        <img
+            
+            loading="lazy"
+            src="/graph-enabled-infra-ops/all_graph_view.webp"
+            srcset="/graph-enabled-infra-ops/all_graph_view.webp, /graph-enabled-infra-ops/all_graph_view.webp 1.5x, /graph-enabled-infra-ops/all_graph_view.webp 2x"
+            sizes="auto"
+            alt="all_graph_view">
+    </a></figure></p>
+<p>接下来我们终于可以在图上看看有意思的洞察了。</p>
+<h2 id="基于图谱的基础设施运维示例" class="headerLink">
+    <a href="#%e5%9f%ba%e4%ba%8e%e5%9b%be%e8%b0%b1%e7%9a%84%e5%9f%ba%e7%a1%80%e8%ae%be%e6%96%bd%e8%bf%90%e7%bb%b4%e7%a4%ba%e4%be%8b" class="header-mark"></a>4 基于图谱的基础设施运维示例</h2><p>作为非 SRE、DevOps 人员，我尝试藉由自己在 OpenStack 和图技术的理解想象出下边的一些实例，希望能帮助到需要的读者们。</p>
+<h3 id="告警状态的推理与传导" class="headerLink">
+    <a href="#%e5%91%8a%e8%ad%a6%e7%8a%b6%e6%80%81%e7%9a%84%e6%8e%a8%e7%90%86%e4%b8%8e%e4%bc%a0%e5%af%bc" class="header-mark"></a>4.1 告警、状态的推理与传导</h3><p>这部分我收到了 vitrage 项目的启发，参考它们给出的实例文档：<a href="https://github.com/openstack/vitrage/blob/master/doc/source/contributor/vitrage-templates.rst" target="_blank" rel="noopener noreferrer">这里</a>。</p>
+<p>借助资源图谱实时图查询、图计算甚至图可视化能力，我们可以在图上推理、传导一些信息，把重要的时间藉由图上组织好的知识分发到需要收到通知的人、组织、系统。</p>
+<p>一个简单的例子是，比如我们在 nova host（虚拟机的宿主机、hypervisor 机器，以下简称宿主机），中获得了一个告警、事件的时候，可能是网卡失败、物理硬盘预警、CPU占用过高之类的告警。我们可以借助图谱查询获得所有相关联的虚机，然后把（WARN）级别的告警发出去或者设置它们为（亚健康）的状态。</p>
+<p>这样，获得通知的对象，往往是一些用户的系统，就可以根据他们预先定义好的策略做一些自动化运维，或者通知的 hook：</p>
+<ul>
+<li>收到“宿主机 CPU 过高”的告警的情形下，可以根据用户自己设定的不同策略把虚机迁移走，或者更高级复杂的撤离方式（开始不接受新的 traffic，创建新的替代 workload，然后 gracefully 关闭这个 workload）</li>
+<li>“控制面网络故障”告警情况下，这时候往往无法成功进行主机的车里、迁移，故可以考虑触发备份主机、启动新 workload、关机</li>
+<li>其他“（亚健康）状态”，可以作为负载层面出问题的根因分析（RCA）依据</li>
+</ul>
+<p>下边，我们给出一个在图谱上进行告警、状态传导的查询例子，我们假设 vid 为 <code>node0</code> 的宿主机出现了高 CPU 的告警，则这个查询可以得到所有其上的虚机，获得时间、告警通知列表：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="line"><span class="cl"><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">vm</span><span class="p">:</span><span class="n">nova_instance</span><span class="p">)</span><span class="o">&lt;-</span><span class="p">[:</span><span class="o">`</span><span class="n">contains</span><span class="o">`</span><span class="p">]</span><span class="o">-</span><span class="p">(</span><span class="n">host_CPU_high</span><span class="p">:</span><span class="n">nova_host</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">WHERE</span><span class="w"> </span><span class="nf">id</span><span class="p">(</span><span class="n">host_CPU_high</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&#34;node0&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">RETURN</span><span class="w"> </span><span class="n">vm</span><span class="p">.</span><span class="n">nova_instance</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">VM_to_raise_CPU_alarms</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>这其中查询的图模式是从 <code>host_CPU_high</code> 这个 <code>nova_host</code> 向外经由 <code>contains</code> 这个关系指向 <code>vm</code> 这个 <code>nova_instance</code> 的：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="line"><span class="cl"><span class="p">(</span><span class="n">vm</span><span class="p">:</span><span class="n">nova_instance</span><span class="p">)</span><span class="o">&lt;-</span><span class="p">[:</span><span class="o">`</span><span class="n">contains</span><span class="o">`</span><span class="p">]</span><span class="o">-</span><span class="p">(</span><span class="n">host_CPU_high</span><span class="p">:</span><span class="n">nova_host</span><span class="p">)</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>它的结果是：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">VM_to_raise_CPU_alarms</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">server-4</td>
+</tr>
+<tr>
+<td style="text-align:left">server-3</td>
+</tr>
+<tr>
+<td style="text-align:left">server-1</td>
+</tr>
+<tr>
+<td style="text-align:left">server-0</td>
+</tr>
+</tbody>
+</table>
+<p>如果我们把查询改动一下，选择输出全路径，则可以看到这个信息传导的方向：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="line"><span class="cl"><span class="k">MATCH</span><span class="w"> </span><span class="n">p</span><span class="o">=</span><span class="p">(</span><span class="n">vm</span><span class="p">:</span><span class="n">nova_instance</span><span class="p">)</span><span class="o">&lt;-</span><span class="p">[:</span><span class="o">`</span><span class="n">contains</span><span class="o">`</span><span class="p">]</span><span class="o">-</span><span class="p">(</span><span class="n">host_CPU_high</span><span class="p">:</span><span class="n">nova_host</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">WHERE</span><span class="w"> </span><span class="nf">id</span><span class="p">(</span><span class="n">host_CPU_high</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&#34;node0&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">RETURN</span><span class="w"> </span><span class="n">p</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>在 Explorer 中渲染，点击 N 跳检测：</p>
+<video width="800" controls>
+  <source src="https://user-images.githubusercontent.com/1651790/212291702-1754c9ce-f23f-4a68-930c-07a587c113be.mov" type="video/mp4"> 
+</video>
+<p>第一个例子比较简单，甚至不是很有必要用图的能力（这种因为一跳查询表结构中也是很轻松地，我们用一两个 nova API call 就可以搞定等价的信息获取了），这里只是一个例子，实际上我们在图上可以做很多更 Graphy（具有图属性的）、复杂、独特的工作，我们慢慢来看。</p>
+<h3 id="网络可达检测" class="headerLink">
+    <a href="#%e7%bd%91%e7%bb%9c%e5%8f%af%e8%be%be%e6%a3%80%e6%b5%8b" class="header-mark"></a>4.2 网络可达检测</h3><p>我们来考虑这样的场景，在 OpenStack 中，不同的主机可以连接到相同的子网（VPC），主机也可以连接到多个子网之中，这样，主机之间的网络连通性信息、与网络联通相关的推理、传导都可以在图上进行。</p>
+<blockquote>
+<p>注：在真实世界中，这里可能还要考虑 Security Group、Router、Switch 等因素，本利中我们用到的 OpenStack 是 L2 only 的 Setup，比较简化。</p>
+</blockquote>
+<p>获得与虚机 <code>server_a</code> 同一 VPC 的所有其他虚机看起来很容易表达了：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="line"><span class="cl"><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">server_a</span><span class="p">)</span><span class="o">--</span><span class="p">(:</span><span class="n">neutron_port</span><span class="p">)</span><span class="o">--</span><span class="p">(:</span><span class="n">neutron_network</span><span class="p">)</span><span class="o">--</span><span class="p">(:</span><span class="n">neutron_port</span><span class="p">)</span><span class="o">--</span><span class="p">(</span><span class="n">server_b</span><span class="p">:</span><span class="o">`</span><span class="n">nova_instance</span><span class="o">`</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">WHERE</span><span class="w"> </span><span class="nf">id</span><span class="p">(</span><span class="n">server_a</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&#34;server-0&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">RETURN</span><span class="w"> </span><span class="n">server_b</span><span class="p">.</span><span class="n">nova_instance</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">L2_connected_server</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>结果如下：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">L2_connected_server</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">server-1</td>
+</tr>
+</tbody>
+</table>
+<p>看起来很初级呀，接下来我们再查询与虚机 <code>server_a</code> 同一 VPC、或者有可能通过跨网络虚机而互联的主机的所有其他虚机，这时候，我们除了共享 neutron network(VPC) 的情况，还要查询所有二层直连的虚机可能通过其他 VPC 连出去的的虚机，这里，我们用到了 <code>OPTIONAL MATCH</code> 的表达，表示可能匹配到的模式：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="line"><span class="cl"><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">server_a</span><span class="p">)</span><span class="o">--</span><span class="p">(:</span><span class="n">neutron_port</span><span class="p">)</span><span class="o">--</span><span class="p">(</span><span class="n">net</span><span class="p">:</span><span class="n">neutron_network</span><span class="p">)</span><span class="o">--</span><span class="p">(:</span><span class="n">neutron_port</span><span class="p">)</span><span class="o">--</span><span class="p">(</span><span class="n">server_b</span><span class="p">:</span><span class="o">`</span><span class="n">nova_instance</span><span class="o">`</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">WHERE</span><span class="w"> </span><span class="nf">id</span><span class="p">(</span><span class="n">server_a</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&#34;server-0&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">OPTIONAL</span><span class="w"> </span><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">server_b</span><span class="p">)</span><span class="o">--</span><span class="p">()</span><span class="o">--</span><span class="p">(</span><span class="n">other_net</span><span class="p">:</span><span class="n">neutron_network</span><span class="p">)</span><span class="o">--</span><span class="p">(:</span><span class="n">neutron_port</span><span class="p">)</span><span class="o">--</span><span class="p">(</span><span class="n">server_c</span><span class="p">:</span><span class="o">`</span><span class="n">nova_instance</span><span class="o">`</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">WITH</span><span class="w"> </span><span class="n">server_a</span><span class="p">,</span><span class="w"> </span><span class="n">server_b</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">same_subnet_machines</span><span class="p">,</span><span class="w"> </span><span class="n">server_c</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">routeable_machines</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">routeable_machines</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">server_a</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">RETURN</span><span class="w"> </span><span class="n">same_subnet_machines</span><span class="p">.</span><span class="n">nova_instance</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">L2_connected_server</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">       </span><span class="n">routeable_machines</span><span class="p">.</span><span class="n">nova_instance</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">cross_vpc_server</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>可以看到结果里，跨网络潜在的相连主机还有 server-3：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">L2_connected_server</th>
+<th style="text-align:left">cross_vpc_server</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">server-1</td>
+<td style="text-align:left">server-3</td>
+</tr>
+</tbody>
+</table>
+<p>我们将其可视化，同样，修改输出为路径 <code>p</code> 和 <code>p1</code>。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="line"><span class="cl"><span class="k">MATCH</span><span class="w"> </span><span class="n">p</span><span class="o">=</span><span class="p">(</span><span class="n">server_a</span><span class="p">)</span><span class="o">--</span><span class="p">(:</span><span class="n">neutron_port</span><span class="p">)</span><span class="o">--</span><span class="p">(</span><span class="n">net</span><span class="p">:</span><span class="n">neutron_network</span><span class="p">)</span><span class="o">--</span><span class="p">(:</span><span class="n">neutron_port</span><span class="p">)</span><span class="o">--</span><span class="p">(</span><span class="n">server_b</span><span class="p">:</span><span class="o">`</span><span class="n">nova_instance</span><span class="o">`</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">WHERE</span><span class="w"> </span><span class="nf">id</span><span class="p">(</span><span class="n">server_a</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&#34;server-0&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">OPTIONAL</span><span class="w"> </span><span class="k">MATCH</span><span class="w"> </span><span class="n">p1</span><span class="o">=</span><span class="p">(</span><span class="n">server_b</span><span class="p">)</span><span class="o">--</span><span class="p">()</span><span class="o">--</span><span class="p">(</span><span class="n">other_net</span><span class="p">:</span><span class="n">neutron_network</span><span class="p">)</span><span class="o">--</span><span class="p">(:</span><span class="n">neutron_port</span><span class="p">)</span><span class="o">--</span><span class="p">(</span><span class="n">server_c</span><span class="p">:</span><span class="o">`</span><span class="n">nova_instance</span><span class="o">`</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">RETURN</span><span class="w"> </span><span class="n">p</span><span class="p">,</span><span class="w"> </span><span class="n">p1</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>它可能的连接路径一目了然</p>
+<p><figure><a class="lightgallery" href="/graph-enabled-infra-ops/cross_vpc_vm.webp" title="cross_vpc_vm" data-thumbnail="/graph-enabled-infra-ops/cross_vpc_vm.webp">
+        <img
+            
+            loading="lazy"
+            src="/graph-enabled-infra-ops/cross_vpc_vm.webp"
+            srcset="/graph-enabled-infra-ops/cross_vpc_vm.webp, /graph-enabled-infra-ops/cross_vpc_vm.webp 1.5x, /graph-enabled-infra-ops/cross_vpc_vm.webp 2x"
+            sizes="auto"
+            alt="cross_vpc_vm">
+    </a></figure></p>
+<p>有了获得这些信息的能力，我们可以可编程地连接告警、状态、安全风控、网络等方方面面系统了，因为这不是本文的重点，这里就不加以赘述了，欢迎大家来 NebulaGraph 社区分享你们的图洞察使用方式。</p>
+<p>接下来我们来看看存储相关的例子。</p>
+<h3 id="镜像云盘快照的血缘" class="headerLink">
+    <a href="#%e9%95%9c%e5%83%8f%e4%ba%91%e7%9b%98%e5%bf%ab%e7%85%a7%e7%9a%84%e8%a1%80%e7%bc%98" class="header-mark"></a>4.3 镜像、云盘、快照的血缘</h3><p>在基础设施中，云盘（iSCSI、Ceph、NFS）、镜像、快照之间有多重复杂的关系，比如：</p>
+<ul>
+<li>一个系统镜像可能从某一个虚拟机挂载的云盘或者一个快照创建</li>
+<li>一个云盘可能是从一个系统镜像、一个快照或者另一个云盘创建</li>
+<li>一个快照是从一个云盘创建的</li>
+</ul>
+<p>这种血缘信息的识别和管理是很有必要的。下边的查询可以获得给定的虚机 <code>server-0</code> 的所有存储血缘：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="line"><span class="cl"><span class="k">MATCH</span><span class="w"> </span><span class="n">p</span><span class="o">=</span><span class="p">(</span><span class="n">server_a</span><span class="p">)</span><span class="o">-</span><span class="p">[:</span><span class="o">`</span><span class="n">attached</span><span class="o">`|</span><span class="n">created_from</span><span class="o">|</span><span class="n">used_by</span><span class="p">]</span><span class="o">-</span><span class="p">(</span><span class="n">step1</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">WHERE</span><span class="w"> </span><span class="nf">id</span><span class="p">(</span><span class="n">server_a</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&#34;server-0&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">OPTIONAL</span><span class="w"> </span><span class="k">MATCH</span><span class="w"> </span><span class="n">p1</span><span class="o">=</span><span class="p">(</span><span class="n">step1</span><span class="p">)</span><span class="o">-</span><span class="p">[:</span><span class="n">created_from</span><span class="o">*</span><span class="mi">1</span><span class="p">..</span><span class="mi">5</span><span class="p">]</span><span class="o">-</span><span class="p">(</span><span class="n">step2</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">RETURN</span><span class="w"> </span><span class="n">p</span><span class="p">,</span><span class="w"> </span><span class="n">p1</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>我们可以看到结果中：</p>
+<ul>
+<li><code>server-0</code> 的启动镜像（这里它是从本地盘启动的，没有挂载云盘）是从 <code>volume-1</code> 创建的</li>
+<li><code>volume-1</code> 是从 <code>cirros-0.5.2-x86_64-disk</code> 这个镜像创建的</li>
+<li>此外，还有其他有分叉关系的存储资源和他们也息息相关</li>
+</ul>
+<p><figure><a class="lightgallery" href="/graph-enabled-infra-ops/storage_lineage_0.webp" title="storage_lineage_0" data-thumbnail="/graph-enabled-infra-ops/storage_lineage_0.webp">
+        <img
+            
+            loading="lazy"
+            src="/graph-enabled-infra-ops/storage_lineage_0.webp"
+            srcset="/graph-enabled-infra-ops/storage_lineage_0.webp, /graph-enabled-infra-ops/storage_lineage_0.webp 1.5x, /graph-enabled-infra-ops/storage_lineage_0.webp 2x"
+            sizes="auto"
+            alt="storage_lineage_0">
+    </a></figure></p>
+<p>接下来，我们不只考虑存储资源，再看看涉及云盘（cinder_volume）挂载（attached）这层关系下的血缘关系：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="line"><span class="cl"><span class="k">MATCH</span><span class="w"> </span><span class="n">p</span><span class="o">=</span><span class="p">(</span><span class="n">server_a</span><span class="p">)</span><span class="o">-</span><span class="p">[:</span><span class="o">`</span><span class="n">attached</span><span class="o">`|</span><span class="n">created_from</span><span class="o">|</span><span class="n">used_by</span><span class="p">]</span><span class="o">-</span><span class="p">(</span><span class="n">step1</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">WHERE</span><span class="w"> </span><span class="nf">id</span><span class="p">(</span><span class="n">server_a</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&#34;server-4&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">OPTIONAL</span><span class="w"> </span><span class="k">MATCH</span><span class="w"> </span><span class="n">p1</span><span class="o">=</span><span class="p">(</span><span class="n">step1</span><span class="p">)</span><span class="o">-</span><span class="p">[:</span><span class="n">created_from</span><span class="o">|</span><span class="n">attached</span><span class="o">*</span><span class="mi">1</span><span class="p">..</span><span class="mi">5</span><span class="p">]</span><span class="o">-</span><span class="p">(</span><span class="n">step2</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">RETURN</span><span class="w"> </span><span class="n">p</span><span class="p">,</span><span class="w"> </span><span class="n">p1</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>这次，我们可以从渲染图中读出这样的洞察：</p>
+<ul>
+<li><code>server-4</code> 的启动镜像（这里它是从本地盘启动的）是从 <code>volume-1</code> 创建的
+<ul>
+<li>而 <code>volume-1</code> 现在挂载在 <code>server-6</code> 上</li>
+<li><code>volume-1</code> 是从 <code>cirros-0.5.2-x86_64-disk</code> 这个镜像创建的</li>
+<li>同样 <code>cirros-0.5.2-x86_64-disk</code> 镜像被很多其他虚机在采用</li>
+</ul>
+</li>
+<li><code>server-4</code> 同时挂载了数据盘 <code>volume-2</code>
+<ul>
+<li>而 <code>volume-2</code> 是一个多挂载的盘，它同时挂载在 <code>server-3</code> 之上</li>
+<li><code>server-3</code> 的系统启动盘是从快照 <code>snapshot-202301111800-volume-1</code> 克隆创建的</li>
+<li>快照 <code>snapshot-202301111800-volume-1</code> 是曾经从 <code>volume-1</code> 创建的</li>
+<li><code>volume-1</code> 现在挂载在 <code>server-6</code> 上
+<ul>
+<li>快照不一定是从 <code>server-6</code> 而来，因为镜像可能被重新挂载过</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p><figure><a class="lightgallery" href="/graph-enabled-infra-ops/storage_lineage_1.webp" title="storage_lineage_1" data-thumbnail="/graph-enabled-infra-ops/storage_lineage_1.webp">
+        <img
+            
+            loading="lazy"
+            src="/graph-enabled-infra-ops/storage_lineage_1.webp"
+            srcset="/graph-enabled-infra-ops/storage_lineage_1.webp, /graph-enabled-infra-ops/storage_lineage_1.webp 1.5x, /graph-enabled-infra-ops/storage_lineage_1.webp 2x"
+            sizes="auto"
+            alt="storage_lineage_1">
+    </a></figure></p>
+<p>而这些血缘信息可以被用在资源生命周期管理、根因分析、安全告警、状态传导上，这里不加以赘述。</p>
+<h3 id="高相关性虚机预警" class="headerLink">
+    <a href="#%e9%ab%98%e7%9b%b8%e5%85%b3%e6%80%a7%e8%99%9a%e6%9c%ba%e9%a2%84%e8%ad%a6" class="header-mark"></a>4.4 高相关性虚机预警</h3><p>下面再给一个节点相似度的应用，我们可以在全图或者子图上，利用图算法找到与一个虚机在图上关系的维度上最相似的其他虚机，基于在这种相关性增加新的关系，并在关系上做风险事件预警。</p>
+<p>这次的图算法应用中，我们按照一个典型的从[快速子图验证]到[全图生产应用的]工作流。</p>
+<h4 id="在子图上快速验证浏览器内算法" class="headerLink">
+    <a href="#%e5%9c%a8%e5%ad%90%e5%9b%be%e4%b8%8a%e5%bf%ab%e9%80%9f%e9%aa%8c%e8%af%81%e6%b5%8f%e8%a7%88%e5%99%a8%e5%86%85%e7%ae%97%e6%b3%95" class="header-mark"></a>4.4.1 在子图上快速验证：浏览器内算法</h4><p>首先，我们试着从 <code>server-0</code> 的三度子图上做算法的验证。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">GET SUBGRAPH 3 STEPS FROM &#34;server-0&#34;
+</span></span><span class="line"><span class="cl">YIELD VERTICES AS nodes, EDGES AS relationships;
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>将结果渲染在画布上，我们可以看到子图中包含了其他几个虚机：</p>
+<p><figure><a class="lightgallery" href="/graph-enabled-infra-ops/server_subgraph.webp" title="server_subgraph" data-thumbnail="/graph-enabled-infra-ops/server_subgraph.webp">
+        <img
+            
+            loading="lazy"
+            src="/graph-enabled-infra-ops/server_subgraph.webp"
+            srcset="/graph-enabled-infra-ops/server_subgraph.webp, /graph-enabled-infra-ops/server_subgraph.webp 1.5x, /graph-enabled-infra-ops/server_subgraph.webp 2x"
+            sizes="auto"
+            alt="server_subgraph">
+    </a></figure></p>
+<p>然后，我们利用 explorer 中的浏览器内图算法，可以非常方便地验证我们的想法，这里，我们使用 Jaccard SImilarity 相似性算法，进行 <code>server-0</code> 与 <code>server-1,server-3,server-4,server-6</code> 迭代分别得到相似性：</p>
+<p><figure><a class="lightgallery" href="/graph-enabled-infra-ops/jacc_sim_browser.webp" title="jacc_sim_browser" data-thumbnail="/graph-enabled-infra-ops/jacc_sim_browser.webp">
+        <img
+            
+            loading="lazy"
+            src="/graph-enabled-infra-ops/jacc_sim_browser.webp"
+            srcset="/graph-enabled-infra-ops/jacc_sim_browser.webp, /graph-enabled-infra-ops/jacc_sim_browser.webp 1.5x, /graph-enabled-infra-ops/jacc_sim_browser.webp 2x"
+            sizes="auto"
+            alt="jacc_sim_browser">
+    </a></figure></p>
+<p>可以看出，在 3 步子图内，和 <code>server-0</code> 最近接的虚机是 <code>server-4</code>。进一步我们可以简单在子图上看看两者之间的路径作为相似性的解释：</p>
+<p><figure><a class="lightgallery" href="/graph-enabled-infra-ops/sim_explain.webp" title="sim_explain" data-thumbnail="/graph-enabled-infra-ops/sim_explain.webp">
+        <img
+            
+            loading="lazy"
+            src="/graph-enabled-infra-ops/sim_explain.webp"
+            srcset="/graph-enabled-infra-ops/sim_explain.webp, /graph-enabled-infra-ops/sim_explain.webp 1.5x, /graph-enabled-infra-ops/sim_explain.webp 2x"
+            sizes="auto"
+            alt="sim_explain">
+    </a></figure></p>
+<p>在这个可解释结果中，我们知道 <code>server-0</code> 与 <code>server-4</code> 相似的原因可能是：</p>
+<ul>
+<li>坐落在同一个宿主机：node-0</li>
+<li>使用同一个镜像：cirros_mod_from_volume-1</li>
+</ul>
+<p>如此，我们最终落地的预警机制可能是，当 <code>server-0</code> 出现某一问题、告警时候，给相似的 server-4 也设定预警，预警理由就是它们在同样主机、同样镜像。</p>
+<h4 id="落地算法为应用workflowanalytics" class="headerLink">
+    <a href="#%e8%90%bd%e5%9c%b0%e7%ae%97%e6%b3%95%e4%b8%ba%e5%ba%94%e7%94%a8workflowanalytics" class="header-mark"></a>4.4.2 落地算法为应用：Workflow+Analytics</h4><p>有了前边的快速实验，我们可以借助 workflow + NebulaGraph Analytics 把它落地为全图上的算法，利用 Analytics 分布式能力去执行。</p>
+<p>在生产上，我们利用 Workflow 的 DAG 编排能力创建两个前后相连的任务：</p>
+<ul>
+<li>取临近虚机</li>
+<li>全图算相似度</li>
+</ul>
+<p>第一个任务如下，它实时从给定的虚机（这里写死了 server-0，但是 workflow 可以把这里作为参数化，并封装任务为可以被 API 触发的异步服务）：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="line"><span class="cl"><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="p">)</span><span class="o">-</span><span class="p">[</span><span class="o">*</span><span class="mi">1</span><span class="p">..</span><span class="mi">5</span><span class="p">]</span><span class="o">-</span><span class="p">(</span><span class="n">m</span><span class="p">:</span><span class="o">`</span><span class="n">nova_instance</span><span class="o">`</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">WHERE</span><span class="w"> </span><span class="nf">id</span><span class="p">(</span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&#34;server-0&#34;</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">m</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">RETURN</span><span class="w"> </span><span class="k">distinct</span><span class="w"> </span><span class="nf">id</span><span class="p">(</span><span class="n">m</span><span class="p">)</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>这里 Query job 我们输出待比较的其他虚机的 vid。</p>
+<p><figure><a class="lightgallery" href="/graph-enabled-infra-ops/query_sim_server.webp" title="query_sim_server" data-thumbnail="/graph-enabled-infra-ops/query_sim_server.webp">
+        <img
+            
+            loading="lazy"
+            src="/graph-enabled-infra-ops/query_sim_server.webp"
+            srcset="/graph-enabled-infra-ops/query_sim_server.webp, /graph-enabled-infra-ops/query_sim_server.webp 1.5x, /graph-enabled-infra-ops/query_sim_server.webp 2x"
+            sizes="auto"
+            alt="query_sim_server">
+    </a></figure></p>
+<p>接着，JaccardSImilarity job 中，我们选择 ids1 为 server-0（这里如上，上线时是参数化的），ids2 从上游取（前边的 Query job），选择在 openstack 全图扫描所有类型的边。<figure><a class="lightgallery" href="/graph-enabled-infra-ops/jacc_sim_workflow.webp" title="jacc_sim_workflow" data-thumbnail="/graph-enabled-infra-ops/jacc_sim_workflow.webp">
+        <img
+            
+            loading="lazy"
+            src="/graph-enabled-infra-ops/jacc_sim_workflow.webp"
+            srcset="/graph-enabled-infra-ops/jacc_sim_workflow.webp, /graph-enabled-infra-ops/jacc_sim_workflow.webp 1.5x, /graph-enabled-infra-ops/jacc_sim_workflow.webp 2x"
+            sizes="auto"
+            alt="jacc_sim_workflow">
+    </a></figure></p>
+<p>保存、运行，我们可以看到，结果如下，区别是这次它运算了更多的目标虚机，并且迭代作用范围是全图而非一个子图，可以看到结果是一致的，这是因为子图上关联度大的点和相近的边在 Jaccard 算法里起到了更主要的作用。</p>
+<p><figure><a class="lightgallery" href="/graph-enabled-infra-ops/jacc_result.webp" title="jacc_result" data-thumbnail="/graph-enabled-infra-ops/jacc_result.webp">
+        <img
+            
+            loading="lazy"
+            src="/graph-enabled-infra-ops/jacc_result.webp"
+            srcset="/graph-enabled-infra-ops/jacc_result.webp, /graph-enabled-infra-ops/jacc_result.webp 1.5x, /graph-enabled-infra-ops/jacc_result.webp 2x"
+            sizes="auto"
+            alt="jacc_result">
+    </a></figure></p>
+<h3 id="安全相关场景" class="headerLink">
+    <a href="#%e5%ae%89%e5%85%a8%e7%9b%b8%e5%85%b3%e5%9c%ba%e6%99%af" class="header-mark"></a>4.5 安全相关场景</h3><p>基础设施资源中的关联关系和金融、内容系统、电商领域的风控场景有相似的地方，很多场景本质上利用到了图谱关系中的知识，在图库上实时获取这些复杂多跳天然带有可解释性的安全洞察非常适合。</p>
+<h4 id="秘钥泄漏风控分析" class="headerLink">
+    <a href="#%e7%a7%98%e9%92%a5%e6%b3%84%e6%bc%8f%e9%a3%8e%e6%8e%a7%e5%88%86%e6%9e%90" class="header-mark"></a>4.5.1 秘钥泄漏风控分析</h4><p>先看一个秘钥泄漏的场景：假设 <code>key-0</code> 被安全部门确定被泄漏了，我们可以在毫秒时间内获得如下查询：</p>
+<ul>
+<li>直接采用了密钥的虚机</li>
+<li>与采用秘钥的虚机网络直连的机器</li>
+<li>与采用秘钥的虚机跨网络相连的机器</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="line"><span class="cl"><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">key_leaked</span><span class="p">)</span><span class="o">-</span><span class="p">[:</span><span class="o">`</span><span class="n">used_by</span><span class="o">`</span><span class="p">]</span><span class="o">-&gt;</span><span class="p">(</span><span class="n">involved_server</span><span class="p">:</span><span class="n">nova_instance</span><span class="p">)</span><span class="o">--</span><span class="p">(:</span><span class="n">neutron_port</span><span class="p">)</span><span class="o">--</span><span class="p">(</span><span class="n">net</span><span class="p">:</span><span class="n">neutron_network</span><span class="p">)</span><span class="o">--</span><span class="p">(:</span><span class="n">neutron_port</span><span class="p">)</span><span class="o">--</span><span class="p">(</span><span class="n">server_b</span><span class="p">:</span><span class="n">nova_instance</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">       </span><span class="k">WHERE</span><span class="w"> </span><span class="nf">id</span><span class="p">(</span><span class="n">key_leaked</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&#34;key-0&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">OPTIONAL</span><span class="w"> </span><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">server_b</span><span class="p">)</span><span class="o">--</span><span class="p">()</span><span class="o">--</span><span class="p">(</span><span class="n">other_net</span><span class="p">:</span><span class="n">neutron_network</span><span class="p">)</span><span class="o">--</span><span class="p">(:</span><span class="n">neutron_port</span><span class="p">)</span><span class="o">--</span><span class="p">(</span><span class="n">server_c</span><span class="p">:</span><span class="n">nova_instance</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">WITH</span><span class="w"> </span><span class="n">involved_server</span><span class="p">,</span><span class="w"> </span><span class="n">server_b</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">same_subnet_machines</span><span class="p">,</span><span class="w"> </span><span class="n">server_c</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">cross_net_machines</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">WHERE</span><span class="w"> </span><span class="n">cross_net_machines</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">involved_server</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">RETURN</span><span class="w"> </span><span class="n">involved_server</span><span class="p">.</span><span class="n">nova_instance</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">with_key</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">same_subnet_machines</span><span class="p">.</span><span class="n">nova_instance</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">l2_vms</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">cross_net_machines</span><span class="p">.</span><span class="n">nova_instance</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">cross_vpc_vms</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>贴一下部分结果，我们知道 server-4 采用了这个 keypair，并且 server-6 和它在同一个网络，同时，有一定可能，通过 server-6，server-1,2,0,5 也受到了威胁、影响，相关的机器可以被触发不同级别的告警来降低安全事故的影响。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">with_key</th>
+<th style="text-align:left">l2_vms</th>
+<th style="text-align:left">cross_vpc_vms</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">server-4</td>
+<td style="text-align:left">server-6</td>
+<td style="text-align:left">server-1</td>
+</tr>
+<tr>
+<td style="text-align:left">server-4</td>
+<td style="text-align:left">server-6</td>
+<td style="text-align:left">server-2</td>
+</tr>
+<tr>
+<td style="text-align:left">server-4</td>
+<td style="text-align:left">server-6</td>
+<td style="text-align:left">server-0</td>
+</tr>
+<tr>
+<td style="text-align:left">server-4</td>
+<td style="text-align:left">server-6</td>
+<td style="text-align:left">server-5</td>
+</tr>
+</tbody>
+</table>
+<p>这个查询改造为可视化结果：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="line"><span class="cl"><span class="k">MATCH</span><span class="w"> </span><span class="n">p</span><span class="o">=</span><span class="p">(</span><span class="n">key_leaked</span><span class="p">)</span><span class="o">-</span><span class="p">[:</span><span class="o">`</span><span class="n">used_by</span><span class="o">`</span><span class="p">]</span><span class="o">-&gt;</span><span class="p">(</span><span class="n">involved_server</span><span class="p">:</span><span class="n">nova_instance</span><span class="p">)</span><span class="o">--</span><span class="p">(:</span><span class="n">neutron_port</span><span class="p">)</span><span class="o">--</span><span class="p">(</span><span class="n">net</span><span class="p">:</span><span class="n">neutron_network</span><span class="p">)</span><span class="o">--</span><span class="p">(:</span><span class="n">neutron_port</span><span class="p">)</span><span class="o">--</span><span class="p">(</span><span class="n">server_b</span><span class="p">:</span><span class="n">nova_instance</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">WHERE</span><span class="w"> </span><span class="nf">id</span><span class="p">(</span><span class="n">key_leaked</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&#34;key-0&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">OPTIONAL</span><span class="w"> </span><span class="k">MATCH</span><span class="w"> </span><span class="n">p1</span><span class="o">=</span><span class="p">(</span><span class="n">server_b</span><span class="p">)</span><span class="o">--</span><span class="p">()</span><span class="o">--</span><span class="p">(</span><span class="n">other_net</span><span class="p">:</span><span class="n">neutron_network</span><span class="p">)</span><span class="o">--</span><span class="p">(:</span><span class="n">neutron_port</span><span class="p">)</span><span class="o">--</span><span class="p">(</span><span class="n">server_c</span><span class="p">:</span><span class="n">nova_instance</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">RETURN</span><span class="w"> </span><span class="n">p</span><span class="p">,</span><span class="n">p1</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>在 explorer 里 应用 Dagre-LR 的布局，一关联关系很清晰的被展示出来，也许可以考虑把它引用在安全事故的报告分发给虚机租户。</p>
+<p><figure><a class="lightgallery" href="/graph-enabled-infra-ops/key_leaked.webp" title="key_leaked" data-thumbnail="/graph-enabled-infra-ops/key_leaked.webp">
+        <img
+            
+            loading="lazy"
+            src="/graph-enabled-infra-ops/key_leaked.webp"
+            srcset="/graph-enabled-infra-ops/key_leaked.webp, /graph-enabled-infra-ops/key_leaked.webp 1.5x, /graph-enabled-infra-ops/key_leaked.webp 2x"
+            sizes="auto"
+            alt="key_leaked">
+    </a></figure></p>
+<h4 id="镜像云盘漏洞范围分析" class="headerLink">
+    <a href="#%e9%95%9c%e5%83%8f%e4%ba%91%e7%9b%98%e6%bc%8f%e6%b4%9e%e8%8c%83%e5%9b%b4%e5%88%86%e6%9e%90" class="header-mark"></a>4.5.2 镜像、云盘漏洞范围分析</h4><p>类似的，一个镜像被扫出漏洞，我们可以瞬间查到涉及到的资源，并做出相应</p>
+<ul>
+<li>镜像文件有漏洞</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="line"><span class="cl"><span class="k">MATCH</span><span class="w"> </span><span class="n">p</span><span class="o">=</span><span class="p">(</span><span class="n">image_risky</span><span class="p">)</span><span class="o">-</span><span class="p">[:</span><span class="o">`</span><span class="n">created_from</span><span class="o">`</span><span class="p">]</span><span class="o">-</span><span class="p">(</span><span class="n">step1</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">WHERE</span><span class="w"> </span><span class="nf">id</span><span class="p">(</span><span class="n">image_risky</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&#34;cirros-0.5.2-x86_64-disk&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">OPTIONAL</span><span class="w"> </span><span class="k">MATCH</span><span class="w"> </span><span class="n">p1</span><span class="o">=</span><span class="p">(</span><span class="n">step1</span><span class="p">)</span><span class="o">-</span><span class="p">[:</span><span class="n">created_from</span><span class="o">*</span><span class="mi">1</span><span class="p">..</span><span class="mi">5</span><span class="p">]</span><span class="o">-</span><span class="p">(</span><span class="n">step2</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">RETURN</span><span class="w"> </span><span class="n">p</span><span class="p">,</span><span class="w"> </span><span class="n">p1</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p><figure><a class="lightgallery" href="/graph-enabled-infra-ops/image_vulnerability.webp" title="image_vulnerability" data-thumbnail="/graph-enabled-infra-ops/image_vulnerability.webp">
+        <img
+            
+            loading="lazy"
+            src="/graph-enabled-infra-ops/image_vulnerability.webp"
+            srcset="/graph-enabled-infra-ops/image_vulnerability.webp, /graph-enabled-infra-ops/image_vulnerability.webp 1.5x, /graph-enabled-infra-ops/image_vulnerability.webp 2x"
+            sizes="auto"
+            alt="image_vulnerability">
+    </a></figure></p>
+<ul>
+<li>一个云盘有漏洞</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="line"><span class="cl"><span class="k">MATCH</span><span class="w"> </span><span class="n">p</span><span class="o">=</span><span class="p">(</span><span class="n">volume_risky</span><span class="p">)</span><span class="o">-</span><span class="p">[:</span><span class="o">`</span><span class="n">created_from</span><span class="o">`</span><span class="p">]</span><span class="o">-</span><span class="p">(</span><span class="n">step1</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">WHERE</span><span class="w"> </span><span class="nf">id</span><span class="p">(</span><span class="n">volume_risky</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&#34;volume-1&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">OPTIONAL</span><span class="w"> </span><span class="k">MATCH</span><span class="w"> </span><span class="n">p1</span><span class="o">=</span><span class="p">(</span><span class="n">step1</span><span class="p">)</span><span class="o">-</span><span class="p">[:</span><span class="n">created_from</span><span class="o">*</span><span class="mi">1</span><span class="p">..</span><span class="mi">5</span><span class="p">]</span><span class="o">-</span><span class="p">(</span><span class="n">step2</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">RETURN</span><span class="w"> </span><span class="n">p</span><span class="p">,</span><span class="w"> </span><span class="n">p1</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p><figure><a class="lightgallery" href="/graph-enabled-infra-ops/volume_vulnerability.webp" title="volume_vulnerability" data-thumbnail="/graph-enabled-infra-ops/volume_vulnerability.webp">
+        <img
+            
+            loading="lazy"
+            src="/graph-enabled-infra-ops/volume_vulnerability.webp"
+            srcset="/graph-enabled-infra-ops/volume_vulnerability.webp, /graph-enabled-infra-ops/volume_vulnerability.webp 1.5x, /graph-enabled-infra-ops/volume_vulnerability.webp 2x"
+            sizes="auto"
+            alt="volume_vulnerability">
+    </a></figure></p>
+<h4 id="潜在宿主机逃离影响范围分析" class="headerLink">
+    <a href="#%e6%bd%9c%e5%9c%a8%e5%ae%bf%e4%b8%bb%e6%9c%ba%e9%80%83%e7%a6%bb%e5%bd%b1%e5%93%8d%e8%8c%83%e5%9b%b4%e5%88%86%e6%9e%90" class="header-mark"></a>4.5.3 潜在宿主机逃离影响范围分析</h4><p>最后，我们讨论一个比较严重的安全问题：宿主机逃离。</p>
+<p>在极端的情况下如果在我们得到消息，<code>server-0</code> 发生了有可能影响宿主机的安全时间的时候，仅仅关闭这个宿主机是不够的，受影响的范围可能已经扩大了，然而，我们不可能因为这样关闭整个机房，所以，利用图谱辅助找出受影响范围会有一些帮助。</p>
+<p>下面的查询模式是：</p>
+<ul>
+<li>找出可能被影响的子网（VPC），标记最高级别风险子网为后续定位做准备</li>
+<li>找到可能被控制了的宿主机</li>
+<li>从宿主机触发，找出同主机的其他虚机</li>
+<li>从其他虚机触发，找到它们的子网（VPC）</li>
+<li>从其他虚机触发，找到可能已经被影响的网盘（防止被挂载到其他机器，扩大影响）</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="line"><span class="cl"><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">server_escaping_hypervisor</span><span class="p">)</span><span class="o">&lt;-</span><span class="p">[:</span><span class="o">`</span><span class="n">contains</span><span class="o">`</span><span class="p">]</span><span class="o">-</span><span class="p">(</span><span class="n">hypervisor_compromised</span><span class="p">:</span><span class="n">nova_host</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">WHERE</span><span class="w"> </span><span class="nf">id</span><span class="p">(</span><span class="n">server_escaping_hypervisor</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&#34;server-0&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">OPTIONAL</span><span class="w"> </span><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">server_escaping_hypervisor</span><span class="p">)</span><span class="o">&lt;-</span><span class="p">[:</span><span class="n">attached</span><span class="p">]</span><span class="o">-</span><span class="p">(:</span><span class="n">neutron_port</span><span class="p">)</span><span class="o">&lt;-</span><span class="p">[:</span><span class="n">contains</span><span class="p">]</span><span class="o">-</span><span class="p">(</span><span class="n">impacted_subnet_high</span><span class="p">:</span><span class="n">neutron_network</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">OPTIONAL</span><span class="w"> </span><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">hypervisor_compromised</span><span class="p">)</span><span class="o">-</span><span class="p">[:</span><span class="o">`</span><span class="n">contains</span><span class="o">`</span><span class="p">]</span><span class="o">-&gt;</span><span class="p">(</span><span class="n">server_same_host</span><span class="p">:</span><span class="n">nova_instance</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">OPTIONAL</span><span class="w"> </span><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">server_same_host</span><span class="p">)</span><span class="o">&lt;-</span><span class="p">[:</span><span class="n">attached</span><span class="p">]</span><span class="o">-</span><span class="p">(:</span><span class="n">neutron_port</span><span class="p">)</span><span class="o">&lt;-</span><span class="p">[:</span><span class="n">contains</span><span class="p">]</span><span class="o">-</span><span class="p">(</span><span class="n">impacted_subnet</span><span class="p">:</span><span class="n">neutron_network</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">OPTIONAL</span><span class="w"> </span><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">server_same_host</span><span class="p">)</span><span class="o">&lt;-</span><span class="p">[:</span><span class="n">attached</span><span class="p">]</span><span class="o">-</span><span class="p">(</span><span class="n">impacted_volume</span><span class="p">:</span><span class="n">cinder_volume</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">RETURN</span><span class="w"> </span><span class="n">impacted_subnet_high</span><span class="p">.</span><span class="n">neutron_network</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">impacted_subnet_high</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">       </span><span class="n">hypervisor_compromised</span><span class="p">.</span><span class="n">nova_host</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">hypervisor_compromised</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">       </span><span class="n">impacted_subnet</span><span class="p">.</span><span class="n">neutron_network</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">impacted_subnet</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">       </span><span class="p">[</span><span class="n">server_same_host</span><span class="p">.</span><span class="n">nova_instance</span><span class="p">.</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">server_same_host</span><span class="p">.</span><span class="n">nova_instance</span><span class="p">.</span><span class="n">instance_name</span><span class="p">]</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">server_same_host</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">       </span><span class="n">impacted_volume</span><span class="p">.</span><span class="n">cinder_volume</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">impacted_volume</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>结果中列出了 server-0 被控制之后，考虑宿主机逃离的情况下可能受影响的扩散范围。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">impacted_subnet_high</th>
+<th style="text-align:left">hypervisor_compromised</th>
+<th style="text-align:left">impacted_subnet</th>
+<th style="text-align:left">server_same_host</th>
+<th style="text-align:left">impacted_volume</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">shared</td>
+<td style="text-align:left">node0</td>
+<td style="text-align:left">shared</td>
+<td style="text-align:left">[&ldquo;server-0&rdquo;, &ldquo;instance-00000001&rdquo;]</td>
+<td style="text-align:left"><strong>Empty</strong></td>
+</tr>
+<tr>
+<td style="text-align:left">shared</td>
+<td style="text-align:left">node0</td>
+<td style="text-align:left">shared</td>
+<td style="text-align:left">[&ldquo;server-1&rdquo;, &ldquo;instance-00000002&rdquo;]</td>
+<td style="text-align:left">ffaeb199-47f4-4d95-89b2-97fba3c1bcfe</td>
+</tr>
+<tr>
+<td style="text-align:left">shared</td>
+<td style="text-align:left">node0</td>
+<td style="text-align:left">private</td>
+<td style="text-align:left">[&ldquo;server-1&rdquo;, &ldquo;instance-00000002&rdquo;]</td>
+<td style="text-align:left">ffaeb199-47f4-4d95-89b2-97fba3c1bcfe</td>
+</tr>
+<tr>
+<td style="text-align:left">shared</td>
+<td style="text-align:left">node0</td>
+<td style="text-align:left">private</td>
+<td style="text-align:left">[&ldquo;server-3&rdquo;, &ldquo;instance-00000005&rdquo;]</td>
+<td style="text-align:left">c9db7c2e-c712-49d6-8019-14b82de8542d</td>
+</tr>
+<tr>
+<td style="text-align:left">shared</td>
+<td style="text-align:left">node0</td>
+<td style="text-align:left">private</td>
+<td style="text-align:left">[&ldquo;server-3&rdquo;, &ldquo;instance-00000005&rdquo;]</td>
+<td style="text-align:left">volume-2</td>
+</tr>
+<tr>
+<td style="text-align:left">shared</td>
+<td style="text-align:left">node0</td>
+<td style="text-align:left">public</td>
+<td style="text-align:left">[&ldquo;server-4&rdquo;, &ldquo;instance-00000006&rdquo;]</td>
+<td style="text-align:left">volume-2</td>
+</tr>
+</tbody>
+</table>
+<p>咱们再看看它的可视化结果。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="line"><span class="cl"><span class="k">MATCH</span><span class="w"> </span><span class="n">p</span><span class="o">=</span><span class="p">(</span><span class="n">server_escaping_hypervisor</span><span class="p">)</span><span class="o">&lt;-</span><span class="p">[:</span><span class="o">`</span><span class="n">contains</span><span class="o">`</span><span class="p">]</span><span class="o">-</span><span class="p">(</span><span class="n">hypervisor_compromised</span><span class="p">:</span><span class="n">nova_host</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">WHERE</span><span class="w"> </span><span class="nf">id</span><span class="p">(</span><span class="n">server_escaping_hypervisor</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&#34;server-0&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">OPTIONAL</span><span class="w"> </span><span class="k">MATCH</span><span class="w"> </span><span class="n">p0</span><span class="o">=</span><span class="p">(</span><span class="n">server_escaping_hypervisor</span><span class="p">)</span><span class="o">&lt;-</span><span class="p">[:</span><span class="n">attached</span><span class="p">]</span><span class="o">-</span><span class="p">(:</span><span class="n">neutron_port</span><span class="p">)</span><span class="o">&lt;-</span><span class="p">[:</span><span class="n">contains</span><span class="p">]</span><span class="o">-</span><span class="p">(</span><span class="n">impacted_subnet_high</span><span class="p">:</span><span class="n">neutron_network</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">OPTIONAL</span><span class="w"> </span><span class="k">MATCH</span><span class="w"> </span><span class="n">p1</span><span class="o">=</span><span class="p">(</span><span class="n">hypervisor_compromised</span><span class="p">)</span><span class="o">-</span><span class="p">[:</span><span class="o">`</span><span class="n">contains</span><span class="o">`</span><span class="p">]</span><span class="o">-&gt;</span><span class="p">(</span><span class="n">server_same_host</span><span class="p">:</span><span class="n">nova_instance</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">OPTIONAL</span><span class="w"> </span><span class="k">MATCH</span><span class="w"> </span><span class="n">p2</span><span class="o">=</span><span class="p">(</span><span class="n">server_same_host</span><span class="p">)</span><span class="o">&lt;-</span><span class="p">[:</span><span class="n">attached</span><span class="p">]</span><span class="o">-</span><span class="p">(:</span><span class="n">neutron_port</span><span class="p">)</span><span class="o">&lt;-</span><span class="p">[:</span><span class="n">contains</span><span class="p">]</span><span class="o">-</span><span class="p">(</span><span class="n">impacted_subnet</span><span class="p">:</span><span class="n">neutron_network</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">OPTIONAL</span><span class="w"> </span><span class="k">MATCH</span><span class="w"> </span><span class="n">p3</span><span class="o">=</span><span class="p">(</span><span class="n">server_same_host</span><span class="p">)</span><span class="o">&lt;-</span><span class="p">[:</span><span class="n">attached</span><span class="p">]</span><span class="o">-</span><span class="p">(</span><span class="n">impacted_volume</span><span class="p">:</span><span class="n">cinder_volume</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">RETURN</span><span class="w"> </span><span class="n">p</span><span class="p">,</span><span class="n">p0</span><span class="p">,</span><span class="n">p1</span><span class="p">,</span><span class="n">p2</span><span class="p">,</span><span class="n">p3</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>选择 Dagre 布局之后，可以比较清晰看出影响资源的范围，从这些可能受影响的虚机、网络、网盘出发，可以进一步采取需要的措施了。</p>
+<p><figure><a class="lightgallery" href="/graph-enabled-infra-ops/hypervisor_escape.webp" title="hypervisor_escape" data-thumbnail="/graph-enabled-infra-ops/hypervisor_escape.webp">
+        <img
+            
+            loading="lazy"
+            src="/graph-enabled-infra-ops/hypervisor_escape.webp"
+            srcset="/graph-enabled-infra-ops/hypervisor_escape.webp, /graph-enabled-infra-ops/hypervisor_escape.webp 1.5x, /graph-enabled-infra-ops/hypervisor_escape.webp 2x"
+            sizes="auto"
+            alt="hypervisor_escape">
+    </a></figure></p>
+<h3 id="重点关注资源检测" class="headerLink">
+    <a href="#%e9%87%8d%e7%82%b9%e5%85%b3%e6%b3%a8%e8%b5%84%e6%ba%90%e6%a3%80%e6%b5%8b" class="header-mark"></a>4.6 重点关注资源检测</h3><p>最后，利用 Betweenness Centrality 算法，我们可以得出基础设施中影响面大的那些，”脆弱环节“，这些资源不一定真的处在危险的状态，只是说，它们处在了比较重要的资源之间的交汇处，一旦它们出问题，出问题的代价可能会非常大。</p>
+<p>识别出这样的资源之后我们可以考虑：</p>
+<ul>
+<li>有针对性采用更激进、昂贵的健康检查策略；</li>
+<li>设定更高的支持、关切级别；</li>
+<li>主动迁移相关联的资源以降低”脆弱环节“对整体基础设施可用性的影响范围；</li>
+</ul>
+<p>这次，我们就只在浏览器内部的子图上做算法流程验证，读者朋友们可以自己试着利用开源的 NebulaGraph Algorithm 或者付费的 NebulaGraph Workflow+Analytics 做全图上的等价操作。</p>
+<p>首先，我们在前边用过的方式去扫描图上 1000 个点，并且从其出发，跳一跳，获得一个比较随机的子图，在我们当前的数据集下，这实际上捞取了全图的数据：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">MATCH (n) WITH n LIMIT 1000
+</span></span><span class="line"><span class="cl">OPTIONAL MATCH p=(n)--()
+</span></span><span class="line"><span class="cl">RETURN p, n
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>在其之上，我们运行 Betweenness Centrality 之后，得到 <code>node0</code> 是分值最大的”脆弱一环“，的确，它是我们当前实验中负载最大的宿主机，可以想象它确实是故障之后全局影响最大的一个资源。</p>
+<p><figure><a class="lightgallery" href="/graph-enabled-infra-ops/bwteeness_centrality.webp" title="bwteeness_centrality" data-thumbnail="/graph-enabled-infra-ops/bwteeness_centrality.webp">
+        <img
+            
+            loading="lazy"
+            src="/graph-enabled-infra-ops/bwteeness_centrality.webp"
+            srcset="/graph-enabled-infra-ops/bwteeness_centrality.webp, /graph-enabled-infra-ops/bwteeness_centrality.webp 1.5x, /graph-enabled-infra-ops/bwteeness_centrality.webp 2x"
+            sizes="auto"
+            alt="bwteeness_centrality">
+    </a></figure></p>
+<h2 id="总结" class="headerLink">
+    <a href="#%e6%80%bb%e7%bb%93" class="header-mark"></a>5 总结</h2><p>在海量数据、企业云、混合云的复杂基础设施运维场景下，利用图数据库图算法的能力做高效的辅助运维工作是一个十分值得的尝试与技术投资。</p>
+<p>NebulaGraph 作为高性能、开源、分布式的新一代云原生图数据库，是一个很值得考虑的图基础设施选型目标。</p>
+<p>欢迎大家在文末留言讨论，本文的可复现环境和示例的 ETL 管道的代码、示例数据全都在 <a href="https://github.com/wey-gu/openstack-graph/" target="_blank" rel="noopener noreferrer">https://github.com/wey-gu/openstack-graph/</a> 开源，欢迎大家来一起完善。</p>
+<blockquote>
+<p>题图版权：<a href="https://unsplash.com/photos/Wv2U24G2F78" target="_blank" rel="noopener noreferrer">Ivan</a></p>
+</blockquote>]]></description>
+</item></channel>
+</rss>

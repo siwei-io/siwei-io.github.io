@@ -1,0 +1,539 @@
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+        <title>汉兜 - 标签 - siwei.io</title>
+        <link>https://siwei.io/tags/%E6%B1%89%E5%85%9C/</link>
+        <description>汉兜 - 标签 - siwei.io</description>
+        <generator>Hugo -- gohugo.io</generator><language>zh-CN</language><managingEditor>weyl.gu@gmail.com (Wey Gu)</managingEditor>
+            <webMaster>weyl.gu@gmail.com (Wey Gu)</webMaster><copyright>This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.</copyright><lastBuildDate>Mon, 28 Feb 2022 19:18:59 &#43;0800</lastBuildDate><atom:link href="https://siwei.io/tags/%E6%B1%89%E5%85%9C/" rel="self" type="application/rss+xml" /><item>
+    <title>图数据库体操：用 Nebula Graph 搭成语图谱解汉兜</title>
+    <link>https://siwei.io/resolve-wordle/</link>
+    <pubDate>Mon, 28 Feb 2022 19:18:59 &#43;0800</pubDate><author>
+        <name>Wey Gu</name>
+    </author><guid>https://siwei.io/resolve-wordle/</guid>
+    <description><![CDATA[<div class="featured-image">
+                <img src="/resolve-wordle/featured-image.webp" referrerpolicy="no-referrer">
+            </div><blockquote>
+<p>我发现用 Nebula Graph 的图查询解 Antfu 的汉兜（最好的中文成语版 wordle 👉🏻 handle.antfu.me）特别有意思，很适合每天写图库语句的体操练习，本文揭示如何用知识图谱<del>作弊</del>解汉兜😁</p>
+</blockquote>
+<h2 id="什么是汉兜" class="headerLink">
+    <a href="#%e4%bb%80%e4%b9%88%e6%98%af%e6%b1%89%e5%85%9c" class="header-mark"></a>1 什么是汉兜？</h2><p>汉兜（https://handle.antfu.me）是由 Vue/Vite 核心团队的 Antfu 的又一个非常酷的作品，一个非常精致的汉字版的 Wordle，他是是一个每日挑战的填字游戏的中文成语版。</p>
+<p>每天，汉兜会发起一个猜成语挑战，人们要在十次内才对它才能获胜，每一步之后都会收到相应的文字、声母、韵母、声调的匹配情况的提示，其中：绿色表示这个因素存在并且位置匹配、橘色表示这个元素存在但是位置不对，详细的规则可见如下的网页截图：</p>
+<p><figure><a class="lightgallery" href="/resolve-wordle/handle-intro.webp" title="/resolve-wordle/handle-intro.webp" data-thumbnail="/resolve-wordle/handle-intro.webp">
+        <img
+            
+            loading="lazy"
+            src="/resolve-wordle/handle-intro.webp"
+            srcset="/resolve-wordle/handle-intro.webp, /resolve-wordle/handle-intro.webp 1.5x, /resolve-wordle/handle-intro.webp 2x"
+            sizes="auto"
+            alt="/resolve-wordle/handle-intro.webp">
+    </a></figure></p>
+<p>汉兜的乐趣就我们在于在有限的尝试过程中，在大脑中搜寻可能的答案，不断去逼近真理，任何试图作弊、讨巧去泄漏结果的行为都是很无趣、倒胃口的（比如从开源的汉兜代码里窃取信息），这个过程就像在做大脑的体操。</p>
+<p>说到大脑的成语词汇量体操，我突然想到，为什么我们不能在大脑之外造一个汉语成语知识图谱，然后基于这个图谱去做图数据库查询语法体操呢？</p>
+<h2 id="构造解决汉兜的成语知识图谱" class="headerLink">
+    <a href="#%e6%9e%84%e9%80%a0%e8%a7%a3%e5%86%b3%e6%b1%89%e5%85%9c%e7%9a%84%e6%88%90%e8%af%ad%e7%9f%a5%e8%af%86%e5%9b%be%e8%b0%b1" class="header-mark"></a>2 构造解决汉兜的成语知识图谱</h2><h3 id="什么是知识图谱" class="headerLink">
+    <a href="#%e4%bb%80%e4%b9%88%e6%98%af%e7%9f%a5%e8%af%86%e5%9b%be%e8%b0%b1" class="header-mark"></a>2.1 什么是知识图谱？</h3><p>简单来说，知识图谱是一个连接实体之间关联关系的网络，它最初由 Google 提出并用来满足搜索引擎中基于知识推理才可获得（而不是网页倒排索引）的搜索问题，比如：”姚明妻子的年龄？“、”火箭队得过几次总冠军？“</p>
+<p>这里边，我们关注的条件。到 2022 年的现在，知识图谱已经被广泛应用在推荐系统、问答系统、安全风控等等更多搜索之外的领域。</p>
+<h3 id="为什么需要用知识图谱解决汉兜" class="headerLink">
+    <a href="#%e4%b8%ba%e4%bb%80%e4%b9%88%e9%9c%80%e8%a6%81%e7%94%a8%e7%9f%a5%e8%af%86%e5%9b%be%e8%b0%b1%e8%a7%a3%e5%86%b3%e6%b1%89%e5%85%9c" class="header-mark"></a>2.2 为什么需要用知识图谱解决汉兜？</h3><p><del>原因就是：because I can</del></p>
+<p>实际上，我们在大脑中解决字谜游戏的过程像极了图谱网络中的信息搜寻的过程，汉兜的解谜反馈提示条件天然适合被用图谱的语义来进行表达。在本文后边，你们会发现解谜条件翻译成图语义是非常非常自然的，这个问题就像是一个天然的为图谱而存在的练习一样，我相信这和知识图谱的结构和人脑中的知识结构非常接近有很大的关系。</p>
+<h3 id="如何构建面向汉兜解谜的知识图谱" class="headerLink">
+    <a href="#%e5%a6%82%e4%bd%95%e6%9e%84%e5%bb%ba%e9%9d%a2%e5%90%91%e6%b1%89%e5%85%9c%e8%a7%a3%e8%b0%9c%e7%9a%84%e7%9f%a5%e8%af%86%e5%9b%be%e8%b0%b1" class="header-mark"></a>2.3 如何构建面向汉兜解谜的知识图谱？</h3><p>知识图谱是由实体（顶点）和关系（边）组成的，用图数据库管理系统（Graph Database MS）可以很方便进行知识的入库、更改、查询、甚至可视化探索。</p>
+<p>在本文里，我将利用开源的分布式图数据库 Nebula Graph 开实践这个过程，具体图谱系统的搭建我都会放在文末。</p>
+<p>在本章，我们只讨论图谱的建模：如何面向汉兜的解谜去设计“实体”与“关系”。</p>
+<h4 id="图建模" class="headerLink">
+    <a href="#%e5%9b%be%e5%bb%ba%e6%a8%a1" class="header-mark"></a>2.3.1 图建模</h4><h5 id="最初的想法" class="headerLink">
+    <a href="#%e6%9c%80%e5%88%9d%e7%9a%84%e6%83%b3%e6%b3%95" class="header-mark"></a>2.3.1.1 最初的想法</h5><p>首先，一定存在的实体是：</p>
+<ul>
+<li>成语</li>
+<li>汉字</li>
+</ul>
+<p>成语-[包含]-&gt;汉字，每个汉字-[读作]-&gt;读音。</p>
+<p>其次，因为解谜过程中涉及到了声母、韵母以及声调的条件，考虑到图谱本身的量级非常小（千级别），而且字的读音是一对多的关系，我把读音和声母（包涵声母-initial和韵母-final）也作为实体，他们之间的关系则是顺理成章了：</p>
+<p><figure><a class="lightgallery" href="/resolve-wordle/schema_v0.webp" title="schema_v0" data-thumbnail="/resolve-wordle/schema_v0.webp">
+        <img
+            
+            loading="lazy"
+            src="/resolve-wordle/schema_v0.webp"
+            srcset="/resolve-wordle/schema_v0.webp, /resolve-wordle/schema_v0.webp 1.5x, /resolve-wordle/schema_v0.webp 2x"
+            sizes="auto"
+            alt="schema_v0">
+    </a></figure></p>
+<h5 id="最终的版本" class="headerLink">
+    <a href="#%e6%9c%80%e7%bb%88%e7%9a%84%e7%89%88%e6%9c%ac" class="header-mark"></a>2.3.1.2 最终的版本</h5><p>然而，我在后边基于图谱进行查询的时候发现最初的建模会使得(成语)&ndash;&gt;(字)&ndash;&gt;(读音)查询过程中丢失了这个字特定的读法的条件，所以我最终的建模是：</p>
+<p><figure><a class="lightgallery" href="/resolve-wordle/schema_v1.webp" title="schema_v1" data-thumbnail="/resolve-wordle/schema_v1.webp">
+        <img
+            
+            loading="lazy"
+            src="/resolve-wordle/schema_v1.webp"
+            srcset="/resolve-wordle/schema_v1.webp, /resolve-wordle/schema_v1.webp 1.5x, /resolve-wordle/schema_v1.webp 2x"
+            sizes="auto"
+            alt="schema_v1">
+    </a></figure></p>
+<p>这样，纯文字的条件只涉及了<code>(成语)--&gt;(字)</code> 这一跳，而读音、声母、声调的条件则是另一条关系路径，既没有最初版本条件的冗余，又可以在一个路径模式匹配里带上两种条件（后边的例子里会涉及这样的表达）。</p>
+<h4 id="构建成语知识图谱" class="headerLink">
+    <a href="#%e6%9e%84%e5%bb%ba%e6%88%90%e8%af%ad%e7%9f%a5%e8%af%86%e5%9b%be%e8%b0%b1" class="header-mark"></a>2.3.2 构建成语知识图谱</h4><p>有了建模、这么简单的图谱的构建就剩下了数据的收集、清洗和入库。</p>
+<p>对于所有成语数据和他们的读音，我一方面直接抽取了汉兜代码内部的<a href="https://github.com/antfu/handle/" target="_blank" rel="noopener noreferrer">数据</a>、另一方面利用 <a href="https://pypinyin.readthedocs.io/" target="_blank" rel="noopener noreferrer">PyPinyin</a> 这个开源的 Python 库将汉兜数据中没有读音的数据获得读音，同时，我也用到了 PyPinyin 里的很多方便的函数比如获取一个拼音的声母、韵母。</p>
+<p>构建工具的代码在这里：https://github.com/wey-gu/chinese-graph</p>
+<p>更多信息我也放在文末的附录之中。</p>
+<h2 id="开始知识图谱查询体操" class="headerLink">
+    <a href="#%e5%bc%80%e5%a7%8b%e7%9f%a5%e8%af%86%e5%9b%be%e8%b0%b1%e6%9f%a5%e8%af%a2%e4%bd%93%e6%93%8d" class="header-mark"></a>3 开始知识图谱查询体操</h2><p>至此，我假设咱们都已经有了我帮大家搭建的成语<del>作弊</del>知识图谱了，开始我们的图谱查询体操吧！</p>
+<p>首先，打开汉兜 👉🏻 <a href="https://handle.antfu.me/" target="_blank" rel="noopener noreferrer">https://handle.antfu.me/</a></p>
+<p>假设我们想从一个成语开始，如果你没有想法的话可以试试这个：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="line"><span class="cl"><span class="o">//</span><span class="w"> </span><span class="err">匹配成语中的一个结果</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">x</span><span class="p">:</span><span class="o">`</span><span class="n">idiom</span><span class="o">`</span><span class="p">)</span><span class="w"> </span><span class="k">RETURN</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="k">LIMIT</span><span class="w"> </span><span class="mi">1</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">//</span><span class="w"> </span><span class="err">返回结果</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">//</span><span class="w"> </span><span class="p">(</span><span class="s2">&#34;爱憎分明&#34;</span><span class="w"> </span><span class="p">:</span><span class="n">idiom</span><span class="err">{</span><span class="n">pinyin</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;[&#39;ai4&#39;, &#39;zeng1&#39;, &#39;fen1&#39;, &#39;ming2&#39;]&#34;</span><span class="err">}</span><span class="p">)</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>然后我们把它填到汉兜之中，获得第一次尝试的提示条件：</p>
+<p><figure><a class="lightgallery" href="/resolve-wordle/initial_word.webp" title="/resolve-wordle/initial_word.webp" data-thumbnail="/resolve-wordle/initial_word.webp">
+        <img
+            
+            loading="lazy"
+            src="/resolve-wordle/initial_word.webp"
+            srcset="/resolve-wordle/initial_word.webp, /resolve-wordle/initial_word.webp 1.5x, /resolve-wordle/initial_word.webp 2x"
+            sizes="auto"
+            alt="/resolve-wordle/initial_word.webp">
+    </a></figure></p>
+<p>我们运气不错，得到了三个位置上的条件！</p>
+<ul>
+<li>有一个非第一个位置的字，拼音是 4 声，韵母是 ai，但不是爱（爱）</li>
+<li>有一个一声的字，不在第二个位置（憎）</li>
+<li>有一个字韵母是 ing，不在第四个位置（明）</li>
+<li>第四个字是二声（明）</li>
+</ul>
+<p>下面，我们开始图数据库语句体操！</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="line"><span class="cl"><span class="o">//</span><span class="w"> </span><span class="err">有一个非第一个位置的字，拼音是</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="err">声，韵母是</span><span class="w"> </span><span class="n">ai</span><span class="err">，但不是爱</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">char0</span><span class="p">:</span><span class="o">`</span><span class="k">character</span><span class="o">`</span><span class="p">)</span><span class="o">&lt;-</span><span class="p">[</span><span class="n">with_char_0</span><span class="p">:</span><span class="o">`</span><span class="n">with_character</span><span class="o">`</span><span class="p">]</span><span class="o">-</span><span class="p">(</span><span class="n">x</span><span class="p">:</span><span class="o">`</span><span class="n">idiom</span><span class="o">`</span><span class="p">)</span><span class="o">-</span><span class="p">[</span><span class="n">with_pinyin_0</span><span class="p">:</span><span class="o">`</span><span class="n">with_pinyin</span><span class="o">`</span><span class="p">]</span><span class="o">-&gt;</span><span class="p">(</span><span class="n">pinyin_0</span><span class="p">:</span><span class="o">`</span><span class="n">character_pinyin</span><span class="o">`</span><span class="p">)</span><span class="o">-</span><span class="p">[:</span><span class="o">`</span><span class="n">with_pinyin_part</span><span class="o">`</span><span class="p">]</span><span class="o">-&gt;</span><span class="p">(</span><span class="o">`</span><span class="n">final_part_0</span><span class="o">`</span><span class="p">:</span><span class="o">`</span><span class="n">pinyin_part</span><span class="o">`</span><span class="err">{</span><span class="n">part_type</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;final&#34;</span><span class="err">}</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">WHERE</span><span class="w"> </span><span class="nf">id</span><span class="p">(</span><span class="o">`</span><span class="n">final_part_0</span><span class="o">`</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&#34;ai&#34;</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">pinyin_0</span><span class="p">.</span><span class="o">`</span><span class="n">character_pinyin</span><span class="o">`</span><span class="p">.</span><span class="n">tone</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">with_pinyin_0</span><span class="p">.</span><span class="o">`</span><span class="n">position</span><span class="o">`</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">with_char_0</span><span class="p">.</span><span class="o">`</span><span class="n">position</span><span class="o">`</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="nf">id</span><span class="p">(</span><span class="n">char0</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="s2">&#34;爱&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">//</span><span class="w"> </span><span class="err">有一个一声的字，不在第二个位置</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">x</span><span class="p">:</span><span class="o">`</span><span class="n">idiom</span><span class="o">`</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="p">[</span><span class="n">with_pinyin_1</span><span class="p">:</span><span class="o">`</span><span class="n">with_pinyin</span><span class="o">`</span><span class="p">]</span><span class="o">-&gt;</span><span class="p">(</span><span class="n">pinyin_1</span><span class="p">:</span><span class="o">`</span><span class="n">character_pinyin</span><span class="o">`</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">WHERE</span><span class="w"> </span><span class="n">pinyin_1</span><span class="p">.</span><span class="o">`</span><span class="n">character_pinyin</span><span class="o">`</span><span class="p">.</span><span class="n">tone</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">with_pinyin_1</span><span class="p">.</span><span class="o">`</span><span class="n">position</span><span class="o">`</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">1</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">//</span><span class="w"> </span><span class="err">有一个字韵母是</span><span class="w"> </span><span class="n">ing</span><span class="err">，不在第四个位置</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">x</span><span class="p">:</span><span class="o">`</span><span class="n">idiom</span><span class="o">`</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="p">[</span><span class="n">with_pinyin_2</span><span class="p">:</span><span class="o">`</span><span class="n">with_pinyin</span><span class="o">`</span><span class="p">]</span><span class="o">-&gt;</span><span class="p">(:</span><span class="o">`</span><span class="n">character_pinyin</span><span class="o">`</span><span class="p">)</span><span class="o">-</span><span class="p">[:</span><span class="o">`</span><span class="n">with_pinyin_part</span><span class="o">`</span><span class="p">]</span><span class="o">-&gt;</span><span class="p">(</span><span class="n">final_part_2</span><span class="p">:</span><span class="o">`</span><span class="n">pinyin_part</span><span class="o">`</span><span class="err">{</span><span class="n">part_type</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;final&#34;</span><span class="err">}</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">WHERE</span><span class="w"> </span><span class="nf">id</span><span class="p">(</span><span class="n">final_part_2</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&#34;ing&#34;</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">with_pinyin_2</span><span class="p">.</span><span class="o">`</span><span class="n">position</span><span class="o">`</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">3</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">//</span><span class="w"> </span><span class="err">第四个字是二声</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">x</span><span class="p">:</span><span class="o">`</span><span class="n">idiom</span><span class="o">`</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="p">[</span><span class="n">with_pinyin_3</span><span class="p">:</span><span class="o">`</span><span class="n">with_pinyin</span><span class="o">`</span><span class="p">]</span><span class="o">-&gt;</span><span class="p">(</span><span class="n">pinyin_3</span><span class="p">:</span><span class="o">`</span><span class="n">character_pinyin</span><span class="o">`</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">WHERE</span><span class="w"> </span><span class="n">pinyin_3</span><span class="p">.</span><span class="o">`</span><span class="n">character_pinyin</span><span class="o">`</span><span class="p">.</span><span class="n">tone</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">with_pinyin_3</span><span class="p">.</span><span class="o">`</span><span class="n">position</span><span class="o">`</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">3</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">RETURN</span><span class="w"> </span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="nf">count</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">c</span><span class="w"> </span><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">c</span><span class="w"> </span><span class="k">DESC</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>在图数据库之中运行，得到了 7 个答案：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="err">(</span><span class="s2">&#34;惊愚骇俗&#34;</span> <span class="err">:idiom</span><span class="p">{</span><span class="err">pinyin:</span> <span class="nt">&#34;[&#39;jing1&#39;, &#39;yu2&#39;, &#39;hai4&#39;, &#39;su2&#39;]&#34;</span><span class="p">}</span><span class="err">)</span>
+</span></span><span class="line"><span class="cl"><span class="err">(</span><span class="s2">&#34;惊世骇俗&#34;</span> <span class="err">:idiom</span><span class="p">{</span><span class="err">pinyin:</span> <span class="nt">&#34;[&#39;jing1&#39;, &#39;shi4&#39;, &#39;hai4&#39;, &#39;su2&#39;]&#34;</span><span class="p">}</span><span class="err">)</span>
+</span></span><span class="line"><span class="cl"><span class="err">(</span><span class="s2">&#34;惊见骇闻&#34;</span> <span class="err">:idiom</span><span class="p">{</span><span class="err">pinyin:</span> <span class="nt">&#34;[&#39;jing1&#39;, &#39;jian4&#39;, &#39;hai4&#39;, &#39;wen2&#39;]&#34;</span><span class="p">}</span><span class="err">)</span>
+</span></span><span class="line"><span class="cl"><span class="err">(</span><span class="s2">&#34;沽名卖直&#34;</span> <span class="err">:idiom</span><span class="p">{</span><span class="err">pinyin:</span> <span class="nt">&#34;[&#39;gu1&#39;, &#39;ming2&#39;, &#39;mai4&#39;, &#39;zhi2&#39;]&#34;</span><span class="p">}</span><span class="err">)</span>
+</span></span><span class="line"><span class="cl"><span class="err">(</span><span class="s2">&#34;惊心骇神&#34;</span> <span class="err">:idiom</span><span class="p">{</span><span class="err">pinyin:</span> <span class="nt">&#34;[&#39;jing1&#39;, &#39;xin1&#39;, &#39;hai4&#39;, &#39;shen2&#39;]&#34;</span><span class="p">}</span><span class="err">)</span>
+</span></span><span class="line"><span class="cl"><span class="err">(</span><span class="s2">&#34;荆棘载途&#34;</span> <span class="err">:idiom</span><span class="p">{</span><span class="err">pinyin:</span> <span class="nt">&#34;[&#39;jing1&#39;, &#39;ji2&#39;, &#39;zai4&#39;, &#39;tu2&#39;]&#34;</span><span class="p">}</span><span class="err">)</span>
+</span></span><span class="line"><span class="cl"><span class="err">(</span><span class="s2">&#34;出卖灵魂&#34;</span> <span class="err">:idiom</span><span class="p">{</span><span class="err">pinyin:</span> <span class="nt">&#34;[&#39;chu1&#39;, &#39;mai4&#39;, &#39;ling2&#39;, &#39;hun2&#39;]&#34;</span><span class="p">}</span><span class="err">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>看起来 <code>惊世骇俗</code> 比较主流，试试！</p>
+<p><figure><a class="lightgallery" href="/resolve-wordle/D59.webp" title="汉兜 D59" data-thumbnail="/resolve-wordle/D59.webp">
+        <img
+            
+            loading="lazy"
+            src="/resolve-wordle/D59.webp"
+            srcset="/resolve-wordle/D59.webp, /resolve-wordle/D59.webp 1.5x, /resolve-wordle/D59.webp 2x"
+            sizes="auto"
+            alt="汉兜 D59">
+    </a></figure></p>
+<p>我们很幸运，借助于成语<del>作弊</del>知识图谱，居然一次就找到了答案，当然这实际上得益于第一次随机选取的词带来的限制条件的个数，不过在大部分情况下，两次尝试获得最终答案的可能性还是非常大的！</p>
+<blockquote>
+<p>注，这中间很长的253分钟是因为我在查询中发现之前代码里构造的图谱有点 bug，是“披枷带锁”这个词引起的读音图谱的错误数据，还好后来被修复了。</p>
+<p>大家知道“披枷带锁”的正确读音么？😭</p>
+</blockquote>
+<p>接下来，我给大家详细解释一下这个语句的意思。</p>
+<h3 id="语句的含义" class="headerLink">
+    <a href="#%e8%af%ad%e5%8f%a5%e7%9a%84%e5%90%ab%e4%b9%89" class="header-mark"></a>3.1 语句的含义</h3><p>我们从第一个字的条件开始，这是一个既有声音、又有字形信息的条件。</p>
+<ul>
+<li>声音信息：存在一个韵母为 <code>ai4</code> 的发音，位置不在第一个字</li>
+<li>文字信息：这个韵母为 <code>ai4</code> 的字，不是<code>爱</code>字</li>
+</ul>
+<p>对于声音信息条件，转换为图模式匹配为：(成语)-一个字发音-(拼音) -包含声母-(韵母) WHERE 拼音韵母为 <code>ai4</code> AND 位置不是第一个。</p>
+<p>因为建模的时候，属性名称我用的是英文（其实中文也是支持的），实际上的语句为：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="line"><span class="cl"><span class="o">//</span><span class="w"> </span><span class="err">有一个非第一个位置的字，拼音是</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="err">声，韵母是</span><span class="w"> </span><span class="n">ai</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">x</span><span class="p">:</span><span class="n">idiom</span><span class="p">)</span><span class="o">-</span><span class="p">[</span><span class="n">with_pinyin_0</span><span class="p">:</span><span class="n">with_pinyin</span><span class="p">]</span><span class="o">-&gt;</span><span class="p">(</span><span class="n">pinyin_0</span><span class="p">:</span><span class="o">`</span><span class="n">character_pinyin</span><span class="o">`</span><span class="p">)</span><span class="o">-</span><span class="p">[:</span><span class="o">`</span><span class="n">with_pinyin_part</span><span class="o">`</span><span class="p">]</span><span class="o">-&gt;</span><span class="p">(</span><span class="o">`</span><span class="n">final_part_0</span><span class="o">`</span><span class="p">:</span><span class="o">`</span><span class="n">pinyin_part</span><span class="o">`</span><span class="err">{</span><span class="n">part_type</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;final&#34;</span><span class="err">}</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">WHERE</span><span class="w"> </span><span class="nf">id</span><span class="p">(</span><span class="o">`</span><span class="n">final_part_0</span><span class="o">`</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&#34;ai&#34;</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">pinyin_0</span><span class="p">.</span><span class="o">`</span><span class="n">character_pinyin</span><span class="o">`</span><span class="p">.</span><span class="n">tone</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">with_pinyin_0</span><span class="p">.</span><span class="o">`</span><span class="n">position</span><span class="o">`</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">//</span><span class="w"> </span><span class="p">...</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">RETURN</span><span class="w"> </span><span class="n">x</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>类似的，表示非第一个位置的字，不是<code>爱</code> 的表达是：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="line"><span class="cl"><span class="o">//</span><span class="w"> </span><span class="err">有一个非第一个位置的字，拼音是</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="err">声，韵母是</span><span class="w"> </span><span class="n">ai</span><span class="err">，但不是爱</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">char0</span><span class="p">:</span><span class="o">`</span><span class="k">character</span><span class="o">`</span><span class="p">)</span><span class="o">&lt;-</span><span class="p">[</span><span class="n">with_char_0</span><span class="p">:</span><span class="o">`</span><span class="n">with_character</span><span class="o">`</span><span class="p">]</span><span class="o">-</span><span class="p">(</span><span class="n">x</span><span class="p">:</span><span class="o">`</span><span class="n">idiom</span><span class="o">`</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">WHERE</span><span class="w"> </span><span class="n">with_char_0</span><span class="p">.</span><span class="o">`</span><span class="n">position</span><span class="o">`</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="nf">id</span><span class="p">(</span><span class="n">char0</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="s2">&#34;爱&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">//</span><span class="w"> </span><span class="p">...</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">RETURN</span><span class="w"> </span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="nf">count</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">c</span><span class="w"> </span><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">c</span><span class="w"> </span><span class="k">DESC</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>而因为这两个条件最终描述的是同一个字，所以它们是可以被写在一个路径下的：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="line"><span class="cl"><span class="o">//</span><span class="w"> </span><span class="err">有一个非第一个位置的字，拼音是</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="err">声，韵母是</span><span class="w"> </span><span class="n">ai</span><span class="err">，但不是爱</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">char0</span><span class="p">:</span><span class="o">`</span><span class="k">character</span><span class="o">`</span><span class="p">)</span><span class="o">&lt;-</span><span class="p">[</span><span class="n">with_char_0</span><span class="p">:</span><span class="o">`</span><span class="n">with_character</span><span class="o">`</span><span class="p">]</span><span class="o">-</span><span class="p">(</span><span class="n">x</span><span class="p">:</span><span class="o">`</span><span class="n">idiom</span><span class="o">`</span><span class="p">)</span><span class="o">-</span><span class="p">[</span><span class="n">with_pinyin_0</span><span class="p">:</span><span class="o">`</span><span class="n">with_pinyin</span><span class="o">`</span><span class="p">]</span><span class="o">-&gt;</span><span class="p">(</span><span class="n">pinyin_0</span><span class="p">:</span><span class="o">`</span><span class="n">character_pinyin</span><span class="o">`</span><span class="p">)</span><span class="o">-</span><span class="p">[:</span><span class="o">`</span><span class="n">with_pinyin_part</span><span class="o">`</span><span class="p">]</span><span class="o">-&gt;</span><span class="p">(</span><span class="o">`</span><span class="n">final_part_0</span><span class="o">`</span><span class="p">:</span><span class="o">`</span><span class="n">pinyin_part</span><span class="o">`</span><span class="err">{</span><span class="n">part_type</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;final&#34;</span><span class="err">}</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">WHERE</span><span class="w"> </span><span class="nf">id</span><span class="p">(</span><span class="o">`</span><span class="n">final_part_0</span><span class="o">`</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&#34;ai&#34;</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">pinyin_0</span><span class="p">.</span><span class="o">`</span><span class="n">character_pinyin</span><span class="o">`</span><span class="p">.</span><span class="n">tone</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">with_pinyin_0</span><span class="p">.</span><span class="o">`</span><span class="n">position</span><span class="o">`</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">with_char_0</span><span class="p">.</span><span class="o">`</span><span class="n">position</span><span class="o">`</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="nf">id</span><span class="p">(</span><span class="n">char0</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="s2">&#34;爱&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">//</span><span class="w"> </span><span class="p">...</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">RETURN</span><span class="w"> </span><span class="n">x</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>更多的 <code>MATCH</code> 语法和例子细节，请大家参考文档：</p>
+<ul>
+<li>MATCH <a href="https://docs.nebula-graph.com.cn/3.0.0/3.ngql-guide/7.general-query-statements/2.match/" target="_blank" rel="noopener noreferrer">https://docs.nebula-graph.com.cn/3.0.0/3.ngql-guide/7.general-query-statements/2.match/</a></li>
+<li>图模式 <a href="https://docs.nebula-graph.com.cn/3.0.0/3.ngql-guide/1.nGQL-overview/3.graph-patterns/" target="_blank" rel="noopener noreferrer">https://docs.nebula-graph.com.cn/3.0.0/3.ngql-guide/1.nGQL-overview/3.graph-patterns/</a></li>
+<li>nGQL 命令 cheatsheet <a href="https://docs.nebula-graph.com.cn/3.0.0/2.quick-start/6.cheatsheet-for-ngql-command/" target="_blank" rel="noopener noreferrer">https://docs.nebula-graph.com.cn/3.0.0/2.quick-start/6.cheatsheet-for-ngql-command/</a></li>
+</ul>
+<h2 id="可视化展示线索" class="headerLink">
+    <a href="#%e5%8f%af%e8%a7%86%e5%8c%96%e5%b1%95%e7%a4%ba%e7%ba%bf%e7%b4%a2" class="header-mark"></a>4 可视化展示线索</h2><p>我们把每一个条件的匹配路径作为输出，利用 Nebula Graph 的可视化能力，可以得到：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="line"><span class="cl"><span class="o">//</span><span class="w"> </span><span class="err">有一个非第一个位置的字，拼音是</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="err">声，韵母是</span><span class="w"> </span><span class="n">ai</span><span class="err">，但不是爱</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">MATCH</span><span class="w"> </span><span class="n">p0</span><span class="o">=</span><span class="p">(</span><span class="n">char0</span><span class="p">:</span><span class="o">`</span><span class="k">character</span><span class="o">`</span><span class="p">)</span><span class="o">&lt;-</span><span class="p">[</span><span class="n">with_char_0</span><span class="p">:</span><span class="o">`</span><span class="n">with_character</span><span class="o">`</span><span class="p">]</span><span class="o">-</span><span class="p">(</span><span class="n">x</span><span class="p">:</span><span class="o">`</span><span class="n">idiom</span><span class="o">`</span><span class="p">)</span><span class="o">-</span><span class="p">[</span><span class="n">with_pinyin_0</span><span class="p">:</span><span class="o">`</span><span class="n">with_pinyin</span><span class="o">`</span><span class="p">]</span><span class="o">-&gt;</span><span class="p">(</span><span class="n">pinyin_0</span><span class="p">:</span><span class="o">`</span><span class="n">character_pinyin</span><span class="o">`</span><span class="p">)</span><span class="o">-</span><span class="p">[:</span><span class="o">`</span><span class="n">with_pinyin_part</span><span class="o">`</span><span class="p">]</span><span class="o">-&gt;</span><span class="p">(</span><span class="o">`</span><span class="n">final_part_0</span><span class="o">`</span><span class="p">:</span><span class="o">`</span><span class="n">pinyin_part</span><span class="o">`</span><span class="err">{</span><span class="n">part_type</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;final&#34;</span><span class="err">}</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">WHERE</span><span class="w"> </span><span class="nf">id</span><span class="p">(</span><span class="o">`</span><span class="n">final_part_0</span><span class="o">`</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&#34;ai&#34;</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">pinyin_0</span><span class="p">.</span><span class="o">`</span><span class="n">character_pinyin</span><span class="o">`</span><span class="p">.</span><span class="n">tone</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">with_pinyin_0</span><span class="p">.</span><span class="o">`</span><span class="n">position</span><span class="o">`</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">with_char_0</span><span class="p">.</span><span class="o">`</span><span class="n">position</span><span class="o">`</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="nf">id</span><span class="p">(</span><span class="n">char0</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="s2">&#34;爱&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">//</span><span class="w"> </span><span class="err">有一个一声的字，不在第二个位置</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">MATCH</span><span class="w"> </span><span class="n">p1</span><span class="o">=</span><span class="p">(</span><span class="n">x</span><span class="p">:</span><span class="o">`</span><span class="n">idiom</span><span class="o">`</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="p">[</span><span class="n">with_pinyin_1</span><span class="p">:</span><span class="o">`</span><span class="n">with_pinyin</span><span class="o">`</span><span class="p">]</span><span class="o">-&gt;</span><span class="p">(</span><span class="n">pinyin_1</span><span class="p">:</span><span class="o">`</span><span class="n">character_pinyin</span><span class="o">`</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">WHERE</span><span class="w"> </span><span class="n">pinyin_1</span><span class="p">.</span><span class="o">`</span><span class="n">character_pinyin</span><span class="o">`</span><span class="p">.</span><span class="n">tone</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">with_pinyin_1</span><span class="p">.</span><span class="o">`</span><span class="n">position</span><span class="o">`</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">1</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">//</span><span class="w"> </span><span class="err">有一个字韵母是</span><span class="w"> </span><span class="n">ing</span><span class="err">，不在第四个位置</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">MATCH</span><span class="w"> </span><span class="n">p2</span><span class="o">=</span><span class="p">(</span><span class="n">x</span><span class="p">:</span><span class="o">`</span><span class="n">idiom</span><span class="o">`</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="p">[</span><span class="n">with_pinyin_2</span><span class="p">:</span><span class="o">`</span><span class="n">with_pinyin</span><span class="o">`</span><span class="p">]</span><span class="o">-&gt;</span><span class="p">(:</span><span class="o">`</span><span class="n">character_pinyin</span><span class="o">`</span><span class="p">)</span><span class="o">-</span><span class="p">[:</span><span class="o">`</span><span class="n">with_pinyin_part</span><span class="o">`</span><span class="p">]</span><span class="o">-&gt;</span><span class="p">(</span><span class="n">final_part_2</span><span class="p">:</span><span class="o">`</span><span class="n">pinyin_part</span><span class="o">`</span><span class="err">{</span><span class="n">part_type</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;final&#34;</span><span class="err">}</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">WHERE</span><span class="w"> </span><span class="nf">id</span><span class="p">(</span><span class="n">final_part_2</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&#34;ing&#34;</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">with_pinyin_2</span><span class="p">.</span><span class="o">`</span><span class="n">position</span><span class="o">`</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">3</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">//</span><span class="w"> </span><span class="err">第四个字是二声</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">MATCH</span><span class="w"> </span><span class="n">p3</span><span class="o">=</span><span class="p">(</span><span class="n">x</span><span class="p">:</span><span class="o">`</span><span class="n">idiom</span><span class="o">`</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="p">[</span><span class="n">with_pinyin_3</span><span class="p">:</span><span class="o">`</span><span class="n">with_pinyin</span><span class="o">`</span><span class="p">]</span><span class="o">-&gt;</span><span class="p">(</span><span class="n">pinyin_3</span><span class="p">:</span><span class="o">`</span><span class="n">character_pinyin</span><span class="o">`</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">WHERE</span><span class="w"> </span><span class="n">pinyin_3</span><span class="p">.</span><span class="o">`</span><span class="n">character_pinyin</span><span class="o">`</span><span class="p">.</span><span class="n">tone</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">with_pinyin_3</span><span class="p">.</span><span class="o">`</span><span class="n">position</span><span class="o">`</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">3</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">RETURN</span><span class="w"> </span><span class="n">p0</span><span class="p">,</span><span class="n">p1</span><span class="p">,</span><span class="n">p2</span><span class="p">,</span><span class="n">p3</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>在可视化工具的 Console 控制台里执行上边的语句之后，选择导入图探索，就可以看到</p>
+<p><figure><a class="lightgallery" href="/resolve-wordle/studio.webp" title="/resolve-wordle/studio.webp" data-thumbnail="/resolve-wordle/studio.webp">
+        <img
+            
+            loading="lazy"
+            src="/resolve-wordle/studio.webp"
+            srcset="/resolve-wordle/studio.webp, /resolve-wordle/studio.webp 1.5x, /resolve-wordle/studio.webp 2x"
+            sizes="auto"
+            alt="/resolve-wordle/studio.webp">
+    </a></figure></p>
+<h2 id="下一步" class="headerLink">
+    <a href="#%e4%b8%8b%e4%b8%80%e6%ad%a5" class="header-mark"></a>5 下一步</h2><p>如果大家是从本文第一次了解到 Nebula Graph 图数据库，那么大家可以下一步从 <a href="https://github.com/vesoft-inc/nebula" target="_blank" rel="noopener noreferrer">Nebula Graph</a> 项目和 Nebula Graph 社区的官方 Bilibili 站点 👉🏻 <a href="https://space.bilibili.com/472621355" target="_blank" rel="noopener noreferrer">https://space.bilibili.com/472621355</a> 了解更多有意思的入门知识。</p>
+<p>另外，<a href="https://nebula-graph.com.cn/demo/" target="_blank" rel="noopener noreferrer">这里</a>是 Nebula Graph 的官方线上试玩环境，大家可以照着<a href="https://docs.nebula-graph.com.cn/" target="_blank" rel="noopener noreferrer">文档</a>，利用试玩环境尝鲜。</p>
+<p>后边，Nebula Graph 会开展每天的汉兜 nGQL 体操活动，敬请关注哈！</p>
+<p>Happy Graphing!</p>
+<h2 id="附录搭建成语知识图谱" class="headerLink">
+    <a href="#%e9%99%84%e5%bd%95%e6%90%ad%e5%bb%ba%e6%88%90%e8%af%ad%e7%9f%a5%e8%af%86%e5%9b%be%e8%b0%b1" class="header-mark"></a>6 附录：搭建成语知识图谱</h2><h3 id="收集生成图谱数据" class="headerLink">
+    <a href="#%e6%94%b6%e9%9b%86%e7%94%9f%e6%88%90%e5%9b%be%e8%b0%b1%e6%95%b0%e6%8d%ae" class="header-mark"></a>6.1 收集、生成图谱数据</h3><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ python3 graph_data_generator.py
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="导入数据到-nebula-graph-图数据库" class="headerLink">
+    <a href="#%e5%af%bc%e5%85%a5%e6%95%b0%e6%8d%ae%e5%88%b0-nebula-graph-%e5%9b%be%e6%95%b0%e6%8d%ae%e5%ba%93" class="header-mark"></a>6.2 导入数据到 Nebula Graph 图数据库</h3><h4 id="部署图数据库" class="headerLink">
+    <a href="#%e9%83%a8%e7%bd%b2%e5%9b%be%e6%95%b0%e6%8d%ae%e5%ba%93" class="header-mark"></a>6.2.1 部署图数据库</h4><blockquote>
+<p>借助于 Nebula-Up <a href="https://github.com/wey-gu/nebula-up/" target="_blank" rel="noopener noreferrer">https://github.com/wey-gu/nebula-up/</a> ，一行就可以了。</p>
+</blockquote>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ curl -fsSL nebula-up.siwei.io/install.sh <span class="p">|</span> bash -s -- v3.0.0
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>部署成功的话，会看到这样的结果：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">┌────────────────────────────────────────┐
+</span></span><span class="line"><span class="cl">│ 🌌 Nebula-Graph Playground is Up now!  │
+</span></span><span class="line"><span class="cl">├────────────────────────────────────────┤
+</span></span><span class="line"><span class="cl">│                                        │
+</span></span><span class="line"><span class="cl">│ 🎉 Congrats! Your Nebula is Up now!    │
+</span></span><span class="line"><span class="cl">│    $ <span class="nb">cd</span> ~/.nebula-up                   │
+</span></span><span class="line"><span class="cl">│                                        │
+</span></span><span class="line"><span class="cl">│ 🌏 You can access it from browser:     │
+</span></span><span class="line"><span class="cl">│      http://127.0.0.1:7001             │
+</span></span><span class="line"><span class="cl">│      http://&lt;other_interface&gt;:7001     │
+</span></span><span class="line"><span class="cl">│                                        │
+</span></span><span class="line"><span class="cl">│ 🔥 Or access via Nebula Console:       │
+</span></span><span class="line"><span class="cl">│    $ ~/.nebula-up/console.sh           │
+</span></span><span class="line"><span class="cl">│                                        │
+</span></span><span class="line"><span class="cl">│    To remove the playground:           │
+</span></span><span class="line"><span class="cl">│    $ ~/.nebula-up/uninstall.sh         │
+</span></span><span class="line"><span class="cl">│                                        │
+</span></span><span class="line"><span class="cl">│ 🚀 Have Fun!                           │
+</span></span><span class="line"><span class="cl">│                                        │
+</span></span><span class="line"><span class="cl">└────────────────────────────────────────┘
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="图谱入库" class="headerLink">
+    <a href="#%e5%9b%be%e8%b0%b1%e5%85%a5%e5%ba%93" class="header-mark"></a>6.2.2 图谱入库</h4><blockquote>
+<p>借助于 Nebula-Importer <a href="https://github.com/vesoft-inc/nebula-importer/" target="_blank" rel="noopener noreferrer">https://github.com/vesoft-inc/nebula-importer/</a> ，一行就可以了。</p>
+</blockquote>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ docker run --rm -ti <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    --network<span class="o">=</span>nebula-docker-compose_nebula-net <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    -v <span class="si">${</span><span class="nv">PWD</span><span class="si">}</span>/importer_conf.yaml:/root/importer_conf.yaml <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    -v <span class="si">${</span><span class="nv">PWD</span><span class="si">}</span>/output:/root <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    vesoft/nebula-importer:v3.0.0 <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    --config /root/importer_conf.yaml
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>大概一两分钟数据就导入成功了，命令也会正常退出。</p>
+<blockquote>
+<p>连到图数据库的 console</p>
+</blockquote>
+<p>进入 Console 的容器执行下边的命令：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ ~/.nebula-up/console.sh
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># nebula-console -addr graphd -port 9669 -user root -p nebula</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>检查一下导入的数据：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="p">(</span><span class="n">root</span><span class="o">@</span><span class="n">nebula</span><span class="p">)</span><span class="w"> </span><span class="p">[(</span><span class="k">none</span><span class="p">)]</span><span class="o">&gt;</span><span class="w"> </span><span class="k">show</span><span class="w"> </span><span class="n">spaces</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">+</span><span class="c1">--------------------+
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="o">|</span><span class="w"> </span><span class="n">Name</span><span class="w">               </span><span class="o">|</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">+</span><span class="c1">--------------------+
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;chinese_idiom&#34;</span><span class="w">    </span><span class="o">|</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">+</span><span class="c1">--------------------+
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">(</span><span class="n">root</span><span class="o">@</span><span class="n">nebula</span><span class="p">)</span><span class="w"> </span><span class="p">[(</span><span class="k">none</span><span class="p">)]</span><span class="o">&gt;</span><span class="w"> </span><span class="n">use</span><span class="w"> </span><span class="n">chinese_idiom</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">Execution</span><span class="w"> </span><span class="n">succeeded</span><span class="w"> </span><span class="p">(</span><span class="n">time</span><span class="w"> </span><span class="n">spent</span><span class="w"> </span><span class="mi">1510</span><span class="o">/</span><span class="mi">2329</span><span class="w"> </span><span class="n">us</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">Fri</span><span class="p">,</span><span class="w"> </span><span class="mi">25</span><span class="w"> </span><span class="n">Feb</span><span class="w"> </span><span class="mi">2022</span><span class="w"> </span><span class="mi">08</span><span class="p">:</span><span class="mi">53</span><span class="p">:</span><span class="mi">11</span><span class="w"> </span><span class="n">UTC</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">(</span><span class="n">root</span><span class="o">@</span><span class="n">nebula</span><span class="p">)</span><span class="w"> </span><span class="p">[</span><span class="n">chinese_idiom</span><span class="p">]</span><span class="o">&gt;</span><span class="w"> </span><span class="k">MATCH</span><span class="w"> </span><span class="n">p</span><span class="o">=</span><span class="p">(</span><span class="err">成语</span><span class="p">:</span><span class="o">`</span><span class="n">idiom</span><span class="o">`</span><span class="p">)</span><span class="w"> </span><span class="k">RETURN</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="k">LIMIT</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">+</span><span class="c1">------------------------------------------------------------------+
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="o">|</span><span class="w"> </span><span class="n">p</span><span class="w">                                                                </span><span class="o">|</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">+</span><span class="c1">------------------------------------------------------------------+
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="o">|</span><span class="w"> </span><span class="o">&lt;</span><span class="p">(</span><span class="s2">&#34;一丁不识&#34;</span><span class="w"> </span><span class="p">:</span><span class="n">idiom</span><span class="err">{</span><span class="n">pinyin</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;[&#39;yi1&#39;, &#39;ding1&#39;, &#39;bu4&#39;, &#39;shi2&#39;]&#34;</span><span class="err">}</span><span class="p">)</span><span class="o">&gt;</span><span class="w"> </span><span class="o">|</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">|</span><span class="w"> </span><span class="o">&lt;</span><span class="p">(</span><span class="s2">&#34;一丝不挂&#34;</span><span class="w"> </span><span class="p">:</span><span class="n">idiom</span><span class="err">{</span><span class="n">pinyin</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;[&#39;yi1&#39;, &#39;si1&#39;, &#39;bu4&#39;, &#39;gua4&#39;]&#34;</span><span class="err">}</span><span class="p">)</span><span class="o">&gt;</span><span class="w">   </span><span class="o">|</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">+</span><span class="c1">------------------------------------------------------------------+
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">(</span><span class="n">root</span><span class="o">@</span><span class="n">nebula</span><span class="p">)</span><span class="w"> </span><span class="p">[</span><span class="n">chinese_idiom</span><span class="p">]</span><span class="o">&gt;</span><span class="w"> </span><span class="n">SUBMIT</span><span class="w"> </span><span class="n">JOB</span><span class="w"> </span><span class="n">STATS</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">+</span><span class="c1">------------+
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="o">|</span><span class="w"> </span><span class="k">New</span><span class="w"> </span><span class="n">Job</span><span class="w"> </span><span class="n">Id</span><span class="w"> </span><span class="o">|</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">+</span><span class="c1">------------+
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="o">|</span><span class="w"> </span><span class="mi">11</span><span class="w">         </span><span class="o">|</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">+</span><span class="c1">------------+
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">(</span><span class="n">root</span><span class="o">@</span><span class="n">nebula</span><span class="p">)</span><span class="w"> </span><span class="p">[</span><span class="n">chinese_idiom</span><span class="p">]</span><span class="o">&gt;</span><span class="w"> </span><span class="k">SHOW</span><span class="w"> </span><span class="n">STATS</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">+</span><span class="c1">---------+--------------------+--------+
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="o">|</span><span class="w"> </span><span class="k">Type</span><span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">Name</span><span class="w">               </span><span class="o">|</span><span class="w"> </span><span class="k">Count</span><span class="w">  </span><span class="o">|</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">+</span><span class="c1">---------+--------------------+--------+
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;Tag&#34;</span><span class="w">   </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;character&#34;</span><span class="w">        </span><span class="o">|</span><span class="w"> </span><span class="mi">4847</span><span class="w">   </span><span class="o">|</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;Tag&#34;</span><span class="w">   </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;character_pinyin&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="mi">1336</span><span class="w">   </span><span class="o">|</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;Tag&#34;</span><span class="w">   </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;idiom&#34;</span><span class="w">            </span><span class="o">|</span><span class="w"> </span><span class="mi">29503</span><span class="w">  </span><span class="o">|</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;Tag&#34;</span><span class="w">   </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;pinyin_part&#34;</span><span class="w">      </span><span class="o">|</span><span class="w"> </span><span class="mi">57</span><span class="w">     </span><span class="o">|</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;Edge&#34;</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;with_character&#34;</span><span class="w">   </span><span class="o">|</span><span class="w"> </span><span class="mi">116090</span><span class="w"> </span><span class="o">|</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;Edge&#34;</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;with_pinyin&#34;</span><span class="w">      </span><span class="o">|</span><span class="w"> </span><span class="mi">5943</span><span class="w">   </span><span class="o">|</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;Edge&#34;</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;with_pinyin_part&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="mi">3290</span><span class="w">   </span><span class="o">|</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;Space&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;vertices&#34;</span><span class="w">         </span><span class="o">|</span><span class="w"> </span><span class="mi">35739</span><span class="w">  </span><span class="o">|</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;Space&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;edges&#34;</span><span class="w">            </span><span class="o">|</span><span class="w"> </span><span class="mi">125323</span><span class="w"> </span><span class="o">|</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">+</span><span class="c1">---------+--------------------+--------+
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="附录图建模的-schema-ngql" class="headerLink">
+    <a href="#%e9%99%84%e5%bd%95%e5%9b%be%e5%bb%ba%e6%a8%a1%e7%9a%84-schema-ngql" class="header-mark"></a>7 附录：图建模的 Schema nGQL</h2><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">CREATE</span><span class="w"> </span><span class="k">SPACE</span><span class="w"> </span><span class="k">IF</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">EXISTS</span><span class="w"> </span><span class="n">chinese_idiom</span><span class="p">(</span><span class="n">partition_num</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="n">replica_factor</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">vid_type</span><span class="o">=</span><span class="n">FIXED_STRING</span><span class="p">(</span><span class="mi">24</span><span class="p">));</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">USE</span><span class="w"> </span><span class="n">chinese_idiom</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">//</span><span class="w"> </span><span class="err">创建点的类型</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">CREATE</span><span class="w"> </span><span class="n">TAG</span><span class="w"> </span><span class="n">idiom</span><span class="p">(</span><span class="n">pinyin</span><span class="w"> </span><span class="n">string</span><span class="p">);</span><span class="w"> </span><span class="o">#</span><span class="err">成语</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">CREATE</span><span class="w"> </span><span class="n">TAG</span><span class="w"> </span><span class="nb">character</span><span class="p">();</span><span class="w"> </span><span class="o">#</span><span class="err">汉字</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">CREATE</span><span class="w"> </span><span class="n">TAG</span><span class="w"> </span><span class="n">character_pinyin</span><span class="p">(</span><span class="n">tone</span><span class="w"> </span><span class="nb">int</span><span class="p">);</span><span class="w"> </span><span class="o">#</span><span class="err">单字的拼音</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">CREATE</span><span class="w"> </span><span class="n">TAG</span><span class="w"> </span><span class="n">pinyin_part</span><span class="p">(</span><span class="n">part_type</span><span class="w"> </span><span class="n">string</span><span class="p">);</span><span class="w"> </span><span class="o">#</span><span class="err">拼音的声部</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">//</span><span class="w"> </span><span class="err">创建边的类型</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">CREATE</span><span class="w"> </span><span class="n">EDGE</span><span class="w"> </span><span class="n">with_character</span><span class="p">(</span><span class="o">`</span><span class="k">position</span><span class="o">`</span><span class="w"> </span><span class="nb">int</span><span class="p">);</span><span class="w"> </span><span class="o">#</span><span class="err">包含汉字</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">CREATE</span><span class="w"> </span><span class="n">EDGE</span><span class="w"> </span><span class="n">with_pinyin</span><span class="p">(</span><span class="o">`</span><span class="k">position</span><span class="o">`</span><span class="w"> </span><span class="nb">int</span><span class="p">);</span><span class="w"> </span><span class="o">#</span><span class="err">读作</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">CREATE</span><span class="w"> </span><span class="n">EDGE</span><span class="w"> </span><span class="n">with_pinyin_part</span><span class="p">(</span><span class="n">part_type</span><span class="w"> </span><span class="n">string</span><span class="p">);</span><span class="w"> </span><span class="o">#</span><span class="err">包含声部</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div>]]></description>
+</item></channel>
+</rss>

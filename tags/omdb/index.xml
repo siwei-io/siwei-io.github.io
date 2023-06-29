@@ -1,0 +1,1283 @@
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+        <title>OMDB - 标签 - siwei.io</title>
+        <link>https://siwei.io/tags/omdb/</link>
+        <description>OMDB - 标签 - siwei.io</description>
+        <generator>Hugo -- gohugo.io</generator><language>zh-CN</language><managingEditor>weyl.gu@gmail.com (Wey Gu)</managingEditor>
+            <webMaster>weyl.gu@gmail.com (Wey Gu)</webMaster><copyright>This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.</copyright><lastBuildDate>Thu, 10 Nov 2022 20:19:45 &#43;0800</lastBuildDate><atom:link href="https://siwei.io/tags/omdb/" rel="self" type="application/rss+xml" /><item>
+    <title>利用 dbt，基于表结构的 Nebulagraph 图建模与 ETL</title>
+    <link>https://siwei.io/nebulagraph-etl-dbt/</link>
+    <pubDate>Thu, 10 Nov 2022 20:19:45 &#43;0800</pubDate><author>
+        <name>Wey Gu</name>
+    </author><guid>https://siwei.io/nebulagraph-etl-dbt/</guid>
+    <description><![CDATA[<div class="featured-image">
+                <img src="/nebulagraph-etl-dbt/featured-image.webp" referrerpolicy="no-referrer">
+            </div><blockquote>
+<p>如何把相对原始的数据处理、建模并导入 NebulaGraph？本文用一个端到端的示例演示，从多数据源聚合数据，清理、利用 dbt 转换成 NebulaGraph 建模的属性图点边记录，最后导入成图谱的全流程。</p>
+</blockquote>
+<!--
+
+[TOC]
+
+-->
+<h2 id="任务" class="headerLink">
+    <a href="#%e4%bb%bb%e5%8a%a1" class="header-mark"></a>1 任务</h2><p>假设作为一个类似于 Netflix、爱奇艺的服务提供商，我们需要利用 NebulaGraph 搭建一个用户-电影知识图谱，来辅助支撑推荐、问答和推荐理由等常见由图谱支撑的场景。</p>
+<p>知识图谱需要的数据存在在不同的数据源，比如一些公开的 API、数仓中的不同数据库、静态的文件等。这时候，我们需要以下几个步骤来从数据构建图谱：</p>
+<ul>
+<li>分析可能获取的数据</li>
+<li>选取关心的关联关系，图建模</li>
+<li>抽取关联关系，导入图数据库</li>
+</ul>
+<h2 id="数据来源" class="headerLink">
+    <a href="#%e6%95%b0%e6%8d%ae%e6%9d%a5%e6%ba%90" class="header-mark"></a>2 数据来源</h2><p>假设我们的数据来源是 <a href="https://www.omdb.org/en/us/content/Help:DataDownload" target="_blank" rel="noopener noreferrer">OMDB</a> 和 <a href="https://grouplens.org/datasets/movielens/" target="_blank" rel="noopener noreferrer">MovieLens</a>。</p>
+<p>OMDB 是一个开放的电影数据库，本例中我们模拟公司内部的业务系统，我们可以获得的信息有：</p>
+<ul>
+<li>电影</li>
+<li>电影的分类</li>
+<li>电影中的工作人员（导演、动作指导、演员、后期制作等）</li>
+<li>电影封面、宣传片等</li>
+</ul>
+<p>MovieLens 是一个开放的数据集，本例中我们模拟公司内部的用户数据，我们可以获得的信息有：</p>
+<ul>
+<li>用户</li>
+<li>电影</li>
+<li>用户对电影的评分交互</li>
+</ul>
+<h2 id="图建模" class="headerLink">
+    <a href="#%e5%9b%be%e5%bb%ba%e6%a8%a1" class="header-mark"></a>3 图建模</h2><p>在前边我们推荐系统的文章中我们介绍了推荐系统在图上的一些基本的方法（文章的链接是 <a href="https://www.siwei.io/recommendation-system-with-graphdb/" target="_blank" rel="noopener noreferrer">www.siwei.io/recommendation-system-with-graphdb/</a>）。其中的基于内容过滤关注了用户&ndash;&gt;电影、电影&ndash;&gt;分类、电影&ndash;&gt;演员、电影&ndash;&gt;导演的关系，协同过滤的方法则关注用户&ndash;&gt;电影的关系，推荐理由服务则关注以上所有的关系，所以总结起来，我们需要的边有：</p>
+<ul>
+<li>
+<p>watched(rate(double))</p>
+</li>
+<li>
+<p>with_genre</p>
+</li>
+<li>
+<p>directed_by</p>
+</li>
+<li>
+<p>acted_by</p>
+</li>
+</ul>
+<p>相应的，其中的顶点类型，我们先根据已有的信息中，顶点中可能需要被关注的信息作为属性，给出初始的规划：</p>
+<ul>
+<li>
+<p>user(user_id)</p>
+</li>
+<li>
+<p>movie(name)</p>
+</li>
+<li>
+<p>person(name, birthdate)</p>
+</li>
+<li>
+<p>genre(name)</p>
+</li>
+</ul>
+<p><figure><a class="lightgallery" href="/nebulagraph-etl-dbt/schema_0.webp" title="schema_0" data-thumbnail="/nebulagraph-etl-dbt/schema_0.webp">
+        <img
+            
+            loading="lazy"
+            src="/nebulagraph-etl-dbt/schema_0.webp"
+            srcset="/nebulagraph-etl-dbt/schema_0.webp, /nebulagraph-etl-dbt/schema_0.webp 1.5x, /nebulagraph-etl-dbt/schema_0.webp 2x"
+            sizes="auto"
+            alt="schema_0">
+    </a></figure></p>
+<h2 id="数据转换" class="headerLink">
+    <a href="#%e6%95%b0%e6%8d%ae%e8%bd%ac%e6%8d%a2" class="header-mark"></a>4 数据转换</h2><p>有了目标的图谱结构定义，我们来看看手上的数据如何映射到它。</p>
+<h3 id="omdb-数据" class="headerLink">
+    <a href="#omdb-%e6%95%b0%e6%8d%ae" class="header-mark"></a>4.1 OMDB 数据</h3><p>首先是 OMDB 中的数据，它由很多表组成，比如 <code>all_movies</code> 这张表，存储了所有的电影、以及它们在不同语言下的名字：</p>
+<table>
+<thead>
+<tr>
+<th>movie_id</th>
+<th>name</th>
+<th>language_iso_639_1</th>
+<th>official_translation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Cowboy Bebop</td>
+<td>de</td>
+<td>1</td>
+</tr>
+<tr>
+<td>1</td>
+<td>Cowboy Bebop</td>
+<td>en</td>
+<td>1</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Ariel - Abgebrannt in Helsinki</td>
+<td>de</td>
+<td>0</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Shadows in Paradise</td>
+<td>en</td>
+<td>0</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Im Schatten des Paradieses</td>
+<td>de</td>
+<td>0</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Schatten im Paradies</td>
+<td>de</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+<p>而 <code>all_casts</code> 表格中保有所有电影相关的工作人员：</p>
+<table>
+<thead>
+<tr>
+<th>movie_id</th>
+<th>person_id</th>
+<th>job_id</th>
+<th>role</th>
+<th>position</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>11</td>
+<td>1</td>
+<td>21</td>
+<td></td>
+<td>1</td>
+</tr>
+<tr>
+<td>11</td>
+<td>1</td>
+<td>13</td>
+<td></td>
+<td>1</td>
+</tr>
+<tr>
+<td>11</td>
+<td>2</td>
+<td>15</td>
+<td>Luke Skywalker</td>
+<td>1</td>
+</tr>
+<tr>
+<td>11</td>
+<td>3</td>
+<td>15</td>
+<td>Han Solo</td>
+<td>3</td>
+</tr>
+<tr>
+<td>11</td>
+<td>4</td>
+<td>15</td>
+<td>Leia Organa</td>
+<td>2</td>
+</tr>
+</tbody>
+</table>
+<p>但是这里的每一个人的姓名等信息、以及他/她在电影中任职的职位，则分别在另外的表中：</p>
+<ul>
+<li>
+<p><code>job_names</code></p>
+<p>比如 1 代表编剧、2 代表制作人，有意思的是，和电影 id 与姓名一样，job_id 到 name 是一对多的关系，因为 OMDB 中的数据都是多语言的。</p>
+</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>job_id</th>
+<th>name</th>
+<th>language_iso_639_1</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Autoren</td>
+<td>de</td>
+</tr>
+<tr>
+<td>1</td>
+<td>Writing Department</td>
+<td>en</td>
+</tr>
+<tr>
+<td>1</td>
+<td>Departamento de redacción</td>
+<td>es</td>
+</tr>
+<tr>
+<td>1</td>
+<td>Département écriture</td>
+<td>fr</td>
+</tr>
+<tr>
+<td>1</td>
+<td>Scenariusz</td>
+<td>pl</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Produzenten</td>
+<td>de</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Production Department</td>
+<td>en</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><code>all_people</code></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>name</th>
+<th>birthday</th>
+<th>deathday</th>
+<th>gender</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>George Lucas</td>
+<td>1944-05-14</td>
+<td>\N</td>
+<td>0</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Mark Hamill</td>
+<td>1951-09-25</td>
+<td>\N</td>
+<td>0</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Harrison Ford</td>
+<td>1942-07-13</td>
+<td>\N</td>
+<td>0</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Carrie Fisher</td>
+<td>1956-10-21</td>
+<td>2016-12-27</td>
+<td>1</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Peter Cushing</td>
+<td>1913-05-26</td>
+<td>1994-08-11</td>
+<td>0</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Anthony Daniels</td>
+<td>1946-02-21</td>
+<td>\N</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+<p>这是在数据来源是表结构、RDBMS 中，是一个很典型的情况，所以对于 <code>movie &lt;-[directed_by]-(person)</code> 这个关系，就涉及了 <code>all_movies</code>，<code>all_casts</code>，<code>all_people</code>，<code>job_names</code> 四个表格</p>
+<ul>
+<li>directed_by
+<ul>
+<li>起点 person_id 在 all_casts 之中</li>
+<li>终点 movie_id 在 all_casts 之中
+<ul>
+<li>条件是 job_id 为 job_names 之中的 “director”</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>movie
+<ul>
+<li>person_id 在 all_casts 之中</li>
+<li>名字来自 all_movies 中按 id 查找，language 为 “en”</li>
+</ul>
+</li>
+<li>person
+<ul>
+<li>movie_id 在 all_casts 之中</li>
+<li>名字、生日在 all_people 之中</li>
+</ul>
+</li>
+</ul>
+<p>所有 OMDB 中我们关心的表的关联如图：</p>
+<p><figure><a class="lightgallery" href="/nebulagraph-etl-dbt/modeling_omdb.webp" title="modeling_omdb" data-thumbnail="/nebulagraph-etl-dbt/modeling_omdb.webp">
+        <img
+            
+            loading="lazy"
+            src="/nebulagraph-etl-dbt/modeling_omdb.webp"
+            srcset="/nebulagraph-etl-dbt/modeling_omdb.webp, /nebulagraph-etl-dbt/modeling_omdb.webp 1.5x, /nebulagraph-etl-dbt/modeling_omdb.webp 2x"
+            sizes="auto"
+            alt="modeling_omdb">
+    </a></figure></p>
+<h3 id="movielens-数据集" class="headerLink">
+    <a href="#movielens-%e6%95%b0%e6%8d%ae%e9%9b%86" class="header-mark"></a>4.2 MovieLens 数据集</h3><p>而上边只是一个数据源、数据表或者数仓的数据，在真实场景中，我们还需要从其他源头收取数据，并聚合起来，在本例中，我们还需要从 MovieLens 的数据集中抽取需要的知识。</p>
+<p>这里，涉及到 MovieLens 数据集，我们利用的只有：用户&ndash;&gt;电影，这一条关系。</p>
+<ul>
+<li><code>movies.csv</code></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>movieId</th>
+<th>title</th>
+<th>genres</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Toy Story (1995)</td>
+<td>Adventure</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Jumanji (1995)</td>
+<td>Adventure</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Grumpier Old Men (1995)</td>
+<td>Comedy</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Waiting to Exhale (1995)</td>
+<td>Comedy</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><code>ratings.csv</code></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>userId</th>
+<th>movieId</th>
+<th>rating</th>
+<th>timestamp</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>1</td>
+<td>4</td>
+<td>964982703</td>
+</tr>
+<tr>
+<td>1</td>
+<td>3</td>
+<td>4</td>
+<td>964981247</td>
+</tr>
+<tr>
+<td>1</td>
+<td>6</td>
+<td>4</td>
+<td>964982224</td>
+</tr>
+</tbody>
+</table>
+<p>从两个表的数据预览似乎可以得出：</p>
+<ul>
+<li>watched
+<ul>
+<li>起点来自于 <code>ratings.csv</code> 中的 userId</li>
+<li>终点来自于 <code>ratings.csv</code> 中的 movieId</li>
+<li>评分来自于 <code>ratings.csv</code> 中的 rating</li>
+</ul>
+</li>
+<li>user
+<ul>
+<li>来自于 <code>ratings.csv</code> 中的 userId</li>
+</ul>
+</li>
+</ul>
+<p>然而，细心的你们一定发现 MovieLens 数据集中的 movieId 和来自于 OMDB 中的电影 id 完全是不同的两套体系，如果我们需要让他们关联起来，需要将 MovieLens 里的 movieId 转换成为 OMDB 中的电影 id。而他们之间的关联条件则是电影的标题。</p>
+<p>然而，通观察，我们知道：</p>
+<ol>
+<li>OMDB 电影中标题是多语言的</li>
+<li>MovieLens 中的标题结尾带有<code>(1995)</code>这样的年份信息</li>
+</ol>
+<p>所以我们最终的结论为</p>
+<ul>
+<li>watched
+<ul>
+<li>起点来自于 <code>ratings.csv</code> 中的 userId</li>
+<li>终点来自于 <code>ratings.csv</code> 中的 movieId
+<ul>
+<li><strong>终点要从 <code>movies.csv</code> 中的 title ，在 OMDB 之中查找，得到 OMDB 的 movie_id</strong>
+<ul>
+<li>查找条件为去掉年份，从 OMDB 的英文标题中进行匹配</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>评分来自于 <code>ratings.csv</code> 中的 rating</li>
+</ul>
+</li>
+<li>user
+<ul>
+<li>来自于 <code>ratings.csv</code> 中的 userId</li>
+</ul>
+</li>
+</ul>
+<p>现在，这个表格之间的关系如下</p>
+<p><figure><a class="lightgallery" href="/nebulagraph-etl-dbt/modeling_omdb_movielens.webp" title="modeling_omdb_movielens" data-thumbnail="/nebulagraph-etl-dbt/modeling_omdb_movielens.webp">
+        <img
+            
+            loading="lazy"
+            src="/nebulagraph-etl-dbt/modeling_omdb_movielens.webp"
+            srcset="/nebulagraph-etl-dbt/modeling_omdb_movielens.webp, /nebulagraph-etl-dbt/modeling_omdb_movielens.webp 1.5x, /nebulagraph-etl-dbt/modeling_omdb_movielens.webp 2x"
+            sizes="auto"
+            alt="modeling_omdb_movielens">
+    </a></figure></p>
+<h3 id="映射数据到图谱属性图" class="headerLink">
+    <a href="#%e6%98%a0%e5%b0%84%e6%95%b0%e6%8d%ae%e5%88%b0%e5%9b%be%e8%b0%b1%e5%b1%9e%e6%80%a7%e5%9b%be" class="header-mark"></a>4.3 映射数据到图谱（属性图）</h3><p>总结起来，我们需要对多个数据源中的不同表格（或者表格形式的 CSV 文件）进行聚合，这样的对应关系如图所示：其中蓝色虚线表示图中顶点的数据信息来源，粉色虚线表示边信息的来源。</p>
+<p><figure><a class="lightgallery" href="/nebulagraph-etl-dbt/schema_mapping_to_graph.webp" title="schema_mapping_to_graph" data-thumbnail="/nebulagraph-etl-dbt/schema_mapping_to_graph.webp">
+        <img
+            
+            loading="lazy"
+            src="/nebulagraph-etl-dbt/schema_mapping_to_graph.webp"
+            srcset="/nebulagraph-etl-dbt/schema_mapping_to_graph.webp, /nebulagraph-etl-dbt/schema_mapping_to_graph.webp 1.5x, /nebulagraph-etl-dbt/schema_mapping_to_graph.webp 2x"
+            sizes="auto"
+            alt="schema_mapping_to_graph">
+    </a></figure></p>
+<p>最后，我们还要对不同表中个体的 id 进行格式化，比如 user_id，是自增的数字，我们要转换成全局唯一的 vertex_id，一个方便的方式是在现有 id 的基础上增加字符串前缀，比如 <code>u_</code>。</p>
+<p>最终，拿对于 <code>user -[watched]-&gt; movie</code> 这一个关系来说，我们可以处理得到这样的表结构数据：</p>
+<table>
+<thead>
+<tr>
+<th>user_id</th>
+<th>rating</th>
+<th>title</th>
+<th>omdb_movie_id</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>u_1</td>
+<td>5</td>
+<td>Seven (a.k.a. Se7en)</td>
+<td>807</td>
+</tr>
+<tr>
+<td>u_1</td>
+<td>5</td>
+<td>Star Wars: Episode IV - A New Hope</td>
+<td>11</td>
+</tr>
+<tr>
+<td>u_1</td>
+<td>5</td>
+<td>Star Wars: Episode IV - A New Hope</td>
+<td>10</td>
+</tr>
+<tr>
+<td>u_1</td>
+<td>4</td>
+<td>Mask, The</td>
+<td>832</td>
+</tr>
+<tr>
+<td>u_1</td>
+<td>3</td>
+<td>Mrs. Doubtfire</td>
+<td>832</td>
+</tr>
+</tbody>
+</table>
+<p>其中每一行记录中存在三个图上的结构信息：</p>
+<ul>
+<li>user 顶点 id</li>
+<li>movie 顶点 id</li>
+<li>watched 边的 rating 值</li>
+</ul>
+<h2 id="工具" class="headerLink">
+    <a href="#%e5%b7%a5%e5%85%b7" class="header-mark"></a>5 工具</h2><p>到此，我们已经完成了数据的分析与建模设计，在进入”抽取关联关系，导入图数据库“环节之前，先介绍一下我们要用到的工具。</p>
+<p>”抽取关联关系“可以简单认为是 ETL 中的 Extract 和 Transform。本质上就是工程上执行数据映射与转换的工作，市面上有很多不同风格的工具、开源项目可以做。这里我们用到我个人比较喜欢的工具：dbt。</p>
+<h3 id="数据转换利器-dbt" class="headerLink">
+    <a href="#%e6%95%b0%e6%8d%ae%e8%bd%ac%e6%8d%a2%e5%88%a9%e5%99%a8-dbt" class="header-mark"></a>5.1 数据转换利器 dbt</h3><p>dbt 是一个开源的数据转换工具，他有非常成熟的社区和生态，可以在大多数主流数仓之中进行高效、可控、高质量的数据转换工作，无论是临时的转换工作（ad-hoc），还是在给定的定时 pipeline 中进行复杂编排，dbt 都可以很好胜任，他的一大特色就是使用 SQL-like 语言去描述数据转换的规则，基于 GitOps，可以非常优雅地去多人协作、维护超大规模数据团队里复杂的数据处理作业。而且内置的数据测试能力可以很好的控制数据的质量，做到可复现、可控制。</p>
+<p>dbt 不仅有很多集成的子项目，还能和很多其他优秀的开源项目有机结合（meltano、AirFlow、Amundsen 、Superset 等等），形成一整套现代的数据基础设施体系，感兴趣的同学可以参考我之前搭建的数据血缘与元数据治理参考架构文章：www.siwei.io/en/data-lineage-oss-ref-solution。</p>
+<p><figure><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg" title="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg" data-thumbnail="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg">
+        <img
+            
+            loading="lazy"
+            src="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg"
+            srcset="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg, https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg 1.5x, https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg 2x"
+            sizes="auto"
+            alt="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg">
+    </a></figure></p>
+<p>简单来说，dbt 是一个 python 写的命令行工具，当我们使用它的时候，针对每一个项目，我们可以创建特定格式的项目文件夹，其中包涵一个 YAML 格式的配置文件，在配置文件里指定数据转换的来源信息在哪里，目标在哪里（处理之后的数据存储的地方，可能是 Postgres，Big Query，Spark 等）。在数据源中，我们用 YAML 文件和 <code>.SQL</code> 文件一起描述了”从哪里取哪些数据，如何做变换，输出什么“的信息。</p>
+<p><figure><a class="lightgallery" href="/nebulagraph-etl-dbt/starter-project-dbt-cli.webp" title="starter-project-dbt-cli" data-thumbnail="/nebulagraph-etl-dbt/starter-project-dbt-cli.webp">
+        <img
+            
+            loading="lazy"
+            src="/nebulagraph-etl-dbt/starter-project-dbt-cli.webp"
+            srcset="/nebulagraph-etl-dbt/starter-project-dbt-cli.webp, /nebulagraph-etl-dbt/starter-project-dbt-cli.webp 1.5x, /nebulagraph-etl-dbt/starter-project-dbt-cli.webp 2x"
+            sizes="auto"
+            alt="starter-project-dbt-cli">
+    </a></figure></p>
+<p>这个截图就是 dbt 官方文档中的示例项目中的文件和配置，可以看到 models/example 里的信息就是最核心的数据转换（transform）的规则，而所有的其他数据都是和这个数据转换相关的元数据，这些 dbt 项目文件非常适合用 git 来进行维护，进行现代、自动化的 DataOps。</p>
+<blockquote>
+<p>注：</p>
+<p>可以参考 dbt 文档上手理解它：https://docs.getdbt.com/docs/get-started/getting-started-dbt-core</p>
+</blockquote>
+<h3 id="nebulagraph-数据导入" class="headerLink">
+    <a href="#nebulagraph-%e6%95%b0%e6%8d%ae%e5%af%bc%e5%85%a5" class="header-mark"></a>5.2 NebulaGraph 数据导入</h3><p>经过 dbt 对数据进行处理之后，我们可以得到直接映射到不同类型的顶点、边、及其属性的表结构的中间数据，它们可以是 CSV 的文件形式，也可以是数仓中的表，甚至可能是 Spark 中的 dataframe。而将它们导入 NebulaGraph 有不同的选择，其中 NebulaGraph Exchange，Nebula-Importer，还有 Nebula-Spark-Connector 都可以作为导入数据。</p>
+<blockquote>
+<p>注：</p>
+<p>大家可以在 <a href="https://www.siwei.io/sketches/nebula-data-import-options" target="_blank" rel="noopener noreferrer">www.siwei.io/sketches/nebula-data-import-options</a> 了解更多 NebulaGraph 数据导入不同工具的介绍，知道如何选择。</p>
+</blockquote>
+<p>在这里，我就用最简单的 Nebula-Importer 作为例子。</p>
+<p>Nebula-Importer 是一个用 Golang 写的开源工具，它可以编译成一个单文件的二进制，通过预配置的 YAML 格式的文件，获得给定的 CSV 文件到 NebulaGraph 中点、边的对应关系，进行读取和导入。</p>
+<blockquote>
+<p>注：</p>
+<p>Nebula-Importer 代码：https://github.com/vesoft-inc/nebula-importer/</p>
+<p>Nebula-Importer 文档：https://docs.nebula-graph.com.cn/master/nebula-importer/use-importer/</p>
+</blockquote>
+<h2 id="实操" class="headerLink">
+    <a href="#%e5%ae%9e%e6%93%8d" class="header-mark"></a>6 实操</h2><p>现在我们就实操一下如何利用 dbt + Nebula-Importer 进行多数据源聚合、转换、再导入 NebulaGraph 的过程，整个项目的代码已经开源，仓库在 <a href="https://github.com/wey-gu/movie-recommendation-dataset" target="_blank" rel="noopener noreferrer">https://github.com/wey-gu/movie-recommendation-dataset</a> 上，欢迎大家参考、共建。</p>
+<p>整个过程如下：</p>
+<ul>
+<li>将源数据简单清洗、导入数仓（Postgres）（EL）</li>
+<li>用 dbt 对数据进行转换（Transform）、导出为 CSV 文件</li>
+<li>用 Nebula Importer 将 CSV 导入 NebulaGraph（L）</li>
+</ul>
+<p><figure><a class="lightgallery" href="/nebulagraph-etl-dbt/ETL_dbt_nebulagraph_importer.webp" title="ETL_dbt_nebulagraph_importer" data-thumbnail="/nebulagraph-etl-dbt/ETL_dbt_nebulagraph_importer.webp">
+        <img
+            
+            loading="lazy"
+            src="/nebulagraph-etl-dbt/ETL_dbt_nebulagraph_importer.webp"
+            srcset="/nebulagraph-etl-dbt/ETL_dbt_nebulagraph_importer.webp, /nebulagraph-etl-dbt/ETL_dbt_nebulagraph_importer.webp 1.5x, /nebulagraph-etl-dbt/ETL_dbt_nebulagraph_importer.webp 2x"
+            sizes="auto"
+            alt="ETL_dbt_nebulagraph_importer">
+    </a></figure></p>
+<h3 id="准备-dbt-环境" class="headerLink">
+    <a href="#%e5%87%86%e5%a4%87-dbt-%e7%8e%af%e5%a2%83" class="header-mark"></a>6.1 准备 dbt 环境</h3><p>dbt 是一个 python 项目，我们在一个虚拟的 python3 环境里安装好 dbt 和 dbt-postgres。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">python3 -m venv .venv
+</span></span><span class="line"><span class="cl"><span class="nb">source</span> .venv/bin/activate
+</span></span><span class="line"><span class="cl">pip install dbt-postgres
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>创建一个 dbt 项目，并进入到空的项目里：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">dbt init dbt_project
+</span></span><span class="line"><span class="cl"><span class="nb">cd</span> dbt_project
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>看看里边的文件吧：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ tree .
+</span></span><span class="line"><span class="cl">.
+</span></span><span class="line"><span class="cl"><span class="p">|</span>-- README.md                      <span class="c1"># 项目说明 README</span>
+</span></span><span class="line"><span class="cl"><span class="p">|</span>-- analyses
+</span></span><span class="line"><span class="cl"><span class="p">|</span>-- dbt_project.yml                <span class="c1"># 项目配置文件</span>
+</span></span><span class="line"><span class="cl"><span class="p">|</span>-- macros
+</span></span><span class="line"><span class="cl"><span class="p">|</span>-- models                         <span class="c1"># transform 来源</span>
+</span></span><span class="line"><span class="cl"><span class="p">|</span>   <span class="se">\-</span>- example
+</span></span><span class="line"><span class="cl"><span class="p">|</span>       <span class="p">|</span>-- my_first_dbt_model.sql <span class="c1"># 一个描述了如何从元数据中 SELECT 并处理的规则</span>
+</span></span><span class="line"><span class="cl"><span class="p">|</span>       <span class="p">|</span>-- my_second_dbt_model.sql
+</span></span><span class="line"><span class="cl"><span class="p">|</span>       <span class="se">\-</span>- schema.yml             <span class="c1"># 规则文件的元数据配置，描述了 sql 规则的属性</span>
+</span></span><span class="line"><span class="cl"><span class="p">|</span>-- seeds                          <span class="c1"># 源数据如果是 CSV 文件，可以放到 seeds 里</span>
+</span></span><span class="line"><span class="cl"><span class="p">|</span>-- snapshots
+</span></span><span class="line"><span class="cl"><span class="se">\-</span>- tests
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="m">7</span> directories, <span class="m">5</span> files
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>最后，咱们拉一个容器里的 Postgres 当做我们这个项目的数仓，如果你已经有各种其他数仓，就不需要这一步了，不过要把项目中的配置文件作相应的修改，并安装相应的 dbt 插件。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker run --rm --name postgres <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    -e <span class="nv">POSTGRES_PASSWORD</span><span class="o">=</span>nebula <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    -e <span class="nv">POSTGRES_USER</span><span class="o">=</span>nebula <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    -e <span class="nv">POSTGRES_DB</span><span class="o">=</span>warehouse -d <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    -p 5432:5432 postgres
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="数据下载与预处理" class="headerLink">
+    <a href="#%e6%95%b0%e6%8d%ae%e4%b8%8b%e8%bd%bd%e4%b8%8e%e9%a2%84%e5%a4%84%e7%90%86" class="header-mark"></a>6.2 数据下载与预处理</h3><p>我们把数据放到项目的 raw_data 下吧</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">mkdir -p raw_data
+</span></span><span class="line"><span class="cl"><span class="nb">cd</span> raw_data
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>注意，假设 raw_data 在 dbt_proeject 之下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">tree ..
+</span></span><span class="line"><span class="cl">..
+</span></span><span class="line"><span class="cl"><span class="p">|</span>-- README.md
+</span></span><span class="line"><span class="cl"><span class="p">|</span>-- analyses
+</span></span><span class="line"><span class="cl"><span class="p">|</span>-- dbt_project.yml
+</span></span><span class="line"><span class="cl"><span class="p">|</span>-- macros
+</span></span><span class="line"><span class="cl"><span class="p">|</span>-- models
+</span></span><span class="line"><span class="cl"><span class="p">|</span>   <span class="se">\-</span>- example
+</span></span><span class="line"><span class="cl"><span class="p">|</span>       <span class="p">|</span>-- my_first_dbt_model.sql
+</span></span><span class="line"><span class="cl"><span class="p">|</span>       <span class="p">|</span>-- my_second_dbt_model.sql
+</span></span><span class="line"><span class="cl"><span class="p">|</span>       <span class="se">\-</span>- schema.yml
+</span></span><span class="line"><span class="cl"><span class="p">|</span>-- raw_data                       <span class="c1"># 新建的目录</span>
+</span></span><span class="line"><span class="cl"><span class="p">|</span>-- seeds
+</span></span><span class="line"><span class="cl"><span class="p">|</span>-- snapshots
+</span></span><span class="line"><span class="cl"><span class="se">\-</span>- tests
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="m">8</span> directories, <span class="m">5</span> files
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>我们把 omdb 数据下载之后，再解压：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">wget www.omdb.org/data/all_people.csv.bz2
+</span></span><span class="line"><span class="cl">wget www.omdb.org/data/all_people_aliases.csv.bz2
+</span></span><span class="line"><span class="cl">wget www.omdb.org/data/people_links.csv.bz2
+</span></span><span class="line"><span class="cl">wget www.omdb.org/data/all_casts.csv.bz2
+</span></span><span class="line"><span class="cl">wget www.omdb.org/data/job_names.csv.bz2
+</span></span><span class="line"><span class="cl">wget www.omdb.org/data/all_characters.csv.bz2
+</span></span><span class="line"><span class="cl">wget www.omdb.org/data/movie_categories.csv.bz2
+</span></span><span class="line"><span class="cl">wget www.omdb.org/data/movie_keywords.csv.bz2
+</span></span><span class="line"><span class="cl">wget www.omdb.org/data/category_names.csv.bz2
+</span></span><span class="line"><span class="cl">wget www.omdb.org/data/all_categories.csv.bz2
+</span></span><span class="line"><span class="cl">wget www.omdb.org/data/all_movie_aliases_iso.csv.bz2
+</span></span><span class="line"><span class="cl">bunzip2 *.bz2
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>然后是 MovieLens 数据集的下载、解压：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">wget https://files.grouplens.org/datasets/movielens/ml-latest-small.zip
+</span></span><span class="line"><span class="cl">unzip ml-latest-small.zip
+</span></span><span class="line"><span class="cl">rm *.zip
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>在导入数仓进行转换（Transform）之前我们做一些数据的预处理，然后把他们放到 <code>seeds</code> 之下。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 因为是实验项目，我们简单粗暴地去掉带有转义的引号的数据，因为它们会被认为是无效字符，处理之后的结果放到 seeds 下边。</span>
+</span></span><span class="line"><span class="cl">grep -v <span class="s1">&#39;\\&#34;&#39;</span> raw_data/all_movie_aliases_iso.csv &gt; seeds/all_movie_aliases_iso.csv
+</span></span><span class="line"><span class="cl">grep -v <span class="s1">&#39;\\&#34;&#39;</span> raw_data/all_casts.csv &gt; seeds/all_casts.csv
+</span></span><span class="line"><span class="cl">grep -v <span class="s1">&#39;\\&#34;&#39;</span> raw_data/all_characters.csv &gt; seeds/all_characters.csv
+</span></span><span class="line"><span class="cl">grep -v <span class="s1">&#39;\\&#34;&#39;</span> raw_data/all_people.csv &gt; seeds/all_people.csv
+</span></span><span class="line"><span class="cl">grep -v <span class="s1">&#39;\\&#34;&#39;</span> raw_data/category_names.csv &gt; seeds/category_names.csv
+</span></span><span class="line"><span class="cl">grep -v <span class="s1">&#39;\\&#34;&#39;</span> raw_data/job_names.csv &gt; seeds/job_names.csv
+</span></span><span class="line"><span class="cl"><span class="c1"># 下边的文件无需处理，直接放到 seeds 下边。</span>
+</span></span><span class="line"><span class="cl">cp raw_data/movie_categories.csv seeds/movie_categories.csv
+</span></span><span class="line"><span class="cl">cp raw_data/movie_keywords.csv seeds/movie_keywords.csv
+</span></span><span class="line"><span class="cl">cp raw_data/all_categories.csv seeds/all_categories.csv
+</span></span><span class="line"><span class="cl">cp raw_data/ml-latest-small/ratings.csv seeds/movielens_ratings.csv
+</span></span><span class="line"><span class="cl">cp raw_data/ml-latest-small/movies.csv seeds/movielens_movies.csv
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>有了 seeds 下边的文件之后，可以用一个命令把他们导入到数仓里：</p>
+<blockquote>
+<p>参考文档：https://docs.getdbt.com/docs/build/seeds</p>
+</blockquote>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">dbt seed
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>执行过程因数仓而异，用本地的 postgres 可能要等一会儿才能完成，执行结果大概是这样的：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ dbt seed
+</span></span><span class="line"><span class="cl">05:58:27  Running with <span class="nv">dbt</span><span class="o">=</span>1.3.0
+</span></span><span class="line"><span class="cl">05:58:27  Found <span class="m">2</span> models, <span class="m">4</span> tests, <span class="m">0</span> snapshots, <span class="m">0</span> analyses, <span class="m">289</span> macros, <span class="m">0</span> operations, <span class="m">11</span> seed files, <span class="m">0</span> sources, <span class="m">0</span> exposures, <span class="m">0</span> metrics
+</span></span><span class="line"><span class="cl">05:58:28  
+</span></span><span class="line"><span class="cl">05:58:28  Concurrency: <span class="m">8</span> threads <span class="o">(</span><span class="nv">target</span><span class="o">=</span><span class="s1">&#39;dev&#39;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">05:58:28  
+</span></span><span class="line"><span class="cl">05:58:28  <span class="m">1</span> of <span class="m">11</span> START seed file public.all_casts ....................................... <span class="o">[</span>RUN<span class="o">]</span>
+</span></span><span class="line"><span class="cl">...
+</span></span><span class="line"><span class="cl">07:10:11  <span class="m">1</span> of <span class="m">11</span> OK loaded seed file public.all_casts ................................... <span class="o">[</span>INSERT <span class="m">1082228</span> in 4303.78s<span class="o">]</span>
+</span></span><span class="line"><span class="cl">07:10:11  
+</span></span><span class="line"><span class="cl">07:10:11  Finished running <span class="m">11</span> seeds in <span class="m">1</span> hours <span class="m">11</span> minutes and 43.93 seconds <span class="o">(</span>4303.93s<span class="o">)</span>.
+</span></span><span class="line"><span class="cl">07:10:11  
+</span></span><span class="line"><span class="cl">07:10:11  Completed successfully
+</span></span><span class="line"><span class="cl">07:10:11  
+</span></span><span class="line"><span class="cl">07:10:11  Done. <span class="nv">PASS</span><span class="o">=</span><span class="m">11</span> <span class="nv">WARN</span><span class="o">=</span><span class="m">0</span> <span class="nv">ERROR</span><span class="o">=</span><span class="m">0</span> <span class="nv">SKIP</span><span class="o">=</span><span class="m">0</span> <span class="nv">TOTAL</span><span class="o">=</span><span class="m">11</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="撰写-transform-model" class="headerLink">
+    <a href="#%e6%92%b0%e5%86%99-transform-model" class="header-mark"></a>6.3 撰写 Transform model</h3><p>我们创建 model 如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">mkdir models/movie_recommedation
+</span></span><span class="line"><span class="cl">touch models/movie_recommedation/user_watched_movies.sql
+</span></span><span class="line"><span class="cl">touch models/movie_recommedation/schema.yml
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>这时候 models 中的文件结构大概是这样的：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ tree models
+</span></span><span class="line"><span class="cl">models
+</span></span><span class="line"><span class="cl"><span class="se">\-</span>- movie_recommedation
+</span></span><span class="line"><span class="cl">    <span class="p">|</span>-- user_watched_movies.sql
+</span></span><span class="line"><span class="cl">    <span class="se">\-</span>- schema.yml
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>这个 model 下边目前只有一个规则，就是负责处理用户观看电影这一个边上数据的 SQL 语句。</p>
+<p>我们希望输出三列，所以 <code>schema.yml</code> 中的内容是：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="m">2</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">models</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span>- <span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">user_watched_movies</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;The edges between users and movies they have watched&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">columns</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">user_id</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;user id&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nt">tests</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span>- <span class="l">not_null</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">movie_id</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;movie id&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nt">tests</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span>- <span class="l">not_null</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">rating</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;rating given by user to movie&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nt">tests</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span>- <span class="l">not_null</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>注意，这里的 tests 的表达是对数据验证、测试的约束，有了它，我可以用 dbt 轻松对数据质量进行测试、验收，比如我们要求这里的三个字段都是 <code>not_null</code>。</p>
+<p>然后，我们来写 SQL 吧，<code>user_watched_movies.sql</code>：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="err">{{</span><span class="w"> </span><span class="n">config</span><span class="p">(</span><span class="n">materialized</span><span class="o">=</span><span class="s1">&#39;table&#39;</span><span class="p">)</span><span class="w"> </span><span class="err">}}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="cm">/*
+</span></span></span><span class="line"><span class="cl"><span class="cm"> JOIN the movieielens_ratings table with the movieielens_movies table, and removing the movie title tailing the year of release
+</span></span></span><span class="line"><span class="cl"><span class="cm"> */</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">WITH</span><span class="w"> </span><span class="n">user_watched_movies</span><span class="w"> </span><span class="k">AS</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">SELECT</span><span class="w"> </span><span class="n">moveielens_ratings</span><span class="p">.</span><span class="s2">&#34;userId&#34;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">moveielens_ratings</span><span class="p">.</span><span class="s2">&#34;movieId&#34;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">moveielens_ratings</span><span class="p">.</span><span class="n">rating</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">REGEXP_REPLACE</span><span class="p">(</span><span class="n">moveielens_movies</span><span class="p">.</span><span class="n">title</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39; \(\d{4}\)$&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">title</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">moveielens_movies</span><span class="p">.</span><span class="n">genres</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">movielens_genres</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">FROM</span><span class="w"> </span><span class="n">moveielens_ratings</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">JOIN</span><span class="w"> </span><span class="n">moveielens_movies</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">moveielens_movies</span><span class="p">.</span><span class="s2">&#34;movieId&#34;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">moveielens_ratings</span><span class="p">.</span><span class="s2">&#34;movieId&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="cm">/* 
+</span></span></span><span class="line"><span class="cl"><span class="cm"> JOIN user_watched_movies table with all_movie_aliase_iso table where language is English
+</span></span></span><span class="line"><span class="cl"><span class="cm"> the join condition is the movie title
+</span></span></span><span class="line"><span class="cl"><span class="cm"> */</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">SELECT</span><span class="w"> </span><span class="n">concat</span><span class="p">(</span><span class="s1">&#39;u_&#39;</span><span class="p">,</span><span class="n">user_watched_movies</span><span class="p">.</span><span class="s2">&#34;userId&#34;</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">user_id</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">user_watched_movies</span><span class="p">.</span><span class="n">rating</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">user_watched_movies</span><span class="p">.</span><span class="n">title</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">all_movie_aliases_iso</span><span class="p">.</span><span class="s2">&#34;movie_id&#34;</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">OMDB_movie_id</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">user_watched_movies</span><span class="p">.</span><span class="n">movielens_genres</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">FROM</span><span class="w"> </span><span class="n">user_watched_movies</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">JOIN</span><span class="w"> </span><span class="n">all_movie_aliases_iso</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">user_watched_movies</span><span class="p">.</span><span class="n">title</span><span class="w"> </span><span class="k">LIKE</span><span class="w"> </span><span class="n">CONCAT</span><span class="p">(</span><span class="n">all_movie_aliases_iso</span><span class="p">.</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;%&#39;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">AND</span><span class="w"> </span><span class="n">all_movie_aliases_iso</span><span class="p">.</span><span class="n">language_iso_639_1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;en&#39;</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>而这个 SQL 做的事情就是绿色圆圈标注的部分：</p>
+<ul>
+<li>从 <code>moveielens_ratings</code> 中选 user id、movie id、rating、movie title（去掉年份），存成 <code>user_watched_movies</code> 的中间表格
+<ul>
+<li>movie title 从 <code>moveielens_movies</code> 中<code> JOIN</code> ，通过 <code>movie_id</code> 相同的匹配条件取得</li>
+</ul>
+</li>
+<li>从 <code>user_watched_movies</code> 中选 user id（增加前缀 <code>u_</code>）、rating、title、OMDB_movie_id
+<ul>
+<li>OMDB_movie_id 从 <code>all_movie_aliases_iso</code> 中 <code>JOIN</code>，通过相似的电影姓名匹配 OMDB 电影中英文标题取得</li>
+<li>最终的字段作为输出</li>
+</ul>
+</li>
+</ul>
+<p><figure><a class="lightgallery" href="/nebulagraph-etl-dbt/transform_select_joins_user_watched_movies.webp" title="transform_select_joins_user_watched_movies" data-thumbnail="/nebulagraph-etl-dbt/transform_select_joins_user_watched_movies.webp">
+        <img
+            
+            loading="lazy"
+            src="/nebulagraph-etl-dbt/transform_select_joins_user_watched_movies.webp"
+            srcset="/nebulagraph-etl-dbt/transform_select_joins_user_watched_movies.webp, /nebulagraph-etl-dbt/transform_select_joins_user_watched_movies.webp 1.5x, /nebulagraph-etl-dbt/transform_select_joins_user_watched_movies.webp 2x"
+            sizes="auto"
+            alt="transform_select_joins_user_watched_movies">
+    </a></figure></p>
+<blockquote>
+<p>小贴士：我们可以在 Postgres 的连接器中通过增加 LIMIT 快速调试自己的 SQL 语句。</p>
+</blockquote>
+<p>然后我们可以通过 dbt 来执行、测试刚刚的规则：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">dbt run -m user_watched_movies
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>之后，我们应该就可以在 Postgres（数仓）中看到我们转换之后的一个表了。</p>
+<p>类似的，如法炮制所有其他部分的 Transform 规则，我们就有这么多 model 了：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ tree models
+</span></span><span class="line"><span class="cl">models
+</span></span><span class="line"><span class="cl"><span class="se">\-</span>- movie_recommedation
+</span></span><span class="line"><span class="cl">    <span class="p">|</span>-- acted_by.sql
+</span></span><span class="line"><span class="cl">    <span class="p">|</span>-- directed_by.sql
+</span></span><span class="line"><span class="cl">    <span class="p">|</span>-- genres.sql
+</span></span><span class="line"><span class="cl">    <span class="p">|</span>-- movies.sql
+</span></span><span class="line"><span class="cl">    <span class="p">|</span>-- people.sql
+</span></span><span class="line"><span class="cl">    <span class="p">|</span>-- schema.yml
+</span></span><span class="line"><span class="cl">    <span class="p">|</span>-- user_watched_movies.sql
+</span></span><span class="line"><span class="cl">    <span class="se">\-</span>- with_genre.sql
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>再对他们分别执行 transform：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">dbt run -m acted_by
+</span></span><span class="line"><span class="cl">dbt run -m directed_by
+</span></span><span class="line"><span class="cl">dbt run -m with_genre
+</span></span><span class="line"><span class="cl">dbt run -m people
+</span></span><span class="line"><span class="cl">dbt run -m genres
+</span></span><span class="line"><span class="cl">dbt run -m movies
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="导出数据为-csv" class="headerLink">
+    <a href="#%e5%af%bc%e5%87%ba%e6%95%b0%e6%8d%ae%e4%b8%ba-csv" class="header-mark"></a>6.4 导出数据为 CSV</h3><p>实际上，NebulaGraph Exchange 本身就支持把很多数据源（Postgres，Clickhouse，MySQL，Hive 等等）导入 NebulaGraph，只是在这个例子中，我们处理的数据量对于 NebulaGraph 来说非常非常小（只有百万级别的边而已），使用最轻量级的 Nebula-Importer 就足够了。而 Nebula-Importer 能消费的数据只有 CSV 文件，所以我们把刚才的表都输出为文件。</p>
+<p>首先，我们进入 postgres 的 console，执行 <code>COPY</code> 命令</p>
+<blockquote>
+<p>参考 Postgres 文档：https://www.postgresql.org/docs/current/sql-copy.html</p>
+</blockquote>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">COPY</span><span class="w"> </span><span class="n">acted_by</span><span class="w"> </span><span class="k">TO</span><span class="w"> </span><span class="s1">&#39;/tmp/acted_by.csv&#39;</span><span class="w">  </span><span class="k">WITH</span><span class="w"> </span><span class="k">DELIMITER</span><span class="w"> </span><span class="s1">&#39;,&#39;</span><span class="w"> </span><span class="n">CSV</span><span class="w"> </span><span class="n">HEADER</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">COPY</span><span class="w"> </span><span class="n">directed_by</span><span class="w"> </span><span class="k">TO</span><span class="w"> </span><span class="s1">&#39;/tmp/directed_by.csv&#39;</span><span class="w">  </span><span class="k">WITH</span><span class="w"> </span><span class="k">DELIMITER</span><span class="w"> </span><span class="s1">&#39;,&#39;</span><span class="w"> </span><span class="n">CSV</span><span class="w"> </span><span class="n">HEADER</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">COPY</span><span class="w"> </span><span class="n">with_genre</span><span class="w"> </span><span class="k">TO</span><span class="w"> </span><span class="s1">&#39;/tmp/with_genre.csv&#39;</span><span class="w">  </span><span class="k">WITH</span><span class="w"> </span><span class="k">DELIMITER</span><span class="w"> </span><span class="s1">&#39;,&#39;</span><span class="w"> </span><span class="n">CSV</span><span class="w"> </span><span class="n">HEADER</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">COPY</span><span class="w"> </span><span class="n">people</span><span class="w"> </span><span class="k">TO</span><span class="w"> </span><span class="s1">&#39;/tmp/people.csv&#39;</span><span class="w">  </span><span class="k">WITH</span><span class="w"> </span><span class="k">DELIMITER</span><span class="w"> </span><span class="s1">&#39;,&#39;</span><span class="w"> </span><span class="n">CSV</span><span class="w"> </span><span class="n">HEADER</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">COPY</span><span class="w"> </span><span class="n">movies</span><span class="w"> </span><span class="k">TO</span><span class="w"> </span><span class="s1">&#39;/tmp/movies.csv&#39;</span><span class="w">  </span><span class="k">WITH</span><span class="w"> </span><span class="k">DELIMITER</span><span class="w"> </span><span class="s1">&#39;,&#39;</span><span class="w"> </span><span class="n">CSV</span><span class="w"> </span><span class="n">HEADER</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">COPY</span><span class="w"> </span><span class="n">genres</span><span class="w"> </span><span class="k">TO</span><span class="w"> </span><span class="s1">&#39;/tmp/genres.csv&#39;</span><span class="w">  </span><span class="k">WITH</span><span class="w"> </span><span class="k">DELIMITER</span><span class="w"> </span><span class="s1">&#39;,&#39;</span><span class="w"> </span><span class="n">CSV</span><span class="w"> </span><span class="n">HEADER</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">-- 对于 user_watched_movies 我们不输出表头，因为这个文件中记录了两种点、一种边，没法让 importer 通过约定好的表头自动导入，只能通过无表头的情况下指定第几列对应什么字段
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">COPY</span><span class="w"> </span><span class="n">user_watched_movies</span><span class="w"> </span><span class="k">TO</span><span class="w"> </span><span class="s1">&#39;/tmp/user_watched_movies.csv&#39;</span><span class="w">  </span><span class="k">WITH</span><span class="w"> </span><span class="k">DELIMITER</span><span class="w"> </span><span class="s1">&#39;,&#39;</span><span class="w"> </span><span class="n">CSV</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>然后把 postgres 容器里的文件导入到 to_nebulagraph 这个文件夹里：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">mkdir -p to_nebulagraph
+</span></span><span class="line"><span class="cl">docker cp postgres:/tmp/. to_nebulagraph/
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="导入-nebulagraph" class="headerLink">
+    <a href="#%e5%af%bc%e5%85%a5-nebulagraph" class="header-mark"></a>6.5 导入 NebulaGraph</h3><h4 id="创建-nebulagraph-集群" class="headerLink">
+    <a href="#%e5%88%9b%e5%bb%ba-nebulagraph-%e9%9b%86%e7%be%a4" class="header-mark"></a>6.5.1 创建 NebulaGraph 集群</h4><p>我们可以用 Nebula-Up 一键搭起一个测试的 NebulaGraph 单机集群，然后参考数据集的 GitHub 仓库，一键导入所需数据：</p>
+<blockquote>
+<p>注：</p>
+<ul>
+<li>
+<p>Nebula-UP：https://github.com/wey-gu/nebula-up</p>
+</li>
+<li>
+<p>数据集仓库：https://github.com/wey-gu/movie-recommendation-dataset</p>
+</li>
+</ul>
+</blockquote>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">curl -fsSL nebula-up.siwei.io/install.sh <span class="p">|</span> bash
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="创建-schema" class="headerLink">
+    <a href="#%e5%88%9b%e5%bb%ba-schema" class="header-mark"></a>6.5.2 创建 Schema</h4><p>首先，我们创建一个叫做 <code>moviegraph</code> 的图空间，针对前边的建模，创建点边类型的结构（Schema）：</p>
+<p>先进入 NebulaGraph 的 console：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">~/.nebula-up/console.sh
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>然后执行如下 DDL（Data Definiation Language）：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">CREATE</span><span class="w"> </span><span class="k">SPACE</span><span class="w"> </span><span class="n">moviegraph</span><span class="p">(</span><span class="n">partition_num</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span><span class="n">replica_factor</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">vid_type</span><span class="o">=</span><span class="n">fixed_string</span><span class="p">(</span><span class="mi">32</span><span class="p">));</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">:</span><span class="n">sleep</span><span class="w"> </span><span class="mi">20</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">USE</span><span class="w"> </span><span class="n">moviegraph</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">CREATE</span><span class="w"> </span><span class="n">TAG</span><span class="w"> </span><span class="n">person</span><span class="p">(</span><span class="n">name</span><span class="w"> </span><span class="n">string</span><span class="p">,</span><span class="w"> </span><span class="n">birthdate</span><span class="w"> </span><span class="n">string</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">CREATE</span><span class="w"> </span><span class="n">TAG</span><span class="w"> </span><span class="n">movie</span><span class="p">(</span><span class="n">name</span><span class="w"> </span><span class="n">string</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">CREATE</span><span class="w"> </span><span class="n">TAG</span><span class="w"> </span><span class="n">genre</span><span class="p">(</span><span class="n">name</span><span class="w"> </span><span class="n">string</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">CREATE</span><span class="w"> </span><span class="n">TAG</span><span class="w"> </span><span class="k">user</span><span class="p">(</span><span class="n">user_id</span><span class="w"> </span><span class="n">string</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">CREATE</span><span class="w"> </span><span class="n">EDGE</span><span class="w"> </span><span class="n">acted_by</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">CREATE</span><span class="w"> </span><span class="n">EDGE</span><span class="w"> </span><span class="n">directed_by</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">CREATE</span><span class="w"> </span><span class="n">EDGE</span><span class="w"> </span><span class="n">with_genre</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">CREATE</span><span class="w"> </span><span class="n">EDGE</span><span class="w"> </span><span class="n">watched</span><span class="p">(</span><span class="n">rate</span><span class="w"> </span><span class="nb">float</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">exit</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="创建-nebula-importer-配置文件" class="headerLink">
+    <a href="#%e5%88%9b%e5%bb%ba-nebula-importer-%e9%85%8d%e7%bd%ae%e6%96%87%e4%bb%b6" class="header-mark"></a>6.5.3 创建 Nebula-Importer 配置文件</h4><p>这个文件是一个描述 CSV 文件和集群中点边数据对应关系的 YAML 文件。详细的格式可以参考文档：https://docs.nebula-graph.com.cn/master/nebula-importer/use-importer/，或者视频教程：https://www.bilibili.com/video/BV1ny4y1u7i4 。</p>
+<p>最终的配置文件我已经问大家写好了，在 <a href="https://github.com/wey-gu/movie-recommendation-dataset/blob/main/nebula-importer.yaml" target="_blank" rel="noopener noreferrer">https://github.com/wey-gu/movie-recommendation-dataset/blob/main/nebula-importer.yaml</a> 可以下载得到。</p>
+<p>这里，我们就直接下载我写好了的配置文件，注意，这个文件不应该是 dbt 项目文件的一部分，所以我们退出目录，向上一层，把它放到 dbt_proeject 外边：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nb">cd</span> ..
+</span></span><span class="line"><span class="cl">wget https://raw.githubusercontent.com/wey-gu/movie-recommendation-dataset/main/nebula-importer.yaml
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="开始导入" class="headerLink">
+    <a href="#%e5%bc%80%e5%a7%8b%e5%af%bc%e5%85%a5" class="header-mark"></a>6.5.4 开始导入</h4><p>这一步，我们用容器化的 nebula-importer，避免了安装的步骤：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker run --rm -ti <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    --network<span class="o">=</span>nebula-net <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    -v <span class="si">${</span><span class="nv">PWD</span><span class="si">}</span>:/root/ <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    -v <span class="si">${</span><span class="nv">PWD</span><span class="si">}</span>/dbt_project/to_nebulagraph/:/data <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    vesoft/nebula-importer:v3.2.0 <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    --config /root/nebula-importer.yaml
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>很快，所有的数据就导入到 NebulaGraph 之中了，然后我们可以通过 Nebula-Console，执行一些查询看看结果：</p>
+<p>进入 console</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">~/.nebula-up/console.sh
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>进入图空间、执行 <code>SHOW STATS</code></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-SQL" data-lang="SQL"><span class="line"><span class="cl"><span class="n">USE</span><span class="w"> </span><span class="n">moviegraph</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">SHOW</span><span class="w"> </span><span class="n">STATS</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>结果：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-SQL" data-lang="SQL"><span class="line"><span class="cl"><span class="p">(</span><span class="n">root</span><span class="o">@</span><span class="n">nebula</span><span class="p">)</span><span class="w"> </span><span class="p">[</span><span class="n">moviegraph</span><span class="p">]</span><span class="o">&gt;</span><span class="w"> </span><span class="k">SHOW</span><span class="w"> </span><span class="n">STATS</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">+</span><span class="c1">---------+---------------+---------+
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="o">|</span><span class="w"> </span><span class="k">Type</span><span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">Name</span><span class="w">          </span><span class="o">|</span><span class="w"> </span><span class="k">Count</span><span class="w">   </span><span class="o">|</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">+</span><span class="c1">---------+---------------+---------+
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;Tag&#34;</span><span class="w">   </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;genre&#34;</span><span class="w">       </span><span class="o">|</span><span class="w"> </span><span class="mi">14397</span><span class="w">   </span><span class="o">|</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;Tag&#34;</span><span class="w">   </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;movie&#34;</span><span class="w">       </span><span class="o">|</span><span class="w"> </span><span class="mi">20701</span><span class="w">   </span><span class="o">|</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;Tag&#34;</span><span class="w">   </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;person&#34;</span><span class="w">      </span><span class="o">|</span><span class="w"> </span><span class="mi">263907</span><span class="w">  </span><span class="o">|</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;Tag&#34;</span><span class="w">   </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;user&#34;</span><span class="w">        </span><span class="o">|</span><span class="w"> </span><span class="mi">610</span><span class="w">     </span><span class="o">|</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;Edge&#34;</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;acted_by&#34;</span><span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="mi">673763</span><span class="w">  </span><span class="o">|</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;Edge&#34;</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;directed_by&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="mi">101949</span><span class="w">  </span><span class="o">|</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;Edge&#34;</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;watched&#34;</span><span class="w">     </span><span class="o">|</span><span class="w"> </span><span class="mi">31781</span><span class="w">   </span><span class="o">|</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;Edge&#34;</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;with_genre&#34;</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="mi">194009</span><span class="w">  </span><span class="o">|</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;Space&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;vertices&#34;</span><span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="mi">299615</span><span class="w">  </span><span class="o">|</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;Space&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;edges&#34;</span><span class="w">       </span><span class="o">|</span><span class="w"> </span><span class="mi">1001502</span><span class="w"> </span><span class="o">|</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">+</span><span class="c1">---------+---------------+---------+
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">Got</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="k">rows</span><span class="w"> </span><span class="p">(</span><span class="n">time</span><span class="w"> </span><span class="n">spent</span><span class="w"> </span><span class="mi">1693</span><span class="o">/</span><span class="mi">15136</span><span class="w"> </span><span class="n">us</span><span class="p">)</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>通过 Nebula-Studio，我们也可以在可视化界面探索这个图谱，比如在其中执行这个查询，看一下给用户 u_124 推荐电影 1891 的理由可能是什么？</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-SQL" data-lang="SQL"><span class="line"><span class="cl"><span class="n">FIND</span><span class="w"> </span><span class="n">NOLOOP</span><span class="w"> </span><span class="n">PATH</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="s2">&#34;u_124&#34;</span><span class="w"> </span><span class="k">TO</span><span class="w"> </span><span class="s2">&#34;1891&#34;</span><span class="w"> </span><span class="n">over</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">BIDIRECT</span><span class="w"> </span><span class="n">UPTO</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="n">STEPS</span><span class="w"> </span><span class="n">yield</span><span class="w"> </span><span class="n">path</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="o">`</span><span class="n">p</span><span class="o">`</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="k">LIMIT</span><span class="w"> </span><span class="mi">20</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>他的结果是：曾经喜欢的星战电影的大部分演职人员都也参与了这部和同样是“奥斯卡获奖”且“经典”的电影。</p>
+<p><figure><a class="lightgallery" href="/nebulagraph-etl-dbt/reasoning_movie.webp" title="reasoning_movie" data-thumbnail="/nebulagraph-etl-dbt/reasoning_movie.webp">
+        <img
+            
+            loading="lazy"
+            src="/nebulagraph-etl-dbt/reasoning_movie.webp"
+            srcset="/nebulagraph-etl-dbt/reasoning_movie.webp, /nebulagraph-etl-dbt/reasoning_movie.webp 1.5x, /nebulagraph-etl-dbt/reasoning_movie.webp 2x"
+            sizes="auto"
+            alt="reasoning_movie">
+    </a></figure></p>
+<blockquote>
+<p>我在另一篇文章中给大家用同一个图谱展示了更多图数据库、图算法在推荐系统上的应用，如果大家感兴趣，欢迎阅读：https://www.siwei.io/recommendation-system-with-graphdb/ 。</p>
+</blockquote>
+<h2 id="总结" class="headerLink">
+    <a href="#%e6%80%bb%e7%bb%93" class="header-mark"></a>7 总结</h2><p>当我们打算把海量数据利用图数据库的能力进行知识转化、洞察分析的时候，往往第一步就是要做多数据源到图数据的转换、处理、建模。对于在无从下手的新手们来说，一个可行的思路是从所有的相关信息出发，去设想最关注的关联关系，把边写出来，然后再罗列可以取得的点、以及需要的点、边上的属性。确定了初始的建模之后，就可以利用 ETL 工具把原始的数据清洗、ETL 成点、边类型的表结构，最后，利用导入工具导入 NebulaGraph。</p>
+<p>借助于 dbt，我们可以版本控制、测试、迭代我们的建模与数据转换，一点点进化、丰富构建的知识图谱。</p>
+<blockquote>
+<p>题图版权：<a href="https://unsplash.com/photos/Bu4lHKIHr-E" target="_blank" rel="noopener noreferrer">Claudio</a></p>
+</blockquote>]]></description>
+</item></channel>
+</rss>

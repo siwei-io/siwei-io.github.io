@@ -1,0 +1,193 @@
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+        <title>Respberry Pi - 标签 - siwei.io</title>
+        <link>https://siwei.io/tags/respberry-pi/</link>
+        <description>Respberry Pi - 标签 - siwei.io</description>
+        <generator>Hugo -- gohugo.io</generator><language>zh-CN</language><managingEditor>weyl.gu@gmail.com (Wey Gu)</managingEditor>
+            <webMaster>weyl.gu@gmail.com (Wey Gu)</webMaster><copyright>This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.</copyright><lastBuildDate>Wed, 23 Mar 2022 22:11:03 &#43;0800</lastBuildDate><atom:link href="https://siwei.io/tags/respberry-pi/" rel="self" type="application/rss+xml" /><item>
+    <title>Nebula Graph on Pi</title>
+    <link>https://siwei.io/nebula-graph-on-pi/</link>
+    <pubDate>Wed, 23 Mar 2022 22:11:03 &#43;0800</pubDate><author>
+        <name>Wey Gu</name>
+    </author><guid>https://siwei.io/nebula-graph-on-pi/</guid>
+    <description><![CDATA[<div class="featured-image">
+                <img src="/nebula-graph-on-pi/featured-image.webp" referrerpolicy="no-referrer">
+            </div><blockquote>
+<p>得益于 Nebula 的原生 ARM64v8 的支持，在树莓派等 ARM 单板上跑 Nebula Graph 非常容易。</p>
+</blockquote>
+<h2 id="背景" class="headerLink">
+    <a href="#%e8%83%8c%e6%99%af" class="header-mark"></a>1 背景</h2><p>最近，在 Nebula Graph 社区 Yee 老师的（再）一次修复了 Nebula Graph 的构建依赖的 ARM 支持问题（<a href="https://github.com/vesoft-inc/nebula-third-party/pull/37" target="_blank" rel="noopener noreferrer">nebula-third-party#37</a>）之后，我们又可以愉快地在 M1 Mac 上玩这个分布式开源图数据库了。</p>
+<p>苦于树莓派的价格，一直没找机会把 Nebula 跑在小板子上玩玩。至于为什么要跑在树莓派上我的回答当然是 <del>Because I can</del> 在非常非常边缘计算的场景下（这里挖个坑，我一定要找一个这样的场景分享出来）。</p>
+<p>终于，一周多之前在 <a href="https://twitter.com/laixintao" target="_blank" rel="noopener noreferrer">@laixintao</a> 和 <a href="https://twitter.com/andelf/status/1504295476958404608" target="_blank" rel="noopener noreferrer">@andelf</a> 的一个讨论下我决定找一个树莓派的 alternative，最后下单了 <a href="https://wiki.radxa.com/Rock3/" target="_blank" rel="noopener noreferrer">Rock Pi 3A</a>，在因为深圳疫情影响下拖到了这个礼拜才终于发货了！</p>
+<p><figure><a class="lightgallery" href="/nebula-graph-on-pi/tweet-RPi-alternative.webp" title="tweet-RPi-alternative" data-thumbnail="/nebula-graph-on-pi/tweet-RPi-alternative.webp">
+        <img
+            
+            loading="lazy"
+            src="/nebula-graph-on-pi/tweet-RPi-alternative.webp"
+            srcset="/nebula-graph-on-pi/tweet-RPi-alternative.webp, /nebula-graph-on-pi/tweet-RPi-alternative.webp 1.5x, /nebula-graph-on-pi/tweet-RPi-alternative.webp 2x"
+            sizes="auto"
+            alt="tweet-RPi-alternative">
+    </a></figure></p>
+<p>它看起来真的很棒！</p>
+<p><figure><a class="lightgallery" href="/nebula-graph-on-pi/rockspi_before.webp" title="rockspi_before" data-thumbnail="/nebula-graph-on-pi/rockspi_before.webp">
+        <img
+            
+            loading="lazy"
+            src="/nebula-graph-on-pi/rockspi_before.webp"
+            srcset="/nebula-graph-on-pi/rockspi_before.webp, /nebula-graph-on-pi/rockspi_before.webp 1.5x, /nebula-graph-on-pi/rockspi_before.webp 2x"
+            sizes="auto"
+            alt="rockspi_before">
+    </a></figure></p>
+<h2 id="在-arm64-板子上装-nebula-graph-图数据库" class="headerLink">
+    <a href="#%e5%9c%a8-arm64-%e6%9d%bf%e5%ad%90%e4%b8%8a%e8%a3%85-nebula-graph-%e5%9b%be%e6%95%b0%e6%8d%ae%e5%ba%93" class="header-mark"></a>2 在 ARM64 板子上装 Nebula Graph 图数据库</h2><blockquote>
+<p>实际上 Nebula Graph 在 3.0 之后提供了一个<a href="https://docs.nebula-graph.com.cn/3.0.1/4.deployment-and-installation/standalone-deployment/" target="_blank" rel="noopener noreferrer">单机版</a>，这使得 Nebula 在边缘计算情况下有了更小的 footprint，不过这次我还没有使用这个版本，下次试试再给大家分享。</p>
+</blockquote>
+<p>我在附录列出了安装 Ubuntu Server 的步骤，这里假设大家已经在树莓派或者其他单板 ARM 电脑里拉起来了 64 位的 Linux Server。</p>
+<h3 id="第-0-步安装-docker-和-docker-compose" class="headerLink">
+    <a href="#%e7%ac%ac-0-%e6%ad%a5%e5%ae%89%e8%a3%85-docker-%e5%92%8c-docker-compose" class="header-mark"></a>2.1 第 0 步，安装 Docker 和 Docker-Compose</h3><p>这里，我假设是 Debian/Ubuntu，其他分发版直接参考<a href="https://docs.docker.com/engine/install/" target="_blank" rel="noopener noreferrer">这里</a>就好。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sudo apt-get update
+</span></span><span class="line"><span class="cl">sudo apt-get install <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    ca-certificates <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    curl <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    gnupg <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>    lsb-release
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nb">echo</span> <span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>  <span class="s2">&#34;deb [arch=</span><span class="k">$(</span>dpkg --print-architecture<span class="k">)</span><span class="s2"> signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
+</span></span></span><span class="line"><span class="cl"><span class="s2">  </span><span class="k">$(</span>lsb_release -cs<span class="k">)</span><span class="s2"> stable&#34;</span> <span class="p">|</span> sudo tee /etc/apt/sources.list.d/docker.list &gt; /dev/null
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">sudo apt-get update
+</span></span><span class="line"><span class="cl">sudo apt-get install docker-ce docker-ce-cli containerd.io
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># follow https://docs.docker.com/engine/install/linux-postinstall/</span>
+</span></span><span class="line"><span class="cl">sudo groupadd docker
+</span></span><span class="line"><span class="cl">sudo usermod -aG docker <span class="nv">$USER</span>
+</span></span><span class="line"><span class="cl"><span class="nb">exit</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># login again</span>
+</span></span><span class="line"><span class="cl">newgrp docker
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>安装好了 Docker 之后，安装 Compose，它 Docker 官方的步骤是有问题的，因为它其实是一个 Python 的包，我们通过 PIP 去装就好了。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sudo apt-get install -y python3 python3-pip
+</span></span><span class="line"><span class="cl">sudo pip3 install docker-compose
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="第-1-步拉起-nebula-graph" class="headerLink">
+    <a href="#%e7%ac%ac-1-%e6%ad%a5%e6%8b%89%e8%b5%b7-nebula-graph" class="header-mark"></a>2.2 第 1 步，拉起 Nebula Graph</h3><p>首先，我们克隆 Nebula Docker Compose 这个 Repo，在 Master Branch，用 Compose 把服务拉起来。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">git clone https://github.com/vesoft-inc/nebula-docker-compose.git <span class="o">&amp;&amp;</span> <span class="nb">cd</span> nebula-docker-compose
+</span></span><span class="line"><span class="cl">docker-compose up -d
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>然后，我们下载 Console，连上 GraphD 服务。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">wget https://github.com/vesoft-inc/nebula-console/releases/download/v3.0.0/nebula-console-linux-arm64-v3.0.0
+</span></span><span class="line"><span class="cl">chmod +x nebula-console-linux-arm64-v3.0.0
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">./nebula-console-linux-arm64-v3.0.0 -addr localhost -port <span class="m">9669</span> -u root -p nebula
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>并激活 Storage 服务。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">ADD HOSTS <span class="s2">&#34;storaged0&#34;</span>:9779,<span class="s2">&#34;storaged1&#34;</span>:9779,<span class="s2">&#34;storaged2&#34;</span>:9779<span class="p">;</span>
+</span></span><span class="line"><span class="cl">SHOW HOSTS<span class="p">;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="第-2-步玩转-nebula-graph-on-pi" class="headerLink">
+    <a href="#%e7%ac%ac-2-%e6%ad%a5%e7%8e%a9%e8%bd%ac-nebula-graph-on-pi" class="header-mark"></a>2.3 第 2 步，玩转 Nebula Graph on Pi</h3><p>这时候，透过 <code>SHOW HOSTS</code> 看到三个 StorageD 服务都是 ONLINE 之后，我们可以给 Nebula 里加载进去测试数据集。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$:play basketballplayer<span class="p">;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>差不多一分钟之后，数据库加载成功，我们进入这个图空间，玩一下吧！</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">USE basketballplayer<span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">GO FROM <span class="s2">&#34;player100&#34;</span> OVER follow YIELD dst<span class="o">(</span>edge<span class="o">)</span><span class="p">;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Check this out and&hellip;</p>
+<p>Happy Graphing!</p>
+<p><figure><a class="lightgallery" href="/nebula-graph-on-pi/Nebula-on-Pi.webp" title="Nebula-on-Pi" data-thumbnail="/nebula-graph-on-pi/Nebula-on-Pi.webp">
+        <img
+            
+            loading="lazy"
+            src="/nebula-graph-on-pi/Nebula-on-Pi.webp"
+            srcset="/nebula-graph-on-pi/Nebula-on-Pi.webp, /nebula-graph-on-pi/Nebula-on-Pi.webp 1.5x, /nebula-graph-on-pi/Nebula-on-Pi.webp 2x"
+            sizes="auto"
+            alt="Nebula-on-Pi">
+    </a></figure></p>
+<h2 id="附录安装-ubuntu-server-在-rock-pi-3a-上" class="headerLink">
+    <a href="#%e9%99%84%e5%bd%95%e5%ae%89%e8%a3%85-ubuntu-server-%e5%9c%a8-rock-pi-3a-%e4%b8%8a" class="header-mark"></a>3 附录：安装 Ubuntu Server 在 Rock Pi 3A 上</h2><ul>
+<li>
+<p>准备一个 micro SD card，在  <a href="https://wiki.radxa.com/Rock3/downloads" target="_blank" rel="noopener noreferrer">https://wiki.radxa.com/Rock3/downloads</a> 下载镜像，解压为 <code>.img</code> 文件</p>
+</li>
+<li>
+<p>把镜像写进 SD card，比如用 <a href="https://www.balena.io/etcher/" target="_blank" rel="noopener noreferrer">etcher</a></p>
+</li>
+<li>
+<p>插入电源（5V，3A）启动！</p>
+</li>
+</ul>
+<blockquote>
+<p>feature image credit: <a href="https://unsplash.com/@_louisreed" target="_blank" rel="noopener noreferrer">@_louisreed</a></p>
+</blockquote>]]></description>
+</item></channel>
+</rss>

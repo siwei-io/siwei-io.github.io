@@ -1,0 +1,375 @@
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+        <title>chatGPT - 标签 - siwei.io</title>
+        <link>https://siwei.io/tags/chatgpt/</link>
+        <description>chatGPT - 标签 - siwei.io</description>
+        <generator>Hugo -- gohugo.io</generator><language>zh-CN</language><managingEditor>weyl.gu@gmail.com (Wey Gu)</managingEditor>
+            <webMaster>weyl.gu@gmail.com (Wey Gu)</webMaster><copyright>This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.</copyright><lastBuildDate>Tue, 06 Dec 2022 18:01:55 &#43;0800</lastBuildDate><atom:link href="https://siwei.io/tags/chatgpt/" rel="self" type="application/rss+xml" /><item>
+    <title>chatGPT 加 NebulaGraph 预测 2022 世界杯冠军球队</title>
+    <link>https://siwei.io/chatgpt-and-nebulagraph-predict-fifa-world-cup/</link>
+    <pubDate>Tue, 06 Dec 2022 18:01:55 &#43;0800</pubDate><author>
+        <name>Wey Gu</name>
+    </author><guid>https://siwei.io/chatgpt-and-nebulagraph-predict-fifa-world-cup/</guid>
+    <description><![CDATA[<div class="featured-image">
+                <img src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.webp" referrerpolicy="no-referrer">
+            </div><blockquote>
+<p>一次利用 chatGPT 给出数据抓取代码，借助 NebulaGraph 图数据库与图算法预测体育赛事的尝试。</p>
+</blockquote>
+<!--
+
+> chatGPT and Nebulagraph Predict Fifa World Cup
+
+[TOC]
+
+-->
+<h2 id="蹭热度" class="headerLink">
+    <a href="#%e8%b9%ad%e7%83%ad%e5%ba%a6" class="header-mark"></a>1 蹭热度</h2><p>最近因为世界杯进行时，被这篇 <a href="https://cambridge-intelligence.com/fifa-world-cup-2022-prediction/" target="_blank" rel="noopener noreferrer">Cambridge Intelligence</a> 的文章启发（仅仅利用有限的信息量和条件，借助图算法的方法做合理的冠军预测），讨论到也可以试着用 NebulaGraph 玩玩冠军预测，还能顺道科普一波图库技术和图算法。</p>
+<p>本来想着几个小时撸出来一个方案，被数据集的收集劝退了，我是是在懒得去 <a href="https://en.wikipedia.org/wiki/2022_FIFA_World_Cup_squads" target="_blank" rel="noopener noreferrer">wikepedia</a> 里抓取出来需要的数据，索性就按下放了几天。</p>
+<p>同时，另一个热潮是最近 OpenAI 发布了 chatGPT 服务，它可以实现各种语言可是实现的复杂任务设计包括：</p>
+<ul>
+<li>随时帮你实现一段什么样的代码</li>
+<li>模拟成任意一个 prompt 界面：shell、python、virtual machine、甚至你创造的语言</li>
+<li>假设、带入你给定的人设，和你聊天</li>
+<li>写诗歌、rap、散文</li>
+<li>找出一段代码的 bug</li>
+<li>解释一段复杂的正则表达式的含义</li>
+</ul>
+<p>chatGPT 的上下文能力、理解力到的前所未有的程度以至于所有人都在讨论新的工作方式：如何掌握让机器帮助我们完成任务。</p>
+<p>所以，当我试过让 chatGPT 帮我写复杂的图数据库查询语句、解释复杂图查询语句的含义、解释一大段 <em>Bison</em> 代码含义之后我才意识到：为什么不让 chatGPT 帮我写好抓取数据的代码呢？</p>
+<h2 id="抓取数据" class="headerLink">
+    <a href="#%e6%8a%93%e5%8f%96%e6%95%b0%e6%8d%ae" class="header-mark"></a>2 抓取数据</h2><p>我真试了一下，结果是：完全可以，而且似乎真的很容易。</p>
+<p>整个过程基本上我像是一个代码考试的面试官、或者是一个产品经理，提出我的需求，chatGPT 给出代码的实现。我们再试着跑起来代码，找到代码中不合理的地方，指出来、给出建议，chatGPT 就真的能理解我指出的点，并给出相应的修正，像是：</p>
+<p><figure><a class="lightgallery" href="/chatgpt-and-nebulagraph-predict-fifa-world-cup/chatGPT-correction-process.webp" title="/chatgpt-and-nebulagraph-predict-fifa-world-cup/chatGPT-correction-process.webp" data-thumbnail="/chatgpt-and-nebulagraph-predict-fifa-world-cup/chatGPT-correction-process.webp">
+        <img
+            
+            loading="lazy"
+            src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/chatGPT-correction-process.webp"
+            srcset="/chatgpt-and-nebulagraph-predict-fifa-world-cup/chatGPT-correction-process.webp, /chatgpt-and-nebulagraph-predict-fifa-world-cup/chatGPT-correction-process.webp 1.5x, /chatgpt-and-nebulagraph-predict-fifa-world-cup/chatGPT-correction-process.webp 2x"
+            sizes="auto"
+            alt="/chatgpt-and-nebulagraph-predict-fifa-world-cup/chatGPT-correction-process.webp">
+    </a></figure></p>
+<p>这一全过程我就不在这里列出来了，不过我把生成的代码和整个讨论的过程都分享在<a href="https://gist.github.com/wey-gu/78cb28bee130966e7d6e9d573b51deff" target="_blank" rel="noopener noreferrer">这里</a>，感兴趣的同学可以去看看。</p>
+<p>最终生成的数据是一个 CSV 文件：</p>
+<ul>
+<li>
+<p>代码生成的文件 <a href="https://github.com/siwei-io/talks/files/10152775/world_cup_squads.csv" target="_blank" rel="noopener noreferrer">world_cup_squads.csv</a></p>
+</li>
+<li>
+<p>手动修改、分开了生日和年龄的列 <a href="https://github.com/siwei-io/talks/files/10152923/world_cup_squads.csv" target="_blank" rel="noopener noreferrer">world_cup_squads_v0.csv</a></p>
+<p>它像这样，包含的信息有：球队、小组、编号、位置、球员名字、生日、年龄、参加国际比赛场次、进球数、服役俱乐部。</p>
+</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">Team,Group,No.,Pos.,Player,DOB,Age,Caps,Goals,Club
+</span></span><span class="line"><span class="cl">Ecuador,A,1,1GK,Hernán Galíndez,(1987-03-30)30 March 1987,35,12,0,Aucas
+</span></span><span class="line"><span class="cl">Ecuador,A,2,2DF,Félix Torres,(1997-01-11)11 January 1997,25,17,2,Santos Laguna
+</span></span><span class="line"><span class="cl">Ecuador,A,3,2DF,Piero Hincapié,(2002-01-09)9 January 2002,20,21,1,Bayer Leverkusen
+</span></span><span class="line"><span class="cl">Ecuador,A,4,2DF,Robert Arboleda,(1991-10-22)22 October 1991,31,33,2,São Paulo
+</span></span><span class="line"><span class="cl">Ecuador,A,5,3MF,José Cifuentes,(1999-03-12)12 March 1999,23,11,0,Los Angeles FC
+</span></span></code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>手动删除了 CSV 表头 <a href="https://github.com/siwei-io/talks/files/10152974/world_cup_squads_no_headers.csv" target="_blank" rel="noopener noreferrer">world_cup_squads_no_headers.csv</a></li>
+</ul>
+<h2 id="图方法预测2022世界杯" class="headerLink">
+    <a href="#%e5%9b%be%e6%96%b9%e6%b3%95%e9%a2%84%e6%b5%8b2022%e4%b8%96%e7%95%8c%e6%9d%af" class="header-mark"></a>3 图方法预测2022世界杯</h2><h3 id="图建模" class="headerLink">
+    <a href="#%e5%9b%be%e5%bb%ba%e6%a8%a1" class="header-mark"></a>3.1 图建模</h3><blockquote>
+<p>前提，本文使用 NebulaGraph 和 NebulaGraph Explorer，你可以在阿里云上免费申请半个月的试用，入口链接是👉🏻 <a href="http://c.nxw.so/d52oz" target="_blank" rel="noopener noreferrer">http://c.nxw.so/d52oz</a> ，不要被这个陌生的短链接域名吓到，它只是帮助我们统计有多少同学通过这里访问到 <a href="https://market.aliyun.com" target="_blank" rel="noopener noreferrer">https://market.aliyun.com</a> 而已。</p>
+</blockquote>
+<p>图建模（Graph Modeling）是把真实世界信息以”点&ndash;&gt;边“的图形式去抽象与表示。</p>
+<p>这里，我们根据公共领域能够容易获得信息、把它映射成如下的点与边：</p>
+<p>点：</p>
+<ul>
+<li>player（球员）</li>
+<li>team（球队）</li>
+<li>group（小组）</li>
+<li>club（俱乐部）</li>
+</ul>
+<p>边：</p>
+<ul>
+<li>groupedin（球队属于哪一小组）</li>
+<li>belongto（队员属于国家队）</li>
+<li>serve（队员在俱乐部服役）</li>
+</ul>
+<p>而队员的年龄、参加国际场次（caps）、进球数（goals）则很自然作为 player 这一类点的属性。</p>
+<p>下图是这个 schema 在 NebulaGraph Studio/Explorer（后边称 Studio/Explorer） 中的截图：</p>
+<p><figure><a class="lightgallery" href="/chatgpt-and-nebulagraph-predict-fifa-world-cup/schema_fifa.webp" title="schema_fifa" data-thumbnail="/chatgpt-and-nebulagraph-predict-fifa-world-cup/schema_fifa.webp">
+        <img
+            
+            loading="lazy"
+            src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/schema_fifa.webp"
+            srcset="/chatgpt-and-nebulagraph-predict-fifa-world-cup/schema_fifa.webp, /chatgpt-and-nebulagraph-predict-fifa-world-cup/schema_fifa.webp 1.5x, /chatgpt-and-nebulagraph-predict-fifa-world-cup/schema_fifa.webp 2x"
+            sizes="auto"
+            alt="schema_fifa">
+    </a></figure></p>
+<p>然后，我们可以在右上角把它保存，创建一个新的图空间，应用这个图建模到图空间里。</p>
+<blockquote>
+<p>注：参考文档 <a href="https://docs.nebula-graph.com.cn/3.3.0/nebula-explorer/db-management/draft/" target="_blank" rel="noopener noreferrer">https://docs.nebula-graph.com.cn/3.3.0/nebula-explorer/db-management/draft/</a></p>
+</blockquote>
+<h3 id="导入数据进-nebulagraph" class="headerLink">
+    <a href="#%e5%af%bc%e5%85%a5%e6%95%b0%e6%8d%ae%e8%bf%9b-nebulagraph" class="header-mark"></a>3.2 导入数据进 NebulaGraph</h3><p>有了图建模，我们可以把之前的 CSV 文件（无表头版本）上传到 Studio 或者 Explorer 里，通过点、选关联不同的列到点边中的 vid 和属性：</p>
+<p><figure><a class="lightgallery" href="/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_config_mapping.webp" title="/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_config_mapping.webp" data-thumbnail="/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_config_mapping.webp">
+        <img
+            
+            loading="lazy"
+            src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_config_mapping.webp"
+            srcset="/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_config_mapping.webp, /chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_config_mapping.webp 1.5x, /chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_config_mapping.webp 2x"
+            sizes="auto"
+            alt="/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_config_mapping.webp">
+    </a></figure></p>
+<p>之后点击导入，就把整个图导入到 NebulaGraph 了，成功之后，我们还得到了整个csv &ndash;&gt; Nebula Importer 的关联配置文件：<a href="https://github.com/siwei-io/talks/files/10164014/config_fifa.yml.txt" target="_blank" rel="noopener noreferrer">nebula_importer_config_fifa.yml</a>，你可以直接拖拽整个配置，不用自己去配置它了。</p>
+<p><figure><a class="lightgallery" href="/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_log.webp" title="/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_log.webp" data-thumbnail="/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_log.webp">
+        <img
+            
+            loading="lazy"
+            src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_log.webp"
+            srcset="/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_log.webp, /chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_log.webp 1.5x, /chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_log.webp 2x"
+            sizes="auto"
+            alt="/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_log.webp">
+    </a></figure></p>
+<blockquote>
+<p>注：参考文档 <a href="https://docs.nebula-graph.com.cn/3.3.0/nebula-explorer/db-management/11.import-data/" target="_blank" rel="noopener noreferrer">https://docs.nebula-graph.com.cn/3.3.0/nebula-explorer/db-management/11.import-data/</a></p>
+</blockquote>
+<p>导入之后，我们可以在 schema 界面里查看数据统计，我们可以看到有 831 名球员参加了 2022 卡塔尔世界杯，他们服役在 295 个不同的俱乐部：</p>
+<p><figure><a class="lightgallery" href="/chatgpt-and-nebulagraph-predict-fifa-world-cup/data_stats.webp" title="/chatgpt-and-nebulagraph-predict-fifa-world-cup/data_stats.webp" data-thumbnail="/chatgpt-and-nebulagraph-predict-fifa-world-cup/data_stats.webp">
+        <img
+            
+            loading="lazy"
+            src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/data_stats.webp"
+            srcset="/chatgpt-and-nebulagraph-predict-fifa-world-cup/data_stats.webp, /chatgpt-and-nebulagraph-predict-fifa-world-cup/data_stats.webp 1.5x, /chatgpt-and-nebulagraph-predict-fifa-world-cup/data_stats.webp 2x"
+            sizes="auto"
+            alt="/chatgpt-and-nebulagraph-predict-fifa-world-cup/data_stats.webp">
+    </a></figure></p>
+<blockquote>
+<p>注：参考文档 <a href="https://docs.nebula-graph.com.cn/3.3.0/nebula-explorer/db-management/10.create-schema/#_6" target="_blank" rel="noopener noreferrer">https://docs.nebula-graph.com.cn/3.3.0/nebula-explorer/db-management/10.create-schema/#_6</a></p>
+</blockquote>
+<h3 id="探索数据" class="headerLink">
+    <a href="#%e6%8e%a2%e7%b4%a2%e6%95%b0%e6%8d%ae" class="header-mark"></a>3.3 探索数据</h3><h4 id="查询数据" class="headerLink">
+    <a href="#%e6%9f%a5%e8%af%a2%e6%95%b0%e6%8d%ae" class="header-mark"></a>3.3.1 查询数据</h4><p>下面，我们试着把所有的数据展示出来看看吧，首先，借助 NebulaGraph Explorer，我用拖拽的方式画出来任意类型的点（TAG）和任意类型点（TAG）之间的边，这里我们知道所有的点都是至少包含在一个边里的，所以不会漏掉任何孤立的点。</p>
+<p><figure><a class="lightgallery" href="/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-0.webp" title="/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-0.webp" data-thumbnail="/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-0.webp">
+        <img
+            
+            loading="lazy"
+            src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-0.webp"
+            srcset="/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-0.webp, /chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-0.webp 1.5x, /chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-0.webp 2x"
+            sizes="auto"
+            alt="/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-0.webp">
+    </a></figure></p>
+<p>让它帮我生成查询的语句，这里，它默认 LIMIT 100 了，我们手动改大一些（ LIMIT 10000），让它在 Console 里执行。</p>
+<p><figure><a class="lightgallery" href="/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-1.webp" title="/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-1.webp" data-thumbnail="/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-1.webp">
+        <img
+            
+            loading="lazy"
+            src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-1.webp"
+            srcset="/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-1.webp, /chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-1.webp 1.5x, /chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-1.webp 2x"
+            sizes="auto"
+            alt="/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-1.webp">
+    </a></figure></p>
+<h4 id="初步观察数据" class="headerLink">
+    <a href="#%e5%88%9d%e6%ad%a5%e8%a7%82%e5%af%9f%e6%95%b0%e6%8d%ae" class="header-mark"></a>3.3.2 初步观察数据</h4><p>结果渲染出来是这样子，可以看到它天然形成了一簇一簇的模式。</p>
+<p><figure><a class="lightgallery" href="/chatgpt-and-nebulagraph-predict-fifa-world-cup/bird_view.webp" title="/chatgpt-and-nebulagraph-predict-fifa-world-cup/bird_view.webp" data-thumbnail="/chatgpt-and-nebulagraph-predict-fifa-world-cup/bird_view.webp">
+        <img
+            
+            loading="lazy"
+            src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/bird_view.webp"
+            srcset="/chatgpt-and-nebulagraph-predict-fifa-world-cup/bird_view.webp, /chatgpt-and-nebulagraph-predict-fifa-world-cup/bird_view.webp 1.5x, /chatgpt-and-nebulagraph-predict-fifa-world-cup/bird_view.webp 2x"
+            sizes="auto"
+            alt="/chatgpt-and-nebulagraph-predict-fifa-world-cup/bird_view.webp">
+    </a></figure></p>
+<p>这些外围、形成的簇多是一些由非传统意义上的有全球影响力的俱乐部，和非传统的足球厉害的国家队的球员组成，因为通常这些俱乐部只有一两个球员，而且他们还集中在一个国家队、地区，所以没有和很多其他球员、国家队产生连接。</p>
+<p><figure><a class="lightgallery" href="/chatgpt-and-nebulagraph-predict-fifa-world-cup/edge_teams.webp" title="/chatgpt-and-nebulagraph-predict-fifa-world-cup/edge_teams.webp" data-thumbnail="/chatgpt-and-nebulagraph-predict-fifa-world-cup/edge_teams.webp">
+        <img
+            
+            loading="lazy"
+            src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/edge_teams.webp"
+            srcset="/chatgpt-and-nebulagraph-predict-fifa-world-cup/edge_teams.webp, /chatgpt-and-nebulagraph-predict-fifa-world-cup/edge_teams.webp 1.5x, /chatgpt-and-nebulagraph-predict-fifa-world-cup/edge_teams.webp 2x"
+            sizes="auto"
+            alt="/chatgpt-and-nebulagraph-predict-fifa-world-cup/edge_teams.webp">
+    </a></figure></p>
+<h4 id="图算法辅助分析" class="headerLink">
+    <a href="#%e5%9b%be%e7%ae%97%e6%b3%95%e8%be%85%e5%8a%a9%e5%88%86%e6%9e%90" class="header-mark"></a>3.3.3 图算法辅助分析</h4><p>在我点击了 Explorer 中的两个按钮之后（详细参考后边的文档链接），在浏览器里，我们可以看到整个图已经变成：</p>
+<p><figure><a class="lightgallery" href="/chatgpt-and-nebulagraph-predict-fifa-world-cup/Barcelona.webp" title="/chatgpt-and-nebulagraph-predict-fifa-world-cup/Barcelona.webp" data-thumbnail="/chatgpt-and-nebulagraph-predict-fifa-world-cup/Barcelona.webp">
+        <img
+            
+            loading="lazy"
+            src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/Barcelona.webp"
+            srcset="/chatgpt-and-nebulagraph-predict-fifa-world-cup/Barcelona.webp, /chatgpt-and-nebulagraph-predict-fifa-world-cup/Barcelona.webp 1.5x, /chatgpt-and-nebulagraph-predict-fifa-world-cup/Barcelona.webp 2x"
+            sizes="auto"
+            alt="/chatgpt-and-nebulagraph-predict-fifa-world-cup/Barcelona.webp">
+    </a></figure></p>
+<blockquote>
+<p>注：这部分功能可以参考文档 <a href="https://docs.nebula-graph.com.cn/3.3.0/nebula-explorer/graph-explorer/graph-algorithm/" target="_blank" rel="noopener noreferrer">https://docs.nebula-graph.com.cn/3.3.0/nebula-explorer/graph-explorer/graph-algorithm/</a></p>
+</blockquote>
+<p>这里，利用到了两个图算法来分析这里的洞察：</p>
+<ol>
+<li>利用点的出入度，改变他们的显示大小突出重要程度</li>
+<li>利用 Louvain 算法区分点的社区分割</li>
+</ol>
+<p>可以看到红色的大点是鼎鼎大名的巴塞罗那，而它的球员们也被红色标记了。</p>
+<h3 id="预测冠军算法" class="headerLink">
+    <a href="#%e9%a2%84%e6%b5%8b%e5%86%a0%e5%86%9b%e7%ae%97%e6%b3%95" class="header-mark"></a>3.4 预测冠军算法</h3><p>为了能充分利用图的魔法（与图上的隐含条件、信息），我的思路是选择一种利用链接进行节点重要程度分析的图算法，找出拥有更高重要性的点，对他们全局迭代、排序，从而获得前几名的国家队排名。</p>
+<p>这些方法其实就体现在厉害的球员同时拥有更大的社区、连接度，同时，为了增加传统强队之间的区分度，我准备把出场率、进球数的信息也考虑进来。</p>
+<p>最终，我的算法是：</p>
+<ul>
+<li>取出所有的 (球员)-服役-&gt;(俱乐部) 的关系，过滤其中进球数过少、单场进球过少的球员（以平衡一些弱队的老球员带来的过大影响）</li>
+<li>从所有过滤之后的球员中向外探索，获得国家队</li>
+<li>在以上的子图上运行 Betweenness Centrality 算法，计算节点重要度评分</li>
+</ul>
+<h4 id="算法过程" class="headerLink">
+    <a href="#%e7%ae%97%e6%b3%95%e8%bf%87%e7%a8%8b" class="header-mark"></a>3.4.1 算法过程</h4><p>首先，我们取出所有进球数超过 10，场均进球超过 0.2 的 (球员)-服役-&gt;(俱乐部) 的子图：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">MATCH ()-[e]-&gt;()
+</span></span><span class="line"><span class="cl">WITH e LIMIT 10000
+</span></span><span class="line"><span class="cl">WITH e AS e WHERE e.goals &gt; 10 AND toFloat(e.goals)/e.caps &gt; 0.2
+</span></span><span class="line"><span class="cl">RETURN e
+</span></span></code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>注：为了方便，我把进球数和出场数也作为了 serve 边上的属性了。</p>
+</blockquote>
+<p><figure><a class="lightgallery" href="/chatgpt-and-nebulagraph-predict-fifa-world-cup/query_step0.webp" title="/chatgpt-and-nebulagraph-predict-fifa-world-cup/query_step0.webp" data-thumbnail="/chatgpt-and-nebulagraph-predict-fifa-world-cup/query_step0.webp">
+        <img
+            
+            loading="lazy"
+            src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/query_step0.webp"
+            srcset="/chatgpt-and-nebulagraph-predict-fifa-world-cup/query_step0.webp, /chatgpt-and-nebulagraph-predict-fifa-world-cup/query_step0.webp 1.5x, /chatgpt-and-nebulagraph-predict-fifa-world-cup/query_step0.webp 2x"
+            sizes="auto"
+            alt="/chatgpt-and-nebulagraph-predict-fifa-world-cup/query_step0.webp">
+    </a></figure></p>
+<p>然后，我们全选图上的所有点，点击左边的工具栏，选择出方向的 <code>belongto</code> 边，向外进行图拓展（遍历），同时选择将拓展得到的新点标记为旗帜的 icon：</p>
+<p><figure><a class="lightgallery" href="/chatgpt-and-nebulagraph-predict-fifa-world-cup/treversal_step1.webp" title="treversal_step1" data-thumbnail="/chatgpt-and-nebulagraph-predict-fifa-world-cup/treversal_step1.webp">
+        <img
+            
+            loading="lazy"
+            src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/treversal_step1.webp"
+            srcset="/chatgpt-and-nebulagraph-predict-fifa-world-cup/treversal_step1.webp, /chatgpt-and-nebulagraph-predict-fifa-world-cup/treversal_step1.webp 1.5x, /chatgpt-and-nebulagraph-predict-fifa-world-cup/treversal_step1.webp 2x"
+            sizes="auto"
+            alt="treversal_step1">
+    </a></figure></p>
+<p>现在，我们获得了最终的子图，我们利用工具栏里的浏览器内的图算法功能，执行 BNC（Betweenness Centrality）</p>
+<p><figure><a class="lightgallery" href="/chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_step2.webp" title="bnc_step2" data-thumbnail="/chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_step2.webp">
+        <img
+            
+            loading="lazy"
+            src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_step2.webp"
+            srcset="/chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_step2.webp, /chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_step2.webp 1.5x, /chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_step2.webp 2x"
+            sizes="auto"
+            alt="bnc_step2">
+    </a></figure></p>
+<p>然后，这个子图变成了这样子：</p>
+<p><figure><a class="lightgallery" href="/chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_predict.webp" title="bnc_predict" data-thumbnail="/chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_predict.webp">
+        <img
+            
+            loading="lazy"
+            src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_predict.webp"
+            srcset="/chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_predict.webp, /chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_predict.webp 1.5x, /chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_predict.webp 2x"
+            sizes="auto"
+            alt="bnc_predict">
+    </a></figure></p>
+<h2 id="预测结果" class="headerLink">
+    <a href="#%e9%a2%84%e6%b5%8b%e7%bb%93%e6%9e%9c" class="header-mark"></a>4 预测结果</h2><p>最终，我们根据 Betweenness Centrality 的值，排序，可以得到最终的获胜球队应该是：巴西 🇧🇷！</p>
+<p>其次是比利时、德国、英格兰、法国、阿根廷，让我们等两个礼拜回来看看预测结果是否准确吧 :D。</p>
+<p>注：排序数据（其中还有非参赛球队的点）</p>
+<table>
+<thead>
+<tr>
+<th>Vertex</th>
+<th><strong>Betweenness Centrality</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Brazil</strong>🇧🇷</td>
+<td>3499</td>
+</tr>
+<tr>
+<td><strong>Paris Saint-Germain</strong></td>
+<td>3073.3333333333300</td>
+</tr>
+<tr>
+<td><strong>Neymar</strong></td>
+<td>3000</td>
+</tr>
+<tr>
+<td><strong>Tottenham Hotspur</strong></td>
+<td>2740</td>
+</tr>
+<tr>
+<td><strong>Belgium</strong>🇧🇪</td>
+<td>2587.833333333330</td>
+</tr>
+<tr>
+<td><strong>Richarlison</strong></td>
+<td>2541</td>
+</tr>
+<tr>
+<td><strong>Kevin De Bruyne</strong></td>
+<td>2184</td>
+</tr>
+<tr>
+<td><strong>Manchester City</strong></td>
+<td>2125</td>
+</tr>
+<tr>
+<td><strong>İlkay Gündoğan</strong></td>
+<td>2064</td>
+</tr>
+<tr>
+<td><strong>Germany</strong>🇩🇪</td>
+<td>2046</td>
+</tr>
+<tr>
+<td><strong>Harry Kane (captain</strong></td>
+<td>1869</td>
+</tr>
+<tr>
+<td><strong>England</strong>🏴󠁧󠁢󠁥󠁮󠁧󠁿</td>
+<td>1864</td>
+</tr>
+<tr>
+<td><strong>France</strong>🇫🇷</td>
+<td>1858.6666666666700</td>
+</tr>
+<tr>
+<td><strong>Argentina</strong>🇦🇷</td>
+<td>1834.6666666666700</td>
+</tr>
+<tr>
+<td><strong>Bayern Munich</strong></td>
+<td>1567</td>
+</tr>
+<tr>
+<td><strong>Kylian Mbappé</strong></td>
+<td>1535.3333333333300</td>
+</tr>
+<tr>
+<td><strong>Lionel Messi (captain</strong></td>
+<td>1535.3333333333300</td>
+</tr>
+<tr>
+<td><strong>Gabriel Jesus</strong></td>
+<td>1344</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>题图：这个文章的图也是用 OpenAI DALL-E 2 生成，并用 DALL-E 2 Outpainting 扩充的，<a href="https://user-images.githubusercontent.com/1651790/205881462-ff007725-e270-4b1e-9062-7702f01021c1.png" target="_blank" rel="noopener noreferrer">原图</a>。</p>
+</blockquote>]]></description>
+</item></channel>
+</rss>
