@@ -15049,6 +15049,209 @@ INFO:llama_index.token_counter.token_counter:&gt; [get_response] Total embedding
 
 </div>
 
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h2 id="Visualizing-the-Graph-RAG">Visualizing the Graph RAG<a class="anchor-link" href="#Visualizing-the-Graph-RAG">&#182;</a></h2><p>If we visualize the Graph based RAG, starting from the term <code>['interleaf', 'history', 'software', 'company']</code>, we could see how those connected context looks like, and it's a different form of Info./Knowledge:</p>
+<ul>
+<li>Refined and Concise Form</li>
+<li>Fine-grained Segmentation</li>
+<li>Interconnected-sturcutred nature</li>
+</ul>
+
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%</span><span class="k">pip</span> install ipython-ngql networkx pyvis
+<span class="o">%</span><span class="k">load_ext</span> ngql
+<span class="o">%</span><span class="k">ngql</span> --address 127.0.0.1 --port 9669 --user root --password nebula
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[7]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%%</span><span class="k">ngql</span>
+USE test;
+MATCH p=(n)-[*1..2]-()
+  WHERE id(n) IN [&#39;interleaf&#39;, &#39;history&#39;, &#39;software&#39;, &#39;company&#39;] 
+RETURN p LIMIT 100;
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child jp-OutputArea-executeResult">
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[7]:</div>
+
+
+
+<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>p</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>("company" :entity{})-[:rel@-55671294763329321...</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>("company" :entity{})-[:rel@123599104871157873...</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>("company" :entity{})-[:rel@526062658508572926...</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>("company" :entity{})-[:rel@538212363984225344...</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>("company" :entity{})-[:rel@-55671294763329321...</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>95</th>
+      <td>("interleaf" :entity{})-[:rel@-445886969749200...</td>
+    </tr>
+    <tr>
+      <th>96</th>
+      <td>("interleaf" :entity{})-[:rel@-390736376418401...</td>
+    </tr>
+    <tr>
+      <th>97</th>
+      <td>("interleaf" :entity{})-[:rel@-390736376418401...</td>
+    </tr>
+    <tr>
+      <th>98</th>
+      <td>("interleaf" :entity{})-[:rel@-390736376418401...</td>
+    </tr>
+    <tr>
+      <th>99</th>
+      <td>("interleaf" :entity{})-[:rel@-387205253479305...</td>
+    </tr>
+  </tbody>
+</table>
+<p>100 rows × 1 columns</p>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[8]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%</span><span class="k">ng_draw</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>nebulagraph_draw_rag.html
+</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child jp-OutputArea-executeResult">
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[8]:</div>
+
+
+
+<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html">
+
+        <iframe
+            width="100%"
+            height="500px"
+            src="nebulagraph_draw_rag.html"
+            frameborder="0"
+            allowfullscreen
+            
+        ></iframe>
+        
+</div>
+
+</div>
+
+</div>
+
+</div>
+
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
