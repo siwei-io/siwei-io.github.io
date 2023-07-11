@@ -3,7 +3,7 @@
 <head><meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>knowledge_graph_query_engine (1)</title><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
+<title>knowledge_graph_query_engine</title><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
 
 
 
@@ -14695,13 +14695,13 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">StreamHandler</span><span class="p">(</span><span class="n">stream</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">))</span>
 
 <span class="n">openai</span><span class="o">.</span><span class="n">api_type</span> <span class="o">=</span> <span class="s2">&quot;azure&quot;</span>
-<span class="n">openai</span><span class="o">.</span><span class="n">api_base</span> <span class="o">=</span> <span class="s2">&quot;INSERT AZURE API BASE&quot;</span>
+<span class="n">openai</span><span class="o">.</span><span class="n">api_base</span> <span class="o">=</span> <span class="s2">&quot;https://&lt;foo-bar&gt;.openai.azure.com&quot;</span>
 <span class="n">openai</span><span class="o">.</span><span class="n">api_version</span> <span class="o">=</span> <span class="s2">&quot;2022-12-01&quot;</span>
-<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;OPENAI_API_KEY&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;INSERT OPENAI KEY&quot;</span>
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;OPENAI_API_KEY&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;youcannottellanyone&quot;</span>
 <span class="n">openai</span><span class="o">.</span><span class="n">api_key</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;OPENAI_API_KEY&quot;</span><span class="p">)</span>
 
 <span class="n">llm</span> <span class="o">=</span> <span class="n">AzureOpenAI</span><span class="p">(</span>
-    <span class="n">deployment_name</span><span class="o">=</span><span class="s2">&quot;INSERT DEPLOYMENT NAME&quot;</span><span class="p">,</span>
+    <span class="n">deployment_name</span><span class="o">=</span><span class="s2">&quot;&lt;foo-bar-deployment&gt;&quot;</span><span class="p">,</span>
     <span class="n">temperature</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
     <span class="n">openai_api_version</span><span class="o">=</span><span class="n">openai</span><span class="o">.</span><span class="n">api_version</span><span class="p">,</span>
     <span class="n">model_kwargs</span><span class="o">=</span><span class="p">{</span>
@@ -14717,7 +14717,7 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 <span class="n">embedding_llm</span> <span class="o">=</span> <span class="n">LangchainEmbedding</span><span class="p">(</span>
     <span class="n">OpenAIEmbeddings</span><span class="p">(</span>
         <span class="n">model</span><span class="o">=</span><span class="s2">&quot;text-embedding-ada-002&quot;</span><span class="p">,</span>
-        <span class="n">deployment</span><span class="o">=</span><span class="s2">&quot;INSERT DEPLOYMENT NAME&quot;</span><span class="p">,</span>
+        <span class="n">deployment</span><span class="o">=</span><span class="s2">&quot;&lt;deployment_name&gt;&quot;</span><span class="p">,</span>
         <span class="n">openai_api_key</span><span class="o">=</span><span class="n">openai</span><span class="o">.</span><span class="n">api_key</span><span class="p">,</span>
         <span class="n">openai_api_base</span><span class="o">=</span><span class="n">openai</span><span class="o">.</span><span class="n">api_base</span><span class="p">,</span>
         <span class="n">openai_api_type</span><span class="o">=</span><span class="n">openai</span><span class="o">.</span><span class="n">api_type</span><span class="p">,</span>
@@ -14765,7 +14765,7 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
     <span class="c1"># CREATE SPACE llamaindex(vid_type=FIXED_STRING(256), partition_num=1, replica_factor=1);</span>
     <span class="c1"># :sleep 10;</span>
     <span class="c1"># USE llamaindex;</span>
-    <span class="c1"># CREATE TAG entity(name string);</span>
+    <span class="c1"># CREATE TAG entity(name string());</span>
     <span class="c1"># CREATE EDGE relationship(relationship string);</span>
     <span class="c1"># :sleep 10;</span>
     <span class="c1"># CREATE TAG INDEX entity_index ON entity(name(256));</span>
@@ -14773,7 +14773,7 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 <span class="o">%</span><span class="k">pip</span> install ipython-ngql nebula3-python
 
 <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;NEBULA_USER&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;root&quot;</span>
-<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;NEBULA_PASSWORD&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&lt;password&gt;&quot;</span> <span class="c1"># default is &quot;nebula</span>
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;NEBULA_PASSWORD&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;nebula&quot;</span>
 <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;NEBULA_ADDRESS&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;127.0.0.1:9669&quot;</span> <span class="c1"># assumed we have NebulaGraph installed locally</span>
 
 <span class="n">space_name</span> <span class="o">=</span> <span class="s2">&quot;llamaindex&quot;</span>
@@ -14793,37 +14793,7 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<p>Prepare for StorageContext with graph_store as NebulaGraphStore</p>
-
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
-<div class="jp-Cell-inputWrapper">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[3]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-     <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">graph_store</span> <span class="o">=</span> <span class="n">NebulaGraphStore</span><span class="p">(</span><span class="n">space_name</span><span class="o">=</span><span class="n">space_name</span><span class="p">,</span> <span class="n">edge_types</span><span class="o">=</span><span class="n">edge_types</span><span class="p">,</span> <span class="n">rel_prop_names</span><span class="o">=</span><span class="n">rel_prop_names</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="n">tags</span><span class="p">)</span>
-<span class="n">storage_context</span> <span class="o">=</span> <span class="n">StorageContext</span><span class="o">.</span><span class="n">from_defaults</span><span class="p">(</span><span class="n">graph_store</span><span class="o">=</span><span class="n">graph_store</span><span class="p">)</span>
-</pre></div>
-
-     </div>
-</div>
-</div>
-</div>
-
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
-<div class="jp-Cell-inputWrapper">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h2 id="(Optional)Build-the-Knowledge-Graph-with-LlamaIndex">(Optional)Build the Knowledge Graph with LlamaIndex<a class="anchor-link" href="#(Optional)Build-the-Knowledge-Graph-with-LlamaIndex">&#182;</a></h2><p>With the help of Llama Index and LLM defined, we could build Knowledge Graph from given documents.</p>
-<p>If we have a Knowledge Graph on NebulaGraphStore already, this step could be skipped</p>
+<h2 id="Build-the-Knowledge-Graph-with-LlamaIndex">Build the Knowledge Graph with LlamaIndex<a class="anchor-link" href="#Build-the-Knowledge-Graph-with-LlamaIndex">&#182;</a></h2><p>With the help of Llama Index and LLM defined, we could build Knowledge Graph from given documents.</p>
 
 </div>
 </div>
@@ -14881,7 +14851,10 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 <div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">kg_index</span> <span class="o">=</span> <span class="n">KnowledgeGraphIndex</span><span class="o">.</span><span class="n">from_documents</span><span class="p">(</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">graph_store</span> <span class="o">=</span> <span class="n">NebulaGraphStore</span><span class="p">(</span><span class="n">space_name</span><span class="o">=</span><span class="n">space_name</span><span class="p">,</span> <span class="n">edge_types</span><span class="o">=</span><span class="n">edge_types</span><span class="p">,</span> <span class="n">rel_prop_names</span><span class="o">=</span><span class="n">rel_prop_names</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="n">tags</span><span class="p">)</span>
+<span class="n">storage_context</span> <span class="o">=</span> <span class="n">StorageContext</span><span class="o">.</span><span class="n">from_defaults</span><span class="p">(</span><span class="n">graph_store</span><span class="o">=</span><span class="n">graph_store</span><span class="p">)</span>
+
+<span class="n">kg_index</span> <span class="o">=</span> <span class="n">KnowledgeGraphIndex</span><span class="o">.</span><span class="n">from_documents</span><span class="p">(</span>
     <span class="n">documents</span><span class="p">,</span>
     <span class="n">storage_context</span><span class="o">=</span><span class="n">storage_context</span><span class="p">,</span>
     <span class="n">max_triplets_per_chunk</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
@@ -14919,28 +14892,10 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 <div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># install related packages, password is nebula by default</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># install related packages</span>
 <span class="o">%</span><span class="k">pip</span> install ipython-ngql networkx pyvis
 <span class="o">%</span><span class="k">load_ext</span> ngql
-<span class="o">%</span><span class="k">ngql</span> --address 127.0.0.1 --port 9669 --user root --password &lt;password&gt;
-</pre></div>
-
-     </div>
-</div>
-</div>
-</div>
-
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
-<div class="jp-Cell-inputWrapper">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-     <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Query some random Relationships with Cypher</span>
-<span class="o">%</span><span class="k">ngql</span> USE llamaindex;
-<span class="o">%</span><span class="k">ngql</span> MATCH ()-[e]-&gt;() RETURN e LIMIT 10
+<span class="o">%</span><span class="k">ngql</span> --address 127.0.0.1 --port 9669 --user root --password nebula
 </pre></div>
 
      </div>
@@ -14953,7 +14908,111 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[9]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[3]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Query some random Relationships with Cypher</span>
+<span class="o">%</span><span class="k">ngql</span> USE llamaindex;
+<span class="o">%</span><span class="k">ngql</span> MATCH ()-[e]-&gt;() RETURN e LIMIT 10
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child jp-OutputArea-executeResult">
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[3]:</div>
+
+
+
+<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>e</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>("Adam Warlock")-[:relationship@26665340645429...</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>("Alan F. Horn")-[:relationship@-6797141220561...</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>("Bakalova")-[:relationship@-12487519492886428...</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>("Bakalova")-[:relationship@214611995993059686...</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>("Bautista")-[:relationship@-42068345485416002...</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>("Charles Pulliam-Moore")-[:relationship@-3302...</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>("Charles Pulliam-Moore")-[:relationship@-3302...</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>("Chaudhry")-[:relationship@-12487519492886428...</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>("Chicago Tribune")-[:relationship@-5115786137...</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>("Christopher Fairbank")-[:relationship@-91821...</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[4]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># draw the result</span>
@@ -14984,7 +15043,7 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 </div>
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
     
-    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[9]:</div>
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[4]:</div>
 
 
 
@@ -15015,7 +15074,7 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
 <h2 id="Asking-the-Knowledge-Graph">Asking the Knowledge Graph<a class="anchor-link" href="#Asking-the-Knowledge-Graph">&#182;</a></h2><p>Finally, let's demo how to Query Knowledge Graph with Natural language!</p>
-<p>Here, we will leverage the <code>KnowledgeGraphQueryEngine</code>, with <code>NebulaGraphStore</code> as the <code>storage_context.graph_store</code>.</p>
+<p>Here, we will leverage the <code>KnowledgeGraphQueryEngine</code>, with &quot;nebulagraph&quot; type of <code>graph</code>, which underlying is powerred by the NebulaGraphQAChain from Langchain.</p>
 
 </div>
 </div>
@@ -15025,19 +15084,27 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[4]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">llama_index.query_engine</span> <span class="kn">import</span> <span class="n">KnowledgeGraphQueryEngine</span>
 
-<span class="kn">from</span> <span class="nn">llama_index.storage.storage_context</span> <span class="kn">import</span> <span class="n">StorageContext</span>
-<span class="kn">from</span> <span class="nn">llama_index.graph_stores</span> <span class="kn">import</span> <span class="n">NebulaGraphStore</span>
-
+<span class="n">graph_kwargs</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;space&quot;</span><span class="p">:</span> <span class="s2">&quot;llamaindex&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;username&quot;</span><span class="p">:</span> <span class="s2">&quot;root&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;password&quot;</span><span class="p">:</span> <span class="s2">&quot;nebula&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;address&quot;</span><span class="p">:</span> <span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;port&quot;</span><span class="p">:</span> <span class="mi">9669</span><span class="p">,</span>
+    <span class="s2">&quot;session_pool_size&quot;</span><span class="p">:</span> <span class="mi">30</span><span class="p">,</span>
+<span class="p">}</span>
+<span class="n">qa_chain_kwargs</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;verbose&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">}</span>
 <span class="n">query_engine</span> <span class="o">=</span> <span class="n">KnowledgeGraphQueryEngine</span><span class="p">(</span>
-    <span class="n">storage_context</span><span class="o">=</span><span class="n">storage_context</span><span class="p">,</span>
-    <span class="n">service_context</span><span class="o">=</span><span class="n">service_context</span><span class="p">,</span>
-    <span class="n">llm</span><span class="o">=</span><span class="n">llm</span><span class="p">,</span>
-    <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">graph</span><span class="o">=</span><span class="s2">&quot;nebulagraph&quot;</span><span class="p">,</span>
+    <span class="n">graph_kwargs</span><span class="o">=</span><span class="n">graph_kwargs</span><span class="p">,</span>
+    <span class="n">qa_chain_kwargs</span><span class="o">=</span><span class="n">qa_chain_kwargs</span><span class="p">,</span>
+    <span class="n">llm</span><span class="o">=</span><span class="n">llm</span>
 <span class="p">)</span>
 </pre></div>
 
@@ -15051,13 +15118,12 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[5]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[15]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">response</span> <span class="o">=</span> <span class="n">query_engine</span><span class="o">.</span><span class="n">query</span><span class="p">(</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">query_engine</span><span class="o">.</span><span class="n">query</span><span class="p">(</span>
     <span class="s2">&quot;Tell me about Peter Quill?&quot;</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="n">display</span><span class="p">(</span><span class="n">Markdown</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&lt;b&gt;</span><span class="si">{</span><span class="n">response</span><span class="si">}</span><span class="s2">&lt;/b&gt;&quot;</span><span class="p">))</span>
 </pre></div>
 
      </div>
@@ -15077,78 +15143,29 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>INFO:llama_index.query_engine.knowledge_graph_query_engine:Graph Store Query: 
-MATCH (e1:`entity`)-[r:`relationship`]-&gt;(e2:`entity`) 
-  WHERE e1.`entity`.`name` == &#39;Peter Quill&#39; 
-RETURN e2.`entity`.`name`;
-Graph Store Query: 
-MATCH (e1:`entity`)-[r:`relationship`]-&gt;(e2:`entity`) 
-  WHERE e1.`entity`.`name` == &#39;Peter Quill&#39; 
-RETURN e2.`entity`.`name`;
-INFO:llama_index.query_engine.knowledge_graph_query_engine:Graph Store Response: {&#39;e2.entity.name&#39;: [&#39;grandfather&#39;, &#39;alternate version of Gamora&#39;, &#39;Guardians of the Galaxy&#39;]}
-Graph Store Response: {&#39;e2.entity.name&#39;: [&#39;grandfather&#39;, &#39;alternate version of Gamora&#39;, &#39;Guardians of the Galaxy&#39;]}
+<pre>
+
+<span class="ansi-bold">&gt; Entering new  chain...</span>
+Generated nGQL:
+<span class="ansi-green-intense-fg ansi-bold">
+
+MATCH (p:`entity`)-[e:relationship]-&gt;(m:`entity`) WHERE p.`entity`.`name` == &#39;Peter Quill&#39; RETURN p.`entity`.`name`, e.relationship, m.`entity`.`name`;</span>
+Full Context:
+<span class="ansi-green-intense-fg ansi-bold">{&#39;p.entity.name&#39;: [&#39;Peter Quill&#39;, &#39;Peter Quill&#39;, &#39;Peter Quill&#39;], &#39;e.relationship&#39;: [&#39;reunites with&#39;, &#39;affected by&#39;, &#39;is leader of&#39;], &#39;m.entity.name&#39;: [&#39;grandfather&#39;, &#39;alternate version of Gamora&#39;, &#39;Guardians of the Galaxy&#39;]}</span>
+
+<span class="ansi-bold">&gt; Finished chain.</span>
 </pre>
 </div>
 </div>
-<div class="jp-OutputArea-child">
+<div class="jp-OutputArea-child jp-OutputArea-executeResult">
     
-    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[15]:</div>
 
 
 
 
-<div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-OutputArea-output " data-mime-type="text/markdown">
-<p><b>Peter Quill is the protagonist of the Marvel Cinematic Universe, and is known for being a member of the Guardians of the Galaxy. He is the grandson of a Celestial being, and an alternate version of Gamora.</b></p>
-
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
-<div class="jp-Cell-inputWrapper">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[6]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-     <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">graph_query</span> <span class="o">=</span> <span class="n">query_engine</span><span class="o">.</span><span class="n">generate_query</span><span class="p">(</span>
-    <span class="s2">&quot;Tell me about Peter Quill?&quot;</span><span class="p">,</span>
-<span class="p">)</span>
-
-<span class="n">display</span><span class="p">(</span><span class="n">Markdown</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
-<span class="s2">```cypher</span>
-<span class="si">{</span><span class="n">graph_query</span><span class="si">}</span><span class="s2"></span>
-<span class="s2">```</span>
-<span class="s2">&quot;&quot;&quot;</span><span class="p">))</span>
-</pre></div>
-
-     </div>
-</div>
-</div>
-</div>
-
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-
-
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-    
-    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-
-
-
-
-<div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-OutputArea-output " data-mime-type="text/markdown">
-<div class="highlight"><pre><span></span><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">e1</span><span class="p">:</span><span class="nv">`entity`</span><span class="p">)</span><span class="o">-[</span><span class="n">r</span><span class="p">:</span><span class="nv">`relationship`</span><span class="o">]-&gt;</span><span class="p">(</span><span class="n">e2</span><span class="p">:</span><span class="nv">`entity`</span><span class="p">)</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">e1</span><span class="p">.</span><span class="nv">`entity`</span><span class="p">.</span><span class="nv">`name`</span><span class="w"> </span><span class="p">==</span><span class="w"> </span><span class="err">&#39;</span><span class="n">Peter</span><span class="w"> </span><span class="n">Quill</span><span class="err">&#39;</span><span class="w"> </span><span class="k">RETURN</span><span class="w"> </span><span class="n">e2</span><span class="p">.</span><span class="nv">`entity`</span><span class="p">.</span><span class="nv">`name`</span><span class="p">;</span><span class="w"></span>
-</pre></div>
-
+<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
+<pre>&#39; Peter Quill reunites with his grandfather, is affected by an alternate version of Gamora, and is the leader of the Guardians of the Galaxy.&#39;</pre>
 </div>
 
 </div>
@@ -15164,13 +15181,13 @@ Graph Store Response: {&#39;e2.entity.name&#39;: [&#39;grandfather&#39;, &#39;al
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<p>We could see it helps generate the Graph query:</p>
-<div class="highlight"><pre><span></span><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">e1</span><span class="p">:</span><span class="nv">`entity`</span><span class="p">)</span><span class="o">-[</span><span class="n">r</span><span class="p">:</span><span class="nv">`relationship`</span><span class="o">]-&gt;</span><span class="p">(</span><span class="n">e2</span><span class="p">:</span><span class="nv">`entity`</span><span class="p">)</span><span class="w"></span>
-<span class="w">  </span><span class="k">WHERE</span><span class="w"> </span><span class="n">e1</span><span class="p">.</span><span class="nv">`entity`</span><span class="p">.</span><span class="nv">`name`</span><span class="w"> </span><span class="p">==</span><span class="w"> </span><span class="err">&#39;</span><span class="n">Peter</span><span class="w"> </span><span class="n">Quill</span><span class="err">&#39;</span><span class="w"></span>
-<span class="k">RETURN</span><span class="w"> </span><span class="n">e2</span><span class="p">.</span><span class="nv">`entity`</span><span class="p">.</span><span class="nv">`name`</span><span class="p">;</span><span class="w"></span>
+<p>We could see it helps genrate the cypher query:</p>
+<div class="highlight"><pre><span></span><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">p</span><span class="p">:</span><span class="nv">`entity`</span><span class="p">)</span><span class="o">-[</span><span class="n">e</span><span class="p">:</span><span class="n">relationship</span><span class="o">]-&gt;</span><span class="p">(</span><span class="n">m</span><span class="p">:</span><span class="nv">`entity`</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="k">WHERE</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="nv">`entity`</span><span class="p">.</span><span class="nv">`name`</span><span class="w"> </span><span class="p">==</span><span class="w"> </span><span class="err">&#39;</span><span class="n">Peter</span><span class="w"> </span><span class="n">Quill</span><span class="err">&#39;</span><span class="w"></span>
+<span class="k">RETURN</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="nv">`entity`</span><span class="p">.</span><span class="nv">`name`</span><span class="p">,</span><span class="w"> </span><span class="n">e</span><span class="p">.</span><span class="n">relationship</span><span class="p">,</span><span class="w"> </span><span class="n">m</span><span class="p">.</span><span class="nv">`entity`</span><span class="p">.</span><span class="nv">`name`</span><span class="p">;</span><span class="w"></span>
 </pre></div>
 <p>And synthese the question based on its result:</p>
-<div class="highlight"><pre><span></span><span class="p">{</span><span class="err">&#39;e</span><span class="mf">2.e</span><span class="kc">nt</span><span class="err">i</span><span class="kc">t</span><span class="err">y.</span><span class="kc">na</span><span class="err">me&#39;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="err">&#39;gra</span><span class="kc">n</span><span class="err">d</span><span class="kc">fat</span><span class="err">her&#39;</span><span class="p">,</span><span class="w"> </span><span class="err">&#39;al</span><span class="kc">ternate</span><span class="w"> </span><span class="err">versio</span><span class="kc">n</span><span class="w"> </span><span class="err">o</span><span class="kc">f</span><span class="w"> </span><span class="err">Gamora&#39;</span><span class="p">,</span><span class="w"> </span><span class="err">&#39;Guardia</span><span class="kc">ns</span><span class="w"> </span><span class="err">o</span><span class="kc">f</span><span class="w"> </span><span class="kc">t</span><span class="err">he</span><span class="w"> </span><span class="err">Galaxy&#39;</span><span class="p">]}</span><span class="w"></span>
+<div class="highlight"><pre><span></span><span class="p">{</span><span class="err">&#39;p.e</span><span class="kc">nt</span><span class="err">i</span><span class="kc">t</span><span class="err">y.</span><span class="kc">na</span><span class="err">me&#39;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="err">&#39;Pe</span><span class="kc">ter</span><span class="w"> </span><span class="err">Quill&#39;</span><span class="p">,</span><span class="w"> </span><span class="err">&#39;Pe</span><span class="kc">ter</span><span class="w"> </span><span class="err">Quill&#39;</span><span class="p">,</span><span class="w"> </span><span class="err">&#39;Pe</span><span class="kc">ter</span><span class="w"> </span><span class="err">Quill&#39;</span><span class="p">],</span><span class="w"> </span><span class="err">&#39;e.rela</span><span class="kc">t</span><span class="err">io</span><span class="kc">ns</span><span class="err">hip&#39;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="err">&#39;reu</span><span class="kc">n</span><span class="err">i</span><span class="kc">tes</span><span class="w"> </span><span class="err">wi</span><span class="kc">t</span><span class="err">h&#39;</span><span class="p">,</span><span class="w"> </span><span class="err">&#39;a</span><span class="kc">ffe</span><span class="err">c</span><span class="kc">te</span><span class="err">d</span><span class="w"> </span><span class="err">by&#39;</span><span class="p">,</span><span class="w"> </span><span class="err">&#39;is</span><span class="w"> </span><span class="err">leader</span><span class="w"> </span><span class="err">o</span><span class="kc">f</span><span class="err">&#39;</span><span class="p">],</span><span class="w"> </span><span class="err">&#39;m.e</span><span class="kc">nt</span><span class="err">i</span><span class="kc">t</span><span class="err">y.</span><span class="kc">na</span><span class="err">me&#39;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="err">&#39;gra</span><span class="kc">n</span><span class="err">d</span><span class="kc">fat</span><span class="err">her&#39;</span><span class="p">,</span><span class="w"> </span><span class="err">&#39;al</span><span class="kc">ternate</span><span class="w"> </span><span class="err">versio</span><span class="kc">n</span><span class="w"> </span><span class="err">o</span><span class="kc">f</span><span class="w"> </span><span class="err">Gamora&#39;</span><span class="p">,</span><span class="w"> </span><span class="err">&#39;Guardia</span><span class="kc">ns</span><span class="w"> </span><span class="err">o</span><span class="kc">f</span><span class="w"> </span><span class="kc">t</span><span class="err">he</span><span class="w"> </span><span class="err">Galaxy&#39;</span><span class="p">]}</span><span class="w"></span>
 </pre></div>
 
 </div>
@@ -15193,7 +15210,7 @@ Graph Store Response: {&#39;e2.entity.name&#39;: [&#39;grandfather&#39;, &#39;al
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[10]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[16]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="o">%%</span><span class="k">ngql</span> 
@@ -15226,7 +15243,7 @@ Get connection to (&#39;127.0.0.1&#39;, 9669)
 </div>
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
     
-    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[10]:</div>
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[16]:</div>
 
 
 
@@ -15301,7 +15318,7 @@ Get connection to (&#39;127.0.0.1&#39;, 9669)
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[11]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[5]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="o">%%</span><span class="k">ngql</span>
@@ -15321,20 +15338,9 @@ RETURN p, e, m;
 
 
 <div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-    
-    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-
-
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>INFO:nebula3.logger:Get connection to (&#39;127.0.0.1&#39;, 9669)
-Get connection to (&#39;127.0.0.1&#39;, 9669)
-</pre>
-</div>
-</div>
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
     
-    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[11]:</div>
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[5]:</div>
 
 
 
@@ -15397,7 +15403,7 @@ Get connection to (&#39;127.0.0.1&#39;, 9669)
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[17]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[6]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="o">%</span><span class="k">ng_draw</span>
@@ -15426,7 +15432,7 @@ Get connection to (&#39;127.0.0.1&#39;, 9669)
 </div>
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
     
-    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[17]:</div>
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[6]:</div>
 
 
 
