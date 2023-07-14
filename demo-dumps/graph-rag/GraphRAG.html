@@ -14593,8 +14593,29 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h1 id="Custom-Retriever-combining-KG-Index-and-VectorStore-Index">Custom Retriever combining KG Index and VectorStore Index<a class="anchor-link" href="#Custom-Retriever-combining-KG-Index-and-VectorStore-Index">&#182;</a></h1><p>Now let's demo how KG Index could be used. We will create a VectorStore Index, KG Index and a Custom Index combining the two.</p>
-<p>Below digrams are showing how in-context learning works:</p>
+<h1 id="Text2Cypher,-Graph-Retrieval-Arguments-Generation(RAG),-Graph-RAG-and-Graph+Vector-RAG">Text2Cypher, Graph Retrieval Arguments Generation(RAG), Graph RAG and Graph+Vector RAG<a class="anchor-link" href="#Text2Cypher,-Graph-Retrieval-Arguments-Generation(RAG),-Graph-RAG-and-Graph+Vector-RAG">&#182;</a></h1><p>To enable Cognitive intelligence App towards private data, RAG + LLM and Knowledge Graph are state-of-the-art approaches.</p>
+<p>In this demo, we will explain know-how of four types of approaches and compare the trade-off and performance among them.</p>
+<table>
+<thead>
+<tr>
+  <th>QueryEngine</th>
+  <th>Knowledge Graph query engine</th>
+  <th>Graph RAG query engine</th>
+  <th>Vector RAG query engine</th>
+  <th>Graph Vector RAG query engine</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Mechanism</td>
+  <td>1. <strong>Text-to-GraphQuery</strong> based on KG<br />2. Query KG with the result<br />3. Answer synthesis based on query result</td>
+  <td>1. Get related entities of the question<br />2. Get n-depth <strong>SubGraphs</strong> of related entities from KG<br />3. Answer synthesis based on related SubGraphs</td>
+  <td>1. Create embedding of question<br />2. Semantic search <strong>top-k related doc chunks</strong><br />3. Answer synthesis based on related doc chunks</td>
+  <td>1. Do retrieval as Vector and Graph RAG <br />2. Answer synthesis based on <strong>both related chunks and SubGraphs</strong></td>
+</tr>
+</tbody>
+</table>
+<h2 id="Background,-RAG">Background, RAG<a class="anchor-link" href="#Background,-RAG">&#182;</a></h2><p>Below digrams are showing how RAG works:</p>
 <pre><code>                  RAG with Llama Index
                   ┌────┬────┬────┬────┐                  
                   │ 1  │ 2  │ 3  │ 4  │                  
@@ -14616,8 +14637,8 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
              │ └────┘ └────┘               │             
               ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ 
 </code></pre>
-<p>With VectorStoreIndex, we create embeddings of each node(chunk), and find TopK related ones towards a given question during the query. In the above diagram, nodes <code>3</code> and <code>96</code> were fetched as the TopK related nodes, used to help answer the user query.</p>
-<p>With KG Index, we will extract relationships between entities, representing concise facts from each node. It would look something like this:</p>
+<p>In VectorDB based RAG, we create embeddings of each node(chunk), and find TopK related ones towards a given question during the query. In the above diagram, nodes <code>3</code> and <code>96</code> were fetched as the TopK related nodes, used to help answer the user query.</p>
+<h2 id="Background-Graph-RAG">Background Graph RAG<a class="anchor-link" href="#Background-Graph-RAG">&#182;</a></h2><p>In Graph RAG, we will extract relationships between entities, representing concise facts from each node. It would look something like this:</p>
 <pre><code>Node Split and Embedding
 
 ┌────┬────┬────┬────┐
@@ -14655,7 +14676,7 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 └──────────────────┴──────────────────┴──────────────────┴──`─'─────────────┘
 </code></pre>
 <p>Where, knowledge, the more granular spliting and information with higher density, optionally multi-hop of <code>x -&gt; y</code>, <code>i -&gt; j -&gt; z -&gt; x</code> etc... across many more nodes(chunks) than K(in TopK search) could be inlucded in Retrievers. And we believe there are cases that this additional work matters.</p>
-<p>Let's show examples of that now.</p>
+<p>But how/how well exactly does it work? Let's see in this demo.</p>
 
 </div>
 </div>
@@ -15219,7 +15240,8 @@ Loading all indices.
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h3 id="5.1-text-to-NebulaGraphCypher">5.1 text-to-NebulaGraphCypher<a class="anchor-link" href="#5.1-text-to-NebulaGraphCypher">&#182;</a></h3>
+<h3 id="5.1-text-to-NebulaGraphCypher">5.1 text-to-NebulaGraphCypher<a class="anchor-link" href="#5.1-text-to-NebulaGraphCypher">&#182;</a></h3><p>Text-to-NebulaGraphCypher approach Translate task/question into a Graph Cypher Query, and answer based on its query result.</p>
+
 </div>
 </div>
 </div>
@@ -15256,7 +15278,29 @@ Loading all indices.
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h3 id="5.2-Graph-RAG-query-engine">5.2 Graph RAG query engine<a class="anchor-link" href="#5.2-Graph-RAG-query-engine">&#182;</a></h3>
+<h3 id="5.2-Graph-RAG-query-engine">5.2 Graph RAG query engine<a class="anchor-link" href="#5.2-Graph-RAG-query-engine">&#182;</a></h3><p>Graph RAG takes SubGraphs related to entities of the task/question as Context.</p>
+<pre><code>           Graph + Vector RAG with Llama Index
+                  ┌────┬────┬────┬────┐                  
+                  │ 1  │ 2  │ 3  │ 4  │                  
+                  ├────┴────┴────┴────┤                  
+                  │  Docs/Knowledge   │                  
+┌───────┐         │        ...        │       ┌─────────┐
+│       │         ├────┬────┬────┬────┤       │         │
+│       │         │ 95 │ 96 │    │    │       │         │
+│       │         └────┴────┴────┴────┘       │         │
+│ User  │─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─▶   LLM   │
+│       │                                     │         │
+│       │                                     │         │
+└───────┘    ┌ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┐  └─────────┘
+    │          ┌──────────────────────────┐        ▲     
+    └────────┼▶│  Tell me about x, please │├───────┘     
+               └──────────────────────────┘              
+             │ Below are knowledge about x │             
+               x-&gt;y&lt;-z,x-&gt;h-&gt;i, m&lt;-n,...                            
+             │ Please answer based on them │             
+              ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ 
+</code></pre>
+
 </div>
 </div>
 </div>
@@ -15287,7 +15331,8 @@ Loading all indices.
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h3 id="5.3-Vector-RAG-query-engine">5.3 Vector RAG query engine<a class="anchor-link" href="#5.3-Vector-RAG-query-engine">&#182;</a></h3>
+<h3 id="5.3-Vector-RAG-query-engine">5.3 Vector RAG query engine<a class="anchor-link" href="#5.3-Vector-RAG-query-engine">&#182;</a></h3><p>Vector RAG is the common approach to find topK semantic related doc chunks as context to synthesize the answer.</p>
+
 </div>
 </div>
 </div>
@@ -15325,7 +15370,7 @@ Loading all indices.
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<p>This is a combined Graph+Vector Based RAG, where we will retrieve both VectorDB and KG SubGraphs:</p>
+<p>This is a combined Graph+Vector Based RAG, where we will retrieve both VectorDB and KG SubGraphs as the context, for synthesis of the answer.</p>
 <pre><code>           Graph + Vector RAG with Llama Index
                   ┌────┬────┬────┬────┐                  
                   │ 1  │ 2  │ 3  │ 4  │                  
