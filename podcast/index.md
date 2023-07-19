@@ -1,7 +1,7 @@
 # 播客
 
 
-> [NebulaGraph 星球](https://nebula-podcast-cn.siwei.io/)
+> [NebulaGraph 星球](https://www.siwei.io/nebulagraph-podcast-cn/)
 
 <iframe
   src="https://nebula-podcast-cn.siwei.io/"
@@ -9,7 +9,7 @@
   style="width:100%;border:none;"
 ></iframe>
 
-> [开源面对面](https://osf2f.net/)
+> [开源面对面](https://www.siwei.io/osf2f/)
 
 <iframe
   src="https://osf2f.net/"
