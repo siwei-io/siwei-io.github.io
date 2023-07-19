@@ -4,7 +4,298 @@
         <link>https://siwei.io/tags/%E7%9F%A5%E8%AF%86%E5%9B%BE%E8%B0%B1/</link>
         <description>知识图谱 - 标签 - siwei.io</description>
         <generator>Hugo -- gohugo.io</generator><language>zh-CN</language><managingEditor>weyl.gu@gmail.com (Wey Gu)</managingEditor>
-            <webMaster>weyl.gu@gmail.com (Wey Gu)</webMaster><copyright>This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.</copyright><lastBuildDate>Mon, 28 Feb 2022 19:18:59 &#43;0800</lastBuildDate><atom:link href="https://siwei.io/tags/%E7%9F%A5%E8%AF%86%E5%9B%BE%E8%B0%B1/" rel="self" type="application/rss+xml" /><item>
+            <webMaster>weyl.gu@gmail.com (Wey Gu)</webMaster><copyright>This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.</copyright><lastBuildDate>Wed, 19 Jul 2023 16:38:34 &#43;0800</lastBuildDate><atom:link href="https://siwei.io/tags/%E7%9F%A5%E8%AF%86%E5%9B%BE%E8%B0%B1/" rel="self" type="application/rss+xml" /><item>
+    <title>Demo：NebulaGraph 的 Graph RAG</title>
+    <link>https://siwei.io/demos/graph-rag/</link>
+    <pubDate>Wed, 19 Jul 2023 16:38:34 &#43;0800</pubDate><author>
+        <name>Wey Gu</name>
+    </author><guid>https://siwei.io/demos/graph-rag/</guid>
+    <description><![CDATA[<iframe
+  src="https://https://graph-rag.streamlit.app/?embed=true"
+  height="900"
+  style="width:100%;border:none;"
+></iframe>
+]]></description>
+</item><item>
+    <title>Demo：NebulaGraph 的知识图谱构建与 Text2Cypher</title>
+    <link>https://siwei.io/demos/text2cypher/</link>
+    <pubDate>Wed, 19 Jul 2023 16:28:34 &#43;0800</pubDate><author>
+        <name>Wey Gu</name>
+    </author><guid>https://siwei.io/demos/text2cypher/</guid>
+    <description><![CDATA[<iframe
+  src="https://demo-kg-build-cn.streamlit.app/?embed=true"
+  height="900"
+  style="width:100%;border:none;"
+></iframe>
+]]></description>
+</item><item>
+    <title>Text2Cypher：大语言模型驱动的图谱查询生成</title>
+    <link>https://siwei.io/llm-text-to-nebulagraph-query/</link>
+    <pubDate>Mon, 17 Jul 2023 20:30:04 &#43;0800</pubDate><author>
+        <name>Wey Gu</name>
+    </author><guid>https://siwei.io/llm-text-to-nebulagraph-query/</guid>
+    <description><![CDATA[<div class="featured-image">
+                <img src="/llm-text-to-nebulagraph-query/featured-image.webp" referrerpolicy="no-referrer">
+            </div><p>从 GPT-3 开始展现出超出预期的”理解能力“开始，我们一直在做 Graph + LLM 技术组合、互补的研究、探索和阜分享，截止到现在 NebulaGraph 已经在 LlamaIndex 与 Langchain 项目做出了不少领先的贡献，从本文开始，我们就把其中一些阶段性的成功、方法单独分享给大家。</p>
+<p>本文的主题是我们认为这个领域最低垂的果实，text2cypher：自然语言生成图查询。</p>
+<h2 id="text2cypher" class="headerLink">
+    <a href="#text2cypher" class="header-mark"></a>1 Text2Cypher</h2><p>顾名思义， Text2Cypher 做的就是把自然语言的文本转换成 Cypher 查询语句的这件事儿，和另一个大家可能已经比较熟悉的场景 Text2SQL：文本转换 SQL 在形式上没有什么区别。而本质上，大多数知识图谱、图数据库的应用都是在图上按照人类意愿进行查询，我们在图数据库上构造方便的可视化工具、封装方便的 API 的工作都是为这个目标服务的。</p>
+<p>一直以来，阻碍图数据库、知识图谱被更广泛应用的主要因素可能就是查询图数据库的门槛了。那么，在没有大语言模型的时候，我们是怎么做的呢？</p>
+<h2 id="传统的-text2cypher" class="headerLink">
+    <a href="#%e4%bc%a0%e7%bb%9f%e7%9a%84-text2cypher" class="header-mark"></a>2 传统的 Text2Cypher</h2><p>文本到查询的这个领域在大语言模型之前就一直存在这样的需求，一直是知识图谱最常见的应用之一，比如 KBQA（基于知识库的问答系统）的系统内部本质上就是 text2cypher。</p>
+<p>这里以我之前写的项目 <a href="https://www.siwei.io/siwi" target="_blank" rel="noopener noreferrer">Siwi</a> （发音：/ˈsɪwi/， 一个基于篮球运动员数据集的问答应用）为例，了解一下它的后端架构：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">┌─────────────┬───────────────────────────────────┐
+</span></span><span class="line"><span class="cl">│      Speech │  Frontend                         │
+</span></span><span class="line"><span class="cl">│  ┌──────────▼──────────┐ Siwi, /ˈsɪwi/          │
+</span></span><span class="line"><span class="cl">│  │ Web_Speech_API      │ A PoC of Dialog System │
+</span></span><span class="line"><span class="cl">│  │ Vue.JS              │ With Graph Database    │
+</span></span><span class="line"><span class="cl">│  │                     │ Backed Knowledge Graph │
+</span></span><span class="line"><span class="cl">│  └──────────┬──────────┘                        │
+</span></span><span class="line"><span class="cl">│             │  Sentence  Backend                │
+</span></span><span class="line"><span class="cl">│┌────────────┼────────────────────────────┐      │
+</span></span><span class="line"><span class="cl">││ ┌──────────▼──────────┐                 │      │
+</span></span><span class="line"><span class="cl">││ │ Web API, Flask      │ ./app/          │      │
+</span></span><span class="line"><span class="cl">││ └──────────┬──────────┘                 │      │
+</span></span><span class="line"><span class="cl">││            │  Sentence  ./bot/          │      │
+</span></span><span class="line"><span class="cl">││ ┌──────────▼──────────┐                 │      │
+</span></span><span class="line"><span class="cl">││ │ Intent Matching,    │ ./bot/classifier│      │
+</span></span><span class="line"><span class="cl">││ │ Symentic Processing │                 │      │
+</span></span><span class="line"><span class="cl">││ └──────────┬──────────┘                 │      │
+</span></span><span class="line"><span class="cl">││            │  Intent, Enties            │      │
+</span></span><span class="line"><span class="cl">││ ┌──────────▼──────────┐                 │      │
+</span></span><span class="line"><span class="cl">││ │ Intent Actor        │ ./bot/actions   │      │
+</span></span><span class="line"><span class="cl">│└─┴──────────┬──────────┴─────────────────┘      │
+</span></span><span class="line"><span class="cl">│             │  Graph Query                      │
+</span></span><span class="line"><span class="cl">│  ┌──────────▼──────────┐                        │
+</span></span><span class="line"><span class="cl">│  │ Graph Database      │  NebulaGraph           │
+</span></span><span class="line"><span class="cl">│  └─────────────────────┘                        │
+</span></span><span class="line"><span class="cl">└─────────────────────────────────────────────────┘
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>当一个问题语句发送过来之后，它首先要做意图识别（Intent）、实体识别（Entity），然后再利用 NLP 模型或者代码把相应的意图和实体构造成知识图谱的查询语句，最终查询图数据库，并根据返回结构构造答案。</p>
+<p>可以想象，让程序能够：</p>
+<ul>
+<li>从自然语言中理解意图：对应到哪一类支持回答的问题</li>
+<li>找出实体：问题中涉及到的主要个体</li>
+<li>从意图和实体构造查询语句</li>
+</ul>
+<p>不可能是一个容易的开发工作，一个真正能够落地的实现要训练的模型或者实现的规则代码所考虑的边界条件可能非常多。</p>
+<h2 id="用语言模型做-text2cypher" class="headerLink">
+    <a href="#%e7%94%a8%e8%af%ad%e8%a8%80%e6%a8%a1%e5%9e%8b%e5%81%9a-text2cypher" class="header-mark"></a>3 用语言模型做 Text2Cypher</h2><p>而在”后大语言模型“时代，这种从前需要专门训练或者写规则的”智能“应用场景成了通用模型+提示工程（Prompt Engineering）就能完成的任务。</p>
+<blockquote>
+<p>注：提示工程指通过自然语言描述，让生成模型、语言模型完成”智能“任务的方法。</p>
+</blockquote>
+<p>事实上，在 GPT-3 刚发布之后，我就开始利用它帮助我写很多非常复杂的 Cypher 查询语句了，我发现它可以写很多非常复杂的模式匹配、多步条件那种之前我需要一点点调试半天才能写出来的语句，通常在它的答案之上，我只需要稍微修改就可以了，而且往往我还能从它的答案里知道我之前没了解到的 Cypher 语法盲区。</p>
+<p>后来，在今年二月份的时候，我就试着实现了一个基于 GPT-3 （因为那时候还没有 GPT-3.5）的项目：<a href="https://ngql-gpt.siwei.io/" target="_blank" rel="noopener noreferrer">ngql-GPT</a>（<a href="https://github.com/wey-gu/NebulaGraph-GPT" target="_blank" rel="noopener noreferrer">代码仓库</a>）。</p>
+<iframe width="800" height="450" src="https://user-images.githubusercontent.com/1651790/218627408-995b81e1-9b01-423c-ba90-849faaad6f5d.mp4"> </iframe>
+<p>它的工作原理非常简单，和 Text2SQL 没有区别，语言模型已经通过公共领域学习了 Cypher 的语法表达，我们在提出任务的时候，只需要让大模型知道我们要查询的图的 Schema 作为上下文就可以了。</p>
+<p>所以，基本上 Prompt 就是：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">你是一位 NebulaGraph Cypher 专家，请根据给定的图 Schema 和问题，写出查询语句。
+</span></span><span class="line"><span class="cl">schema 如下：
+</span></span><span class="line"><span class="cl">---
+</span></span><span class="line"><span class="cl">{schema}
+</span></span><span class="line"><span class="cl">---
+</span></span><span class="line"><span class="cl">问题如下：
+</span></span><span class="line"><span class="cl">---
+</span></span><span class="line"><span class="cl">{question}
+</span></span><span class="line"><span class="cl">---
+</span></span><span class="line"><span class="cl">下面写出查询语句：
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>然而，真实世界的 prompt 往往还需要增加额外的要求：</p>
+<ul>
+<li>只返回语句，不用给出解释，不用道歉</li>
+<li>强调不要写超出 schema 之外的点、边类型</li>
+</ul>
+<p>感兴趣的同学可以参考我在 LlamaIndex 的 <a href="https://github.com/jerryjliu/llama_index/blob/71919f9dfa09e9628af8b3a59d497ad02a7a82f8/llama_index/query_engine/knowledge_graph_query_engine.py#L24" target="_blank" rel="noopener noreferrer">KnowlegeGraph Query Engine 中的实现</a>。</p>
+<p>在真实场景中，我们想快速学习、构建大语言模型应用的时候，常常会用到 Langchain 或者 LlamaIndex 这样的编排（Orchestrator）工具，它们可以帮我们做很多合理的抽象，从而避免从头去实现很多通用的脚手架代码：</p>
+<ul>
+<li>和不同语言模型交互</li>
+<li>和不同向量数据库交互</li>
+<li>数据分割</li>
+</ul>
+<p>而且，这些编排工具还内置了很多工程方法的最佳实践，这样，我们常常调用一个方法就可以用到最新最好用的大语言模型研究论文的方法了，比如 <a href="https://github.com/jerryjliu/llama_index/tree/main/llama_index/query_engine/flare" target="_blank" rel="noopener noreferrer">FLARE</a>、<a href="https://github.com/jerryjliu/llama_index/blob/main/docs/community/integrations/guidance.md" target="_blank" rel="noopener noreferrer">Guidence</a>。</p>
+<p>为此，我在 LlamaIndex 和 Langchain 中都贡献了可以方便进行 NebulaGraph 上 Text2Cypher 的工具，真正做到 3 行代码，Text2Cypher。</p>
+<h2 id="nebulagraph-上的-text2cypher" class="headerLink">
+    <a href="#nebulagraph-%e4%b8%8a%e7%9a%84-text2cypher" class="header-mark"></a>4 NebulaGraph 上的 Text2Cypher</h2><p>在 LlamaIndex 的 <code>KnowledgeQueryEngine</code> 和 LangChain 的 <code>NebulaGraphQAChain</code> 中：NebulaGraph 图数据库的 Schema 获取、Cypher 语句生成的 Prompt、各种 LLM 的调用、结果的处理、衔接我们可以全都不用关心，开箱即用！</p>
+<h3 id="使用-llamaindex" class="headerLink">
+    <a href="#%e4%bd%bf%e7%94%a8-llamaindex" class="header-mark"></a>4.1 使用 LlamaIndex</h3><p>用 LlamaIndex，我们只需要：</p>
+<ul>
+<li>创建一个 <code>NebulaGraphStore</code> 实例</li>
+<li>创建一个 <code>KnowledgeQueryEngine</code></li>
+</ul>
+<p>就可以直接进行问答了，是不是超级简单？</p>
+<blockquote>
+<p>参考文档：https://gpt-index.readthedocs.io/en/latest/examples/query_engine/knowledge_graph_query_engine.html</p>
+</blockquote>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">llama_index.query_engine</span> <span class="kn">import</span> <span class="n">KnowledgeGraphQueryEngine</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">llama_index.storage.storage_context</span> <span class="kn">import</span> <span class="n">StorageContext</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">llama_index.graph_stores</span> <span class="kn">import</span> <span class="n">NebulaGraphStore</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">graph_store</span> <span class="o">=</span> <span class="n">NebulaGraphStore</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">  <span class="n">space_name</span><span class="o">=</span><span class="n">space_name</span><span class="p">,</span> <span class="n">edge_types</span><span class="o">=</span><span class="n">edge_types</span><span class="p">,</span> <span class="n">rel_prop_names</span><span class="o">=</span><span class="n">rel_prop_names</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="n">tags</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="n">storage_context</span> <span class="o">=</span> <span class="n">StorageContext</span><span class="o">.</span><span class="n">from_defaults</span><span class="p">(</span><span class="n">graph_store</span><span class="o">=</span><span class="n">graph_store</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">nl2kg_query_engine</span> <span class="o">=</span> <span class="n">KnowledgeGraphQueryEngine</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">storage_context</span><span class="o">=</span><span class="n">storage_context</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">service_context</span><span class="o">=</span><span class="n">service_context</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">llm</span><span class="o">=</span><span class="n">llm</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 问答</span>
+</span></span><span class="line"><span class="cl"><span class="n">response</span> <span class="o">=</span> <span class="n">nl2kg_query_engine</span><span class="o">.</span><span class="n">query</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;Tell me about Peter Quill?&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 只生成语句</span>
+</span></span><span class="line"><span class="cl"><span class="n">graph_query</span> <span class="o">=</span> <span class="n">nl2kg_query_engine</span><span class="o">.</span><span class="n">generate_query</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;Tell me about Peter Quill?&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="使用-langchain" class="headerLink">
+    <a href="#%e4%bd%bf%e7%94%a8-langchain" class="header-mark"></a>4.2 使用 Langchain</h3><p>类似的，在 Langchain 里，我们只需要：</p>
+<ul>
+<li>创建一个 <code>NebulaGraph</code>实例</li>
+<li>创建一个 <code>NebulaGraphQAChain</code> 实例</li>
+</ul>
+<p>就可以直接提问了。</p>
+<blockquote>
+<p>参考文档：https://python.langchain.com/docs/modules/chains/additional/graph_nebula_qa</p>
+</blockquote>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">langchain.chat_models</span> <span class="kn">import</span> <span class="n">ChatOpenAI</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">langchain.chains</span> <span class="kn">import</span> <span class="n">NebulaGraphQAChain</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">langchain.graphs</span> <span class="kn">import</span> <span class="n">NebulaGraph</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">graph</span> <span class="o">=</span> <span class="n">NebulaGraph</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">space</span><span class="o">=</span><span class="n">space_name</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">username</span><span class="o">=</span><span class="s2">&#34;root&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">password</span><span class="o">=</span><span class="s2">&#34;nebula&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">address</span><span class="o">=</span><span class="s2">&#34;127.0.0.1&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">port</span><span class="o">=</span><span class="mi">9669</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">session_pool_size</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">chain</span> <span class="o">=</span> <span class="n">NebulaGraphQAChain</span><span class="o">.</span><span class="n">from_llm</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">llm</span><span class="p">,</span> <span class="n">graph</span><span class="o">=</span><span class="n">graph</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">chain</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;Tell me about Peter Quill?&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="demo" class="headerLink">
+    <a href="#demo" class="header-mark"></a>5 Demo</h2><p><a href="https://www.siwei.io/demos/text2cypher/" target="_blank" rel="noopener noreferrer">demo 地址</a></p>
+<iframe width="800" height="857" src="https://user-images.githubusercontent.com/1651790/254521700-6de6aadf-4b62-495a-9276-ef866ebb4add.mp4"> </iframe>
+<p>这个 Demo 展示了如何利用 LLM 从不同类型的信息源（以维基百科为例）中抽取知识三元组，并存储到图数据库 NebulaGraph 中。</p>
+<p>本 Demo 中，我们先抽取了维基百科中关于《银河护卫队3》的信息，然后利用 LLM 生成的知识三元组，构建了一个图谱。 然后利用 Cypher 查询图谱，最后利用 LlamaIndex 和 Langchain 中的 Text2Cypher，实现了自然语言查询图谱的功能。</p>
+<p>您可以点击其他标签亲自试玩图谱的可视化、Cypher 查询、自然语言查询（Text2Cypher）等功能。</p>
+<p>这里可以<a href="https://www.siwei.io/demo-dumps/kg-llm/KG_Building.ipynb" target="_blank" rel="noopener noreferrer">下载</a> 完整的 Notebook。</p>
+<h2 id="结论" class="headerLink">
+    <a href="#%e7%bb%93%e8%ae%ba" class="header-mark"></a>6 结论</h2><p>有了 LLM，知识图谱、NebulaGraph 图数据库中的的数据中进行 Text2Cypher 从来没有这么简单过。</p>
+<p>一个具有更强人机、机器接入的知识图谱可以代表了全新的时代，我们可能不需要从前那样高额成本去实现图库之上的后端服务，也不再需要培训才能让领域专家从图中获取重要的洞察了。</p>
+<p>利用 LlamaIndex 或者 Langchain 中的生态集成，我们可以几乎没有开发成本地几行代码把自己的应用、图数据智能化。</p>
+<p>然而，Text2Cypher 只是一个开始，请大家关注我们后续的文章，展现更多知识图谱、图数据库为大语言模型生态带来的变革。</p>
+<blockquote>
+<p>题图 <strong>prompt</strong>：</p>
+<p><em>In an artful fusion of language and AI, this minimalist oil painting captures the essence of technological advancement. Delicate brushstrokes depict a harmony of binary code and flowing words, converging into a central point. With a refined color palette and clean composition, the artwork represents the symbiotic relationship between language and artificial intelligence, inviting contemplation and appreciation.</em></p>
+</blockquote>
+]]></description>
+</item><item>
     <title>图数据库体操：用 Nebula Graph 搭成语图谱解汉兜</title>
     <link>https://siwei.io/resolve-wordle/</link>
     <pubDate>Mon, 28 Feb 2022 19:18:59 &#43;0800</pubDate><author>

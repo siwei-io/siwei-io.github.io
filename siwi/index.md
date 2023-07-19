@@ -41,7 +41,7 @@ KBQA 用一句话说就是把问题解析、转换成在知识图谱中的查询
 
 > 💡：美团技术团队在[这篇文章](https://tech.meituan.com/2021/11/03/knowledge-based-question-answering-in-meituan.html)里分享了他们的真实世界实践，下图是美团结合了机器学习和 NLP 的方案。
 
-![美团KBQA解决方案](https://tva1.sinaimg.cn/large/008i3skNly1gw13r5dsw2j31g30u0430.jpg)
+![美团KBQA解决方案](meituan-kbqa.jpg)
 
 而在 Siwi 里，我们一切从简，单独选择了语义分析这条路，它的特点是需要人为去标注或者编码一些问题类型的查询方式，但实际上在大多数场景下，尤其单一领域图谱的场景下反而是轻量却效果不差的方案，也是一个便于新手理解 KBQA 的合适的入门方式。
 

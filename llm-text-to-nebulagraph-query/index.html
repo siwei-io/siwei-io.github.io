@@ -1,0 +1,570 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noodp" />
+    <title>Text2Cypher：大语言模型驱动的图谱查询生成 - siwei.io</title><meta name="Description" content="Siwei(思为) builds things and believes in Open Source."><meta property="og:title" content="Text2Cypher：大语言模型驱动的图谱查询生成" />
+<meta property="og:description" content="从 GPT-3 开始展现出超出预期的”理解能力“开始，我们一直在做 Graph &#43; LLM 技术组合、互补的研究、探索和阜分享，截止到现在 NebulaGraph 已经在 LlamaIndex 与 Langchain 项目做出了不少领先的" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://siwei.io/llm-text-to-nebulagraph-query/" /><meta property="og:image" content="https://siwei.io/llm-text-to-nebulagraph-query/featured-image.png"/><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2023-07-17T20:30:04+08:00" />
+<meta property="article:modified_time" content="2023-07-19T17:35:47+08:00" /><meta property="og:site_name" content="siwei.io" />
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://siwei.io/llm-text-to-nebulagraph-query/featured-image.png"/>
+<meta name="twitter:title" content="Text2Cypher：大语言模型驱动的图谱查询生成"/>
+<meta name="twitter:description" content="从 GPT-3 开始展现出超出预期的”理解能力“开始，我们一直在做 Graph &#43; LLM 技术组合、互补的研究、探索和阜分享，截止到现在 NebulaGraph 已经在 LlamaIndex 与 Langchain 项目做出了不少领先的"/>
+<meta name="application-name" content="DoIt">
+<meta name="apple-mobile-web-app-title" content="DoIt">
+
+<meta name="theme-color" content="#f8f8f8"><meta name="msapplication-TileColor" content="#da532c"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="manifest" href="/site.webmanifest"><link rel="canonical" href="https://siwei.io/llm-text-to-nebulagraph-query/" /><link rel="prev" href="https://siwei.io/nebulagraph-in-jupyter-notebook/" />
+<link rel="stylesheet" href="/css/main.css"><link rel="stylesheet" href="/lib/normalize/normalize.min.css"><link rel="stylesheet" href="/css/color.css"><link rel="stylesheet" href="/css/style.min.css"><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/fontawesome-free/all.min.css">
+        <noscript><link rel="stylesheet" href="/lib/fontawesome-free/all.min.css"></noscript><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/animate/animate.min.css">
+        <noscript><link rel="stylesheet" href="/lib/animate/animate.min.css"></noscript>
+    
+    
+    
+    <meta name="baidu-site-verification" content="code-4R67zl7SwH" /><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "Text2Cypher：大语言模型驱动的图谱查询生成",
+        "inLanguage": "zh-CN",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "https:\/\/siwei.io\/llm-text-to-nebulagraph-query\/"
+        },"image": ["https:\/\/siwei.io\/images\/site-feature-image.webp"],"genre": "posts","keywords": "Nebula Graph, LLM, LlamaIndex, Langchain, 大模型, text2cypher, 知识图谱","wordcount":  3174 ,
+        "url": "https:\/\/siwei.io\/llm-text-to-nebulagraph-query\/","datePublished": "2023-07-17T20:30:04+08:00","dateModified": "2023-07-19T17:35:47+08:00","license": "This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.","publisher": {
+            "@type": "Organization",
+            "name": "Wey Gu","logo": "https:\/\/siwei.io\/images\/site-feature-image.webp"},"author": {
+                "@type": "Person",
+                "name": "Wey Gu"
+            },"description": ""
+    }
+    </script><script src="//instant.page/5.2.0" defer type="module" integrity="sha384-jnZyxPjiipYXnSU0ygqeac2q7CVYMbh84q0uHVRRxEtvFPiQYbXWUorga2aqZJ0z"></script>
+</head>
+
+<body header-desktop="fixed" header-mobile="auto"><script type="text/javascript">
+        function setTheme(theme) {document.body.setAttribute('theme', theme); document.documentElement.style.setProperty('color-scheme', theme === 'light' ? 'light' : 'dark'); window.theme = theme;   window.isDark = window.theme !== 'light' }
+        function saveTheme(theme) {window.localStorage && localStorage.setItem('theme', theme);}
+        function getMeta(metaName) {const metas = document.getElementsByTagName('meta'); for (let i = 0; i < metas.length; i++) if (metas[i].getAttribute('name') === metaName) return metas[i]; return '';}
+        if (window.localStorage && localStorage.getItem('theme')) {let theme = localStorage.getItem('theme');theme === 'light' || theme === 'dark' || theme === 'black' ? setTheme(theme) : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light')); } else { if ('auto' === 'light' || 'auto' === 'dark' || 'auto' === 'black') setTheme('auto'), saveTheme('auto'); else saveTheme('auto'), window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light');}
+        let metaColors = {'light': '#f8f8f8','dark': '#252627','black': '#000000'}
+        getMeta('theme-color').content = metaColors[document.body.getAttribute('theme')];
+        window.switchThemeEventSet = new Set()
+    </script>
+    <div id="back-to-top"></div>
+    <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/" title="siwei.io"><span class="header-title-pre"><i class='fas fa-code-branch'></i></span>siwei.io</a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="/about/"> 关于 </a><a class="menu-item" href="/projects/"> 项目 </a><a class="menu-item" href="/sketch-notes/"> 手绘 </a><a class="menu-item" href="/posts/"> 博客 </a><a class="menu-item" href="/talk/"> 演讲 </a><a class="menu-item" href="/cources/"> 课程 </a><a class="menu-item" href="https://vesoft.com/cn/careers/" rel="noopener noreferrer" target="_blank"> 招聘 </a><a class="menu-item" href="/about/#%E8%81%94%E7%B3%BB%E6%88%91"> 联系 </a><a class="menu-item" href="/path/"> 学习路径 </a><span class="menu-item delimiter"></span><a href="javascript:void(0);" class="menu-item language" title="选择语言">🌏 Chinese<i class="fas fa-chevron-right fa-fw"></i>
+                        <select class="language-select" title="选择语言" id="language-select-desktop" onchange="location = this.value;"><option value="/llm-text-to-nebulagraph-query/" selected>🌏 Chinese</option></select>
+                    </a><span class="menu-item search" id="search-desktop">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-desktop">
+                        <a href="javascript:void(0);" class="search-button search-toggle" id="search-toggle-desktop" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="javascript:void(0);" class="search-button search-clear" id="search-clear-desktop" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-desktop">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </span><a href="javascript:void(0);" class="menu-item theme-select" title="切换主题">
+                    <i class="fas fa-adjust fa-fw"></i>
+                    <select class="color-theme-select" id="theme-select-desktop" title="切换主题">
+                        <option value="light">浅色</option>
+                        <option value="dark">深色</option>
+                        <option value="black">黑色</option>
+                        <option value="auto">跟随系统</option>
+                    </select>
+                </a></div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="/" title="siwei.io"><span class="header-title-pre"><i class='fas fa-code-branch'></i></span>siwei.io</a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><div class="search-wrapper">
+                    <div class="search mobile" id="search-mobile">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-mobile">
+                        <a href="javascript:void(0);" class="search-button search-toggle" id="search-toggle-mobile" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="javascript:void(0);" class="search-button search-clear" id="search-clear-mobile" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-mobile">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </div>
+                    <a href="javascript:void(0);" class="search-cancel" id="search-cancel-mobile">
+                        取消
+                    </a>
+                </div><a class="menu-item" href="/about/" title="">关于</a><a class="menu-item" href="/projects/" title="">项目</a><a class="menu-item" href="/sketch-notes/" title="">手绘</a><a class="menu-item" href="/posts/" title="">博客</a><a class="menu-item" href="/talk/" title="">演讲</a><a class="menu-item" href="/cources/" title="">课程</a><a class="menu-item" href="https://vesoft.com/cn/careers/" title="" rel="noopener noreferrer" target="_blank">招聘</a><a class="menu-item" href="/about/#%E8%81%94%E7%B3%BB%E6%88%91" title="">联系</a><a class="menu-item" href="/path/" title="">学习路径</a><a href="javascript:void(0);" class="menu-item theme-select" title="切换主题">
+                <i class="fas fa-adjust fa-fw"></i>
+                <select class="color-theme-select" id="theme-select-mobile" title="切换主题">
+                    <option value="light">浅色</option>
+                    <option value="dark">深色</option>
+                    <option value="black">黑色</option>
+                    <option value="auto">跟随系统</option>
+                </select>
+            </a><a href="javascript:void(0);" class="menu-item" title="选择语言">🌏 Chinese<i class="fas fa-chevron-right fa-fw"></i>
+                    <select class="language-select" title="选择语言" onchange="location = this.value;"><option value="/llm-text-to-nebulagraph-query/" selected>🌏 Chinese</option></select>
+                </a></div>
+    </div>
+</header>
+<div class="search-dropdown desktop">
+    <div id="search-dropdown-desktop"></div>
+</div>
+<div class="search-dropdown mobile">
+    <div id="search-dropdown-mobile"></div>
+</div>
+<main class="main">
+            <div class="container"><div class="toc" id="toc-auto">
+        <h2 class="toc-title">目录</h2>
+        <div class="toc-content" id="toc-content-auto"><nav id="TableOfContents">
+  <ol>
+    <li><a href="#text2cypher">Text2Cypher</a></li>
+    <li><a href="#传统的-text2cypher">传统的 Text2Cypher</a></li>
+    <li><a href="#用语言模型做-text2cypher">用语言模型做 Text2Cypher</a></li>
+    <li><a href="#nebulagraph-上的-text2cypher">NebulaGraph 上的 Text2Cypher</a>
+      <ol>
+        <li><a href="#使用-llamaindex">使用 LlamaIndex</a></li>
+        <li><a href="#使用-langchain">使用 Langchain</a></li>
+      </ol>
+    </li>
+    <li><a href="#demo">Demo</a></li>
+    <li><a href="#结论">结论</a></li>
+  </ol>
+</nav></div>
+    </div><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC", "true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Text2Cypher：大语言模型驱动的图谱查询生成</h1><div class="post-meta">
+            <div class="post-meta-line">
+                <span class="post-author"><span class="author fas fa-user-circle fa-fw"></span><a href="https://siwei.io" title="Author" target="_blank" rel="noopener noreferrer author" class="author">Wey Gu</a>
+                </span>&nbsp;<span class="post-category">收录于 </span>&nbsp;<span class="post-category">类别 <a href="/categories/nebula-graph/"><i class="far fa-folder fa-fw"></i>Nebula Graph</a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime="2023-07-17">2023-07-17</time>&nbsp;<i class="far fa-edit fa-fw"></i>&nbsp;<time datetime="2023-07-19">2023-07-19</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;约 3174 字&nbsp;<i class="far fa-clock fa-fw"></i>&nbsp;预计阅读 7 分钟&nbsp;</div>
+        </div><div class="featured-image"><img
+        
+        loading="eager"
+        src="/llm-text-to-nebulagraph-query/featured-image.webp"
+        srcset="/llm-text-to-nebulagraph-query/featured-image.webp, /llm-text-to-nebulagraph-query/featured-image.webp 1.5x, /llm-text-to-nebulagraph-query/featured-image.webp 2x"
+        sizes="auto"
+        alt="/llm-text-to-nebulagraph-query/featured-image.webp"
+        title="/llm-text-to-nebulagraph-query/featured-image.webp" height="918"   width="1738" ></div><div class="details toc" id="toc-static"  kept="">
+                <div class="details-summary toc-title">
+                    <span>目录</span>
+                    <span><i class="details-icon fas fa-angle-right"></i></span>
+                </div>
+                <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ol>
+    <li><a href="#text2cypher">Text2Cypher</a></li>
+    <li><a href="#传统的-text2cypher">传统的 Text2Cypher</a></li>
+    <li><a href="#用语言模型做-text2cypher">用语言模型做 Text2Cypher</a></li>
+    <li><a href="#nebulagraph-上的-text2cypher">NebulaGraph 上的 Text2Cypher</a>
+      <ol>
+        <li><a href="#使用-llamaindex">使用 LlamaIndex</a></li>
+        <li><a href="#使用-langchain">使用 Langchain</a></li>
+      </ol>
+    </li>
+    <li><a href="#demo">Demo</a></li>
+    <li><a href="#结论">结论</a></li>
+  </ol>
+</nav></div>
+            </div><div class="content" id="content"><p>从 GPT-3 开始展现出超出预期的”理解能力“开始，我们一直在做 Graph + LLM 技术组合、互补的研究、探索和阜分享，截止到现在 NebulaGraph 已经在 LlamaIndex 与 Langchain 项目做出了不少领先的贡献，从本文开始，我们就把其中一些阶段性的成功、方法单独分享给大家。</p>
+<p>本文的主题是我们认为这个领域最低垂的果实，text2cypher：自然语言生成图查询。</p>
+<h2 id="text2cypher" class="headerLink">
+    <a href="#text2cypher" class="header-mark"></a>1 Text2Cypher</h2><p>顾名思义， Text2Cypher 做的就是把自然语言的文本转换成 Cypher 查询语句的这件事儿，和另一个大家可能已经比较熟悉的场景 Text2SQL：文本转换 SQL 在形式上没有什么区别。而本质上，大多数知识图谱、图数据库的应用都是在图上按照人类意愿进行查询，我们在图数据库上构造方便的可视化工具、封装方便的 API 的工作都是为这个目标服务的。</p>
+<p>一直以来，阻碍图数据库、知识图谱被更广泛应用的主要因素可能就是查询图数据库的门槛了。那么，在没有大语言模型的时候，我们是怎么做的呢？</p>
+<h2 id="传统的-text2cypher" class="headerLink">
+    <a href="#%e4%bc%a0%e7%bb%9f%e7%9a%84-text2cypher" class="header-mark"></a>2 传统的 Text2Cypher</h2><p>文本到查询的这个领域在大语言模型之前就一直存在这样的需求，一直是知识图谱最常见的应用之一，比如 KBQA（基于知识库的问答系统）的系统内部本质上就是 text2cypher。</p>
+<p>这里以我之前写的项目 <a href="https://www.siwei.io/siwi" target="_blank" rel="noopener noreferrer">Siwi</a> （发音：/ˈsɪwi/， 一个基于篮球运动员数据集的问答应用）为例，了解一下它的后端架构：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">┌─────────────┬───────────────────────────────────┐
+</span></span><span class="line"><span class="cl">│      Speech │  Frontend                         │
+</span></span><span class="line"><span class="cl">│  ┌──────────▼──────────┐ Siwi, /ˈsɪwi/          │
+</span></span><span class="line"><span class="cl">│  │ Web_Speech_API      │ A PoC of Dialog System │
+</span></span><span class="line"><span class="cl">│  │ Vue.JS              │ With Graph Database    │
+</span></span><span class="line"><span class="cl">│  │                     │ Backed Knowledge Graph │
+</span></span><span class="line"><span class="cl">│  └──────────┬──────────┘                        │
+</span></span><span class="line"><span class="cl">│             │  Sentence  Backend                │
+</span></span><span class="line"><span class="cl">│┌────────────┼────────────────────────────┐      │
+</span></span><span class="line"><span class="cl">││ ┌──────────▼──────────┐                 │      │
+</span></span><span class="line"><span class="cl">││ │ Web API, Flask      │ ./app/          │      │
+</span></span><span class="line"><span class="cl">││ └──────────┬──────────┘                 │      │
+</span></span><span class="line"><span class="cl">││            │  Sentence  ./bot/          │      │
+</span></span><span class="line"><span class="cl">││ ┌──────────▼──────────┐                 │      │
+</span></span><span class="line"><span class="cl">││ │ Intent Matching,    │ ./bot/classifier│      │
+</span></span><span class="line"><span class="cl">││ │ Symentic Processing │                 │      │
+</span></span><span class="line"><span class="cl">││ └──────────┬──────────┘                 │      │
+</span></span><span class="line"><span class="cl">││            │  Intent, Enties            │      │
+</span></span><span class="line"><span class="cl">││ ┌──────────▼──────────┐                 │      │
+</span></span><span class="line"><span class="cl">││ │ Intent Actor        │ ./bot/actions   │      │
+</span></span><span class="line"><span class="cl">│└─┴──────────┬──────────┴─────────────────┘      │
+</span></span><span class="line"><span class="cl">│             │  Graph Query                      │
+</span></span><span class="line"><span class="cl">│  ┌──────────▼──────────┐                        │
+</span></span><span class="line"><span class="cl">│  │ Graph Database      │  NebulaGraph           │
+</span></span><span class="line"><span class="cl">│  └─────────────────────┘                        │
+</span></span><span class="line"><span class="cl">└─────────────────────────────────────────────────┘
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>当一个问题语句发送过来之后，它首先要做意图识别（Intent）、实体识别（Entity），然后再利用 NLP 模型或者代码把相应的意图和实体构造成知识图谱的查询语句，最终查询图数据库，并根据返回结构构造答案。</p>
+<p>可以想象，让程序能够：</p>
+<ul>
+<li>从自然语言中理解意图：对应到哪一类支持回答的问题</li>
+<li>找出实体：问题中涉及到的主要个体</li>
+<li>从意图和实体构造查询语句</li>
+</ul>
+<p>不可能是一个容易的开发工作，一个真正能够落地的实现要训练的模型或者实现的规则代码所考虑的边界条件可能非常多。</p>
+<h2 id="用语言模型做-text2cypher" class="headerLink">
+    <a href="#%e7%94%a8%e8%af%ad%e8%a8%80%e6%a8%a1%e5%9e%8b%e5%81%9a-text2cypher" class="header-mark"></a>3 用语言模型做 Text2Cypher</h2><p>而在”后大语言模型“时代，这种从前需要专门训练或者写规则的”智能“应用场景成了通用模型+提示工程（Prompt Engineering）就能完成的任务。</p>
+<blockquote>
+<p>注：提示工程指通过自然语言描述，让生成模型、语言模型完成”智能“任务的方法。</p>
+</blockquote>
+<p>事实上，在 GPT-3 刚发布之后，我就开始利用它帮助我写很多非常复杂的 Cypher 查询语句了，我发现它可以写很多非常复杂的模式匹配、多步条件那种之前我需要一点点调试半天才能写出来的语句，通常在它的答案之上，我只需要稍微修改就可以了，而且往往我还能从它的答案里知道我之前没了解到的 Cypher 语法盲区。</p>
+<p>后来，在今年二月份的时候，我就试着实现了一个基于 GPT-3 （因为那时候还没有 GPT-3.5）的项目：<a href="https://ngql-gpt.siwei.io/" target="_blank" rel="noopener noreferrer">ngql-GPT</a>（<a href="https://github.com/wey-gu/NebulaGraph-GPT" target="_blank" rel="noopener noreferrer">代码仓库</a>）。</p>
+<iframe width="800" height="450" src="https://user-images.githubusercontent.com/1651790/218627408-995b81e1-9b01-423c-ba90-849faaad6f5d.mp4"> </iframe>
+<p>它的工作原理非常简单，和 Text2SQL 没有区别，语言模型已经通过公共领域学习了 Cypher 的语法表达，我们在提出任务的时候，只需要让大模型知道我们要查询的图的 Schema 作为上下文就可以了。</p>
+<p>所以，基本上 Prompt 就是：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">你是一位 NebulaGraph Cypher 专家，请根据给定的图 Schema 和问题，写出查询语句。
+</span></span><span class="line"><span class="cl">schema 如下：
+</span></span><span class="line"><span class="cl">---
+</span></span><span class="line"><span class="cl">{schema}
+</span></span><span class="line"><span class="cl">---
+</span></span><span class="line"><span class="cl">问题如下：
+</span></span><span class="line"><span class="cl">---
+</span></span><span class="line"><span class="cl">{question}
+</span></span><span class="line"><span class="cl">---
+</span></span><span class="line"><span class="cl">下面写出查询语句：
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>然而，真实世界的 prompt 往往还需要增加额外的要求：</p>
+<ul>
+<li>只返回语句，不用给出解释，不用道歉</li>
+<li>强调不要写超出 schema 之外的点、边类型</li>
+</ul>
+<p>感兴趣的同学可以参考我在 LlamaIndex 的 <a href="https://github.com/jerryjliu/llama_index/blob/71919f9dfa09e9628af8b3a59d497ad02a7a82f8/llama_index/query_engine/knowledge_graph_query_engine.py#L24" target="_blank" rel="noopener noreferrer">KnowlegeGraph Query Engine 中的实现</a>。</p>
+<p>在真实场景中，我们想快速学习、构建大语言模型应用的时候，常常会用到 Langchain 或者 LlamaIndex 这样的编排（Orchestrator）工具，它们可以帮我们做很多合理的抽象，从而避免从头去实现很多通用的脚手架代码：</p>
+<ul>
+<li>和不同语言模型交互</li>
+<li>和不同向量数据库交互</li>
+<li>数据分割</li>
+</ul>
+<p>而且，这些编排工具还内置了很多工程方法的最佳实践，这样，我们常常调用一个方法就可以用到最新最好用的大语言模型研究论文的方法了，比如 <a href="https://github.com/jerryjliu/llama_index/tree/main/llama_index/query_engine/flare" target="_blank" rel="noopener noreferrer">FLARE</a>、<a href="https://github.com/jerryjliu/llama_index/blob/main/docs/community/integrations/guidance.md" target="_blank" rel="noopener noreferrer">Guidence</a>。</p>
+<p>为此，我在 LlamaIndex 和 Langchain 中都贡献了可以方便进行 NebulaGraph 上 Text2Cypher 的工具，真正做到 3 行代码，Text2Cypher。</p>
+<h2 id="nebulagraph-上的-text2cypher" class="headerLink">
+    <a href="#nebulagraph-%e4%b8%8a%e7%9a%84-text2cypher" class="header-mark"></a>4 NebulaGraph 上的 Text2Cypher</h2><p>在 LlamaIndex 的 <code>KnowledgeQueryEngine</code> 和 LangChain 的 <code>NebulaGraphQAChain</code> 中：NebulaGraph 图数据库的 Schema 获取、Cypher 语句生成的 Prompt、各种 LLM 的调用、结果的处理、衔接我们可以全都不用关心，开箱即用！</p>
+<h3 id="使用-llamaindex" class="headerLink">
+    <a href="#%e4%bd%bf%e7%94%a8-llamaindex" class="header-mark"></a>4.1 使用 LlamaIndex</h3><p>用 LlamaIndex，我们只需要：</p>
+<ul>
+<li>创建一个 <code>NebulaGraphStore</code> 实例</li>
+<li>创建一个 <code>KnowledgeQueryEngine</code></li>
+</ul>
+<p>就可以直接进行问答了，是不是超级简单？</p>
+<blockquote>
+<p>参考文档：https://gpt-index.readthedocs.io/en/latest/examples/query_engine/knowledge_graph_query_engine.html</p>
+</blockquote>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">llama_index.query_engine</span> <span class="kn">import</span> <span class="n">KnowledgeGraphQueryEngine</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">llama_index.storage.storage_context</span> <span class="kn">import</span> <span class="n">StorageContext</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">llama_index.graph_stores</span> <span class="kn">import</span> <span class="n">NebulaGraphStore</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">graph_store</span> <span class="o">=</span> <span class="n">NebulaGraphStore</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">  <span class="n">space_name</span><span class="o">=</span><span class="n">space_name</span><span class="p">,</span> <span class="n">edge_types</span><span class="o">=</span><span class="n">edge_types</span><span class="p">,</span> <span class="n">rel_prop_names</span><span class="o">=</span><span class="n">rel_prop_names</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="n">tags</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="n">storage_context</span> <span class="o">=</span> <span class="n">StorageContext</span><span class="o">.</span><span class="n">from_defaults</span><span class="p">(</span><span class="n">graph_store</span><span class="o">=</span><span class="n">graph_store</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">nl2kg_query_engine</span> <span class="o">=</span> <span class="n">KnowledgeGraphQueryEngine</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">storage_context</span><span class="o">=</span><span class="n">storage_context</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">service_context</span><span class="o">=</span><span class="n">service_context</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">llm</span><span class="o">=</span><span class="n">llm</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 问答</span>
+</span></span><span class="line"><span class="cl"><span class="n">response</span> <span class="o">=</span> <span class="n">nl2kg_query_engine</span><span class="o">.</span><span class="n">query</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;Tell me about Peter Quill?&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 只生成语句</span>
+</span></span><span class="line"><span class="cl"><span class="n">graph_query</span> <span class="o">=</span> <span class="n">nl2kg_query_engine</span><span class="o">.</span><span class="n">generate_query</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;Tell me about Peter Quill?&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="使用-langchain" class="headerLink">
+    <a href="#%e4%bd%bf%e7%94%a8-langchain" class="header-mark"></a>4.2 使用 Langchain</h3><p>类似的，在 Langchain 里，我们只需要：</p>
+<ul>
+<li>创建一个 <code>NebulaGraph</code>实例</li>
+<li>创建一个 <code>NebulaGraphQAChain</code> 实例</li>
+</ul>
+<p>就可以直接提问了。</p>
+<blockquote>
+<p>参考文档：https://python.langchain.com/docs/modules/chains/additional/graph_nebula_qa</p>
+</blockquote>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">langchain.chat_models</span> <span class="kn">import</span> <span class="n">ChatOpenAI</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">langchain.chains</span> <span class="kn">import</span> <span class="n">NebulaGraphQAChain</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">langchain.graphs</span> <span class="kn">import</span> <span class="n">NebulaGraph</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">graph</span> <span class="o">=</span> <span class="n">NebulaGraph</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">space</span><span class="o">=</span><span class="n">space_name</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">username</span><span class="o">=</span><span class="s2">&#34;root&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">password</span><span class="o">=</span><span class="s2">&#34;nebula&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">address</span><span class="o">=</span><span class="s2">&#34;127.0.0.1&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">port</span><span class="o">=</span><span class="mi">9669</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">session_pool_size</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">chain</span> <span class="o">=</span> <span class="n">NebulaGraphQAChain</span><span class="o">.</span><span class="n">from_llm</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">llm</span><span class="p">,</span> <span class="n">graph</span><span class="o">=</span><span class="n">graph</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">chain</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;Tell me about Peter Quill?&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="demo" class="headerLink">
+    <a href="#demo" class="header-mark"></a>5 Demo</h2><p><a href="https://www.siwei.io/demos/text2cypher/" target="_blank" rel="noopener noreferrer">demo 地址</a></p>
+<iframe width="800" height="857" src="https://user-images.githubusercontent.com/1651790/254521700-6de6aadf-4b62-495a-9276-ef866ebb4add.mp4"> </iframe>
+<p>这个 Demo 展示了如何利用 LLM 从不同类型的信息源（以维基百科为例）中抽取知识三元组，并存储到图数据库 NebulaGraph 中。</p>
+<p>本 Demo 中，我们先抽取了维基百科中关于《银河护卫队3》的信息，然后利用 LLM 生成的知识三元组，构建了一个图谱。 然后利用 Cypher 查询图谱，最后利用 LlamaIndex 和 Langchain 中的 Text2Cypher，实现了自然语言查询图谱的功能。</p>
+<p>您可以点击其他标签亲自试玩图谱的可视化、Cypher 查询、自然语言查询（Text2Cypher）等功能。</p>
+<p>这里可以<a href="https://www.siwei.io/demo-dumps/kg-llm/KG_Building.ipynb" target="_blank" rel="noopener noreferrer">下载</a> 完整的 Notebook。</p>
+<h2 id="结论" class="headerLink">
+    <a href="#%e7%bb%93%e8%ae%ba" class="header-mark"></a>6 结论</h2><p>有了 LLM，知识图谱、NebulaGraph 图数据库中的的数据中进行 Text2Cypher 从来没有这么简单过。</p>
+<p>一个具有更强人机、机器接入的知识图谱可以代表了全新的时代，我们可能不需要从前那样高额成本去实现图库之上的后端服务，也不再需要培训才能让领域专家从图中获取重要的洞察了。</p>
+<p>利用 LlamaIndex 或者 Langchain 中的生态集成，我们可以几乎没有开发成本地几行代码把自己的应用、图数据智能化。</p>
+<p>然而，Text2Cypher 只是一个开始，请大家关注我们后续的文章，展现更多知识图谱、图数据库为大语言模型生态带来的变革。</p>
+<blockquote>
+<p>题图 <strong>prompt</strong>：</p>
+<p><em>In an artful fusion of language and AI, this minimalist oil painting captures the essence of technological advancement. Delicate brushstrokes depict a harmony of binary code and flowing words, converging into a central point. With a refined color palette and clean composition, the artwork represents the symbiotic relationship between language and artificial intelligence, inviting contemplation and appreciation.</em></p>
+</blockquote>
+</div>
+
+        
+
+
+<h2>相关内容</h2>
+<div class="related-container">
+    <div class="related-item-container">
+            <h2 class="related-title">
+                <a href="/demos/graph-rag/">Demo：NebulaGraph 的 Graph RAG</a>
+            </h2>
+        </div>
+    <div class="related-item-container">
+            <h2 class="related-title">
+                <a href="/demos/text2cypher/">Demo：NebulaGraph 的知识图谱构建与 Text2Cypher</a>
+            </h2>
+        </div>
+    <div class="related-item-container">
+            <div class="related-image">
+                <a href="/nebulagraph-in-jupyter-notebook/"><img
+        
+        loading="lazy"
+        src="/nebulagraph-in-jupyter-notebook/featured-image.webp"
+        srcset="/nebulagraph-in-jupyter-notebook/featured-image.webp, /nebulagraph-in-jupyter-notebook/featured-image.webp 1.5x, /nebulagraph-in-jupyter-notebook/featured-image.webp 2x"
+        sizes="auto"
+        alt="/nebulagraph-in-jupyter-notebook/featured-image.webp"
+        title="/nebulagraph-in-jupyter-notebook/featured-image.webp" height="200"   width="400" ></a>
+            </div><h2 class="related-title">
+                <a href="/nebulagraph-in-jupyter-notebook/">NebulaGraph in Jupyter Notebook</a>
+            </h2>
+        </div>
+    <div class="related-item-container">
+            <div class="related-image">
+                <a href="/graph-enabled-llama-index/"><img
+        
+        loading="lazy"
+        src="/graph-enabled-llama-index/featured-image.webp"
+        srcset="/graph-enabled-llama-index/featured-image.webp, /graph-enabled-llama-index/featured-image.webp 1.5x, /graph-enabled-llama-index/featured-image.webp 2x"
+        sizes="auto"
+        alt="/graph-enabled-llama-index/featured-image.webp"
+        title="/graph-enabled-llama-index/featured-image.webp" height="200"   width="400" ></a>
+            </div><h2 class="related-title">
+                <a href="/graph-enabled-llama-index/">图谱驱动的大语言模型 Llama Index</a>
+            </h2>
+        </div>
+    <div class="related-item-container">
+            <div class="related-image">
+                <a href="/nebulagraph-ai-suite/"><img
+        
+        loading="lazy"
+        src="/nebulagraph-ai-suite/featured-image.webp"
+        srcset="/nebulagraph-ai-suite/featured-image.webp, /nebulagraph-ai-suite/featured-image.webp 1.5x, /nebulagraph-ai-suite/featured-image.webp 2x"
+        sizes="auto"
+        alt="/nebulagraph-ai-suite/featured-image.webp"
+        title="/nebulagraph-ai-suite/featured-image.webp" height="200"   width="400" ></a>
+            </div><h2 class="related-title">
+                <a href="/nebulagraph-ai-suite/">Nebulagraph Artificial Intelligence Suite</a>
+            </h2>
+        </div>
+    
+
+</div>
+
+<div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>更新于 2023-07-19&nbsp;<a class="git-hash" href="github.com/siwei-io/siwei-io.github.io/commit/cd7237d2c0808fe2ef15bfdfc8cef113a79af5c9" target="_blank" title="commit by Wey Gu(weyl.gu@gmail.com) cd7237d2c0808fe2ef15bfdfc8cef113a79af5c9: feat: llm text2cypher" rel="noopener noreferrer">
+                                    <i class="fas fa-hashtag fa-fw"></i>cd7237d</a></span>
+            </div>
+            <div class="post-info-license"></div>
+        </div>
+        <div class="post-info-line">
+            <div class="post-info-md"><span><a class="link-to-mardown" href=/llm-text-to-nebulagraph-query/index.md target="_blank" rel="noopener noreferrer">阅读原始文档</a>
+                    </span><span>|&nbsp;<a class="link-to-report" href=https://github.com/siwei-io/siwei-io.github.io/issues/new?title=[bug]%20Text2Cypher%EF%BC%9A%E5%A4%A7%E8%AF%AD%E8%A8%80%E6%A8%A1%E5%9E%8B%E9%A9%B1%E5%8A%A8%E7%9A%84%E5%9B%BE%E8%B0%B1%E6%9F%A5%E8%AF%A2%E7%94%9F%E6%88%90&body=|Field|Value|%0A|-|-|%0A|Title|Text2Cypher%EF%BC%9A%E5%A4%A7%E8%AF%AD%E8%A8%80%E6%A8%A1%E5%9E%8B%E9%A9%B1%E5%8A%A8%E7%9A%84%E5%9B%BE%E8%B0%B1%E6%9F%A5%E8%AF%A2%E7%94%9F%E6%88%90|%0A|Url|https://siwei.io/llm-text-to-nebulagraph-query/|%0A|Filename|posts/llm-text-to-nebulagraph-query/index.md| target="_blank" rel="noopener noreferrer">报告问题</a>
+                    </span></div>
+            <div class="post-info-share"><button title="分享到 Twitter" data-sharer="twitter" data-url="https://siwei.io/llm-text-to-nebulagraph-query/" data-title="Text2Cypher：大语言模型驱动的图谱查询生成" data-via="wey_gu" data-hashtags="Nebula Graph,LLM,LlamaIndex,Langchain,大模型,text2cypher,知识图谱"><span class="fab fa-twitter fa-fw"></span></button><button title="分享到 Facebook" data-sharer="facebook" data-url="https://siwei.io/llm-text-to-nebulagraph-query/" data-hashtag="Nebula Graph"><span class="fab fa-facebook-square fa-fw"></span></button><button title="分享到 Hacker News" data-sharer="hackernews" data-url="https://siwei.io/llm-text-to-nebulagraph-query/" data-title="Text2Cypher：大语言模型驱动的图谱查询生成"><span class="fab fa-hacker-news fa-fw"></span></button><button title="分享到 Line" data-sharer="line" data-url="https://siwei.io/llm-text-to-nebulagraph-query/" data-title="Text2Cypher：大语言模型驱动的图谱查询生成"><span data-svg-src="/lib/simple-icons/icons/line.min.svg"></span></button><button title="分享到 微博" data-sharer="weibo" data-url="https://siwei.io/llm-text-to-nebulagraph-query/" data-title="Text2Cypher：大语言模型驱动的图谱查询生成" data-image="featured-image.webp" data-ralateuid="siweigu"><span class="fab fa-weibo fa-fw"></span></button><button title="分享到 Telegram" data-sharer="telegram" data-url="https://siwei.io/llm-text-to-nebulagraph-query/" data-title="Text2Cypher：大语言模型驱动的图谱查询生成" data-web><span class="fab fa-telegram-plane fa-fw"></span></button></div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section class="post-tags"><i class="fas fa-tags fa-fw"></i>&nbsp;<a href="/tags/nebula-graph/">Nebula Graph</a>,&nbsp;<a href="/tags/llm/">LLM</a>,&nbsp;<a href="/tags/llamaindex/">LlamaIndex</a>,&nbsp;<a href="/tags/langchain/">Langchain</a>,&nbsp;<a href="/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B/">大模型</a>,&nbsp;<a href="/tags/text2cypher/">text2cypher</a>,&nbsp;<a href="/tags/%E7%9F%A5%E8%AF%86%E5%9B%BE%E8%B0%B1/">知识图谱</a></section>
+        <section>
+            <span><a href="javascript:void(0);" onclick="window.history.back();">返回</a></span>&nbsp;|&nbsp;<span><a href="/">主页</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/nebulagraph-in-jupyter-notebook/" class="prev" rel="prev" title="NebulaGraph in Jupyter Notebook"><i class="fas fa-angle-left fa-fw"></i>NebulaGraph in Jupyter Notebook</a></div>
+</div>
+<div id="comments"><div id="giscus"></div><noscript>
+                Please enable JavaScript to view the comments powered by <a href="https://giscus.app/">giscus</a>.
+            </noscript></div></article></div>
+        </main><footer class="footer">
+        <div class="footer-container"><div class="footer-line">
+                    由 <a href="https://gohugo.io/" target="_blank" rel="noopener noreferrer" title="Hugo 0.114.1">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreferrer" title="DoIt 0.4.0"><i class="far fa-edit fa-fw"></i> DoIt</a>
+                </div><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2018 - 2023</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="https://siwei.io" target="_blank" rel="noopener noreferrer">Wey Gu</a></span>&nbsp;|&nbsp;<span class="license"><a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">CC BY-NC 4.0</a></span></div>
+            <div class="footer-line"></div>
+            <div class="footer-line">
+            </div>
+        </div><script>
+                    if('serviceWorker' in navigator) {
+                        navigator.serviceWorker
+                            .register('/sw.min.js', { scope: '/' })
+                            .then(function(registration) {
+                            });
+                
+                        navigator.serviceWorker
+                            .ready
+                            .then(function(registration) {
+                            });
+                    }
+                </script></footer></div>
+
+    <div id="fixed-buttons"><a href="#back-to-top" id="back-to-top-button" class="fixed-button" title="回到顶部">
+            <i class="fas fa-arrow-up fa-fw"></i>
+        </a><a href="#" id="view-comments" class="fixed-button" title="查看评论">
+            <i class="fas fa-comment fa-fw"></i>
+        </a>
+    </div><div class="assets"><link rel="stylesheet" href="/lib/lightgallery/lightgallery.min.css"><link rel="stylesheet" href="/lib/katex/katex.min.css"><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/katex/copy-tex.min.css">
+        <noscript><link rel="stylesheet" href="/lib/katex/copy-tex.min.css"></noscript><script type="text/javascript">window.config={"code":{"copyTitle":"复制到剪贴板","maxShownLines":10},"comment":{"giscus":{"darkTheme":"dark","dataCategory":"Comments","dataCategoryId":"DIC_kwDOFhiy8c4CQeuu","dataEmitMetadata":"1","dataInputPosition":"bottom","dataLang":"en","dataMapping":"title","dataReactionsEnabled":"1","dataRepo":"siwei-io/siwei-io.github.io","dataRepoId":"MDEwOlJlcG9zaXRvcnkzNzA3MTc0MjU=","dataStrict":"1","lightTheme":"light"}},"lightGallery":{"actualSize":false,"exThumbImage":"data-thumbnail","hideBarsDelay":2000,"selector":".lightgallery","speed":400,"thumbContHeight":80,"thumbWidth":80,"thumbnail":true},"math":{"delimiters":[{"display":true,"left":"$$","right":"$$"},{"display":true,"left":"\\[","right":"\\]"},{"display":false,"left":"$","right":"$"},{"display":false,"left":"\\(","right":"\\)"}],"strict":false},"search":{"distance":100,"findAllMatches":false,"fuseIndexURL":"/index.json","highlightTag":"em","ignoreFieldNorm":false,"ignoreLocation":true,"isCaseSensitive":false,"location":0,"maxResultLength":10,"minMatchCharLength":2,"noResultsFound":"没有找到结果","snippetLength":300,"threshold":0.1,"type":"fuse","useExtendedSearch":false},"sharerjs":true,"table":{"sort":true}};</script><script type="text/javascript" src="/lib/tablesort/tablesort.min.js"></script><script type="text/javascript" src="/lib/lightgallery/lightgallery.min.js"></script><script type="text/javascript" src="/lib/lightgallery/lg-thumbnail.min.js"></script><script type="text/javascript" src="/lib/lightgallery/lg-zoom.min.js"></script><script type="text/javascript" src="/lib/clipboard/clipboard.min.js"></script><script type="text/javascript" src="/lib/sharer/sharer.min.js"></script><script type="text/javascript" src="/lib/katex/katex.min.js" defer></script><script type="text/javascript" src="/lib/katex/auto-render.min.js" defer></script><script type="text/javascript" src="/lib/katex/copy-tex.min.js" defer></script><script type="text/javascript" src="/lib/katex/mhchem.min.js" defer></script><script type="text/javascript" src="/js/katex.min.js" defer></script><script type="text/javascript" src="/js/theme.min.js" defer></script><script type="text/javascript" src="/js/giscus.min.js" defer></script><script type="text/javascript">
+            window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());
+            gtag('config', 'G-DYTTVYCRS2', { 'anonymize_ip': true });
+        </script><script type="text/javascript" src="https://www.googletagmanager.com/gtag/js?id=G-DYTTVYCRS2" async></script></div>
+</body>
+
+</html>
