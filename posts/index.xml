@@ -5,6 +5,240 @@
         <description>所有文章 | siwei.io</description>
         <generator>Hugo -- gohugo.io</generator><language>zh-CN</language><managingEditor>weyl.gu@gmail.com (Wey Gu)</managingEditor>
             <webMaster>weyl.gu@gmail.com (Wey Gu)</webMaster><copyright>This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.</copyright><lastBuildDate>Tue, 15 Aug 2023 11:10:34 &#43;0800</lastBuildDate><atom:link href="https://siwei.io/posts/" rel="self" type="application/rss+xml" /><item>
+    <title>图谱驱动的大语言模型 Llama Index</title>
+    <link>https://siwei.io/graph-enabled-llama-index/</link>
+    <pubDate>Thu, 01 Jun 2023 14:52:53 &#43;0800</pubDate><author>
+        <name>Wey Gu</name>
+    </author><guid>https://siwei.io/graph-enabled-llama-index/</guid>
+    <description><![CDATA[<div class="featured-image">
+                <img src="/graph-enabled-llama-index/featured-image.webp" referrerpolicy="no-referrer">
+            </div><blockquote>
+<p>如何利用图谱构建更好的 In-context Learning 大语言模型应用。</p>
+</blockquote>
+<p><a href="https://www.siwei.io/en/graph-enabled-llama-index/" target="_blank" rel="noopener noreferrer">English version</a></p>
+<blockquote>
+<p>注：本文是我最初以英文撰写的，然后麻烦 ChatGPT 帮我翻译成了英文，翻译的 prompt 是：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">In this thread, you are a Chinese Tech blogger to help translate my blog in markdown from English into Chinese, the blog style is clear, fun yet professional. I will paste chapters in markdown to you and you will send back the translated and polished version.
+</span></span></code></pre></td></tr></table>
+</div>
+</div></blockquote>
+<h2 id="llm-应用的范式" class="headerLink">
+    <a href="#llm-%e5%ba%94%e7%94%a8%e7%9a%84%e8%8c%83%e5%bc%8f" class="header-mark"></a>1 LLM 应用的范式</h2><p>作为认知智能的一大突破，LLM 已经改变了许多行业，以一种我们没有预料到的方式进行自动化、加速和启用。每天都会看到新的 LLN 应用被创建出来，我们仍然在探索如何利用这种魔力的新方法和用例。</p>
+<p>将 LLM 引入流程的最典型模式之一是要求 LLM 根据专有的/特定领域的知识理解事物。目前，我们可以向 LLM 添加两种范式以获取这些知识：微调——fine-tune和<a href="https://en.wikipedia.org/wiki/In-context_learning_%28natural_language_processing%29" target="_blank" rel="noopener noreferrer">上下文学习</a>—— in-context learning。</p>
+<p>微调是指对 LLM 模型进行附加训练，以增加额外的知识；而上下文学习是在查询提示中添加一些额外的知识。我们目前观察到，<a href="https://arxiv.org/abs/2305.16938" target="_blank" rel="noopener noreferrer">由于其简单性，上下文学习比微调更受欢迎</a>。</p>
+<p>在本博客中，我将分享我们在上下文学习方法方面所做的工作。</p>
+<h2 id="llama-index数据与-llm-之间的接口" class="headerLink">
+    <a href="#llama-index%e6%95%b0%e6%8d%ae%e4%b8%8e-llm-%e4%b9%8b%e9%97%b4%e7%9a%84%e6%8e%a5%e5%8f%a3" class="header-mark"></a>2 Llama Index：数据与 LLM 之间的接口</h2><h3 id="上下文学习" class="headerLink">
+    <a href="#%e4%b8%8a%e4%b8%8b%e6%96%87%e5%ad%a6%e4%b9%a0" class="header-mark"></a>2.1 上下文学习</h3><p>上下文学习的基本思想是使用现有的 LLM（未更新）来处理特定知识数据集的特殊任务。</p>
+<p>例如，要构建一个可以回答关于某个人的任何问题，甚至扮演一个人的数字化化身的应用程序，我们可以将上下文学习应用于一本自传书籍和 LLM。在实践中，应用程序将使用用户的问题和从书中&quot;搜索&quot;到的一些信息构建提示，然后查询 LLM 来获取答案。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">┌───────┐         ┌─────────────────┐         ┌─────────┐
+</span></span><span class="line"><span class="cl">│       │         │ Docs/Knowledge  │         │         │
+</span></span><span class="line"><span class="cl">│       │         └─────────────────┘         │         │
+</span></span><span class="line"><span class="cl">│ User  │─────────────────────────────────────▶   LLM   │
+</span></span><span class="line"><span class="cl">│       │                                     │         │
+</span></span><span class="line"><span class="cl">│       │                                     │         │
+</span></span><span class="line"><span class="cl">└───────┘                                     └─────────┘
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>在这种搜索方法中，实现从文档/知识（上述示例中的那本书）中获取与特定任务相关信息的最有效方式之一是利用嵌入（Embedding）。</p>
+<h3 id="嵌入embedding" class="headerLink">
+    <a href="#%e5%b5%8c%e5%85%a5embedding" class="header-mark"></a>2.2 嵌入（Embedding）</h3><p>嵌入通常指的是将现实世界的事物映射到多维空间中的向量的方法。例如，我们可以将图像映射到一个（64 x 64）维度的空间中，如果映射足够好，两个图像之间的距离可以反映它们的相似性。</p>
+<p>嵌入的另一个例子是 word2vec 算法，它将每个单词都映射到一个向量中。例如，如果嵌入足够好，我们可以对它们进行加法和减法操作，可能会得到以下结果：</p>
+<ul>
+<li><code>vec(apple) + vec(pie) =~ vec(&quot;apple apie&quot;)</code></li>
+</ul>
+<p>或者向量测量值 <code>vec(apple) + vec(pie) - vec(&quot;apple apie&quot;)</code> 趋近于0：</p>
+<ul>
+<li><code>|vec(apple) + vec(pie) - vec(&quot;apple apie&quot;)| =~ 0</code></li>
+</ul>
+<p>类似地，&ldquo;pear&rdquo; 应该比 &ldquo;dinosaur&rdquo; 更接近 &ldquo;apple&rdquo;：</p>
+<ul>
+<li><code>|vec(apple) - vec(pear)| &lt; |vec(apple) - vec(dinosaur)|</code></li>
+</ul>
+<p>有了这个基础，理论上我们可以搜索与给定问题更相关的书籍片段。基本过程如下：</p>
+<ul>
+<li>将书籍分割为小片段，为每个片段创建嵌入并存储它们</li>
+<li>当有一个问题时，计算问题的嵌入</li>
+<li>通过计算距离找到与书籍片段最相似的前 K 个嵌入</li>
+<li>使用问题和书籍片段构建提示</li>
+<li>使用提示查询 LLM</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">                  ┌────┬────┬────┬────┐                  
+</span></span><span class="line"><span class="cl">                  │ 1  │ 2  │ 3  │ 4  │                  
+</span></span><span class="line"><span class="cl">                  ├────┴────┴────┴────┤                  
+</span></span><span class="line"><span class="cl">                  │  Docs/Knowledge   │                  
+</span></span><span class="line"><span class="cl">┌───────┐         │        ...        │       ┌─────────┐
+</span></span><span class="line"><span class="cl">│       │         ├────┬────┬────┬────┤       │         │
+</span></span><span class="line"><span class="cl">│       │         │ 95 │ 96 │    │    │       │         │
+</span></span><span class="line"><span class="cl">│       │         └────┴────┴────┴────┘       │         │
+</span></span><span class="line"><span class="cl">│ User  │─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─▶   LLM   │
+</span></span><span class="line"><span class="cl">│       │                                     │         │
+</span></span><span class="line"><span class="cl">│       │                                     │         │
+</span></span><span class="line"><span class="cl">└───────┘    ┌ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┐  └─────────┘
+</span></span><span class="line"><span class="cl">    │          ┌──────────────────────────┐        ▲     
+</span></span><span class="line"><span class="cl">    └────────┼▶│  Tell me ....., please   │├───────┘     
+</span></span><span class="line"><span class="cl">               └──────────────────────────┘              
+</span></span><span class="line"><span class="cl">             │ ┌────┐ ┌────┐               │             
+</span></span><span class="line"><span class="cl">               │ 3  │ │ 96 │                             
+</span></span><span class="line"><span class="cl">             │ └────┘ └────┘               │             
+</span></span><span class="line"><span class="cl">              ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ 
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="llama-index" class="headerLink">
+    <a href="#llama-index" class="header-mark"></a>2.3 Llama Index</h3><p>Llama Index 是一个开源工具包，它能帮助我们以最佳实践去做 in-context learning：</p>
+<ul>
+<li>它提供了各种数据加载器，以统一格式序列化文档/知识，例如 PDF、维基百科页面、Notion、Twitter 等等，这样我们可以无需自行处理预处理、将数据分割为片段等操作。</li>
+<li>它还可以帮助我们创建嵌入（以及其他形式的索引），并以一行代码的方式存储嵌入（在内存中或<a href="https://github.com/openai/openai-cookbook/blob/main/examples/vector_databases/Using_vector_databases_for_embeddings_search.ipynb" target="_blank" rel="noopener noreferrer">向量数据库</a>中）。</li>
+<li>它内置了提示和其他工程实现，因此我们无需从头开始创建和研究，例如，<a href="https://twitter.com/jerryjliu0/status/1663213212932902913" target="_blank" rel="noopener noreferrer">用4行代码在现有数据上创建一个聊天机器人</a>。</li>
+</ul>
+<h2 id="文档分割和嵌入的问题" class="headerLink">
+    <a href="#%e6%96%87%e6%a1%a3%e5%88%86%e5%89%b2%e5%92%8c%e5%b5%8c%e5%85%a5%e7%9a%84%e9%97%ae%e9%a2%98" class="header-mark"></a>3 文档分割和嵌入的问题</h2><p>嵌入和向量搜索在许多情况下效果良好，但在某些情况下仍存在挑战，其中之一是可能丢失全局上下文/跨节点上下文。</p>
+<p>想象一下，当查询&quot;请告诉我关于作者和 foo 的事情&quot;，在这本书中，假设编号为 1、3、6、19~25、30~44 和 96~99 的分段都涉及到 foo 这个主题。则在这种情况下，简单地搜索与书籍片段相关的前 k 个嵌入可能效果不尽人意，因为这时候只考虑与之最相关的几个片段（比如 k = 3），从而丢失了许多上下文信息。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">┌────┬────┬────┬────┐
+</span></span><span class="line"><span class="cl">│ 1  │ 2  │ 3  │ 4  │
+</span></span><span class="line"><span class="cl">├────┴────┴────┴────┤
+</span></span><span class="line"><span class="cl">│  Docs/Knowledge   │
+</span></span><span class="line"><span class="cl">│        ...        │
+</span></span><span class="line"><span class="cl">├────┬────┬────┬────┤
+</span></span><span class="line"><span class="cl">│ 95 │ 96 │    │    │
+</span></span><span class="line"><span class="cl">└────┴────┴────┴────┘
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>而解决、缓解这个问题的方法，在 Llama Index 工具的语境下，就是创建<a href="https://gpt-index.readthedocs.io/en/latest/how_to/index_structs/composability.html" target="_blank" rel="noopener noreferrer">组合索引</a>和<a href="https://gpt-index.readthedocs.io/en/latest/guides/primer/index_guide.html" target="_blank" rel="noopener noreferrer">综合索引</a>。</p>
+<p>其中，向量存储（VectorStore）只是其中的一部分。除此之外，我们可以定义一个摘要索引和/或树形索引等，以<a href="https://gpt-index.readthedocs.io/en/latest/guides/tutorials/unified_query.html" target="_blank" rel="noopener noreferrer">将不同类型的问题路由到不同的索引</a>，从而避免在需要全局上下文时丧失它。</p>
+<p>然而，借助知识图谱，我们可以采取更有意思的方法：</p>
+<h2 id="知识图谱" class="headerLink">
+    <a href="#%e7%9f%a5%e8%af%86%e5%9b%be%e8%b0%b1" class="header-mark"></a>4 知识图谱</h2><p>知识图谱这个术语最初由<a href="https://blog.google/products/search/introducing-knowledge-graph-things-not/" target="_blank" rel="noopener noreferrer">谷歌在2012年5月提出</a>，作为其增强搜索结果和向用户提供更多上下文信息的努力的一部分。知识图谱旨在理解实体之间的关系，并直接提供查询的答案，而不仅仅返回相关网页的列表。</p>
+<p>知识图谱是一种以图形格式组织和连接信息的方式，其中节点表示实体，边表示实体之间的关系。图形结构允许高效地存储、检索和分析数据。</p>
+<p>它的结构如下图所示：</p>
+<iframe src="harry_potter_graph.html" style="height:500px;width:800px" title="Graph"></iframe>
+<p>那么知识图谱到底能怎么帮到我们呢？</p>
+<h2 id="嵌入和知识图谱的结合" class="headerLink">
+    <a href="#%e5%b5%8c%e5%85%a5%e5%92%8c%e7%9f%a5%e8%af%86%e5%9b%be%e8%b0%b1%e7%9a%84%e7%bb%93%e5%90%88" class="header-mark"></a>5 嵌入和知识图谱的结合</h2><p>这里的基本思想是，作为信息的精炼格式，知识图谱可以以比我们对原始数据/文档进行的分割更小的粒度进行查询/搜索。因此，通过不替换大块的数据，而是将两者结合起来，我们可以更好地搜索需要全局/跨节点上下文的查询。</p>
+<p>请看下面的图示，假设问题是关于 <code>x</code> 的，所有数据片段中有20个与它高度相关。现在，除了获取主要上下文的前3个文档片段（比如编号为 1、2 和 96 的文档片段），我们还从知识图谱中对 <code>x</code> 进行两次跳转查询，那么完整的上下文将包括：</p>
+<ul>
+<li>问题：&ldquo;Tell me things about the author and x&rdquo;</li>
+<li>来自文档片段编号 1、2 和 96 的原始文档，在 Llama Index 中，它们被称为节点 1、节点 2 和节点 96。</li>
+<li>包含 &ldquo;x&rdquo; 的知识图谱中的 10 个三元组，通过对 <code>x</code> 进行两层深度的图遍历得到：
+<ul>
+<li>x -&gt; y（来自节点 1）</li>
+<li>x -&gt; a（来自节点 2）</li>
+<li>x -&gt; m（来自<strong>节点 4</strong>）</li>
+<li>x &lt;- b-&gt; c（来自<strong>节点 95</strong>）</li>
+<li>x -&gt; d（来自节点 96）</li>
+<li>n -&gt; x（来自<strong>节点 98</strong>）</li>
+<li>x &lt;- z &lt;- i（来自<strong>节点 1 和节点 3</strong>）</li>
+<li>x &lt;- z &lt;- b（来自<strong>节点 1 和节点 95</strong>）</li>
+</ul>
+</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">┌──────────────────┬──────────────────┬──────────────────┬──────────────────┐
+</span></span><span class="line"><span class="cl">│ .─.       .─.    │  .─.       .─.   │            .─.   │  .─.       .─.   │
+</span></span><span class="line"><span class="cl">│( x )─────▶ y )   │ ( x )─────▶ a )  │           ( j )  │ ( m )◀────( x )  │
+</span></span><span class="line"><span class="cl">│ `▲&#39;       `─&#39;    │  `─&#39;       `─&#39;   │            `─&#39;   │  `─&#39;       `─&#39;   │
+</span></span><span class="line"><span class="cl">│  │     1         │        2         │        3    │    │        4         │
+</span></span><span class="line"><span class="cl">│ .─.              │                  │            .▼.   │                  │
+</span></span><span class="line"><span class="cl">│( z )─────────────┼──────────────────┼──────────▶( i )─┐│                  │
+</span></span><span class="line"><span class="cl">│ `◀────┐          │                  │            `─&#39;  ││                  │
+</span></span><span class="line"><span class="cl">├───────┼──────────┴──────────────────┴─────────────────┼┴──────────────────┤
+</span></span><span class="line"><span class="cl">│       │                      Docs/Knowledge           │                   │
+</span></span><span class="line"><span class="cl">│       │                            ...                │                   │
+</span></span><span class="line"><span class="cl">│       │                                               │                   │
+</span></span><span class="line"><span class="cl">├───────┼──────────┬──────────────────┬─────────────────┼┬──────────────────┤
+</span></span><span class="line"><span class="cl">│  .─.  └──────.   │  .─.             │                 ││  .─.             │
+</span></span><span class="line"><span class="cl">│ ( x ◀─────( b )  │ ( x )            │                 └┼▶( n )            │
+</span></span><span class="line"><span class="cl">│  `─&#39;       `─&#39;   │  `─&#39;             │                  │  `─&#39;             │
+</span></span><span class="line"><span class="cl">│        95   │    │   │    96        │                  │   │    98        │
+</span></span><span class="line"><span class="cl">│            .▼.   │  .▼.             │                  │   ▼              │
+</span></span><span class="line"><span class="cl">│           ( c )  │ ( d )            │                  │  .─.             │
+</span></span><span class="line"><span class="cl">│            `─&#39;   │  `─&#39;             │                  │ ( x )            │
+</span></span><span class="line"><span class="cl">└──────────────────┴──────────────────┴──────────────────┴──`─&#39;─────────────┘
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>显然，那些（可能很宝贵的）涉及到主题 <code>x</code> 的精炼信息来自于其他节点以及跨节点的信息，都因为我们引入知识图谱的步骤，而能够被包含在 prompt 中，用于进行上下文学习，从而克服了前边提到的问题。</p>
+<h2 id="llama-index-中的知识图谱进展" class="headerLink">
+    <a href="#llama-index-%e4%b8%ad%e7%9a%84%e7%9f%a5%e8%af%86%e5%9b%be%e8%b0%b1%e8%bf%9b%e5%b1%95" class="header-mark"></a>6 Llama Index 中的知识图谱进展</h2><p>最初，<a href="https://github.com/jerryjliu/llama_index/pull/433" target="_blank" rel="noopener noreferrer">William F.H.</a>将知识图谱的抽象概念引入了 Llama Index，其中知识图谱中的三元组与关键词相关联，并存储在内存中的文档中，随后<a href="https://github.com/jerryjliu/llama_index/pull/487" target="_blank" rel="noopener noreferrer">Logan Markewich</a>还增加了每个三元组的嵌入。</p>
+<p>最近的几周中，我一直在与社区合作，致力于<a href="https://github.com/jerryjliu/llama_index/pull/2581" target="_blank" rel="noopener noreferrer">将 &ldquo;GraphStore&rdquo; 存储上下文引入 Llama Index</a>，从而引入了知识图谱的外部存储。首个实现是使用我自从 2021 年以来一直在开发的开源分布式图数据库 NebulaGraph。</p>
+<p>在实现过程中，还引入了遍历图的多个跳数选项以及在前 k 个节点中收集更多关键实体的选项（用于在知识图谱中搜索以获得更多全局上下文），我们仍在对这些变更进行完善。</p>
+<p>引入 GraphStore 后，还可以从现有的知识图谱中进行上下文学习，并与其他索引结合使用，这也非常有前景，因为知识图谱被认为具有比其他结构化数据更高的信息密度。</p>
+<p>在接下来的几周里，我将在本博客中更新有关 Llama Index 中的知识图谱相关工作的内容，然后在 <a href="https://github.com/jerryjliu/llama_index/pull/2581" target="_blank" rel="noopener noreferrer">PR</a> 合并后，分享端到端的演示项目和教程。请继续关注！</p>]]></description>
+</item><item>
     <title>Text2Cypher：大语言模型驱动的图谱查询生成</title>
     <link>https://siwei.io/llm-text-to-nebulagraph-query/</link>
     <pubDate>Mon, 17 Jul 2023 20:30:04 &#43;0800</pubDate><author>
