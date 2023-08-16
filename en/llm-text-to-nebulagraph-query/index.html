@@ -1,0 +1,568 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noodp" />
+    <title>Text2Cypher, the beginning of the Graph &#43; LLM stack - siwei.io</title><meta name="Description" content="How to easily do text2cypher with NebulaGraph"><meta property="og:title" content="Text2Cypher, the beginning of the Graph &#43; LLM stack" />
+<meta property="og:description" content="How to easily do text2cypher with NebulaGraph" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://siwei.io/en/llm-text-to-nebulagraph-query/" /><meta property="og:image" content="https://siwei.io/en/llm-text-to-nebulagraph-query/featured-image.png"/><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2023-07-17T20:30:04+08:00" />
+<meta property="article:modified_time" content="2023-07-17T20:30:04+08:00" /><meta property="og:site_name" content="siwei.io" />
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://siwei.io/en/llm-text-to-nebulagraph-query/featured-image.png"/>
+<meta name="twitter:title" content="Text2Cypher, the beginning of the Graph &#43; LLM stack"/>
+<meta name="twitter:description" content="How to easily do text2cypher with NebulaGraph"/>
+<meta name="application-name" content="DoIt">
+<meta name="apple-mobile-web-app-title" content="DoIt">
+
+<meta name="theme-color" content="#f8f8f8"><meta name="msapplication-TileColor" content="#da532c"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="manifest" href="/site.webmanifest"><link rel="canonical" href="https://siwei.io/en/llm-text-to-nebulagraph-query/" /><link rel="prev" href="https://siwei.io/en/nebulagraph-in-jupyter-notebook/" />
+<link rel="stylesheet" href="/css/main.css"><link rel="stylesheet" href="/lib/normalize/normalize.min.css"><link rel="stylesheet" href="/css/color.css"><link rel="stylesheet" href="/css/style.min.css"><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/fontawesome-free/all.min.css">
+        <noscript><link rel="stylesheet" href="/lib/fontawesome-free/all.min.css"></noscript><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/animate/animate.min.css">
+        <noscript><link rel="stylesheet" href="/lib/animate/animate.min.css"></noscript>
+    
+    
+    
+    <meta name="baidu-site-verification" content="code-4R67zl7SwH" /><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "Text2Cypher, the beginning of the Graph + LLM stack",
+        "inLanguage": "en",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "https:\/\/siwei.io\/en\/llm-text-to-nebulagraph-query\/"
+        },"image": ["https:\/\/siwei.io\/images\/site-feature-image.webp"],"genre": "posts","keywords": "Nebula Graph, LLM, LlamaIndex, Langchain, text2cypher, Knowledge Graph","wordcount":  1512 ,
+        "url": "https:\/\/siwei.io\/en\/llm-text-to-nebulagraph-query\/","datePublished": "2023-07-17T20:30:04+08:00","dateModified": "2023-07-17T20:30:04+08:00","license": "This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.","publisher": {
+            "@type": "Organization",
+            "name": "Wey Gu","logo": "https:\/\/siwei.io\/images\/site-feature-image.webp"},"author": {
+                "@type": "Person",
+                "name": "Wey Gu"
+            },"description": "How to easily do text2cypher with NebulaGraph"
+    }
+    </script><script src="//instant.page/5.2.0" defer type="module" integrity="sha384-jnZyxPjiipYXnSU0ygqeac2q7CVYMbh84q0uHVRRxEtvFPiQYbXWUorga2aqZJ0z"></script>
+</head>
+
+<body header-desktop="fixed" header-mobile="auto"><script type="text/javascript">
+        function setTheme(theme) {document.body.setAttribute('theme', theme); document.documentElement.style.setProperty('color-scheme', theme === 'light' ? 'light' : 'dark'); window.theme = theme;   window.isDark = window.theme !== 'light' }
+        function saveTheme(theme) {window.localStorage && localStorage.setItem('theme', theme);}
+        function getMeta(metaName) {const metas = document.getElementsByTagName('meta'); for (let i = 0; i < metas.length; i++) if (metas[i].getAttribute('name') === metaName) return metas[i]; return '';}
+        if (window.localStorage && localStorage.getItem('theme')) {let theme = localStorage.getItem('theme');theme === 'light' || theme === 'dark' || theme === 'black' ? setTheme(theme) : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light')); } else { if ('auto' === 'light' || 'auto' === 'dark' || 'auto' === 'black') setTheme('auto'), saveTheme('auto'); else saveTheme('auto'), window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light');}
+        let metaColors = {'light': '#f8f8f8','dark': '#252627','black': '#000000'}
+        getMeta('theme-color').content = metaColors[document.body.getAttribute('theme')];
+        window.switchThemeEventSet = new Set()
+    </script>
+    <div id="back-to-top"></div>
+    <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/en/" title="siwei.io"><span class="header-title-pre"><i class='fas fa-code-branch'></i></span>siwei.io</a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="/en/about/"> About </a><a class="menu-item" href="/en/projects/"> Project </a><a class="menu-item" href="/en/sketch-notes/"> Sketches </a><a class="menu-item" href="/en/posts/"> Blog </a><a class="menu-item" href="/en/cources/"> Hands-on </a><a class="menu-item" href="/en/talk/"> Talks </a><a class="menu-item" href="https://vesoft.com/en/careers/" rel="noopener noreferrer" target="_blank"> Hire </a><a class="menu-item" href="/en/about/#contact"> Contact </a><span class="menu-item delimiter"></span><a href="javascript:void(0);" class="menu-item language" title="Select Language">🌏 English<i class="fas fa-chevron-right fa-fw"></i>
+                        <select class="language-select" title="Select Language" id="language-select-desktop" onchange="location = this.value;"><option value="/en/llm-text-to-nebulagraph-query/" selected>🌏 English</option><option value="/llm-text-to-nebulagraph-query/">🌏 Chinese</option></select>
+                    </a><span class="menu-item search" id="search-desktop">
+                        <input type="text" placeholder="Search titles or contents..." id="search-input-desktop">
+                        <a href="javascript:void(0);" class="search-button search-toggle" id="search-toggle-desktop" title="Search">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="javascript:void(0);" class="search-button search-clear" id="search-clear-desktop" title="Clear">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-desktop">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </span><a href="javascript:void(0);" class="menu-item theme-select" title="Switch Theme">
+                    <i class="fas fa-adjust fa-fw"></i>
+                    <select class="color-theme-select" id="theme-select-desktop" title="Switch Theme">
+                        <option value="light">Light</option>
+                        <option value="dark">Dark</option>
+                        <option value="black">Black</option>
+                        <option value="auto">Auto</option>
+                    </select>
+                </a></div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="/en/" title="siwei.io"><span class="header-title-pre"><i class='fas fa-code-branch'></i></span>siwei.io</a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><div class="search-wrapper">
+                    <div class="search mobile" id="search-mobile">
+                        <input type="text" placeholder="Search titles or contents..." id="search-input-mobile">
+                        <a href="javascript:void(0);" class="search-button search-toggle" id="search-toggle-mobile" title="Search">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="javascript:void(0);" class="search-button search-clear" id="search-clear-mobile" title="Clear">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-mobile">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </div>
+                    <a href="javascript:void(0);" class="search-cancel" id="search-cancel-mobile">
+                        Cancel
+                    </a>
+                </div><a class="menu-item" href="/en/about/" title="">About</a><a class="menu-item" href="/en/projects/" title="">Project</a><a class="menu-item" href="/en/sketch-notes/" title="">Sketches</a><a class="menu-item" href="/en/posts/" title="">Blog</a><a class="menu-item" href="/en/cources/" title="">Hands-on</a><a class="menu-item" href="/en/talk/" title="">Talks</a><a class="menu-item" href="https://vesoft.com/en/careers/" title="" rel="noopener noreferrer" target="_blank">Hire</a><a class="menu-item" href="/en/about/#contact" title="">Contact</a><a href="javascript:void(0);" class="menu-item theme-select" title="Switch Theme">
+                <i class="fas fa-adjust fa-fw"></i>
+                <select class="color-theme-select" id="theme-select-mobile" title="Switch Theme">
+                    <option value="light">Light</option>
+                    <option value="dark">Dark</option>
+                    <option value="black">Black</option>
+                    <option value="auto">Auto</option>
+                </select>
+            </a><a href="javascript:void(0);" class="menu-item" title="Select Language">🌏 English<i class="fas fa-chevron-right fa-fw"></i>
+                    <select class="language-select" title="Select Language" onchange="location = this.value;"><option value="/en/llm-text-to-nebulagraph-query/" selected>🌏 English</option><option value="/llm-text-to-nebulagraph-query/">🌏 Chinese</option></select>
+                </a></div>
+    </div>
+</header>
+<div class="search-dropdown desktop">
+    <div id="search-dropdown-desktop"></div>
+</div>
+<div class="search-dropdown mobile">
+    <div id="search-dropdown-mobile"></div>
+</div>
+<main class="main">
+            <div class="container"><div class="toc" id="toc-auto">
+        <h2 class="toc-title">Contents</h2>
+        <div class="toc-content" id="toc-content-auto"><nav id="TableOfContents">
+  <ol>
+    <li><a href="#text2cypher">Text2Cypher</a></li>
+    <li><a href="#text2cypher-in-old-days">Text2Cypher in old days</a></li>
+    <li><a href="#text2cypher-with-llms">Text2Cypher with LLMs</a></li>
+    <li><a href="#text2cypher-on-nebulagraph">Text2Cypher on NebulaGraph</a>
+      <ol>
+        <li><a href="#using-llamaindex">Using LlamaIndex</a></li>
+        <li><a href="#using-langchain">Using LangChain</a></li>
+      </ol>
+    </li>
+    <li><a href="#demo">Demo</a></li>
+    <li><a href="#conclusion">Conclusion</a></li>
+  </ol>
+</nav></div>
+    </div><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC", "true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Text2Cypher, the beginning of the Graph &#43; LLM stack</h1><div class="post-meta">
+            <div class="post-meta-line">
+                <span class="post-author"><span class="author fas fa-user-circle fa-fw"></span><a href="https://siwei.io" title="Author" target="_blank" rel="noopener noreferrer author" class="author">Wey Gu</a>
+                </span>&nbsp;<span class="post-category">included in </span>&nbsp;<span class="post-category">category <a href="/en/categories/nebula-graph/"><i class="far fa-folder fa-fw"></i>Nebula Graph</a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime="2023-07-17">2023-07-17</time>&nbsp;<i class="far fa-edit fa-fw"></i>&nbsp;<time datetime="2023-07-17">2023-07-17</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;1512 words&nbsp;<i class="far fa-clock fa-fw"></i>&nbsp;8 minutes&nbsp;</div>
+        </div><div class="featured-image"><img
+        
+        loading="eager"
+        src="/en/llm-text-to-nebulagraph-query/featured-image.webp"
+        srcset="/en/llm-text-to-nebulagraph-query/featured-image.webp, /en/llm-text-to-nebulagraph-query/featured-image.webp 1.5x, /en/llm-text-to-nebulagraph-query/featured-image.webp 2x"
+        sizes="auto"
+        alt="How to easily do text2cypher with NebulaGraph"
+        title="How to easily do text2cypher with NebulaGraph" height="918"   width="1738" ></div><div class="details toc" id="toc-static"  kept="">
+                <div class="details-summary toc-title">
+                    <span>Contents</span>
+                    <span><i class="details-icon fas fa-angle-right"></i></span>
+                </div>
+                <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ol>
+    <li><a href="#text2cypher">Text2Cypher</a></li>
+    <li><a href="#text2cypher-in-old-days">Text2Cypher in old days</a></li>
+    <li><a href="#text2cypher-with-llms">Text2Cypher with LLMs</a></li>
+    <li><a href="#text2cypher-on-nebulagraph">Text2Cypher on NebulaGraph</a>
+      <ol>
+        <li><a href="#using-llamaindex">Using LlamaIndex</a></li>
+        <li><a href="#using-langchain">Using LangChain</a></li>
+      </ol>
+    </li>
+    <li><a href="#demo">Demo</a></li>
+    <li><a href="#conclusion">Conclusion</a></li>
+  </ol>
+</nav></div>
+            </div><div class="content" id="content"><p>Since GPT-3 began to show an unexpected &ldquo;understanding ability,&rdquo; we have been engaged in research, exploration, and sharing on the complementary combination of Graph + LLM technology. As of now, we had made many leading contributions to the LlamaIndex and Langchain projects. Starting from this article, we will share some of our periodic successes and methods with everyone.</p>
+<p>The topic of this blog is what we believe to be the lowest-hanging fruit in this field: text2cypher—generating graph queries from natural language.</p>
+<h2 id="text2cypher" class="headerLink">
+    <a href="#text2cypher" class="header-mark"></a>1 Text2Cypher</h2><p>As the name implies, Text2Cypher is about converting natural language text into Cypher query statements. In terms of form, it is no different from another scenario that everyone might be familiar with: Text2SQL&ndash;converting text into SQL. Essentially, most knowledge graphs and graph database applications are about querying graphs according to human intentions. Our efforts in building convenient visualization tools on graph databases and wrapping useful APIs all serve this purpose.</p>
+<p>One of the main factors that have hindered the broader application of graph databases and knowledge graphs might be the threshold for querying graph databases. So, how did we do it before the era of large language models?</p>
+<h2 id="text2cypher-in-old-days" class="headerLink">
+    <a href="#text2cypher-in-old-days" class="header-mark"></a>2 Text2Cypher in old days</h2><p>The field of converting text into queries has always had such a demand even before the large language models and has always been one of the most common applications of knowledge graphs. For example, the essence of KBQA (Knowledge-Based Question Answering system) is basically text2cypher.</p>
+<p>Taking a project I wrote earlier, <a href="https://siwei.io/siwi" target="_blank" rel="noopener noreferrer">Siwi</a> (pronounced: /ˈsɪwi/, a Q&amp;A application based on a dataset of basketball players) as an example, let&rsquo;s look at its backend architecture:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">┌─────────────┬───────────────────────────────────┐
+</span></span><span class="line"><span class="cl">│      Speech │  Frontend                         │
+</span></span><span class="line"><span class="cl">│  ┌──────────▼──────────┐ Siwi, /ˈsɪwi/          │
+</span></span><span class="line"><span class="cl">│  │ Web_Speech_API      │ A PoC of Dialog System │
+</span></span><span class="line"><span class="cl">│  │ Vue.JS              │ With Graph Database    │
+</span></span><span class="line"><span class="cl">│  │                     │ Backed Knowledge Graph │
+</span></span><span class="line"><span class="cl">│  └──────────┬──────────┘                        │
+</span></span><span class="line"><span class="cl">│             │  Sentence  Backend                │
+</span></span><span class="line"><span class="cl">│┌────────────┼────────────────────────────┐      │
+</span></span><span class="line"><span class="cl">││ ┌──────────▼──────────┐                 │      │
+</span></span><span class="line"><span class="cl">││ │ Web API, Flask      │ ./app/          │      │
+</span></span><span class="line"><span class="cl">││ └──────────┬──────────┘                 │      │
+</span></span><span class="line"><span class="cl">││            │  Sentence  ./bot/          │      │
+</span></span><span class="line"><span class="cl">││ ┌──────────▼──────────┐                 │      │
+</span></span><span class="line"><span class="cl">││ │ Intent Matching,    │ ./bot/classifier│      │
+</span></span><span class="line"><span class="cl">││ │ Symentic Processing │                 │      │
+</span></span><span class="line"><span class="cl">││ └──────────┬──────────┘                 │      │
+</span></span><span class="line"><span class="cl">││            │  Intent, Enties            │      │
+</span></span><span class="line"><span class="cl">││ ┌──────────▼──────────┐                 │      │
+</span></span><span class="line"><span class="cl">││ │ Intent Actor        │ ./bot/actions   │      │
+</span></span><span class="line"><span class="cl">│└─┴──────────┬──────────┴─────────────────┘      │
+</span></span><span class="line"><span class="cl">│             │  Graph Query                      │
+</span></span><span class="line"><span class="cl">│  ┌──────────▼──────────┐                        │
+</span></span><span class="line"><span class="cl">│  │ Graph Database      │  NebulaGraph           │
+</span></span><span class="line"><span class="cl">│  └─────────────────────┘                        │
+</span></span><span class="line"><span class="cl">└─────────────────────────────────────────────────┘
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>When a question statement is sent over, it first needs to perform intent recognition (Intent) and entity recognition (Entity). Then, using an NLP model or code, it constructs the corresponding intent and entities into query statements for the knowledge graph. Finally, it queries the graph database and constructs an answer based on the returned structure.</p>
+<p>It can be imagined that enabling a program to:</p>
+<ul>
+<li>Understand intent from natural language: which type of supported questions it corresponds to.</li>
+<li>Identify entities: the main individuals involved in the question.</li>
+<li>Construct query statements from intent and entities.</li>
+</ul>
+<p>It&rsquo;s not going to be an easy development task. A truly feasible implementation might consider a vast number of boundary conditions, whether in trained models or in rule codes.</p>
+<h2 id="text2cypher-with-llms" class="headerLink">
+    <a href="#text2cypher-with-llms" class="header-mark"></a>3 Text2Cypher with LLMs</h2><p>In the &ldquo;post-large language model&rdquo; era, such &ldquo;intelligent&rdquo; application scenarios that previously required specialized training or rule-writing can now be accomplished with generic models combined with prompt engineering.</p>
+<blockquote>
+<p>Note: Prompt engineering refers to methods of accomplishing &ldquo;intelligent&rdquo; tasks using generation models or language models through natural language descriptions.</p>
+</blockquote>
+<p>In fact, right after the release of GPT-3, I started using it to help me compose many highly complex Cypher query statements. I discovered that it could craft complex pattern matches and multi-step conditional statements—ones that I would have previously had to debug bit by bit and take half a day to write. Typically, with its generated solutions, I would only need to make minor adjustments. Moreover, often I could learn from its responses about Cypher syntax blind spots that I wasn&rsquo;t previously aware of.</p>
+<p>Later, in February of this year, I tried implementing a project based on GPT-3 (as GPT-3.5 was not available then): <a href="https://ngql-gpt.siwei.io/" target="_blank" rel="noopener noreferrer">ngql-GPT</a> (<a href="https://github.com/wey-gu/NebulaGraph-GPT" target="_blank" rel="noopener noreferrer">code</a>).</p>
+<iframe width="800" height="450" src="https://user-images.githubusercontent.com/1651790/218627408-995b81e1-9b01-423c-ba90-849faaad6f5d.mp4"> </iframe>
+<p>Its working principle is straightforward, identical to Text2SQL. The language model has already learned Cypher&rsquo;s syntax through public domain training. When posing a task, we only need to provide the model with the graph&rsquo;s Schema as context.</p>
+<p>So, the basic prompt goes as:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">You are a NebulaGraph Cypher expert. Based on the provided graph Schema and the question, please write the query statement.
+</span></span><span class="line"><span class="cl">The schema is as follows:
+</span></span><span class="line"><span class="cl">---
+</span></span><span class="line"><span class="cl">{schema}
+</span></span><span class="line"><span class="cl">---
+</span></span><span class="line"><span class="cl">The question is:
+</span></span><span class="line"><span class="cl">---
+</span></span><span class="line"><span class="cl">{question}
+</span></span><span class="line"><span class="cl">---
+</span></span><span class="line"><span class="cl">Now, write down the query statement:
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>However, real-world prompts often need additional specifications:</p>
+<ul>
+<li>Only return the statement, no need for explanations, and no apologies.</li>
+<li>Emphasize not to write node or edge types outside of the schema.</li>
+</ul>
+<p>Those interested can refer to my implementation in LlamaIndex&rsquo;s <a href="https://github.com/jerryjliu/llama_index/blob/71919f9dfa09e9628af8b3a59d497ad02a7a82f8/llama_index/query_engine/knowledge_graph_query_engine.py#L24" target="_blank" rel="noopener noreferrer">KnowledgeGraph Query Engine</a>.</p>
+<p>In real-world scenarios, when we want to quickly learn and build large language model applications, we often use orchestrator tools like Langchain or LlamaIndex. These tools help us create logical abstractions, avoiding the need to implement many generic scaffolding codes from scratch:</p>
+<ul>
+<li>Interacting with different language models.</li>
+<li>Engaging with various vector databases.</li>
+<li>Data segmentation.</li>
+</ul>
+<p>Moreover, these orchestration tools have embedded many best practices of engineering methods. This way, we can often employ a method to utilize the latest and most user-friendly research paper techniques of large language models, such as <a href="https://github.com/jerryjliu/llama_index/tree/main/llama_index/query_engine/flare" target="_blank" rel="noopener noreferrer">FLARE</a> and <a href="https://github.com/jerryjliu/llama_index/blob/main/docs/community/integrations/guidance.md" target="_blank" rel="noopener noreferrer">Guidence</a>.</p>
+<p>For this purpose, I have contributed tools in both LlamaIndex and Langchain that allow for easy Text2Cypher execution on NebulaGraph, achieving Text2Cypher in just 3 lines of code.</p>
+<h2 id="text2cypher-on-nebulagraph" class="headerLink">
+    <a href="#text2cypher-on-nebulagraph" class="header-mark"></a>4 Text2Cypher on NebulaGraph</h2><p>Within LlamaIndex&rsquo;s <code>KnowledgeQueryEngine</code> and LangChain&rsquo;s <code>NebulaGraphQAChain</code>, we don&rsquo;t need to concern ourselves with NebulaGraph&rsquo;s Schema retrieval, Cypher statement generation prompts, various LLM calls, result processing, or linkage—it&rsquo;s all plug-and-play!</p>
+<h3 id="using-llamaindex" class="headerLink">
+    <a href="#using-llamaindex" class="header-mark"></a>4.1 Using LlamaIndex</h3><p>With LlamaIndex, all we need to do is:</p>
+<ul>
+<li>Create a <code>NebulaGraphStore</code> instance.</li>
+<li>Create a <code>KnowledgeQueryEngine</code>.</li>
+</ul>
+<p>Then you can start querying directly. Isn&rsquo;t that super simple?</p>
+<blockquote>
+<p>Reference documentation: <a href="https://gpt-index.readthedocs.io/en/latest/examples/query_engine/knowledge_graph_query_engine.html" target="_blank" rel="noopener noreferrer">https://gpt-index.readthedocs.io/en/latest/examples/query_engine/knowledge_graph_query_engine.html</a></p>
+</blockquote>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">llama_index.query_engine</span> <span class="kn">import</span> <span class="n">KnowledgeGraphQueryEngine</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">llama_index.storage.storage_context</span> <span class="kn">import</span> <span class="n">StorageContext</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">llama_index.graph_stores</span> <span class="kn">import</span> <span class="n">NebulaGraphStore</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">graph_store</span> <span class="o">=</span> <span class="n">NebulaGraphStore</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">  <span class="n">space_name</span><span class="o">=</span><span class="n">space_name</span><span class="p">,</span> <span class="n">edge_types</span><span class="o">=</span><span class="n">edge_types</span><span class="p">,</span> <span class="n">rel_prop_names</span><span class="o">=</span><span class="n">rel_prop_names</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="n">tags</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="n">storage_context</span> <span class="o">=</span> <span class="n">StorageContext</span><span class="o">.</span><span class="n">from_defaults</span><span class="p">(</span><span class="n">graph_store</span><span class="o">=</span><span class="n">graph_store</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">nl2kg_query_engine</span> <span class="o">=</span> <span class="n">KnowledgeGraphQueryEngine</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">storage_context</span><span class="o">=</span><span class="n">storage_context</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">service_context</span><span class="o">=</span><span class="n">service_context</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">llm</span><span class="o">=</span><span class="n">llm</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># Ask the question to query KG and answer based on the query result.</span>
+</span></span><span class="line"><span class="cl"><span class="n">response</span> <span class="o">=</span> <span class="n">nl2kg_query_engine</span><span class="o">.</span><span class="n">query</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;Tell me about Peter Quill?&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># Generate Query only.</span>
+</span></span><span class="line"><span class="cl"><span class="n">graph_query</span> <span class="o">=</span> <span class="n">nl2kg_query_engine</span><span class="o">.</span><span class="n">generate_query</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;Tell me about Peter Quill?&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="using-langchain" class="headerLink">
+    <a href="#using-langchain" class="header-mark"></a>4.2 Using LangChain</h3><p>Similarly, in Langchain, we just need to:</p>
+<ul>
+<li>Create a <code>NebulaGraph</code> instance.</li>
+<li>Create a <code>NebulaGraphQAChain</code> instance.</li>
+</ul>
+<p>And you can start posing questions right away.</p>
+<blockquote>
+<p>Reference documentation: <a href="https://python.langchain.com/docs/modules/chains/additional/graph_nebula_qa" target="_blank" rel="noopener noreferrer">https://python.langchain.com/docs/modules/chains/additional/graph_nebula_qa</a></p>
+</blockquote>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">langchain.chat_models</span> <span class="kn">import</span> <span class="n">ChatOpenAI</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">langchain.chains</span> <span class="kn">import</span> <span class="n">NebulaGraphQAChain</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">langchain.graphs</span> <span class="kn">import</span> <span class="n">NebulaGraph</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">graph</span> <span class="o">=</span> <span class="n">NebulaGraph</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">space</span><span class="o">=</span><span class="n">space_name</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">username</span><span class="o">=</span><span class="s2">&#34;root&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">password</span><span class="o">=</span><span class="s2">&#34;nebula&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">address</span><span class="o">=</span><span class="s2">&#34;127.0.0.1&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">port</span><span class="o">=</span><span class="mi">9669</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">session_pool_size</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">chain</span> <span class="o">=</span> <span class="n">NebulaGraphQAChain</span><span class="o">.</span><span class="n">from_llm</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">llm</span><span class="p">,</span> <span class="n">graph</span><span class="o">=</span><span class="n">graph</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">chain</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;Tell me about Peter Quill?&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="demo" class="headerLink">
+    <a href="#demo" class="header-mark"></a>5 Demo</h2><p>The <a href="https://siwei.io/en/demos/text2cypher/" target="_blank" rel="noopener noreferrer">online demo</a>.</p>
+<iframe width="800" height="857" src="https://user-images.githubusercontent.com/1651790/254521700-6de6aadf-4b62-495a-9276-ef866ebb4add.mp4"> </iframe>
+<p>This demo showcases how to leverage LLM to extract knowledge triples from various information sources (using Wikipedia as an example) and store them in the NebulaGraph graph database(that&rsquo;s the KG building like never as easy before).</p>
+<p>In this demo, we first extracted information from Wikipedia about &ldquo;Guardians of the Galaxy Vol. 3&rdquo; and used the knowledge triples generated by the LLM to construct a knowledge graph. We then used Cypher to query the graph, and finally, with LlamaIndex and Langchain&rsquo;s Text2Cypher, we implemented the function to query the graph using natural language.</p>
+<p>You can click on other tabs to personally experience the visualization of the knowledge graph, Cypher queries, natural language queries (Text2Cypher), and other features.</p>
+<p>Here you can <a href="https://www.siwei.io/demo-dumps/kg-llm/KG_Building.ipynb" target="_blank" rel="noopener noreferrer">download</a> the complete Notebook.</p>
+<h2 id="conclusion" class="headerLink">
+    <a href="#conclusion" class="header-mark"></a>6 Conclusion</h2><p>With LLM, performing Text2Cypher on data in knowledge graphs and NebulaGraph has never been so easy.</p>
+<p>A knowledge graph with enhanced human-machine and machine access signifies a new era. We may no longer need the high costs previously associated with implementing backend services on top of graph databases(on text2cypher implementations). Moreover, there&rsquo;s no longer a need for specialized training to allow domain experts to extract essential insights from the graph.</p>
+<p>Using the ecosystem integrations in LlamaIndex or LangChain, we can smartly apply our apps and graph data with virtually no development costs in just a few lines of code.</p>
+<p>However, Text2Cypher is just the beginning. Please stay tuned for our subsequent articles, where we will showcase the revolutionary changes that knowledge graphs and graph databases bring to the large language model ecosystem.</p>
+<blockquote>
+<p>题图 <strong>prompt</strong>：</p>
+<p><em>In an artful fusion of language and AI, this minimalist oil painting captures the essence of technological advancement. Delicate brushstrokes depict a harmony of binary code and flowing words, converging into a central point. With a refined color palette and clean composition, the artwork represents the symbiotic relationship between language and artificial intelligence, inviting contemplation and appreciation.</em></p>
+</blockquote></div>
+
+        
+
+
+<h2>Related Content</h2>
+<div class="related-container">
+    <div class="related-item-container">
+            <h2 class="related-title">
+                <a href="/en/demos/graph-rag/">Deme: Graph RAG, the new LLM Stack</a>
+            </h2>
+        </div>
+    <div class="related-item-container">
+            <h2 class="related-title">
+                <a href="/en/demos/text2cypher/">Deme: Build Knowledge Graph and Text2Cypher in NebulaGraph</a>
+            </h2>
+        </div>
+    <div class="related-item-container">
+            <div class="related-image">
+                <a href="/en/nebulagraph-in-jupyter-notebook/"><img
+        
+        loading="lazy"
+        src="/en/nebulagraph-in-jupyter-notebook/featured-image.webp"
+        srcset="/en/nebulagraph-in-jupyter-notebook/featured-image.webp, /en/nebulagraph-in-jupyter-notebook/featured-image.webp 1.5x, /en/nebulagraph-in-jupyter-notebook/featured-image.webp 2x"
+        sizes="auto"
+        alt="How to easily do text2cypher with NebulaGraph"
+        title="How to easily do text2cypher with NebulaGraph" height="200"   width="400" ></a>
+            </div><h2 class="related-title">
+                <a href="/en/nebulagraph-in-jupyter-notebook/">NebulaGraph in Jupyter Notebook</a>
+            </h2>
+        </div>
+    <div class="related-item-container">
+            <div class="related-image">
+                <a href="/en/graph-enabled-llama-index/"><img
+        
+        loading="lazy"
+        src="/en/graph-enabled-llama-index/featured-image.webp"
+        srcset="/en/graph-enabled-llama-index/featured-image.webp, /en/graph-enabled-llama-index/featured-image.webp 1.5x, /en/graph-enabled-llama-index/featured-image.webp 2x"
+        sizes="auto"
+        alt="How to easily do text2cypher with NebulaGraph"
+        title="How to easily do text2cypher with NebulaGraph" height="200"   width="400" ></a>
+            </div><h2 class="related-title">
+                <a href="/en/graph-enabled-llama-index/">Graph Enabled Llama Index</a>
+            </h2>
+        </div>
+    <div class="related-item-container">
+            <div class="related-image">
+                <a href="/en/nebulagraph-ai-suite/"><img
+        
+        loading="lazy"
+        src="/en/nebulagraph-ai-suite/featured-image.webp"
+        srcset="/en/nebulagraph-ai-suite/featured-image.webp, /en/nebulagraph-ai-suite/featured-image.webp 1.5x, /en/nebulagraph-ai-suite/featured-image.webp 2x"
+        sizes="auto"
+        alt="How to easily do text2cypher with NebulaGraph"
+        title="How to easily do text2cypher with NebulaGraph" height="200"   width="400" ></a>
+            </div><h2 class="related-title">
+                <a href="/en/nebulagraph-ai-suite/">Nebulagraph Artificial Intelligence Suite</a>
+            </h2>
+        </div>
+    
+
+</div>
+
+<div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>Updated on 2023-07-17</span>
+            </div>
+            <div class="post-info-license"></div>
+        </div>
+        <div class="post-info-line">
+            <div class="post-info-md"><span><a class="link-to-mardown" href=/en/llm-text-to-nebulagraph-query/index.md target="_blank" rel="noopener noreferrer">Read markdown</a>
+                    </span><span>|&nbsp;<a class="link-to-report" href=https://github.com/siwei-io/siwei-io.github.io/issues/new?title=[bug]%20Text2Cypher%2C+the+beginning+of+the+Graph+%2B+LLM+stack&body=|Field|Value|%0A|-|-|%0A|Title|Text2Cypher%2C+the+beginning+of+the+Graph+%2B+LLM+stack|%0A|Url|https://siwei.io/en/llm-text-to-nebulagraph-query/|%0A|Filename|posts/llm-text-to-nebulagraph-query/index.en.md| target="_blank" rel="noopener noreferrer">Report issue</a>
+                    </span></div>
+            <div class="post-info-share"><button title="Share on Twitter" data-sharer="twitter" data-url="https://siwei.io/en/llm-text-to-nebulagraph-query/" data-title="Text2Cypher, the beginning of the Graph &#43; LLM stack" data-via="wey_gu" data-hashtags="Nebula Graph,LLM,LlamaIndex,Langchain,text2cypher,Knowledge Graph"><span class="fab fa-twitter fa-fw"></span></button><button title="Share on Facebook" data-sharer="facebook" data-url="https://siwei.io/en/llm-text-to-nebulagraph-query/" data-hashtag="Nebula Graph"><span class="fab fa-facebook-square fa-fw"></span></button><button title="Share on Hacker News" data-sharer="hackernews" data-url="https://siwei.io/en/llm-text-to-nebulagraph-query/" data-title="Text2Cypher, the beginning of the Graph &#43; LLM stack"><span class="fab fa-hacker-news fa-fw"></span></button><button title="Share on Line" data-sharer="line" data-url="https://siwei.io/en/llm-text-to-nebulagraph-query/" data-title="Text2Cypher, the beginning of the Graph &#43; LLM stack"><span data-svg-src="/lib/simple-icons/icons/line.min.svg"></span></button><button title="Share on 微博" data-sharer="weibo" data-url="https://siwei.io/en/llm-text-to-nebulagraph-query/" data-title="Text2Cypher, the beginning of the Graph &#43; LLM stack" data-image="featured-image.webp" data-ralateuid="siweigu"><span class="fab fa-weibo fa-fw"></span></button><button title="Share on Telegram" data-sharer="telegram" data-url="https://siwei.io/en/llm-text-to-nebulagraph-query/" data-title="Text2Cypher, the beginning of the Graph &#43; LLM stack" data-web><span class="fab fa-telegram-plane fa-fw"></span></button></div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section class="post-tags"><i class="fas fa-tags fa-fw"></i>&nbsp;<a href="/en/tags/nebula-graph/">Nebula Graph</a>,&nbsp;<a href="/en/tags/llm/">LLM</a>,&nbsp;<a href="/en/tags/llamaindex/">LlamaIndex</a>,&nbsp;<a href="/en/tags/langchain/">Langchain</a>,&nbsp;<a href="/en/tags/text2cypher/">text2cypher</a>,&nbsp;<a href="/en/tags/knowledge-graph/">Knowledge Graph</a></section>
+        <section>
+            <span><a href="javascript:void(0);" onclick="window.history.back();">Back</a></span>&nbsp;|&nbsp;<span><a href="/en/">Home</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/en/nebulagraph-in-jupyter-notebook/" class="prev" rel="prev" title="NebulaGraph in Jupyter Notebook"><i class="fas fa-angle-left fa-fw"></i>NebulaGraph in Jupyter Notebook</a></div>
+</div>
+<div id="comments"><div id="giscus"></div><noscript>
+                Please enable JavaScript to view the comments powered by <a href="https://giscus.app/">giscus</a>.
+            </noscript></div></article></div>
+        </main><footer class="footer">
+        <div class="footer-container"><div class="footer-line">
+                    Powered by <a href="https://gohugo.io/" target="_blank" rel="noopener noreferrer" title="Hugo 0.117.0">Hugo</a>&nbsp;|&nbsp;Theme - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreferrer" title="DoIt 0.4.0"><i class="far fa-edit fa-fw"></i> DoIt</a>
+                </div><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2018 - 2023</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="https://siwei.io" target="_blank" rel="noopener noreferrer">Wey Gu</a></span>&nbsp;|&nbsp;<span class="license"><a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">CC BY-NC 4.0</a></span></div>
+            <div class="footer-line"></div>
+            <div class="footer-line">
+            </div>
+        </div><script>
+                    if('serviceWorker' in navigator) {
+                        navigator.serviceWorker
+                            .register('/sw.min.js', { scope: '/' })
+                            .then(function(registration) {
+                            });
+                
+                        navigator.serviceWorker
+                            .ready
+                            .then(function(registration) {
+                            });
+                    }
+                </script></footer></div>
+
+    <div id="fixed-buttons"><a href="#back-to-top" id="back-to-top-button" class="fixed-button" title="Back to Top">
+            <i class="fas fa-arrow-up fa-fw"></i>
+        </a><a href="#" id="view-comments" class="fixed-button" title="View Comments">
+            <i class="fas fa-comment fa-fw"></i>
+        </a>
+    </div><div class="assets"><link rel="stylesheet" href="/lib/lightgallery/lightgallery.min.css"><link rel="stylesheet" href="/lib/katex/katex.min.css"><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/katex/copy-tex.min.css">
+        <noscript><link rel="stylesheet" href="/lib/katex/copy-tex.min.css"></noscript><script type="text/javascript">window.config={"code":{"copyTitle":"Copy to clipboard","maxShownLines":10},"comment":{"giscus":{"darkTheme":"dark","dataCategory":"Comments","dataCategoryId":"DIC_kwDOFhiy8c4CQeuu","dataEmitMetadata":"1","dataInputPosition":"bottom","dataLang":"en","dataMapping":"title","dataReactionsEnabled":"1","dataRepo":"siwei-io/siwei-io.github.io","dataRepoId":"MDEwOlJlcG9zaXRvcnkzNzA3MTc0MjU=","dataStrict":"1","lightTheme":"light"}},"lightGallery":{"actualSize":false,"exThumbImage":"data-thumbnail","hideBarsDelay":2000,"selector":".lightgallery","speed":400,"thumbContHeight":80,"thumbWidth":80,"thumbnail":true},"math":{"delimiters":[{"display":true,"left":"$$","right":"$$"},{"display":true,"left":"\\[","right":"\\]"},{"display":false,"left":"$","right":"$"},{"display":false,"left":"\\(","right":"\\)"}],"strict":false},"search":{"distance":100,"findAllMatches":false,"fuseIndexURL":"/en/index.json","highlightTag":"em","ignoreFieldNorm":false,"ignoreLocation":true,"isCaseSensitive":false,"location":0,"maxResultLength":10,"minMatchCharLength":2,"noResultsFound":"No results found","snippetLength":300,"threshold":0.1,"type":"fuse","useExtendedSearch":false},"sharerjs":true,"table":{"sort":true}};</script><script type="text/javascript" src="/lib/tablesort/tablesort.min.js"></script><script type="text/javascript" src="/lib/lightgallery/lightgallery.min.js"></script><script type="text/javascript" src="/lib/lightgallery/lg-thumbnail.min.js"></script><script type="text/javascript" src="/lib/lightgallery/lg-zoom.min.js"></script><script type="text/javascript" src="/lib/clipboard/clipboard.min.js"></script><script type="text/javascript" src="/lib/sharer/sharer.min.js"></script><script type="text/javascript" src="/lib/katex/katex.min.js" defer></script><script type="text/javascript" src="/lib/katex/auto-render.min.js" defer></script><script type="text/javascript" src="/lib/katex/copy-tex.min.js" defer></script><script type="text/javascript" src="/lib/katex/mhchem.min.js" defer></script><script type="text/javascript" src="/js/katex.min.js" defer></script><script type="text/javascript" src="/js/theme.min.js" defer></script><script type="text/javascript" src="/js/giscus.min.js" defer></script><script type="text/javascript">
+            window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());
+            gtag('config', 'G-DYTTVYCRS2', { 'anonymize_ip': true });
+        </script><script type="text/javascript" src="https://www.googletagmanager.com/gtag/js?id=G-DYTTVYCRS2" async></script></div>
+</body>
+
+</html>

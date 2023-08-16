@@ -7,6 +7,272 @@
             <webMaster>weyl.gu@gmail.com (Wey Gu)</webMaster><copyright>This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.</copyright><lastBuildDate>Wed, 19 Jul 2023 16:38:34 &#43;0800</lastBuildDate>
             <atom:link href="https://siwei.io/en/index.xml" rel="self" type="application/rss+xml" />
         <item>
+    <title>Text2Cypher, the beginning of the Graph &#43; LLM stack</title>
+    <link>https://siwei.io/en/llm-text-to-nebulagraph-query/</link>
+    <pubDate>Mon, 17 Jul 2023 20:30:04 &#43;0800</pubDate><author>
+        <name>Wey Gu</name>
+    </author><guid>https://siwei.io/en/llm-text-to-nebulagraph-query/</guid>
+    <description><![CDATA[<div class="featured-image">
+                <img src="/en/llm-text-to-nebulagraph-query/featured-image.webp" referrerpolicy="no-referrer">
+            </div><p>Since GPT-3 began to show an unexpected &ldquo;understanding ability,&rdquo; we have been engaged in research, exploration, and sharing on the complementary combination of Graph + LLM technology. As of now, we had made many leading contributions to the LlamaIndex and Langchain projects. Starting from this article, we will share some of our periodic successes and methods with everyone.</p>
+<p>The topic of this blog is what we believe to be the lowest-hanging fruit in this field: text2cypher—generating graph queries from natural language.</p>
+<h2 id="text2cypher" class="headerLink">
+    <a href="#text2cypher" class="header-mark"></a>1 Text2Cypher</h2><p>As the name implies, Text2Cypher is about converting natural language text into Cypher query statements. In terms of form, it is no different from another scenario that everyone might be familiar with: Text2SQL&ndash;converting text into SQL. Essentially, most knowledge graphs and graph database applications are about querying graphs according to human intentions. Our efforts in building convenient visualization tools on graph databases and wrapping useful APIs all serve this purpose.</p>
+<p>One of the main factors that have hindered the broader application of graph databases and knowledge graphs might be the threshold for querying graph databases. So, how did we do it before the era of large language models?</p>
+<h2 id="text2cypher-in-old-days" class="headerLink">
+    <a href="#text2cypher-in-old-days" class="header-mark"></a>2 Text2Cypher in old days</h2><p>The field of converting text into queries has always had such a demand even before the large language models and has always been one of the most common applications of knowledge graphs. For example, the essence of KBQA (Knowledge-Based Question Answering system) is basically text2cypher.</p>
+<p>Taking a project I wrote earlier, <a href="https://siwei.io/siwi" target="_blank" rel="noopener noreferrer">Siwi</a> (pronounced: /ˈsɪwi/, a Q&amp;A application based on a dataset of basketball players) as an example, let&rsquo;s look at its backend architecture:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">┌─────────────┬───────────────────────────────────┐
+</span></span><span class="line"><span class="cl">│      Speech │  Frontend                         │
+</span></span><span class="line"><span class="cl">│  ┌──────────▼──────────┐ Siwi, /ˈsɪwi/          │
+</span></span><span class="line"><span class="cl">│  │ Web_Speech_API      │ A PoC of Dialog System │
+</span></span><span class="line"><span class="cl">│  │ Vue.JS              │ With Graph Database    │
+</span></span><span class="line"><span class="cl">│  │                     │ Backed Knowledge Graph │
+</span></span><span class="line"><span class="cl">│  └──────────┬──────────┘                        │
+</span></span><span class="line"><span class="cl">│             │  Sentence  Backend                │
+</span></span><span class="line"><span class="cl">│┌────────────┼────────────────────────────┐      │
+</span></span><span class="line"><span class="cl">││ ┌──────────▼──────────┐                 │      │
+</span></span><span class="line"><span class="cl">││ │ Web API, Flask      │ ./app/          │      │
+</span></span><span class="line"><span class="cl">││ └──────────┬──────────┘                 │      │
+</span></span><span class="line"><span class="cl">││            │  Sentence  ./bot/          │      │
+</span></span><span class="line"><span class="cl">││ ┌──────────▼──────────┐                 │      │
+</span></span><span class="line"><span class="cl">││ │ Intent Matching,    │ ./bot/classifier│      │
+</span></span><span class="line"><span class="cl">││ │ Symentic Processing │                 │      │
+</span></span><span class="line"><span class="cl">││ └──────────┬──────────┘                 │      │
+</span></span><span class="line"><span class="cl">││            │  Intent, Enties            │      │
+</span></span><span class="line"><span class="cl">││ ┌──────────▼──────────┐                 │      │
+</span></span><span class="line"><span class="cl">││ │ Intent Actor        │ ./bot/actions   │      │
+</span></span><span class="line"><span class="cl">│└─┴──────────┬──────────┴─────────────────┘      │
+</span></span><span class="line"><span class="cl">│             │  Graph Query                      │
+</span></span><span class="line"><span class="cl">│  ┌──────────▼──────────┐                        │
+</span></span><span class="line"><span class="cl">│  │ Graph Database      │  NebulaGraph           │
+</span></span><span class="line"><span class="cl">│  └─────────────────────┘                        │
+</span></span><span class="line"><span class="cl">└─────────────────────────────────────────────────┘
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>When a question statement is sent over, it first needs to perform intent recognition (Intent) and entity recognition (Entity). Then, using an NLP model or code, it constructs the corresponding intent and entities into query statements for the knowledge graph. Finally, it queries the graph database and constructs an answer based on the returned structure.</p>
+<p>It can be imagined that enabling a program to:</p>
+<ul>
+<li>Understand intent from natural language: which type of supported questions it corresponds to.</li>
+<li>Identify entities: the main individuals involved in the question.</li>
+<li>Construct query statements from intent and entities.</li>
+</ul>
+<p>It&rsquo;s not going to be an easy development task. A truly feasible implementation might consider a vast number of boundary conditions, whether in trained models or in rule codes.</p>
+<h2 id="text2cypher-with-llms" class="headerLink">
+    <a href="#text2cypher-with-llms" class="header-mark"></a>3 Text2Cypher with LLMs</h2><p>In the &ldquo;post-large language model&rdquo; era, such &ldquo;intelligent&rdquo; application scenarios that previously required specialized training or rule-writing can now be accomplished with generic models combined with prompt engineering.</p>
+<blockquote>
+<p>Note: Prompt engineering refers to methods of accomplishing &ldquo;intelligent&rdquo; tasks using generation models or language models through natural language descriptions.</p>
+</blockquote>
+<p>In fact, right after the release of GPT-3, I started using it to help me compose many highly complex Cypher query statements. I discovered that it could craft complex pattern matches and multi-step conditional statements—ones that I would have previously had to debug bit by bit and take half a day to write. Typically, with its generated solutions, I would only need to make minor adjustments. Moreover, often I could learn from its responses about Cypher syntax blind spots that I wasn&rsquo;t previously aware of.</p>
+<p>Later, in February of this year, I tried implementing a project based on GPT-3 (as GPT-3.5 was not available then): <a href="https://ngql-gpt.siwei.io/" target="_blank" rel="noopener noreferrer">ngql-GPT</a> (<a href="https://github.com/wey-gu/NebulaGraph-GPT" target="_blank" rel="noopener noreferrer">code</a>).</p>
+<iframe width="800" height="450" src="https://user-images.githubusercontent.com/1651790/218627408-995b81e1-9b01-423c-ba90-849faaad6f5d.mp4"> </iframe>
+<p>Its working principle is straightforward, identical to Text2SQL. The language model has already learned Cypher&rsquo;s syntax through public domain training. When posing a task, we only need to provide the model with the graph&rsquo;s Schema as context.</p>
+<p>So, the basic prompt goes as:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">You are a NebulaGraph Cypher expert. Based on the provided graph Schema and the question, please write the query statement.
+</span></span><span class="line"><span class="cl">The schema is as follows:
+</span></span><span class="line"><span class="cl">---
+</span></span><span class="line"><span class="cl">{schema}
+</span></span><span class="line"><span class="cl">---
+</span></span><span class="line"><span class="cl">The question is:
+</span></span><span class="line"><span class="cl">---
+</span></span><span class="line"><span class="cl">{question}
+</span></span><span class="line"><span class="cl">---
+</span></span><span class="line"><span class="cl">Now, write down the query statement:
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>However, real-world prompts often need additional specifications:</p>
+<ul>
+<li>Only return the statement, no need for explanations, and no apologies.</li>
+<li>Emphasize not to write node or edge types outside of the schema.</li>
+</ul>
+<p>Those interested can refer to my implementation in LlamaIndex&rsquo;s <a href="https://github.com/jerryjliu/llama_index/blob/71919f9dfa09e9628af8b3a59d497ad02a7a82f8/llama_index/query_engine/knowledge_graph_query_engine.py#L24" target="_blank" rel="noopener noreferrer">KnowledgeGraph Query Engine</a>.</p>
+<p>In real-world scenarios, when we want to quickly learn and build large language model applications, we often use orchestrator tools like Langchain or LlamaIndex. These tools help us create logical abstractions, avoiding the need to implement many generic scaffolding codes from scratch:</p>
+<ul>
+<li>Interacting with different language models.</li>
+<li>Engaging with various vector databases.</li>
+<li>Data segmentation.</li>
+</ul>
+<p>Moreover, these orchestration tools have embedded many best practices of engineering methods. This way, we can often employ a method to utilize the latest and most user-friendly research paper techniques of large language models, such as <a href="https://github.com/jerryjliu/llama_index/tree/main/llama_index/query_engine/flare" target="_blank" rel="noopener noreferrer">FLARE</a> and <a href="https://github.com/jerryjliu/llama_index/blob/main/docs/community/integrations/guidance.md" target="_blank" rel="noopener noreferrer">Guidence</a>.</p>
+<p>For this purpose, I have contributed tools in both LlamaIndex and Langchain that allow for easy Text2Cypher execution on NebulaGraph, achieving Text2Cypher in just 3 lines of code.</p>
+<h2 id="text2cypher-on-nebulagraph" class="headerLink">
+    <a href="#text2cypher-on-nebulagraph" class="header-mark"></a>4 Text2Cypher on NebulaGraph</h2><p>Within LlamaIndex&rsquo;s <code>KnowledgeQueryEngine</code> and LangChain&rsquo;s <code>NebulaGraphQAChain</code>, we don&rsquo;t need to concern ourselves with NebulaGraph&rsquo;s Schema retrieval, Cypher statement generation prompts, various LLM calls, result processing, or linkage—it&rsquo;s all plug-and-play!</p>
+<h3 id="using-llamaindex" class="headerLink">
+    <a href="#using-llamaindex" class="header-mark"></a>4.1 Using LlamaIndex</h3><p>With LlamaIndex, all we need to do is:</p>
+<ul>
+<li>Create a <code>NebulaGraphStore</code> instance.</li>
+<li>Create a <code>KnowledgeQueryEngine</code>.</li>
+</ul>
+<p>Then you can start querying directly. Isn&rsquo;t that super simple?</p>
+<blockquote>
+<p>Reference documentation: <a href="https://gpt-index.readthedocs.io/en/latest/examples/query_engine/knowledge_graph_query_engine.html" target="_blank" rel="noopener noreferrer">https://gpt-index.readthedocs.io/en/latest/examples/query_engine/knowledge_graph_query_engine.html</a></p>
+</blockquote>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">llama_index.query_engine</span> <span class="kn">import</span> <span class="n">KnowledgeGraphQueryEngine</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">llama_index.storage.storage_context</span> <span class="kn">import</span> <span class="n">StorageContext</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">llama_index.graph_stores</span> <span class="kn">import</span> <span class="n">NebulaGraphStore</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">graph_store</span> <span class="o">=</span> <span class="n">NebulaGraphStore</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">  <span class="n">space_name</span><span class="o">=</span><span class="n">space_name</span><span class="p">,</span> <span class="n">edge_types</span><span class="o">=</span><span class="n">edge_types</span><span class="p">,</span> <span class="n">rel_prop_names</span><span class="o">=</span><span class="n">rel_prop_names</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="n">tags</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="n">storage_context</span> <span class="o">=</span> <span class="n">StorageContext</span><span class="o">.</span><span class="n">from_defaults</span><span class="p">(</span><span class="n">graph_store</span><span class="o">=</span><span class="n">graph_store</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">nl2kg_query_engine</span> <span class="o">=</span> <span class="n">KnowledgeGraphQueryEngine</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">storage_context</span><span class="o">=</span><span class="n">storage_context</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">service_context</span><span class="o">=</span><span class="n">service_context</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">llm</span><span class="o">=</span><span class="n">llm</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># Ask the question to query KG and answer based on the query result.</span>
+</span></span><span class="line"><span class="cl"><span class="n">response</span> <span class="o">=</span> <span class="n">nl2kg_query_engine</span><span class="o">.</span><span class="n">query</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;Tell me about Peter Quill?&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># Generate Query only.</span>
+</span></span><span class="line"><span class="cl"><span class="n">graph_query</span> <span class="o">=</span> <span class="n">nl2kg_query_engine</span><span class="o">.</span><span class="n">generate_query</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;Tell me about Peter Quill?&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="using-langchain" class="headerLink">
+    <a href="#using-langchain" class="header-mark"></a>4.2 Using LangChain</h3><p>Similarly, in Langchain, we just need to:</p>
+<ul>
+<li>Create a <code>NebulaGraph</code> instance.</li>
+<li>Create a <code>NebulaGraphQAChain</code> instance.</li>
+</ul>
+<p>And you can start posing questions right away.</p>
+<blockquote>
+<p>Reference documentation: <a href="https://python.langchain.com/docs/modules/chains/additional/graph_nebula_qa" target="_blank" rel="noopener noreferrer">https://python.langchain.com/docs/modules/chains/additional/graph_nebula_qa</a></p>
+</blockquote>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">langchain.chat_models</span> <span class="kn">import</span> <span class="n">ChatOpenAI</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">langchain.chains</span> <span class="kn">import</span> <span class="n">NebulaGraphQAChain</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">langchain.graphs</span> <span class="kn">import</span> <span class="n">NebulaGraph</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">graph</span> <span class="o">=</span> <span class="n">NebulaGraph</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">space</span><span class="o">=</span><span class="n">space_name</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">username</span><span class="o">=</span><span class="s2">&#34;root&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">password</span><span class="o">=</span><span class="s2">&#34;nebula&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">address</span><span class="o">=</span><span class="s2">&#34;127.0.0.1&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">port</span><span class="o">=</span><span class="mi">9669</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">session_pool_size</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">chain</span> <span class="o">=</span> <span class="n">NebulaGraphQAChain</span><span class="o">.</span><span class="n">from_llm</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">llm</span><span class="p">,</span> <span class="n">graph</span><span class="o">=</span><span class="n">graph</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">chain</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;Tell me about Peter Quill?&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="demo" class="headerLink">
+    <a href="#demo" class="header-mark"></a>5 Demo</h2><p>The <a href="https://siwei.io/en/demos/text2cypher/" target="_blank" rel="noopener noreferrer">online demo</a>.</p>
+<iframe width="800" height="857" src="https://user-images.githubusercontent.com/1651790/254521700-6de6aadf-4b62-495a-9276-ef866ebb4add.mp4"> </iframe>
+<p>This demo showcases how to leverage LLM to extract knowledge triples from various information sources (using Wikipedia as an example) and store them in the NebulaGraph graph database(that&rsquo;s the KG building like never as easy before).</p>
+<p>In this demo, we first extracted information from Wikipedia about &ldquo;Guardians of the Galaxy Vol. 3&rdquo; and used the knowledge triples generated by the LLM to construct a knowledge graph. We then used Cypher to query the graph, and finally, with LlamaIndex and Langchain&rsquo;s Text2Cypher, we implemented the function to query the graph using natural language.</p>
+<p>You can click on other tabs to personally experience the visualization of the knowledge graph, Cypher queries, natural language queries (Text2Cypher), and other features.</p>
+<p>Here you can <a href="https://www.siwei.io/demo-dumps/kg-llm/KG_Building.ipynb" target="_blank" rel="noopener noreferrer">download</a> the complete Notebook.</p>
+<h2 id="conclusion" class="headerLink">
+    <a href="#conclusion" class="header-mark"></a>6 Conclusion</h2><p>With LLM, performing Text2Cypher on data in knowledge graphs and NebulaGraph has never been so easy.</p>
+<p>A knowledge graph with enhanced human-machine and machine access signifies a new era. We may no longer need the high costs previously associated with implementing backend services on top of graph databases(on text2cypher implementations). Moreover, there&rsquo;s no longer a need for specialized training to allow domain experts to extract essential insights from the graph.</p>
+<p>Using the ecosystem integrations in LlamaIndex or LangChain, we can smartly apply our apps and graph data with virtually no development costs in just a few lines of code.</p>
+<p>However, Text2Cypher is just the beginning. Please stay tuned for our subsequent articles, where we will showcase the revolutionary changes that knowledge graphs and graph databases bring to the large language model ecosystem.</p>
+<blockquote>
+<p>题图 <strong>prompt</strong>：</p>
+<p><em>In an artful fusion of language and AI, this minimalist oil painting captures the essence of technological advancement. Delicate brushstrokes depict a harmony of binary code and flowing words, converging into a central point. With a refined color palette and clean composition, the artwork represents the symbiotic relationship between language and artificial intelligence, inviting contemplation and appreciation.</em></p>
+</blockquote>]]></description>
+</item><item>
     <title>NebulaGraph in Jupyter Notebook</title>
     <link>https://siwei.io/en/nebulagraph-in-jupyter-notebook/</link>
     <pubDate>Tue, 06 Jun 2023 13:34:52 &#43;0800</pubDate><author>
@@ -9592,193 +9858,6 @@ GraphSAGE 是针对同构图，且边无 feature 的算法，而我们当下的 
 </ul>
 <blockquote>
 <p>feature image credit: <a href="https://unsplash.com/photos/KABfjuSOx74" target="_blank" rel="noopener noreferrer">Sander</a></p>
-</blockquote>]]></description>
-</item><item>
-    <title>Nebula Graph on Pi</title>
-    <link>https://siwei.io/en/nebula-graph-on-pi/</link>
-    <pubDate>Wed, 23 Mar 2022 22:11:03 &#43;0800</pubDate><author>
-        <name>Wey Gu</name>
-    </author><guid>https://siwei.io/en/nebula-graph-on-pi/</guid>
-    <description><![CDATA[<div class="featured-image">
-                <img src="/en/nebula-graph-on-pi/featured-image.webp" referrerpolicy="no-referrer">
-            </div><blockquote>
-<p>With the ARM64 Docker Image of Nebula Graph, it&rsquo;s actually quite easy to run it on SBC/Respberry Pi!</p>
-</blockquote>
-<h2 id="background" class="headerLink">
-    <a href="#background" class="header-mark"></a>1 Background</h2><p>Recently, after Yee from Nebula Graph Community fixed ARM build on <a href="https://github.com/vesoft-inc/nebula-third-party/pull/37" target="_blank" rel="noopener noreferrer">nebula-third-party#37</a>, we could play with Nebula Graph on M1 Chip Macbook. While, I didn&rsquo;t get the chance to run it on a SBC/Pi.</p>
-<p>A couple of weeks before, in a twitter thread with <a href="https://twitter.com/laixintao" target="_blank" rel="noopener noreferrer">@laixintao</a> and <a href="https://twitter.com/andelf/status/1504295476958404608" target="_blank" rel="noopener noreferrer">@andelf</a> I decided to purchase a <a href="https://wiki.radxa.com/Rock3/" target="_blank" rel="noopener noreferrer">Rock Pi 3A</a>:</p>
-<p><figure><a class="lightgallery" href="/en/nebula-graph-on-pi/tweet-RPi-alternative.webp" title="tweet-RPi-alternative" data-thumbnail="/en/nebula-graph-on-pi/tweet-RPi-alternative.webp">
-        <img
-            
-            loading="lazy"
-            src="/en/nebula-graph-on-pi/tweet-RPi-alternative.webp"
-            srcset="/en/nebula-graph-on-pi/tweet-RPi-alternative.webp, /en/nebula-graph-on-pi/tweet-RPi-alternative.webp 1.5x, /en/nebula-graph-on-pi/tweet-RPi-alternative.webp 2x"
-            sizes="auto"
-            alt="tweet-RPi-alternative" height="1386"  width="1202" >
-    </a></figure></p>
-<p>And it looks nice!(Even come with a NPU inside)</p>
-<p><figure><a class="lightgallery" href="/en/nebula-graph-on-pi/rockspi_before.webp" title="rockspi_before" data-thumbnail="/en/nebula-graph-on-pi/rockspi_before.webp">
-        <img
-            
-            loading="lazy"
-            src="/en/nebula-graph-on-pi/rockspi_before.webp"
-            srcset="/en/nebula-graph-on-pi/rockspi_before.webp, /en/nebula-graph-on-pi/rockspi_before.webp 1.5x, /en/nebula-graph-on-pi/rockspi_before.webp 2x"
-            sizes="auto"
-            alt="rockspi_before" height="4032"  width="3024" >
-    </a></figure></p>
-<h2 id="the-guide-of-running-nebula-graph-on-a-pi-sbc" class="headerLink">
-    <a href="#the-guide-of-running-nebula-graph-on-a-pi-sbc" class="header-mark"></a>2 The Guide of running Nebula Graph on a Pi SBC</h2><blockquote>
-<p>Actually, since v3.0.0, Nebula comes with a <a href="https://docs.nebula-graph.io/3.0.1/4.deployment-and-installation/standalone-deployment/" target="_blank" rel="noopener noreferrer">standalone version</a>, which suits the deep edge deployment more, but today, I will only setup the cluster version as the Docker Image is out of box to be used. I will share more on standalone version in upcoming weeks.</p>
-</blockquote>
-<p>I put the Ubuntu Server installation steps in the appendix, and now I assumed we already have an ARM64 Linux up and running on a Pi SBC.</p>
-<h3 id="step-0-install-docker-compose-on-pi" class="headerLink">
-    <a href="#step-0-install-docker-compose-on-pi" class="header-mark"></a>2.1 Step 0, Install Docker-Compose on Pi</h3><p>I am using debian/ubuntu here, while it should be the same for other distros, referring to <a href="https://docs.docker.com/engine/install/" target="_blank" rel="noopener noreferrer">https://docs.docker.com/engine/install/</a>.</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sudo apt-get update
-</span></span><span class="line"><span class="cl">sudo apt-get install <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    ca-certificates <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    curl <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    gnupg <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    lsb-release
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="nb">echo</span> <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>  <span class="s2">&#34;deb [arch=</span><span class="k">$(</span>dpkg --print-architecture<span class="k">)</span><span class="s2"> signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
-</span></span></span><span class="line"><span class="cl"><span class="s2">  </span><span class="k">$(</span>lsb_release -cs<span class="k">)</span><span class="s2"> stable&#34;</span> <span class="p">|</span> sudo tee /etc/apt/sources.list.d/docker.list &gt; /dev/null
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">sudo apt-get update
-</span></span><span class="line"><span class="cl">sudo apt-get install docker-ce docker-ce-cli containerd.io
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="c1"># follow https://docs.docker.com/engine/install/linux-postinstall/</span>
-</span></span><span class="line"><span class="cl">sudo groupadd docker
-</span></span><span class="line"><span class="cl">sudo usermod -aG docker <span class="nv">$USER</span>
-</span></span><span class="line"><span class="cl"><span class="nb">exit</span>
-</span></span><span class="line"><span class="cl"><span class="c1"># login again</span>
-</span></span><span class="line"><span class="cl">newgrp docker
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>After Docker being installed, we install compose here, there could be issues encounterred from the Docker website on Compose installation. While, due to compose is just a python package, let&rsquo;s do it via python3-pip install:</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sudo apt-get install -y python3 python3-pip
-</span></span><span class="line"><span class="cl">sudo pip3 install docker-compose
-</span></span></code></pre></td></tr></table>
-</div>
-</div><h3 id="step-1-bootstrap-nebula-graph-cluster-on-pi" class="headerLink">
-    <a href="#step-1-bootstrap-nebula-graph-cluster-on-pi" class="header-mark"></a>2.2 Step 1, bootstrap Nebula Graph Cluster on Pi</h3><p>We clone the compose file for nebula cluster first:</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">git clone https://github.com/vesoft-inc/nebula-docker-compose.git <span class="o">&amp;&amp;</span> <span class="nb">cd</span> nebula-docker-compose
-</span></span><span class="line"><span class="cl">docker-compose up -d
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>Then, let&rsquo;s download the client: nebula-console, and connect to the GraphD service:</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">wget https://github.com/vesoft-inc/nebula-console/releases/download/v3.0.0/nebula-console-linux-arm64-v3.0.0
-</span></span><span class="line"><span class="cl">chmod +x nebula-console-linux-arm64-v3.0.0
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">./nebula-console-linux-arm64-v3.0.0 -addr localhost -port <span class="m">9669</span> -u root -p nebula
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>Activate the storageD services:</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">ADD HOSTS <span class="s2">&#34;storaged0&#34;</span>:9779,<span class="s2">&#34;storaged1&#34;</span>:9779,<span class="s2">&#34;storaged2&#34;</span>:9779<span class="p">;</span>
-</span></span><span class="line"><span class="cl">SHOW HOSTS<span class="p">;</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><h3 id="step-2-play-nebula-graph-on-pi" class="headerLink">
-    <a href="#step-2-play-nebula-graph-on-pi" class="header-mark"></a>2.3 Step 2, Play Nebula Graph on Pi</h3><p>WIth the <code>SHOW HOSTS</code> we should see StorageD services are all ONLINE, then we could run this from the console session to load the test dataset.</p>
-<blockquote>
-<p>Referennce: <a href="https://docs.nebula-graph.io/3.0.1/nebula-console/#import_a_testing_dataset" target="_blank" rel="noopener noreferrer">https://docs.nebula-graph.io/3.0.1/nebula-console/#import_a_testing_dataset</a></p>
-</blockquote>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$:play basketballplayer<span class="p">;</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>The test data will be loaded in around 1 minute. Then, we could query something like:</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">USE basketballplayer<span class="p">;</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">GO FROM <span class="s2">&#34;player100&#34;</span> OVER follow YIELD dst<span class="o">(</span>edge<span class="o">)</span><span class="p">;</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>Check this out and&hellip;</p>
-<p>Happy Graphing!</p>
-<p><figure><a class="lightgallery" href="/en/nebula-graph-on-pi/Nebula-on-Pi.webp" title="Nebula-on-Pi" data-thumbnail="/en/nebula-graph-on-pi/Nebula-on-Pi.webp">
-        <img
-            
-            loading="lazy"
-            src="/en/nebula-graph-on-pi/Nebula-on-Pi.webp"
-            srcset="/en/nebula-graph-on-pi/Nebula-on-Pi.webp, /en/nebula-graph-on-pi/Nebula-on-Pi.webp 1.5x, /en/nebula-graph-on-pi/Nebula-on-Pi.webp 2x"
-            sizes="auto"
-            alt="Nebula-on-Pi" height="2334"  width="4064" >
-    </a></figure></p>
-<h2 id="appendix-installing-ubuntu-server-on-rock-pi-3a-sbc" class="headerLink">
-    <a href="#appendix-installing-ubuntu-server-on-rock-pi-3a-sbc" class="header-mark"></a>3 Appendix: Installing Ubuntu Server on Rock Pi 3A SBC</h2><ul>
-<li>
-<p>Get the image from <a href="https://wiki.radxa.com/Rock3/downloads" target="_blank" rel="noopener noreferrer">https://wiki.radxa.com/Rock3/downloads</a> decompressing the file into <code>.img</code></p>
-</li>
-<li>
-<p>Write the image to a micro SD card with <a href="https://www.balena.io/etcher/" target="_blank" rel="noopener noreferrer">etcher</a></p>
-</li>
-<li>
-<p>Boot it!</p>
-</li>
-</ul>
-<blockquote>
-<p>feature image credit: <a href="https://unsplash.com/@_louisreed" target="_blank" rel="noopener noreferrer">@_louisreed</a></p>
 </blockquote>]]></description>
 </item></channel>
 </rss>
