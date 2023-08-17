@@ -65,7 +65,7 @@ def simple_graph_rag(query_str, nebulagraph_store, llm):
 
 所以，用 Llama Index，我们可以轻松搭建 Graph RAG，甚至整合更复杂的 RAG 逻辑，比如 [Graph+Vector RAG](https://gpt-index.readthedocs.io/en/latest/examples/index_structs/knowledge_graph/KnowledgeGraphIndex_vs_VectorStoreIndex_vs_CustomIndex_combined.html)。
 
-![Graph_RAG_Entity_SubGraph](https://github.com/siwei-io/talks/assets/1651790/f783b592-7a8f-4eab-bd61-cf0837e83870)
+<iframe width="800" height="857" src="https://github.com/siwei-io/talks/assets/1651790/f783b592-7a8f-4eab-bd61-cf0837e83870"> </iframe>
 
 在 Llama Index 中，我们有两种方法实现 Graph RAG：
 
