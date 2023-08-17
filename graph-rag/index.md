@@ -65,7 +65,7 @@ def simple_graph_rag(query_str, nebulagraph_store, llm):
 
 所以，用 Llama Index，我们可以轻松搭建 Graph RAG，甚至整合更复杂的 RAG 逻辑，比如 [Graph+Vector RAG](https://gpt-index.readthedocs.io/en/latest/examples/index_structs/knowledge_graph/KnowledgeGraphIndex_vs_VectorStoreIndex_vs_CustomIndex_combined.html)。
 
-<iframe width="800" height="857" src="https://github.com/siwei-io/talks/assets/1651790/f783b592-7a8f-4eab-bd61-cf0837e83870"> </iframe>
+![](https://github.com/siwei-io/talks/assets/1651790/f783b592-7a8f-4eab-bd61-cf0837e83870)
 
 在 Llama Index 中，我们有两种方法实现 Graph RAG：
 
@@ -114,7 +114,9 @@ graph_rag_query_engine = KnowledgeGraphRAGQueryEngine(
 
 最后，我做了[一个 streamlit 的 demo](https://www.siwei.io/demos/graph-rag/)来比较 Graph RAG 与 Vector RAG，从中我们可以看到 Graph RAG 并没有取代 Embedding、向量搜索的方法，而是增强了/补充了它的不足。
 
-![img](https://github.com/siwei-io/talks/assets/1651790/102d00bc-6146-4856-a81f-f953c7254b29)
+
+<iframe width="800" height="857" src="https://github.com/siwei-io/talks/assets/1651790/102d00bc-6146-4856-a81f-f953c7254b29"> </iframe>
+
 
 ## text2cypher
 
@@ -134,7 +136,9 @@ graph_rag_query_engine = KnowledgeGraphRAGQueryEngine(
 
 我们可以看到两者的图查询模式在可视化下是有非常清晰的差异的。
 
-![](https://github.com/siwei-io/talks/assets/1651790/102d00bc-6146-4856-a81f-f953c7254b29)
+
+<iframe width="800" height="857" src="https://github.com/siwei-io/talks/assets/1651790/102d00bc-6146-4856-a81f-f953c7254b29"> </iframe>
+
 
 ### 结合text2cypher的Graph RAG
 
