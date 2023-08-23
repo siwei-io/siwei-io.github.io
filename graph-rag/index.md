@@ -137,7 +137,7 @@ graph_rag_query_engine = KnowledgeGraphRAGQueryEngine(
 我们可以看到两者的图查询模式在可视化下是有非常清晰的差异的。
 
 
-<iframe width="800" height="857" src="https://github.com/siwei-io/talks/assets/1651790/102d00bc-6146-4856-a81f-f953c7254b29"> </iframe>
+<iframe width="800" height="857" src="https://github.com/siwei-io/talks/assets/1651790/05d01e53-d819-4f43-9bf1-75549f7f2be9"> </iframe>
 
 
 ### 结合text2cypher的Graph RAG
