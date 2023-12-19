@@ -54,15 +54,14 @@ https://twitter.com/brdskggs/status/1599533975357095936
 <h2 id="grabbing-data" class="headerLink">
     <a href="#grabbing-data" class="header-mark"></a>2 Grabbing data</h2><p>I really tried it and the result is&hellip; good enough.</p>
 <p>The whole process was basically like a coding interviewer, or a product manager, presenting my requirements, and ChatGPT giving me the code implementation. I then try to run the code, find the things that don&rsquo;t make sense in the code, point them out, and give suggestions, and ChatGPT really understands the points I point out and makes the appropriate corrections, like:</p>
-<p><figure><a class="lightgallery" href="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/chatGPT-correction-process.webp" title="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/chatGPT-correction-process.webp" data-thumbnail="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/chatGPT-correction-process.webp">
-        <img
-            
-            loading="lazy"
-            src="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/chatGPT-correction-process.webp"
-            srcset="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/chatGPT-correction-process.webp, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/chatGPT-correction-process.webp 1.5x, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/chatGPT-correction-process.webp 2x"
-            sizes="auto"
-            alt="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/chatGPT-correction-process.webp" height="1806"  width="1426" >
-    </a></figure></p>
+<p><figure><img
+        
+        loading="lazy"
+        src="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/chatGPT-correction-process.webp"
+        srcset="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/chatGPT-correction-process.webp, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/chatGPT-correction-process.webp 1.5x, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/chatGPT-correction-process.webp 2x"
+        sizes="auto"
+        alt="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/chatGPT-correction-process.webp"
+        title="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/chatGPT-correction-process.webp" height="1806"   width="1426" ></figure></p>
 <p>I won&rsquo;t list this whole process, but I share the generated code and the whole discussion <a href="https://gist.github.com/wey-gu/78cb28bee130966e7d6e9d573b51deff" target="_blank" rel="noopener noreferrer">here</a>.</p>
 <p>The final generated data is a CSV file.</p>
 <ul>
@@ -118,53 +117,49 @@ https://twitter.com/brdskggs/status/1599533975357095936
 </ul>
 <p>The age of the players, the number of international caps, and the number of goals scored are naturally fit as properties for the player tag(type of vertex).</p>
 <p>The following is a screenshot of this schema in NebulaGraph Explorer (will just call it Explorer later).</p>
-<p><figure><a class="lightgallery" href="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/schema_fifa.webp" title="schema_fifa" data-thumbnail="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/schema_fifa.webp">
-        <img
-            
-            loading="lazy"
-            src="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/schema_fifa.webp"
-            srcset="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/schema_fifa.webp, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/schema_fifa.webp 1.5x, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/schema_fifa.webp 2x"
-            sizes="auto"
-            alt="schema_fifa" height="2334"  width="4064" >
-    </a></figure></p>
+<p><figure><img
+        
+        loading="lazy"
+        src="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/schema_fifa.webp"
+        srcset="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/schema_fifa.webp, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/schema_fifa.webp 1.5x, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/schema_fifa.webp 2x"
+        sizes="auto"
+        alt="schema_fifa"
+        title="schema_fifa" height="2334"   width="4064" ></figure></p>
 <p>Then, we can click the save icon in the upper right corner and the button: <code>Apply to Space</code>  to actually create a graph space with the defined schema</p>
 <blockquote>
 <p>Note: Refer to the document <a href="https://docs.nebula-graph.io/3.3.0/nebula-explorer/db-management/draft/" target="_blank" rel="noopener noreferrer">https://docs.nebula-graph.io/3.3.0/nebula-explorer/db-management/draft/</a></p>
 </blockquote>
 <h3 id="ingesting-into-nebulagraph" class="headerLink">
     <a href="#ingesting-into-nebulagraph" class="header-mark"></a>3.2 Ingesting into NebulaGraph</h3><p>With the graph modeling, we can upload the <a href="https://github.com/siwei-io/talks/files/10152974/world_cup_squads_no_headers.csv" target="_blank" rel="noopener noreferrer">CSV file</a> (the no-header version) into Explorer, by pointing and selecting the vid and properties that map the different columns to the vertices and edges.</p>
-<p><figure><a class="lightgallery" href="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_config_mapping.webp" title="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_config_mapping.webp" data-thumbnail="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_config_mapping.webp">
-        <img
-            
-            loading="lazy"
-            src="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_config_mapping.webp"
-            srcset="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_config_mapping.webp, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_config_mapping.webp 1.5x, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_config_mapping.webp 2x"
-            sizes="auto"
-            alt="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_config_mapping.webp" height="2334"  width="4064" >
-    </a></figure></p>
+<p><figure><img
+        
+        loading="lazy"
+        src="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_config_mapping.webp"
+        srcset="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_config_mapping.webp, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_config_mapping.webp 1.5x, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_config_mapping.webp 2x"
+        sizes="auto"
+        alt="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_config_mapping.webp"
+        title="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_config_mapping.webp" height="2334"   width="4064" ></figure></p>
 <p>Click Import, we then import the whole graph to NebulaGraph, and after it succeeded, we could also get the whole CSV &ndash;&gt; Nebula Importer configuration file: [nebula_importer_config_fifa.yml](<a href="https://github.com/siwei-io/talks/files/10164014/config" target="_blank" rel="noopener noreferrer">https://github.com/siwei-io/talks/files/10164014/config</a> _fifa.yml.txt), so that you reuse it in the future whenever to re-import the same data or share it with others.</p>
-<p><figure><a class="lightgallery" href="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_log.webp" title="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_log.webp" data-thumbnail="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_log.webp">
-        <img
-            
-            loading="lazy"
-            src="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_log.webp"
-            srcset="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_log.webp, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_log.webp 1.5x, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_log.webp 2x"
-            sizes="auto"
-            alt="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_log.webp" height="2334"  width="4064" >
-    </a></figure></p>
+<p><figure><img
+        
+        loading="lazy"
+        src="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_log.webp"
+        srcset="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_log.webp, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_log.webp 1.5x, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_log.webp 2x"
+        sizes="auto"
+        alt="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_log.webp"
+        title="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_log.webp" height="2334"   width="4064" ></figure></p>
 <blockquote>
 <p>Note: Refer to the document <a href="https://docs.nebula-graph.io/3.3.0/nebula-explorer/db-management/11.import-data/" target="_blank" rel="noopener noreferrer">https://docs.nebula-graph.io/3.3.0/nebula-explorer/db-management/11.import-data/</a></p>
 </blockquote>
 <p>After importing, we can view the statistics on the schema view page, which will show us that 831 players participated in the 2022 Qatar World Cup, serving in 295 different clubs.</p>
-<p><figure><a class="lightgallery" href="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/data_stats.webp" title="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/data_stats.webp" data-thumbnail="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/data_stats.webp">
-        <img
-            
-            loading="lazy"
-            src="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/data_stats.webp"
-            srcset="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/data_stats.webp, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/data_stats.webp 1.5x, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/data_stats.webp 2x"
-            sizes="auto"
-            alt="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/data_stats.webp" height="2334"  width="4064" >
-    </a></figure></p>
+<p><figure><img
+        
+        loading="lazy"
+        src="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/data_stats.webp"
+        srcset="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/data_stats.webp, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/data_stats.webp 1.5x, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/data_stats.webp 2x"
+        sizes="auto"
+        alt="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/data_stats.webp"
+        title="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/data_stats.webp" height="2334"   width="4064" ></figure></p>
 <blockquote>
 <p>Note: refer to the documentation: <a href="https://docs.nebula-graph.io/3.3.0/nebula-explorer/db-management/10.create-schema/#view_statistics" target="_blank" rel="noopener noreferrer">https://docs.nebula-graph.io/3.3.0/nebula-explorer/db-management/10.create-schema/#view_statistics</a></p>
 </blockquote>
@@ -173,57 +168,52 @@ https://twitter.com/brdskggs/status/1599533975357095936
 <h4 id="querying-the-data" class="headerLink">
     <a href="#querying-the-data" class="header-mark"></a>3.3.1 Querying the data</h4><p>We could start by showing all the data and see what we will get.</p>
 <p>First, with the help of NebulaGraph Explorer, I simply did drag and drop to draw any type of vertex type (TAG) and any type of edge between vertex types (TAG), here we know that all the vertices are connected with others, so no isolated vertices will be missed by this query pattern:</p>
-<p><figure><a class="lightgallery" href="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-0.webp" title="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-0.webp" data-thumbnail="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-0.webp">
-        <img
-            
-            loading="lazy"
-            src="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-0.webp"
-            srcset="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-0.webp, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-0.webp 1.5x, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-0.webp 2x"
-            sizes="auto"
-            alt="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-0.webp" height="2146"  width="3320" >
-    </a></figure></p>
+<p><figure><img
+        
+        loading="lazy"
+        src="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-0.webp"
+        srcset="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-0.webp, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-0.webp 1.5x, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-0.webp 2x"
+        sizes="auto"
+        alt="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-0.webp"
+        title="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-0.webp" height="2146"   width="3320" ></figure></p>
 <p>Let it generate the query statement for me. Here, it defaults to <code>LIMIT 100</code>, so let&rsquo;s change it to something larger (LIMIT 10000) and let it execute in the Console.</p>
-<p><figure><a class="lightgallery" href="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-1.webp" title="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-1.webp" data-thumbnail="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-1.webp">
-        <img
-            
-            loading="lazy"
-            src="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-1.webp"
-            srcset="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-1.webp, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-1.webp 1.5x, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-1.webp 2x"
-            sizes="auto"
-            alt="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-1.webp" height="2146"  width="3320" >
-    </a></figure></p>
+<p><figure><img
+        
+        loading="lazy"
+        src="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-1.webp"
+        srcset="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-1.webp, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-1.webp 1.5x, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-1.webp 2x"
+        sizes="auto"
+        alt="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-1.webp"
+        title="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-1.webp" height="2146"   width="3320" ></figure></p>
 <h4 id="initial-observation" class="headerLink">
     <a href="#initial-observation" class="header-mark"></a>3.3.2 Initial observation</h4><p>The result renders out like this, and you can see that it naturally forms a pattern of clusters.</p>
-<p><figure><a class="lightgallery" href="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/bird_view.webp" title="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/bird_view.webp" data-thumbnail="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/bird_view.webp">
-        <img
-            
-            loading="lazy"
-            src="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/bird_view.webp"
-            srcset="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/bird_view.webp, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/bird_view.webp 1.5x, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/bird_view.webp 2x"
-            sizes="auto"
-            alt="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/bird_view.webp" height="2334"  width="4064" >
-    </a></figure></p>
+<p><figure><img
+        
+        loading="lazy"
+        src="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/bird_view.webp"
+        srcset="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/bird_view.webp, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/bird_view.webp 1.5x, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/bird_view.webp 2x"
+        sizes="auto"
+        alt="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/bird_view.webp"
+        title="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/bird_view.webp" height="2334"   width="4064" ></figure></p>
 <p>These peripheral clusters are mostly made up of players from clubs that are not traditionally strong ones (now we learned that they could win, though, who knows!), and many of those clubs have only one or two players and yet concentrated in one national team or region, so they are kind of isolated from other clusters.</p>
-<p><figure><a class="lightgallery" href="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/edge_teams.webp" title="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/edge_teams.webp" data-thumbnail="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/edge_teams.webp">
-        <img
-            
-            loading="lazy"
-            src="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/edge_teams.webp"
-            srcset="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/edge_teams.webp, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/edge_teams.webp 1.5x, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/edge_teams.webp 2x"
-            sizes="auto"
-            alt="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/edge_teams.webp" height="1268"  width="1576" >
-    </a></figure></p>
+<p><figure><img
+        
+        loading="lazy"
+        src="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/edge_teams.webp"
+        srcset="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/edge_teams.webp, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/edge_teams.webp 1.5x, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/edge_teams.webp 2x"
+        sizes="auto"
+        alt="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/edge_teams.webp"
+        title="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/edge_teams.webp" height="1268"   width="1576" ></figure></p>
 <h4 id="graph-algorithm-based-analysis" class="headerLink">
     <a href="#graph-algorithm-based-analysis" class="header-mark"></a>3.3.3 Graph algorithm based analysis</h4><p>After I clicked on the two buttons(Sized by Degrees, Colored by Louvain Algorithm) in Explorer (refer to the <a href="https://docs.nebula-graph.com.cn/3.3.0/nebula-explorer/graph-explorer/graph-algorithm/" target="_blank" rel="noopener noreferrer">document</a> for details), in the browser, we can see that the entire graph has become something like this:</p>
-<p><figure><a class="lightgallery" href="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/Barcelona.webp" title="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/Barcelona.webp" data-thumbnail="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/Barcelona.webp">
-        <img
-            
-            loading="lazy"
-            src="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/Barcelona.webp"
-            srcset="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/Barcelona.webp, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/Barcelona.webp 1.5x, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/Barcelona.webp 2x"
-            sizes="auto"
-            alt="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/Barcelona.webp" height="2334"  width="4064" >
-    </a></figure></p>
+<p><figure><img
+        
+        loading="lazy"
+        src="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/Barcelona.webp"
+        srcset="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/Barcelona.webp, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/Barcelona.webp 1.5x, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/Barcelona.webp 2x"
+        sizes="auto"
+        alt="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/Barcelona.webp"
+        title="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/Barcelona.webp" height="2334"   width="4064" ></figure></p>
 <p>Here, two graph algorithms are utilized to analyze the insights here.</p>
 <ol>
 <li>change the display size of vertices to highlight importance using their degrees</li>
@@ -262,45 +252,41 @@ https://twitter.com/brdskggs/status/1599533975357095936
 </div><blockquote>
 <p>Note: For convenience, I have included the number of goals and caps as properties in the serve edge, too.</p>
 </blockquote>
-<p><figure><a class="lightgallery" href="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query_step0.webp" title="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query_step0.webp" data-thumbnail="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query_step0.webp">
-        <img
-            
-            loading="lazy"
-            src="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query_step0.webp"
-            srcset="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query_step0.webp, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query_step0.webp 1.5x, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query_step0.webp 2x"
-            sizes="auto"
-            alt="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query_step0.webp" height="2334"  width="4064" >
-    </a></figure></p>
+<p><figure><img
+        
+        loading="lazy"
+        src="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query_step0.webp"
+        srcset="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query_step0.webp, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query_step0.webp 1.5x, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query_step0.webp 2x"
+        sizes="auto"
+        alt="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query_step0.webp"
+        title="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/query_step0.webp" height="2334"   width="4064" ></figure></p>
 <p>Then, we select all the vertices on the graph, in the left toolbar, select the <code>belongto</code> edge of the outgoing direction, expand the graph outwards (traverse), and select the icon that marks the newly expanded vertices as flags.</p>
-<p><figure><a class="lightgallery" href="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/treversal_step1.webp" title="treversal_step1" data-thumbnail="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/treversal_step1.webp">
-        <img
-            
-            loading="lazy"
-            src="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/treversal_step1.webp"
-            srcset="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/treversal_step1.webp, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/treversal_step1.webp 1.5x, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/treversal_step1.webp 2x"
-            sizes="auto"
-            alt="treversal_step1" height="2334"  width="4064" >
-    </a></figure></p>
+<p><figure><img
+        
+        loading="lazy"
+        src="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/treversal_step1.webp"
+        srcset="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/treversal_step1.webp, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/treversal_step1.webp 1.5x, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/treversal_step1.webp 2x"
+        sizes="auto"
+        alt="treversal_step1"
+        title="treversal_step1" height="2334"   width="4064" ></figure></p>
 <p>Now that we have the final subgraph, we use the graph algorithm function within the browser to execute BNC (Betweenness Centrality):</p>
-<p><figure><a class="lightgallery" href="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_step2.webp" title="bnc_step2" data-thumbnail="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_step2.webp">
-        <img
-            
-            loading="lazy"
-            src="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_step2.webp"
-            srcset="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_step2.webp, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_step2.webp 1.5x, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_step2.webp 2x"
-            sizes="auto"
-            alt="bnc_step2" height="2334"  width="4064" >
-    </a></figure></p>
+<p><figure><img
+        
+        loading="lazy"
+        src="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_step2.webp"
+        srcset="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_step2.webp, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_step2.webp 1.5x, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_step2.webp 2x"
+        sizes="auto"
+        alt="bnc_step2"
+        title="bnc_step2" height="2334"   width="4064" ></figure></p>
 <p>The graph canvas then looks like this:</p>
-<p><figure><a class="lightgallery" href="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_predict.webp" title="bnc_predict" data-thumbnail="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_predict.webp">
-        <img
-            
-            loading="lazy"
-            src="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_predict.webp"
-            srcset="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_predict.webp, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_predict.webp 1.5x, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_predict.webp 2x"
-            sizes="auto"
-            alt="bnc_predict" height="2334"  width="4064" >
-    </a></figure></p>
+<p><figure><img
+        
+        loading="lazy"
+        src="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_predict.webp"
+        srcset="/en/chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_predict.webp, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_predict.webp 1.5x, /en/chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_predict.webp 2x"
+        sizes="auto"
+        alt="bnc_predict"
+        title="bnc_predict" height="2334"   width="4064" ></figure></p>
 <h2 id="result" class="headerLink">
     <a href="#result" class="header-mark"></a>4 Result</h2><p>In the end, we sorted according to the value of Betweenness Centrality to get the final winning team: Brazil! 🇧🇷, followed by Belgium, Germany, England, France, and Argentina, so let&rsquo;s wait two weeks to come back and see if the prediction is accurate :D.</p>
 <p>The sorted data is as follows:</p>
@@ -448,15 +434,14 @@ https://twitter.com/brdskggs/status/1599533975357095936
 <li>person(name, birthdate)</li>
 <li>genre(name)</li>
 </ul>
-<p><figure><a class="lightgallery" href="/en/nebulagraph-etl-dbt/schema_0.webp" title="schema_0" data-thumbnail="/en/nebulagraph-etl-dbt/schema_0.webp">
-        <img
-            
-            loading="lazy"
-            src="/en/nebulagraph-etl-dbt/schema_0.webp"
-            srcset="/en/nebulagraph-etl-dbt/schema_0.webp, /en/nebulagraph-etl-dbt/schema_0.webp 1.5x, /en/nebulagraph-etl-dbt/schema_0.webp 2x"
-            sizes="auto"
-            alt="schema_0" height="852"  width="1686" >
-    </a></figure></p>
+<p><figure><img
+        
+        loading="lazy"
+        src="/en/nebulagraph-etl-dbt/schema_0.webp"
+        srcset="/en/nebulagraph-etl-dbt/schema_0.webp, /en/nebulagraph-etl-dbt/schema_0.webp 1.5x, /en/nebulagraph-etl-dbt/schema_0.webp 2x"
+        sizes="auto"
+        alt="schema_0"
+        title="schema_0" height="852"   width="1686" ></figure></p>
 <h2 id="data-transform" class="headerLink">
     <a href="#data-transform" class="header-mark"></a>4 Data Transform</h2><p>With the source date finalized, let&rsquo;s see how they could be mapped and transformed into the graph.</p>
 <h3 id="from-omdb" class="headerLink">
@@ -695,15 +680,14 @@ https://twitter.com/brdskggs/status/1599533975357095936
 </li>
 </ul>
 <p>Till now, all tables we cared about in OMDB are:</p>
-<p><figure><a class="lightgallery" href="/en/nebulagraph-etl-dbt/modeling_omdb.webp" title="modeling_omdb" data-thumbnail="/en/nebulagraph-etl-dbt/modeling_omdb.webp">
-        <img
-            
-            loading="lazy"
-            src="/en/nebulagraph-etl-dbt/modeling_omdb.webp"
-            srcset="/en/nebulagraph-etl-dbt/modeling_omdb.webp, /en/nebulagraph-etl-dbt/modeling_omdb.webp 1.5x, /en/nebulagraph-etl-dbt/modeling_omdb.webp 2x"
-            sizes="auto"
-            alt="modeling_omdb" height="1506"  width="2862" >
-    </a></figure></p>
+<p><figure><img
+        
+        loading="lazy"
+        src="/en/nebulagraph-etl-dbt/modeling_omdb.webp"
+        srcset="/en/nebulagraph-etl-dbt/modeling_omdb.webp, /en/nebulagraph-etl-dbt/modeling_omdb.webp 1.5x, /en/nebulagraph-etl-dbt/modeling_omdb.webp 2x"
+        sizes="auto"
+        alt="modeling_omdb"
+        title="modeling_omdb" height="1506"   width="2862" ></figure></p>
 <h3 id="from-movielens-dataset" class="headerLink">
     <a href="#from-movielens-dataset" class="header-mark"></a>4.2 From MovieLens dataset</h3><p>While the above is just about one data source, in real scenarios, we also need to collect and aggregate data from other sources. For example, now also need to extract knowledge from the MovieLens dataset.</p>
 <p>Here, the only relationship we utilize is <code>user -&gt; movie</code>.</p>
@@ -819,26 +803,24 @@ https://twitter.com/brdskggs/status/1599533975357095936
 </li>
 </ul>
 <p>Now the modeling puts the two tables like this figure:</p>
-<p><figure><a class="lightgallery" href="/en/nebulagraph-etl-dbt/modeling_omdb_movielens.webp" title="modeling_omdb_movielens" data-thumbnail="/en/nebulagraph-etl-dbt/modeling_omdb_movielens.webp">
-        <img
-            
-            loading="lazy"
-            src="/en/nebulagraph-etl-dbt/modeling_omdb_movielens.webp"
-            srcset="/en/nebulagraph-etl-dbt/modeling_omdb_movielens.webp, /en/nebulagraph-etl-dbt/modeling_omdb_movielens.webp 1.5x, /en/nebulagraph-etl-dbt/modeling_omdb_movielens.webp 2x"
-            sizes="auto"
-            alt="modeling_omdb_movielens" height="1008"  width="2212" >
-    </a></figure></p>
+<p><figure><img
+        
+        loading="lazy"
+        src="/en/nebulagraph-etl-dbt/modeling_omdb_movielens.webp"
+        srcset="/en/nebulagraph-etl-dbt/modeling_omdb_movielens.webp, /en/nebulagraph-etl-dbt/modeling_omdb_movielens.webp 1.5x, /en/nebulagraph-etl-dbt/modeling_omdb_movielens.webp 2x"
+        sizes="auto"
+        alt="modeling_omdb_movielens"
+        title="modeling_omdb_movielens" height="1008"   width="2212" ></figure></p>
 <h3 id="graph-modeling-property-graph" class="headerLink">
     <a href="#graph-modeling-property-graph" class="header-mark"></a>4.3 Graph Modeling (Property Graph)</h3><p>To summarize, we need to aggregate different tables (or CSV files in table form) from multiple data sources, such that the correspondence is shown in the figure: where the blue dashed line indicates the source of data information for the vertices in the graph, and the pink dashed line indicates the source of edge information.</p>
-<p><figure><a class="lightgallery" href="/en/nebulagraph-etl-dbt/schema_mapping_to_graph.webp" title="schema_mapping_to_graph" data-thumbnail="/en/nebulagraph-etl-dbt/schema_mapping_to_graph.webp">
-        <img
-            
-            loading="lazy"
-            src="/en/nebulagraph-etl-dbt/schema_mapping_to_graph.webp"
-            srcset="/en/nebulagraph-etl-dbt/schema_mapping_to_graph.webp, /en/nebulagraph-etl-dbt/schema_mapping_to_graph.webp 1.5x, /en/nebulagraph-etl-dbt/schema_mapping_to_graph.webp 2x"
-            sizes="auto"
-            alt="schema_mapping_to_graph" height="1696"  width="1794" >
-    </a></figure></p>
+<p><figure><img
+        
+        loading="lazy"
+        src="/en/nebulagraph-etl-dbt/schema_mapping_to_graph.webp"
+        srcset="/en/nebulagraph-etl-dbt/schema_mapping_to_graph.webp, /en/nebulagraph-etl-dbt/schema_mapping_to_graph.webp 1.5x, /en/nebulagraph-etl-dbt/schema_mapping_to_graph.webp 2x"
+        sizes="auto"
+        alt="schema_mapping_to_graph"
+        title="schema_mapping_to_graph" height="1696"   width="1794" ></figure></p>
 <p>Then, we have to format the ids of individuals in different tables, for example, user_id, which is a self-incrementing number that we want to convert to a globally unique vertex_id. A convenient way to do this is to add a string prefix to the existing id, such as <code>u_</code>.</p>
 <p>Eventually, for the relationship <code>user -[watched]-&gt; movie</code>, we can process the table structure data as follows.</p>
 <table>
@@ -896,25 +878,23 @@ https://twitter.com/brdskggs/status/1599533975357095936
     <a href="#dbt" class="header-mark"></a>5.1 dbt</h3><p>dbt is an open-source data conversion tool with a very mature community and ecology, which can perform efficient, controlled, and high-quality data conversion work in most of the mainstream data warehouses, whether it is for ad-hoc tasks or complex orchestration, dbt can be very competent.</p>
 <p>One of the features of dbt is that it uses a SQL-like language to describe the rules of data transformation. With GitOps, it is very elegant to collaborate and maintain complex data processing operations in large data teams. And the built-in data testing capabilities allow you to control the quality of your data and make it reproducible and controllable.</p>
 <p>dbt not only has many integrated subprojects but also can be combined with many other excellent open source projects (meltano, AirFlow, Amundsen, Superset, etc.) to form a set of modern data infrastructure systems, feel free to check my previous article: data lineage and metadata governance reference architecture <a href="https://siwei.io/en/data-lineage-oss-ref-solution" target="_blank" rel="noopener noreferrer">https://siwei.io/en/data-lineage-oss-ref-solution</a>, where the whole solution looks like:</p>
-<p><figure><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg" title="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg" data-thumbnail="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg">
-        <img
-            
-            loading="lazy"
-            src="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg"
-            srcset="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg, https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg 1.5x, https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg 2x"
-            sizes="auto"
-            alt="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg">
-    </a></figure></p>
+<p><figure><img
+        
+        loading="lazy"
+        src="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg"
+        srcset="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg, https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg 1.5x, https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg 2x"
+        sizes="auto"
+        alt="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg"
+        title="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg" ></figure></p>
 <p>In short, dbt is a command line tool written in python, and we can create a project folder, which contains a YAML formatted configuration file, to specify where the source information for the data transformation is and where the target is (where the processed data is stored, maybe Postgres, Big Query, Spark, etc.). In the data source, we use the YAML file along with the <code>.SQL</code> file to describe the information about &ldquo;what data to fetch from, how to do the transformation, and what to output&rdquo;.</p>
-<p><figure><a class="lightgallery" href="/en/nebulagraph-etl-dbt/starter-project-dbt-cli.webp" title="starter-project-dbt-cli" data-thumbnail="/en/nebulagraph-etl-dbt/starter-project-dbt-cli.webp">
-        <img
-            
-            loading="lazy"
-            src="/en/nebulagraph-etl-dbt/starter-project-dbt-cli.webp"
-            srcset="/en/nebulagraph-etl-dbt/starter-project-dbt-cli.webp, /en/nebulagraph-etl-dbt/starter-project-dbt-cli.webp 1.5x, /en/nebulagraph-etl-dbt/starter-project-dbt-cli.webp 2x"
-            sizes="auto"
-            alt="starter-project-dbt-cli" height="1760"  width="2950" >
-    </a></figure></p>
+<p><figure><img
+        
+        loading="lazy"
+        src="/en/nebulagraph-etl-dbt/starter-project-dbt-cli.webp"
+        srcset="/en/nebulagraph-etl-dbt/starter-project-dbt-cli.webp, /en/nebulagraph-etl-dbt/starter-project-dbt-cli.webp 1.5x, /en/nebulagraph-etl-dbt/starter-project-dbt-cli.webp 2x"
+        sizes="auto"
+        alt="starter-project-dbt-cli"
+        title="starter-project-dbt-cli" height="1760"   width="2950" ></figure></p>
 <p>You can see that the information in the models/example is the core data transformation rules, and all the other data is metadata related to this transformation. DataOps.</p>
 <blockquote>
 <p>Notes.</p>
@@ -941,15 +921,14 @@ https://twitter.com/brdskggs/status/1599533975357095936
 <li>Use dbt to transform the data (Transform), and export it to CSV files</li>
 <li>Import CSV into NebulaGraph using Nebula Importer (L)</li>
 </ul>
-<p><figure><a class="lightgallery" href="/en/nebulagraph-etl-dbt/ETL_dbt_nebulagraph_importer.webp" title="ETL_dbt_nebulagraph_importer" data-thumbnail="/en/nebulagraph-etl-dbt/ETL_dbt_nebulagraph_importer.webp">
-        <img
-            
-            loading="lazy"
-            src="/en/nebulagraph-etl-dbt/ETL_dbt_nebulagraph_importer.webp"
-            srcset="/en/nebulagraph-etl-dbt/ETL_dbt_nebulagraph_importer.webp, /en/nebulagraph-etl-dbt/ETL_dbt_nebulagraph_importer.webp 1.5x, /en/nebulagraph-etl-dbt/ETL_dbt_nebulagraph_importer.webp 2x"
-            sizes="auto"
-            alt="ETL_dbt_nebulagraph_importer" height="1976"  width="2716" >
-    </a></figure></p>
+<p><figure><img
+        
+        loading="lazy"
+        src="/en/nebulagraph-etl-dbt/ETL_dbt_nebulagraph_importer.webp"
+        srcset="/en/nebulagraph-etl-dbt/ETL_dbt_nebulagraph_importer.webp, /en/nebulagraph-etl-dbt/ETL_dbt_nebulagraph_importer.webp 1.5x, /en/nebulagraph-etl-dbt/ETL_dbt_nebulagraph_importer.webp 2x"
+        sizes="auto"
+        alt="ETL_dbt_nebulagraph_importer"
+        title="ETL_dbt_nebulagraph_importer" height="1976"   width="2716" ></figure></p>
 <h3 id="preparing-the-dbt-environment" class="headerLink">
     <a href="#preparing-the-dbt-environment" class="header-mark"></a>6.1 Preparing the dbt environment</h3><p>dbt is a python project, we install dbt and dbt-postgres in a virtual python3 environment.</p>
 <h3 id="setup-env-with-dbt" class="headerLink">
@@ -1357,15 +1336,14 @@ https://twitter.com/brdskggs/status/1599533975357095936
 </ul>
 </li>
 </ul>
-<p><figure><a class="lightgallery" href="/en/nebulagraph-etl-dbt/transform_select_joins_user_watched_movies.webp" title="transform_select_joins_user_watched_movies" data-thumbnail="/en/nebulagraph-etl-dbt/transform_select_joins_user_watched_movies.webp">
-        <img
-            
-            loading="lazy"
-            src="/en/nebulagraph-etl-dbt/transform_select_joins_user_watched_movies.webp"
-            srcset="/en/nebulagraph-etl-dbt/transform_select_joins_user_watched_movies.webp, /en/nebulagraph-etl-dbt/transform_select_joins_user_watched_movies.webp 1.5x, /en/nebulagraph-etl-dbt/transform_select_joins_user_watched_movies.webp 2x"
-            sizes="auto"
-            alt="transform_select_joins_user_watched_movies" height="1806"  width="1808" >
-    </a></figure></p>
+<p><figure><img
+        
+        loading="lazy"
+        src="/en/nebulagraph-etl-dbt/transform_select_joins_user_watched_movies.webp"
+        srcset="/en/nebulagraph-etl-dbt/transform_select_joins_user_watched_movies.webp, /en/nebulagraph-etl-dbt/transform_select_joins_user_watched_movies.webp 1.5x, /en/nebulagraph-etl-dbt/transform_select_joins_user_watched_movies.webp 2x"
+        sizes="auto"
+        alt="transform_select_joins_user_watched_movies"
+        title="transform_select_joins_user_watched_movies" height="1806"   width="1808" ></figure></p>
 <blockquote>
 <p>Tips: we could add <code>LIMIT</code> to debug the SQL query fast from a Postgres Console</p>
 </blockquote>
@@ -1638,15 +1616,14 @@ https://twitter.com/brdskggs/status/1599533975357095936
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>The result could be: Most of the cast and crew of the once-favorite Star Wars movies are also involved in this and the same &ldquo;Oscar-winning&rdquo; and &ldquo;classic&rdquo; movie.</p>
-<p><figure><a class="lightgallery" href="/en/nebulagraph-etl-dbt/reasoning_movie.webp" title="reasoning_movie" data-thumbnail="/en/nebulagraph-etl-dbt/reasoning_movie.webp">
-        <img
-            
-            loading="lazy"
-            src="/en/nebulagraph-etl-dbt/reasoning_movie.webp"
-            srcset="/en/nebulagraph-etl-dbt/reasoning_movie.webp, /en/nebulagraph-etl-dbt/reasoning_movie.webp 1.5x, /en/nebulagraph-etl-dbt/reasoning_movie.webp 2x"
-            sizes="auto"
-            alt="reasoning_movie" height="1110"  width="2276" >
-    </a></figure></p>
+<p><figure><img
+        
+        loading="lazy"
+        src="/en/nebulagraph-etl-dbt/reasoning_movie.webp"
+        srcset="/en/nebulagraph-etl-dbt/reasoning_movie.webp, /en/nebulagraph-etl-dbt/reasoning_movie.webp 1.5x, /en/nebulagraph-etl-dbt/reasoning_movie.webp 2x"
+        sizes="auto"
+        alt="reasoning_movie"
+        title="reasoning_movie" height="1110"   width="2276" ></figure></p>
 <blockquote>
 <p>In another article, I used the same graph to demonstrate the application of more graph databases and graph algorithms in recommendation systems. If you are interested, please read <a href="https://siwei.io/recommendation-system-with-graphdb/" target="_blank" rel="noopener noreferrer">https://siwei.io/recommendation-system-with-graphdb/</a>.</p>
 </blockquote>

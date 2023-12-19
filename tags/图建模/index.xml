@@ -39,15 +39,14 @@
 <h2 id="抓取数据" class="headerLink">
     <a href="#%e6%8a%93%e5%8f%96%e6%95%b0%e6%8d%ae" class="header-mark"></a>2 抓取数据</h2><p>我真试了一下，结果是：完全可以，而且似乎真的很容易。</p>
 <p>整个过程基本上我像是一个代码考试的面试官、或者是一个产品经理，提出我的需求，chatGPT 给出代码的实现。我们再试着跑起来代码，找到代码中不合理的地方，指出来、给出建议，chatGPT 就真的能理解我指出的点，并给出相应的修正，像是：</p>
-<p><figure><a class="lightgallery" href="/chatgpt-and-nebulagraph-predict-fifa-world-cup/chatGPT-correction-process.webp" title="/chatgpt-and-nebulagraph-predict-fifa-world-cup/chatGPT-correction-process.webp" data-thumbnail="/chatgpt-and-nebulagraph-predict-fifa-world-cup/chatGPT-correction-process.webp">
-        <img
-            
-            loading="lazy"
-            src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/chatGPT-correction-process.webp"
-            srcset="/chatgpt-and-nebulagraph-predict-fifa-world-cup/chatGPT-correction-process.webp, /chatgpt-and-nebulagraph-predict-fifa-world-cup/chatGPT-correction-process.webp 1.5x, /chatgpt-and-nebulagraph-predict-fifa-world-cup/chatGPT-correction-process.webp 2x"
-            sizes="auto"
-            alt="/chatgpt-and-nebulagraph-predict-fifa-world-cup/chatGPT-correction-process.webp" height="1806"  width="1426" >
-    </a></figure></p>
+<p><figure><img
+        
+        loading="lazy"
+        src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/chatGPT-correction-process.webp"
+        srcset="/chatgpt-and-nebulagraph-predict-fifa-world-cup/chatGPT-correction-process.webp, /chatgpt-and-nebulagraph-predict-fifa-world-cup/chatGPT-correction-process.webp 1.5x, /chatgpt-and-nebulagraph-predict-fifa-world-cup/chatGPT-correction-process.webp 2x"
+        sizes="auto"
+        alt="/chatgpt-and-nebulagraph-predict-fifa-world-cup/chatGPT-correction-process.webp"
+        title="/chatgpt-and-nebulagraph-predict-fifa-world-cup/chatGPT-correction-process.webp" height="1806"   width="1426" ></figure></p>
 <p>这一全过程我就不在这里列出来了，不过我把生成的代码和整个讨论的过程都分享在<a href="https://gist.github.com/wey-gu/78cb28bee130966e7d6e9d573b51deff" target="_blank" rel="noopener noreferrer">这里</a>，感兴趣的同学可以去看看。</p>
 <p>最终生成的数据是一个 CSV 文件：</p>
 <ul>
@@ -102,110 +101,101 @@
 </ul>
 <p>而队员的年龄、参加国际场次（caps）、进球数（goals）则很自然作为 player 这一类点的属性。</p>
 <p>下图是这个 schema 在 NebulaGraph Studio/Explorer（后边称 Studio/Explorer） 中的截图：</p>
-<p><figure><a class="lightgallery" href="/chatgpt-and-nebulagraph-predict-fifa-world-cup/schema_fifa.webp" title="schema_fifa" data-thumbnail="/chatgpt-and-nebulagraph-predict-fifa-world-cup/schema_fifa.webp">
-        <img
-            
-            loading="lazy"
-            src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/schema_fifa.webp"
-            srcset="/chatgpt-and-nebulagraph-predict-fifa-world-cup/schema_fifa.webp, /chatgpt-and-nebulagraph-predict-fifa-world-cup/schema_fifa.webp 1.5x, /chatgpt-and-nebulagraph-predict-fifa-world-cup/schema_fifa.webp 2x"
-            sizes="auto"
-            alt="schema_fifa" height="2334"  width="4064" >
-    </a></figure></p>
+<p><figure><img
+        
+        loading="lazy"
+        src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/schema_fifa.webp"
+        srcset="/chatgpt-and-nebulagraph-predict-fifa-world-cup/schema_fifa.webp, /chatgpt-and-nebulagraph-predict-fifa-world-cup/schema_fifa.webp 1.5x, /chatgpt-and-nebulagraph-predict-fifa-world-cup/schema_fifa.webp 2x"
+        sizes="auto"
+        alt="schema_fifa"
+        title="schema_fifa" height="2334"   width="4064" ></figure></p>
 <p>然后，我们可以在右上角把它保存，创建一个新的图空间，应用这个图建模到图空间里。</p>
 <blockquote>
 <p>注：参考文档 <a href="https://docs.nebula-graph.com.cn/3.3.0/nebula-explorer/db-management/draft/" target="_blank" rel="noopener noreferrer">https://docs.nebula-graph.com.cn/3.3.0/nebula-explorer/db-management/draft/</a></p>
 </blockquote>
 <h3 id="导入数据进-nebulagraph" class="headerLink">
     <a href="#%e5%af%bc%e5%85%a5%e6%95%b0%e6%8d%ae%e8%bf%9b-nebulagraph" class="header-mark"></a>3.2 导入数据进 NebulaGraph</h3><p>有了图建模，我们可以把之前的 CSV 文件（无表头版本）上传到 Studio 或者 Explorer 里，通过点、选关联不同的列到点边中的 vid 和属性：</p>
-<p><figure><a class="lightgallery" href="/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_config_mapping.webp" title="/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_config_mapping.webp" data-thumbnail="/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_config_mapping.webp">
-        <img
-            
-            loading="lazy"
-            src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_config_mapping.webp"
-            srcset="/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_config_mapping.webp, /chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_config_mapping.webp 1.5x, /chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_config_mapping.webp 2x"
-            sizes="auto"
-            alt="/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_config_mapping.webp" height="2334"  width="4064" >
-    </a></figure></p>
+<p><figure><img
+        
+        loading="lazy"
+        src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_config_mapping.webp"
+        srcset="/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_config_mapping.webp, /chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_config_mapping.webp 1.5x, /chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_config_mapping.webp 2x"
+        sizes="auto"
+        alt="/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_config_mapping.webp"
+        title="/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_config_mapping.webp" height="2334"   width="4064" ></figure></p>
 <p>之后点击导入，就把整个图导入到 NebulaGraph 了，成功之后，我们还得到了整个csv &ndash;&gt; Nebula Importer 的关联配置文件：<a href="https://github.com/siwei-io/talks/files/10164014/config_fifa.yml.txt" target="_blank" rel="noopener noreferrer">nebula_importer_config_fifa.yml</a>，你可以直接拖拽整个配置，不用自己去配置它了。</p>
-<p><figure><a class="lightgallery" href="/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_log.webp" title="/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_log.webp" data-thumbnail="/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_log.webp">
-        <img
-            
-            loading="lazy"
-            src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_log.webp"
-            srcset="/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_log.webp, /chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_log.webp 1.5x, /chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_log.webp 2x"
-            sizes="auto"
-            alt="/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_log.webp" height="2334"  width="4064" >
-    </a></figure></p>
+<p><figure><img
+        
+        loading="lazy"
+        src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_log.webp"
+        srcset="/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_log.webp, /chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_log.webp 1.5x, /chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_log.webp 2x"
+        sizes="auto"
+        alt="/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_log.webp"
+        title="/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_log.webp" height="2334"   width="4064" ></figure></p>
 <blockquote>
 <p>注：参考文档 <a href="https://docs.nebula-graph.com.cn/3.3.0/nebula-explorer/db-management/11.import-data/" target="_blank" rel="noopener noreferrer">https://docs.nebula-graph.com.cn/3.3.0/nebula-explorer/db-management/11.import-data/</a></p>
 </blockquote>
 <p>导入之后，我们可以在 schema 界面里查看数据统计，我们可以看到有 831 名球员参加了 2022 卡塔尔世界杯，他们服役在 295 个不同的俱乐部：</p>
-<p><figure><a class="lightgallery" href="/chatgpt-and-nebulagraph-predict-fifa-world-cup/data_stats.webp" title="/chatgpt-and-nebulagraph-predict-fifa-world-cup/data_stats.webp" data-thumbnail="/chatgpt-and-nebulagraph-predict-fifa-world-cup/data_stats.webp">
-        <img
-            
-            loading="lazy"
-            src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/data_stats.webp"
-            srcset="/chatgpt-and-nebulagraph-predict-fifa-world-cup/data_stats.webp, /chatgpt-and-nebulagraph-predict-fifa-world-cup/data_stats.webp 1.5x, /chatgpt-and-nebulagraph-predict-fifa-world-cup/data_stats.webp 2x"
-            sizes="auto"
-            alt="/chatgpt-and-nebulagraph-predict-fifa-world-cup/data_stats.webp" height="2334"  width="4064" >
-    </a></figure></p>
+<p><figure><img
+        
+        loading="lazy"
+        src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/data_stats.webp"
+        srcset="/chatgpt-and-nebulagraph-predict-fifa-world-cup/data_stats.webp, /chatgpt-and-nebulagraph-predict-fifa-world-cup/data_stats.webp 1.5x, /chatgpt-and-nebulagraph-predict-fifa-world-cup/data_stats.webp 2x"
+        sizes="auto"
+        alt="/chatgpt-and-nebulagraph-predict-fifa-world-cup/data_stats.webp"
+        title="/chatgpt-and-nebulagraph-predict-fifa-world-cup/data_stats.webp" height="2334"   width="4064" ></figure></p>
 <blockquote>
 <p>注：参考文档 <a href="https://docs.nebula-graph.com.cn/3.3.0/nebula-explorer/db-management/10.create-schema/#_6" target="_blank" rel="noopener noreferrer">https://docs.nebula-graph.com.cn/3.3.0/nebula-explorer/db-management/10.create-schema/#_6</a></p>
 </blockquote>
 <h3 id="探索数据" class="headerLink">
     <a href="#%e6%8e%a2%e7%b4%a2%e6%95%b0%e6%8d%ae" class="header-mark"></a>3.3 探索数据</h3><h4 id="查询数据" class="headerLink">
     <a href="#%e6%9f%a5%e8%af%a2%e6%95%b0%e6%8d%ae" class="header-mark"></a>3.3.1 查询数据</h4><p>下面，我们试着把所有的数据展示出来看看吧，首先，借助 NebulaGraph Explorer，我用拖拽的方式画出来任意类型的点（TAG）和任意类型点（TAG）之间的边，这里我们知道所有的点都是至少包含在一个边里的，所以不会漏掉任何孤立的点。</p>
-<p><figure><a class="lightgallery" href="/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-0.webp" title="/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-0.webp" data-thumbnail="/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-0.webp">
-        <img
-            
-            loading="lazy"
-            src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-0.webp"
-            srcset="/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-0.webp, /chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-0.webp 1.5x, /chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-0.webp 2x"
-            sizes="auto"
-            alt="/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-0.webp" height="2146"  width="3320" >
-    </a></figure></p>
+<p><figure><img
+        
+        loading="lazy"
+        src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-0.webp"
+        srcset="/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-0.webp, /chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-0.webp 1.5x, /chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-0.webp 2x"
+        sizes="auto"
+        alt="/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-0.webp"
+        title="/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-0.webp" height="2146"   width="3320" ></figure></p>
 <p>让它帮我生成查询的语句，这里，它默认 LIMIT 100 了，我们手动改大一些（ LIMIT 10000），让它在 Console 里执行。</p>
-<p><figure><a class="lightgallery" href="/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-1.webp" title="/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-1.webp" data-thumbnail="/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-1.webp">
-        <img
-            
-            loading="lazy"
-            src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-1.webp"
-            srcset="/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-1.webp, /chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-1.webp 1.5x, /chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-1.webp 2x"
-            sizes="auto"
-            alt="/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-1.webp" height="2146"  width="3320" >
-    </a></figure></p>
+<p><figure><img
+        
+        loading="lazy"
+        src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-1.webp"
+        srcset="/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-1.webp, /chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-1.webp 1.5x, /chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-1.webp 2x"
+        sizes="auto"
+        alt="/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-1.webp"
+        title="/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-1.webp" height="2146"   width="3320" ></figure></p>
 <h4 id="初步观察数据" class="headerLink">
     <a href="#%e5%88%9d%e6%ad%a5%e8%a7%82%e5%af%9f%e6%95%b0%e6%8d%ae" class="header-mark"></a>3.3.2 初步观察数据</h4><p>结果渲染出来是这样子，可以看到它天然形成了一簇一簇的模式。</p>
-<p><figure><a class="lightgallery" href="/chatgpt-and-nebulagraph-predict-fifa-world-cup/bird_view.webp" title="/chatgpt-and-nebulagraph-predict-fifa-world-cup/bird_view.webp" data-thumbnail="/chatgpt-and-nebulagraph-predict-fifa-world-cup/bird_view.webp">
-        <img
-            
-            loading="lazy"
-            src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/bird_view.webp"
-            srcset="/chatgpt-and-nebulagraph-predict-fifa-world-cup/bird_view.webp, /chatgpt-and-nebulagraph-predict-fifa-world-cup/bird_view.webp 1.5x, /chatgpt-and-nebulagraph-predict-fifa-world-cup/bird_view.webp 2x"
-            sizes="auto"
-            alt="/chatgpt-and-nebulagraph-predict-fifa-world-cup/bird_view.webp" height="2334"  width="4064" >
-    </a></figure></p>
+<p><figure><img
+        
+        loading="lazy"
+        src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/bird_view.webp"
+        srcset="/chatgpt-and-nebulagraph-predict-fifa-world-cup/bird_view.webp, /chatgpt-and-nebulagraph-predict-fifa-world-cup/bird_view.webp 1.5x, /chatgpt-and-nebulagraph-predict-fifa-world-cup/bird_view.webp 2x"
+        sizes="auto"
+        alt="/chatgpt-and-nebulagraph-predict-fifa-world-cup/bird_view.webp"
+        title="/chatgpt-and-nebulagraph-predict-fifa-world-cup/bird_view.webp" height="2334"   width="4064" ></figure></p>
 <p>这些外围、形成的簇多是一些由非传统意义上的有全球影响力的俱乐部，和非传统的足球厉害的国家队的球员组成，因为通常这些俱乐部只有一两个球员，而且他们还集中在一个国家队、地区，所以没有和很多其他球员、国家队产生连接。</p>
-<p><figure><a class="lightgallery" href="/chatgpt-and-nebulagraph-predict-fifa-world-cup/edge_teams.webp" title="/chatgpt-and-nebulagraph-predict-fifa-world-cup/edge_teams.webp" data-thumbnail="/chatgpt-and-nebulagraph-predict-fifa-world-cup/edge_teams.webp">
-        <img
-            
-            loading="lazy"
-            src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/edge_teams.webp"
-            srcset="/chatgpt-and-nebulagraph-predict-fifa-world-cup/edge_teams.webp, /chatgpt-and-nebulagraph-predict-fifa-world-cup/edge_teams.webp 1.5x, /chatgpt-and-nebulagraph-predict-fifa-world-cup/edge_teams.webp 2x"
-            sizes="auto"
-            alt="/chatgpt-and-nebulagraph-predict-fifa-world-cup/edge_teams.webp" height="1268"  width="1576" >
-    </a></figure></p>
+<p><figure><img
+        
+        loading="lazy"
+        src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/edge_teams.webp"
+        srcset="/chatgpt-and-nebulagraph-predict-fifa-world-cup/edge_teams.webp, /chatgpt-and-nebulagraph-predict-fifa-world-cup/edge_teams.webp 1.5x, /chatgpt-and-nebulagraph-predict-fifa-world-cup/edge_teams.webp 2x"
+        sizes="auto"
+        alt="/chatgpt-and-nebulagraph-predict-fifa-world-cup/edge_teams.webp"
+        title="/chatgpt-and-nebulagraph-predict-fifa-world-cup/edge_teams.webp" height="1268"   width="1576" ></figure></p>
 <h4 id="图算法辅助分析" class="headerLink">
     <a href="#%e5%9b%be%e7%ae%97%e6%b3%95%e8%be%85%e5%8a%a9%e5%88%86%e6%9e%90" class="header-mark"></a>3.3.3 图算法辅助分析</h4><p>在我点击了 Explorer 中的两个按钮之后（详细参考后边的文档链接），在浏览器里，我们可以看到整个图已经变成：</p>
-<p><figure><a class="lightgallery" href="/chatgpt-and-nebulagraph-predict-fifa-world-cup/Barcelona.webp" title="/chatgpt-and-nebulagraph-predict-fifa-world-cup/Barcelona.webp" data-thumbnail="/chatgpt-and-nebulagraph-predict-fifa-world-cup/Barcelona.webp">
-        <img
-            
-            loading="lazy"
-            src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/Barcelona.webp"
-            srcset="/chatgpt-and-nebulagraph-predict-fifa-world-cup/Barcelona.webp, /chatgpt-and-nebulagraph-predict-fifa-world-cup/Barcelona.webp 1.5x, /chatgpt-and-nebulagraph-predict-fifa-world-cup/Barcelona.webp 2x"
-            sizes="auto"
-            alt="/chatgpt-and-nebulagraph-predict-fifa-world-cup/Barcelona.webp" height="2334"  width="4064" >
-    </a></figure></p>
+<p><figure><img
+        
+        loading="lazy"
+        src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/Barcelona.webp"
+        srcset="/chatgpt-and-nebulagraph-predict-fifa-world-cup/Barcelona.webp, /chatgpt-and-nebulagraph-predict-fifa-world-cup/Barcelona.webp 1.5x, /chatgpt-and-nebulagraph-predict-fifa-world-cup/Barcelona.webp 2x"
+        sizes="auto"
+        alt="/chatgpt-and-nebulagraph-predict-fifa-world-cup/Barcelona.webp"
+        title="/chatgpt-and-nebulagraph-predict-fifa-world-cup/Barcelona.webp" height="2334"   width="4064" ></figure></p>
 <blockquote>
 <p>注：这部分功能可以参考文档 <a href="https://docs.nebula-graph.com.cn/3.3.0/nebula-explorer/graph-explorer/graph-algorithm/" target="_blank" rel="noopener noreferrer">https://docs.nebula-graph.com.cn/3.3.0/nebula-explorer/graph-explorer/graph-algorithm/</a></p>
 </blockquote>
@@ -243,45 +233,41 @@
 </div><blockquote>
 <p>注：为了方便，我把进球数和出场数也作为了 serve 边上的属性了。</p>
 </blockquote>
-<p><figure><a class="lightgallery" href="/chatgpt-and-nebulagraph-predict-fifa-world-cup/query_step0.webp" title="/chatgpt-and-nebulagraph-predict-fifa-world-cup/query_step0.webp" data-thumbnail="/chatgpt-and-nebulagraph-predict-fifa-world-cup/query_step0.webp">
-        <img
-            
-            loading="lazy"
-            src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/query_step0.webp"
-            srcset="/chatgpt-and-nebulagraph-predict-fifa-world-cup/query_step0.webp, /chatgpt-and-nebulagraph-predict-fifa-world-cup/query_step0.webp 1.5x, /chatgpt-and-nebulagraph-predict-fifa-world-cup/query_step0.webp 2x"
-            sizes="auto"
-            alt="/chatgpt-and-nebulagraph-predict-fifa-world-cup/query_step0.webp" height="2334"  width="4064" >
-    </a></figure></p>
+<p><figure><img
+        
+        loading="lazy"
+        src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/query_step0.webp"
+        srcset="/chatgpt-and-nebulagraph-predict-fifa-world-cup/query_step0.webp, /chatgpt-and-nebulagraph-predict-fifa-world-cup/query_step0.webp 1.5x, /chatgpt-and-nebulagraph-predict-fifa-world-cup/query_step0.webp 2x"
+        sizes="auto"
+        alt="/chatgpt-and-nebulagraph-predict-fifa-world-cup/query_step0.webp"
+        title="/chatgpt-and-nebulagraph-predict-fifa-world-cup/query_step0.webp" height="2334"   width="4064" ></figure></p>
 <p>然后，我们全选图上的所有点，点击左边的工具栏，选择出方向的 <code>belongto</code> 边，向外进行图拓展（遍历），同时选择将拓展得到的新点标记为旗帜的 icon：</p>
-<p><figure><a class="lightgallery" href="/chatgpt-and-nebulagraph-predict-fifa-world-cup/treversal_step1.webp" title="treversal_step1" data-thumbnail="/chatgpt-and-nebulagraph-predict-fifa-world-cup/treversal_step1.webp">
-        <img
-            
-            loading="lazy"
-            src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/treversal_step1.webp"
-            srcset="/chatgpt-and-nebulagraph-predict-fifa-world-cup/treversal_step1.webp, /chatgpt-and-nebulagraph-predict-fifa-world-cup/treversal_step1.webp 1.5x, /chatgpt-and-nebulagraph-predict-fifa-world-cup/treversal_step1.webp 2x"
-            sizes="auto"
-            alt="treversal_step1" height="2334"  width="4064" >
-    </a></figure></p>
+<p><figure><img
+        
+        loading="lazy"
+        src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/treversal_step1.webp"
+        srcset="/chatgpt-and-nebulagraph-predict-fifa-world-cup/treversal_step1.webp, /chatgpt-and-nebulagraph-predict-fifa-world-cup/treversal_step1.webp 1.5x, /chatgpt-and-nebulagraph-predict-fifa-world-cup/treversal_step1.webp 2x"
+        sizes="auto"
+        alt="treversal_step1"
+        title="treversal_step1" height="2334"   width="4064" ></figure></p>
 <p>现在，我们获得了最终的子图，我们利用工具栏里的浏览器内的图算法功能，执行 BNC（Betweenness Centrality）</p>
-<p><figure><a class="lightgallery" href="/chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_step2.webp" title="bnc_step2" data-thumbnail="/chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_step2.webp">
-        <img
-            
-            loading="lazy"
-            src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_step2.webp"
-            srcset="/chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_step2.webp, /chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_step2.webp 1.5x, /chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_step2.webp 2x"
-            sizes="auto"
-            alt="bnc_step2" height="2334"  width="4064" >
-    </a></figure></p>
+<p><figure><img
+        
+        loading="lazy"
+        src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_step2.webp"
+        srcset="/chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_step2.webp, /chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_step2.webp 1.5x, /chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_step2.webp 2x"
+        sizes="auto"
+        alt="bnc_step2"
+        title="bnc_step2" height="2334"   width="4064" ></figure></p>
 <p>然后，这个子图变成了这样子：</p>
-<p><figure><a class="lightgallery" href="/chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_predict.webp" title="bnc_predict" data-thumbnail="/chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_predict.webp">
-        <img
-            
-            loading="lazy"
-            src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_predict.webp"
-            srcset="/chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_predict.webp, /chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_predict.webp 1.5x, /chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_predict.webp 2x"
-            sizes="auto"
-            alt="bnc_predict" height="2334"  width="4064" >
-    </a></figure></p>
+<p><figure><img
+        
+        loading="lazy"
+        src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_predict.webp"
+        srcset="/chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_predict.webp, /chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_predict.webp 1.5x, /chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_predict.webp 2x"
+        sizes="auto"
+        alt="bnc_predict"
+        title="bnc_predict" height="2334"   width="4064" ></figure></p>
 <h2 id="预测结果" class="headerLink">
     <a href="#%e9%a2%84%e6%b5%8b%e7%bb%93%e6%9e%9c" class="header-mark"></a>4 预测结果</h2><p>最终，我们根据 Betweenness Centrality 的值，排序，可以得到最终的获胜球队应该是：巴西 🇧🇷！</p>
 <p>其次是比利时、德国、英格兰、法国、阿根廷，让我们等两个礼拜回来看看预测结果是否准确吧 :D。</p>
@@ -441,15 +427,14 @@
 <p>genre(name)</p>
 </li>
 </ul>
-<p><figure><a class="lightgallery" href="/nebulagraph-etl-dbt/schema_0.webp" title="schema_0" data-thumbnail="/nebulagraph-etl-dbt/schema_0.webp">
-        <img
-            
-            loading="lazy"
-            src="/nebulagraph-etl-dbt/schema_0.webp"
-            srcset="/nebulagraph-etl-dbt/schema_0.webp, /nebulagraph-etl-dbt/schema_0.webp 1.5x, /nebulagraph-etl-dbt/schema_0.webp 2x"
-            sizes="auto"
-            alt="schema_0" height="852"  width="1686" >
-    </a></figure></p>
+<p><figure><img
+        
+        loading="lazy"
+        src="/nebulagraph-etl-dbt/schema_0.webp"
+        srcset="/nebulagraph-etl-dbt/schema_0.webp, /nebulagraph-etl-dbt/schema_0.webp 1.5x, /nebulagraph-etl-dbt/schema_0.webp 2x"
+        sizes="auto"
+        alt="schema_0"
+        title="schema_0" height="852"   width="1686" ></figure></p>
 <h2 id="数据转换" class="headerLink">
     <a href="#%e6%95%b0%e6%8d%ae%e8%bd%ac%e6%8d%a2" class="header-mark"></a>4 数据转换</h2><p>有了目标的图谱结构定义，我们来看看手上的数据如何映射到它。</p>
 <h3 id="omdb-数据" class="headerLink">
@@ -688,15 +673,14 @@
 </li>
 </ul>
 <p>所有 OMDB 中我们关心的表的关联如图：</p>
-<p><figure><a class="lightgallery" href="/nebulagraph-etl-dbt/modeling_omdb.webp" title="modeling_omdb" data-thumbnail="/nebulagraph-etl-dbt/modeling_omdb.webp">
-        <img
-            
-            loading="lazy"
-            src="/nebulagraph-etl-dbt/modeling_omdb.webp"
-            srcset="/nebulagraph-etl-dbt/modeling_omdb.webp, /nebulagraph-etl-dbt/modeling_omdb.webp 1.5x, /nebulagraph-etl-dbt/modeling_omdb.webp 2x"
-            sizes="auto"
-            alt="modeling_omdb" height="1506"  width="2862" >
-    </a></figure></p>
+<p><figure><img
+        
+        loading="lazy"
+        src="/nebulagraph-etl-dbt/modeling_omdb.webp"
+        srcset="/nebulagraph-etl-dbt/modeling_omdb.webp, /nebulagraph-etl-dbt/modeling_omdb.webp 1.5x, /nebulagraph-etl-dbt/modeling_omdb.webp 2x"
+        sizes="auto"
+        alt="modeling_omdb"
+        title="modeling_omdb" height="1506"   width="2862" ></figure></p>
 <h3 id="movielens-数据集" class="headerLink">
     <a href="#movielens-%e6%95%b0%e6%8d%ae%e9%9b%86" class="header-mark"></a>4.2 MovieLens 数据集</h3><p>而上边只是一个数据源、数据表或者数仓的数据，在真实场景中，我们还需要从其他源头收取数据，并聚合起来，在本例中，我们还需要从 MovieLens 的数据集中抽取需要的知识。</p>
 <p>这里，涉及到 MovieLens 数据集，我们利用的只有：用户&ndash;&gt;电影，这一条关系。</p>
@@ -812,26 +796,24 @@
 </li>
 </ul>
 <p>现在，这个表格之间的关系如下</p>
-<p><figure><a class="lightgallery" href="/nebulagraph-etl-dbt/modeling_omdb_movielens.webp" title="modeling_omdb_movielens" data-thumbnail="/nebulagraph-etl-dbt/modeling_omdb_movielens.webp">
-        <img
-            
-            loading="lazy"
-            src="/nebulagraph-etl-dbt/modeling_omdb_movielens.webp"
-            srcset="/nebulagraph-etl-dbt/modeling_omdb_movielens.webp, /nebulagraph-etl-dbt/modeling_omdb_movielens.webp 1.5x, /nebulagraph-etl-dbt/modeling_omdb_movielens.webp 2x"
-            sizes="auto"
-            alt="modeling_omdb_movielens" height="1008"  width="2212" >
-    </a></figure></p>
+<p><figure><img
+        
+        loading="lazy"
+        src="/nebulagraph-etl-dbt/modeling_omdb_movielens.webp"
+        srcset="/nebulagraph-etl-dbt/modeling_omdb_movielens.webp, /nebulagraph-etl-dbt/modeling_omdb_movielens.webp 1.5x, /nebulagraph-etl-dbt/modeling_omdb_movielens.webp 2x"
+        sizes="auto"
+        alt="modeling_omdb_movielens"
+        title="modeling_omdb_movielens" height="1008"   width="2212" ></figure></p>
 <h3 id="映射数据到图谱属性图" class="headerLink">
     <a href="#%e6%98%a0%e5%b0%84%e6%95%b0%e6%8d%ae%e5%88%b0%e5%9b%be%e8%b0%b1%e5%b1%9e%e6%80%a7%e5%9b%be" class="header-mark"></a>4.3 映射数据到图谱（属性图）</h3><p>总结起来，我们需要对多个数据源中的不同表格（或者表格形式的 CSV 文件）进行聚合，这样的对应关系如图所示：其中蓝色虚线表示图中顶点的数据信息来源，粉色虚线表示边信息的来源。</p>
-<p><figure><a class="lightgallery" href="/nebulagraph-etl-dbt/schema_mapping_to_graph.webp" title="schema_mapping_to_graph" data-thumbnail="/nebulagraph-etl-dbt/schema_mapping_to_graph.webp">
-        <img
-            
-            loading="lazy"
-            src="/nebulagraph-etl-dbt/schema_mapping_to_graph.webp"
-            srcset="/nebulagraph-etl-dbt/schema_mapping_to_graph.webp, /nebulagraph-etl-dbt/schema_mapping_to_graph.webp 1.5x, /nebulagraph-etl-dbt/schema_mapping_to_graph.webp 2x"
-            sizes="auto"
-            alt="schema_mapping_to_graph" height="1696"  width="1794" >
-    </a></figure></p>
+<p><figure><img
+        
+        loading="lazy"
+        src="/nebulagraph-etl-dbt/schema_mapping_to_graph.webp"
+        srcset="/nebulagraph-etl-dbt/schema_mapping_to_graph.webp, /nebulagraph-etl-dbt/schema_mapping_to_graph.webp 1.5x, /nebulagraph-etl-dbt/schema_mapping_to_graph.webp 2x"
+        sizes="auto"
+        alt="schema_mapping_to_graph"
+        title="schema_mapping_to_graph" height="1696"   width="1794" ></figure></p>
 <p>最后，我们还要对不同表中个体的 id 进行格式化，比如 user_id，是自增的数字，我们要转换成全局唯一的 vertex_id，一个方便的方式是在现有 id 的基础上增加字符串前缀，比如 <code>u_</code>。</p>
 <p>最终，拿对于 <code>user -[watched]-&gt; movie</code> 这一个关系来说，我们可以处理得到这样的表结构数据：</p>
 <table>
@@ -888,25 +870,23 @@
 <h3 id="数据转换利器-dbt" class="headerLink">
     <a href="#%e6%95%b0%e6%8d%ae%e8%bd%ac%e6%8d%a2%e5%88%a9%e5%99%a8-dbt" class="header-mark"></a>5.1 数据转换利器 dbt</h3><p>dbt 是一个开源的数据转换工具，他有非常成熟的社区和生态，可以在大多数主流数仓之中进行高效、可控、高质量的数据转换工作，无论是临时的转换工作（ad-hoc），还是在给定的定时 pipeline 中进行复杂编排，dbt 都可以很好胜任，他的一大特色就是使用 SQL-like 语言去描述数据转换的规则，基于 GitOps，可以非常优雅地去多人协作、维护超大规模数据团队里复杂的数据处理作业。而且内置的数据测试能力可以很好的控制数据的质量，做到可复现、可控制。</p>
 <p>dbt 不仅有很多集成的子项目，还能和很多其他优秀的开源项目有机结合（meltano、AirFlow、Amundsen 、Superset 等等），形成一整套现代的数据基础设施体系，感兴趣的同学可以参考我之前搭建的数据血缘与元数据治理参考架构文章：www.siwei.io/en/data-lineage-oss-ref-solution。</p>
-<p><figure><a class="lightgallery" href="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg" title="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg" data-thumbnail="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg">
-        <img
-            
-            loading="lazy"
-            src="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg"
-            srcset="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg, https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg 1.5x, https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg 2x"
-            sizes="auto"
-            alt="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg">
-    </a></figure></p>
+<p><figure><img
+        
+        loading="lazy"
+        src="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg"
+        srcset="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg, https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg 1.5x, https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg 2x"
+        sizes="auto"
+        alt="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg"
+        title="https://user-images.githubusercontent.com/1651790/168849779-4826f50e-ff87-4e78-b17f-076f91182c43.svg" ></figure></p>
 <p>简单来说，dbt 是一个 python 写的命令行工具，当我们使用它的时候，针对每一个项目，我们可以创建特定格式的项目文件夹，其中包涵一个 YAML 格式的配置文件，在配置文件里指定数据转换的来源信息在哪里，目标在哪里（处理之后的数据存储的地方，可能是 Postgres，Big Query，Spark 等）。在数据源中，我们用 YAML 文件和 <code>.SQL</code> 文件一起描述了”从哪里取哪些数据，如何做变换，输出什么“的信息。</p>
-<p><figure><a class="lightgallery" href="/nebulagraph-etl-dbt/starter-project-dbt-cli.webp" title="starter-project-dbt-cli" data-thumbnail="/nebulagraph-etl-dbt/starter-project-dbt-cli.webp">
-        <img
-            
-            loading="lazy"
-            src="/nebulagraph-etl-dbt/starter-project-dbt-cli.webp"
-            srcset="/nebulagraph-etl-dbt/starter-project-dbt-cli.webp, /nebulagraph-etl-dbt/starter-project-dbt-cli.webp 1.5x, /nebulagraph-etl-dbt/starter-project-dbt-cli.webp 2x"
-            sizes="auto"
-            alt="starter-project-dbt-cli" height="1760"  width="2950" >
-    </a></figure></p>
+<p><figure><img
+        
+        loading="lazy"
+        src="/nebulagraph-etl-dbt/starter-project-dbt-cli.webp"
+        srcset="/nebulagraph-etl-dbt/starter-project-dbt-cli.webp, /nebulagraph-etl-dbt/starter-project-dbt-cli.webp 1.5x, /nebulagraph-etl-dbt/starter-project-dbt-cli.webp 2x"
+        sizes="auto"
+        alt="starter-project-dbt-cli"
+        title="starter-project-dbt-cli" height="1760"   width="2950" ></figure></p>
 <p>这个截图就是 dbt 官方文档中的示例项目中的文件和配置，可以看到 models/example 里的信息就是最核心的数据转换（transform）的规则，而所有的其他数据都是和这个数据转换相关的元数据，这些 dbt 项目文件非常适合用 git 来进行维护，进行现代、自动化的 DataOps。</p>
 <blockquote>
 <p>注：</p>
@@ -933,15 +913,14 @@
 <li>用 dbt 对数据进行转换（Transform）、导出为 CSV 文件</li>
 <li>用 Nebula Importer 将 CSV 导入 NebulaGraph（L）</li>
 </ul>
-<p><figure><a class="lightgallery" href="/nebulagraph-etl-dbt/ETL_dbt_nebulagraph_importer.webp" title="ETL_dbt_nebulagraph_importer" data-thumbnail="/nebulagraph-etl-dbt/ETL_dbt_nebulagraph_importer.webp">
-        <img
-            
-            loading="lazy"
-            src="/nebulagraph-etl-dbt/ETL_dbt_nebulagraph_importer.webp"
-            srcset="/nebulagraph-etl-dbt/ETL_dbt_nebulagraph_importer.webp, /nebulagraph-etl-dbt/ETL_dbt_nebulagraph_importer.webp 1.5x, /nebulagraph-etl-dbt/ETL_dbt_nebulagraph_importer.webp 2x"
-            sizes="auto"
-            alt="ETL_dbt_nebulagraph_importer" height="1976"  width="2716" >
-    </a></figure></p>
+<p><figure><img
+        
+        loading="lazy"
+        src="/nebulagraph-etl-dbt/ETL_dbt_nebulagraph_importer.webp"
+        srcset="/nebulagraph-etl-dbt/ETL_dbt_nebulagraph_importer.webp, /nebulagraph-etl-dbt/ETL_dbt_nebulagraph_importer.webp 1.5x, /nebulagraph-etl-dbt/ETL_dbt_nebulagraph_importer.webp 2x"
+        sizes="auto"
+        alt="ETL_dbt_nebulagraph_importer"
+        title="ETL_dbt_nebulagraph_importer" height="1976"   width="2716" ></figure></p>
 <h3 id="准备-dbt-环境" class="headerLink">
     <a href="#%e5%87%86%e5%a4%87-dbt-%e7%8e%af%e5%a2%83" class="header-mark"></a>6.1 准备 dbt 环境</h3><p>dbt 是一个 python 项目，我们在一个虚拟的 python3 环境里安装好 dbt 和 dbt-postgres。</p>
 <div class="highlight"><div class="chroma">
@@ -1351,15 +1330,14 @@
 </ul>
 </li>
 </ul>
-<p><figure><a class="lightgallery" href="/nebulagraph-etl-dbt/transform_select_joins_user_watched_movies.webp" title="transform_select_joins_user_watched_movies" data-thumbnail="/nebulagraph-etl-dbt/transform_select_joins_user_watched_movies.webp">
-        <img
-            
-            loading="lazy"
-            src="/nebulagraph-etl-dbt/transform_select_joins_user_watched_movies.webp"
-            srcset="/nebulagraph-etl-dbt/transform_select_joins_user_watched_movies.webp, /nebulagraph-etl-dbt/transform_select_joins_user_watched_movies.webp 1.5x, /nebulagraph-etl-dbt/transform_select_joins_user_watched_movies.webp 2x"
-            sizes="auto"
-            alt="transform_select_joins_user_watched_movies" height="1806"  width="1808" >
-    </a></figure></p>
+<p><figure><img
+        
+        loading="lazy"
+        src="/nebulagraph-etl-dbt/transform_select_joins_user_watched_movies.webp"
+        srcset="/nebulagraph-etl-dbt/transform_select_joins_user_watched_movies.webp, /nebulagraph-etl-dbt/transform_select_joins_user_watched_movies.webp 1.5x, /nebulagraph-etl-dbt/transform_select_joins_user_watched_movies.webp 2x"
+        sizes="auto"
+        alt="transform_select_joins_user_watched_movies"
+        title="transform_select_joins_user_watched_movies" height="1806"   width="1808" ></figure></p>
 <blockquote>
 <p>小贴士：我们可以在 Postgres 的连接器中通过增加 LIMIT 快速调试自己的 SQL 语句。</p>
 </blockquote>
@@ -1628,15 +1606,14 @@
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>他的结果是：曾经喜欢的星战电影的大部分演职人员都也参与了这部和同样是“奥斯卡获奖”且“经典”的电影。</p>
-<p><figure><a class="lightgallery" href="/nebulagraph-etl-dbt/reasoning_movie.webp" title="reasoning_movie" data-thumbnail="/nebulagraph-etl-dbt/reasoning_movie.webp">
-        <img
-            
-            loading="lazy"
-            src="/nebulagraph-etl-dbt/reasoning_movie.webp"
-            srcset="/nebulagraph-etl-dbt/reasoning_movie.webp, /nebulagraph-etl-dbt/reasoning_movie.webp 1.5x, /nebulagraph-etl-dbt/reasoning_movie.webp 2x"
-            sizes="auto"
-            alt="reasoning_movie" height="1110"  width="2276" >
-    </a></figure></p>
+<p><figure><img
+        
+        loading="lazy"
+        src="/nebulagraph-etl-dbt/reasoning_movie.webp"
+        srcset="/nebulagraph-etl-dbt/reasoning_movie.webp, /nebulagraph-etl-dbt/reasoning_movie.webp 1.5x, /nebulagraph-etl-dbt/reasoning_movie.webp 2x"
+        sizes="auto"
+        alt="reasoning_movie"
+        title="reasoning_movie" height="1110"   width="2276" ></figure></p>
 <blockquote>
 <p>我在另一篇文章中给大家用同一个图谱展示了更多图数据库、图算法在推荐系统上的应用，如果大家感兴趣，欢迎阅读：https://www.siwei.io/recommendation-system-with-graphdb/ 。</p>
 </blockquote>

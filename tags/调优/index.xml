@@ -40,15 +40,14 @@
 <li>优化过的计划图被执行引擎从图的叶子节点开始执行直到根部</li>
 </ul>
 <p>的过程：</p>
-<p><figure><a class="lightgallery" href="/ngql-execution-plan/code-reading-qe-planner-arch.png" title="img" data-thumbnail="/ngql-execution-plan/code-reading-qe-planner-arch.png">
-        <img
-            
-            loading="lazy"
-            src="/ngql-execution-plan/code-reading-qe-planner-arch.png"
-            srcset="/ngql-execution-plan/code-reading-qe-planner-arch.png, /ngql-execution-plan/code-reading-qe-planner-arch.png 1.5x, /ngql-execution-plan/code-reading-qe-planner-arch.png 2x"
-            sizes="auto"
-            alt="img" height="690"  width="1554" >
-    </a></figure></p>
+<p><figure><img
+        
+        loading="lazy"
+        src="/ngql-execution-plan/code-reading-qe-planner-arch.png"
+        srcset="/ngql-execution-plan/code-reading-qe-planner-arch.png, /ngql-execution-plan/code-reading-qe-planner-arch.png 1.5x, /ngql-execution-plan/code-reading-qe-planner-arch.png 2x"
+        sizes="auto"
+        alt="img"
+        title="img" height="690"   width="1554" ></figure></p>
 <p>举一个例子，在查年龄大于 34 岁的三跳好友的语句被查询之后</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
@@ -59,15 +58,14 @@
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>语句经过了解析、验证、优化之后，最终的执行计划是， <code>Start -&gt; Loop -&gt; Start -&gt; GetNeighbors -&gt; Project -&gt; Dedup -&gt; Loop -&gt; GetNeighbors -&gt; Project -&gt; GetVertices -&gt; Project -&gt; LeftJoin -&gt; Filter -&gt; Project -&gt; Dedup -&gt; Sort</code>，或者如下图所示。</p>
-<p><figure><a class="lightgallery" href="/ngql-execution-plan/go_n_steps.svg" title="go_n_steps" data-thumbnail="/ngql-execution-plan/go_n_steps.svg">
-        <img
-            
-            loading="lazy"
-            src="/ngql-execution-plan/go_n_steps.svg"
-            srcset="/ngql-execution-plan/go_n_steps.svg, /ngql-execution-plan/go_n_steps.svg 1.5x, /ngql-execution-plan/go_n_steps.svg 2x"
-            sizes="auto"
-            alt="go_n_steps">
-    </a></figure></p>
+<p><figure><img
+        
+        loading="lazy"
+        src="/ngql-execution-plan/go_n_steps.svg"
+        srcset="/ngql-execution-plan/go_n_steps.svg, /ngql-execution-plan/go_n_steps.svg 1.5x, /ngql-execution-plan/go_n_steps.svg 2x"
+        sizes="auto"
+        alt="go_n_steps"
+        title="go_n_steps" ></figure></p>
 <p>了解这个优化过程和最终执行计划意味着什么是调优查询、面向性能设计图建模的关键。</p>
 <blockquote>
 <p>这个计划图由添加了 <code>PROFILE FORMAT=&quot;DOT&quot;</code> 的执行结果中的 <code>digraph</code> 部分，借助 graphviz 渲染而得，的https://dreampuf.github.io/GraphvizOnline 是一个方便的线上渲染的工具。</p>
@@ -5135,15 +5133,14 @@
 <blockquote>
 <p>参考边在 RocksDB 中的数据结构，https://nebula-graph.com.cn/posts/nebula-graph-storage-engine-overview</p>
 </blockquote>
-<p><figure><a class="lightgallery" href="https://www-cdn.nebula-graph.com.cn/nebula-blog/Architecture0105.png" title="image" data-thumbnail="https://www-cdn.nebula-graph.com.cn/nebula-blog/Architecture0105.png">
-        <img
-            
-            loading="lazy"
-            src="https://www-cdn.nebula-graph.com.cn/nebula-blog/Architecture0105.png"
-            srcset="https://www-cdn.nebula-graph.com.cn/nebula-blog/Architecture0105.png, https://www-cdn.nebula-graph.com.cn/nebula-blog/Architecture0105.png 1.5x, https://www-cdn.nebula-graph.com.cn/nebula-blog/Architecture0105.png 2x"
-            sizes="auto"
-            alt="image">
-    </a></figure></p>
+<p><figure><img
+        
+        loading="lazy"
+        src="https://www-cdn.nebula-graph.com.cn/nebula-blog/Architecture0105.png"
+        srcset="https://www-cdn.nebula-graph.com.cn/nebula-blog/Architecture0105.png, https://www-cdn.nebula-graph.com.cn/nebula-blog/Architecture0105.png 1.5x, https://www-cdn.nebula-graph.com.cn/nebula-blog/Architecture0105.png 2x"
+        sizes="auto"
+        alt="image"
+        title="image" ></figure></p>
 <p>所以，绕开 <code>id($$)</code> 这个表达的另一个方法就是用 <code>edge</code>，这里双向探索的情况下，等价的表达是 <code>dst(edge) == &quot;player101&quot; OR src(edge) == &quot;player101&quot;</code>，所以，这句查询可以改写成：</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
@@ -5597,15 +5594,14 @@
 </div><p>而 1. 与 2. 的情况又有不同，1. 中的过滤条件 <code>n.player.age &gt; 50</code> 涉及未被索引的字段，这个过滤是无法被下推到 IndexScan 算子的，这意味着所有的 player 都会被扫描到 GraphD 中，然后再进一步进行 Filter 算子的过滤计算。</p>
 <blockquote>
 <p>索引设计的文章参考：https://nebula-graph.com.cn/posts/how-indexing-works-in-nebula-graph，如下是文中介绍的点索引在 RocksDB 中的数据结构。</p>
-<p><figure><a class="lightgallery" href="https://www-cdn.nebula-graph.com.cn/nebula-blog/Index04.png" title="vertex-index-format" data-thumbnail="https://www-cdn.nebula-graph.com.cn/nebula-blog/Index04.png">
-        <img
-            
-            loading="lazy"
-            src="https://www-cdn.nebula-graph.com.cn/nebula-blog/Index04.png"
-            srcset="https://www-cdn.nebula-graph.com.cn/nebula-blog/Index04.png, https://www-cdn.nebula-graph.com.cn/nebula-blog/Index04.png 1.5x, https://www-cdn.nebula-graph.com.cn/nebula-blog/Index04.png 2x"
-            sizes="auto"
-            alt="vertex-index-format">
-    </a></figure></p>
+<p><figure><img
+        
+        loading="lazy"
+        src="https://www-cdn.nebula-graph.com.cn/nebula-blog/Index04.png"
+        srcset="https://www-cdn.nebula-graph.com.cn/nebula-blog/Index04.png, https://www-cdn.nebula-graph.com.cn/nebula-blog/Index04.png 1.5x, https://www-cdn.nebula-graph.com.cn/nebula-blog/Index04.png 2x"
+        sizes="auto"
+        alt="vertex-index-format"
+        title="vertex-index-format" ></figure></p>
 </blockquote>
 <p>通过两个查询的 profile 分析，我们可以很清楚地看到：</p>
 <ul>
