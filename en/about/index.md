@@ -62,7 +62,7 @@ I used to share my notes and thoughts on [note.siwei.info](https://note.siwei.in
 
 
 [^1]: I share the same idea with Ahmet Alp Balkan's [tweet](https://twitter.com/ahmetb/status/1362855715367313412):
-{{< tweet "ahmetb" 1362855715367313412 >}}
+{{< tweet user="ahmetb" id="1362855715367313412" >}}
 
 [^2]: Ericsson's Telco. Infrastructure as a Service product offerring: [Cloud Execution Environment](https://www.ericsson.com/en/portfolio/cloud-software--services/cloud-core/cloud-infrastructure/nfvi/cloud-execution-environment)
 [^3]: System Manager, PDU Cloud: [Job Description](https://www.linkedin.com/jobs/view/2541281375)
