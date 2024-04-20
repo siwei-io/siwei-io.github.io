@@ -3,7 +3,7 @@
         <title>Amundsen - 标签 - siwei.io</title>
         <link>https://siwei.io/tags/amundsen/</link>
         <description>Amundsen - 标签 - siwei.io</description>
-        <generator>Hugo -- gohugo.io</generator><language>zh-cn</language><managingEditor>weyl.gu@gmail.com (Wey Gu)</managingEditor>
+        <generator>Hugo -- gohugo.io</generator><managingEditor>weyl.gu@gmail.com (Wey Gu)</managingEditor>
             <webMaster>weyl.gu@gmail.com (Wey Gu)</webMaster><lastBuildDate>Fri, 25 Nov 2022 16:20:43 &#43;0800</lastBuildDate><atom:link href="https://siwei.io/tags/amundsen/" rel="self" type="application/rss+xml" /><item>
     <title>基于开源技术栈的数据血缘、治理参考解决方案</title>
     <link>https://siwei.io/data-lineage-oss-ref-solution/</link>
@@ -124,12 +124,12 @@
 </span><span class="lnt">5
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker run --rm --name postgres <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    -e <span class="nv">POSTGRES_PASSWORD</span><span class="o">=</span>lineage_ref <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    -e <span class="nv">POSTGRES_USER</span><span class="o">=</span>lineage_ref <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    -e <span class="nv">POSTGRES_DB</span><span class="o">=</span>warehouse -d <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    -p 5432:5432 postgres
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">docker run --rm --name postgres <span class="se">\
+</span><span class="se"></span>    -e <span class="nv">POSTGRES_PASSWORD</span><span class="o">=</span>lineage_ref <span class="se">\
+</span><span class="se"></span>    -e <span class="nv">POSTGRES_USER</span><span class="o">=</span>lineage_ref <span class="se">\
+</span><span class="se"></span>    -e <span class="nv">POSTGRES_DB</span><span class="o">=</span>warehouse -d <span class="se">\
+</span><span class="se"></span>    -p 5432:5432 postgres
+</code></pre></td></tr></table>
 </div>
 </div><p>然后我们可以使用 Postgres CLI 或 GUI 客户端来验证它。</p>
 <blockquote>
@@ -161,20 +161,20 @@
 </span><span class="lnt">13
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">mkdir .venv
-</span></span><span class="line"><span class="cl"><span class="c1"># example in a debian flavor Linux distro</span>
-</span></span><span class="line"><span class="cl">sudo apt-get install python3-dev python3-pip python3-venv python3-wheel -y
-</span></span><span class="line"><span class="cl">python3 -m venv .venv/meltano
-</span></span><span class="line"><span class="cl"><span class="nb">source</span> .venv/meltano/bin/activate
-</span></span><span class="line"><span class="cl">python3 -m pip install wheel
-</span></span><span class="line"><span class="cl">python3 -m pip install meltano
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="c1"># init a project</span>
-</span></span><span class="line"><span class="cl">mkdir meltano_projects <span class="o">&amp;&amp;</span> <span class="nb">cd</span> meltano_projects
-</span></span><span class="line"><span class="cl"><span class="c1"># replace &lt;yourprojectname&gt; with your own one</span>
-</span></span><span class="line"><span class="cl">touch .env
-</span></span><span class="line"><span class="cl">meltano init &lt;yourprojectname&gt;
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">mkdir .venv
+<span class="c1"># example in a debian flavor Linux distro</span>
+sudo apt-get install python3-dev python3-pip python3-venv python3-wheel -y
+python3 -m venv .venv/meltano
+<span class="nb">source</span> .venv/meltano/bin/activate
+python3 -m pip install wheel
+python3 -m pip install meltano
+
+<span class="c1"># init a project</span>
+mkdir meltano_projects <span class="o">&amp;&amp;</span> <span class="nb">cd</span> meltano_projects
+<span class="c1"># replace &lt;yourprojectname&gt; with your own one</span>
+touch .env
+meltano init &lt;yourprojectname&gt;
+</code></pre></td></tr></table>
 </div>
 </div><ul>
 <li>或者用容器安装 Meltano：</li>
@@ -194,18 +194,18 @@
 </span><span class="lnt">11
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker pull meltano/meltano:latest
-</span></span><span class="line"><span class="cl">docker run --rm meltano/meltano --version
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="c1"># init a project</span>
-</span></span><span class="line"><span class="cl">mkdir meltano_projects <span class="o">&amp;&amp;</span> <span class="nb">cd</span> meltano_projects
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="c1"># replace &lt;yourprojectname&gt; with your own one</span>
-</span></span><span class="line"><span class="cl">touch .env
-</span></span><span class="line"><span class="cl">docker run --rm -v <span class="s2">&#34;</span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span><span class="s2">&#34;</span>:/projects <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>             -w /projects --env-file .env <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>             meltano/meltano init &lt;yourprojectname&gt;
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">docker pull meltano/meltano:latest
+docker run --rm meltano/meltano --version
+
+<span class="c1"># init a project</span>
+mkdir meltano_projects <span class="o">&amp;&amp;</span> <span class="nb">cd</span> meltano_projects
+
+<span class="c1"># replace &lt;yourprojectname&gt; with your own one</span>
+touch .env
+docker run --rm -v <span class="s2">&#34;</span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span><span class="s2">&#34;</span>:/projects <span class="se">\
+</span><span class="se"></span>             -w /projects --env-file .env <span class="se">\
+</span><span class="se"></span>             meltano/meltano init &lt;yourprojectname&gt;
+</code></pre></td></tr></table>
 </div>
 </div><p>除了 <code>meltano init</code>，还有一些其他命令，例如 <code>meltano etl</code> 表示 ETL 的执行，还有 <code>meltano invoke &lt;plugin&gt;</code> 来调用插件命令，详细可以参考它的速查表（https://docs.meltano.com/reference/command-line-interface）。</p>
 <h4 id="meltano-gui-界面" class="headerLink">
@@ -215,8 +215,8 @@
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">meltano ui
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">meltano ui
+</code></pre></td></tr></table>
 </div>
 </div><p>默认他会跑在 http://localhost:5000 上。</p>
 <p>对于 Docker 运行的情况，只需要在暴露 5000 端口的情况下运行容器即可，由于容器的默认命令已经是 <code>meltano ui</code>，所以 <code>run</code> 的命令只需：</p>
@@ -228,11 +228,11 @@
 </span><span class="lnt">4
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker run -v <span class="s2">&#34;</span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span><span class="s2">&#34;</span>:/project <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>             -w /project <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>             -p 5000:5000 <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>             meltano/meltano
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">docker run -v <span class="s2">&#34;</span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span><span class="s2">&#34;</span>:/project <span class="se">\
+</span><span class="se"></span>             -w /project <span class="se">\
+</span><span class="se"></span>             -p 5000:5000 <span class="se">\
+</span><span class="se"></span>             meltano/meltano
+</code></pre></td></tr></table>
 </div>
 </div><h4 id="meltano-项目示例" class="headerLink">
     <a href="#meltano-%e9%a1%b9%e7%9b%ae%e7%a4%ba%e4%be%8b" class="header-mark"></a>3.2.3 Meltano 项目示例</h4><p>写到这里的时候，我注意到 <a href="https://github.com/pnadolny13" target="_blank" rel="noopener noreferrer">Pat Nadolny</a> 创建了很好的示例项目在 <a href="https://github.com/pnadolny13/meltano_example_implementations/tree/main/meltano_projects/singer_dbt_jaffle" target="_blank" rel="noopener noreferrer">https://github.com/pnadolny13/meltano_example_implementations/tree/main/meltano_projects/singer_dbt_jaffle</a>，它利用 dbt 的 Meltano 示例数据集，采用 Airflow 编排 ETL 任务（https://github.com/pnadolny13/meltano_example_implementations/tree/main/meltano_projects/dbt_orchestration，还有利用 Superset 的例子（https://github.com/pnadolny13/meltano_example_implementations/tree/main/meltano_projects/jaffle_superset）。</p>
@@ -272,28 +272,28 @@
 </span><span class="lnt">21
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">git clone https://github.com/pnadolny13/meltano_example_implementations.git
-</span></span><span class="line"><span class="cl"><span class="nb">cd</span> meltano_example_implementations/meltano_projects/singer_dbt_jaffle/
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">meltano install
-</span></span><span class="line"><span class="cl">touch .env
-</span></span><span class="line"><span class="cl"><span class="nb">echo</span> <span class="nv">PG_PASSWORD</span><span class="o">=</span><span class="s2">&#34;lineage_ref&#34;</span> &gt;&gt; .env
-</span></span><span class="line"><span class="cl"><span class="nb">echo</span> <span class="nv">PG_USERNAME</span><span class="o">=</span><span class="s2">&#34;lineage_ref&#34;</span> &gt;&gt; .env
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="c1"># Extract and Load(with Singer)</span>
-</span></span><span class="line"><span class="cl">meltano run tap-csv target-postgres
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="c1"># Trasnform(with dbt)</span>
-</span></span><span class="line"><span class="cl">meltano run dbt:run
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="c1"># Generate dbt docs</span>
-</span></span><span class="line"><span class="cl">meltano invoke dbt docs generate
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="c1"># Serve generated dbt docs</span>
-</span></span><span class="line"><span class="cl">meltano invoke dbt docs to serve
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="c1"># Then visit http://localhost:8080</span>
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">git clone https://github.com/pnadolny13/meltano_example_implementations.git
+<span class="nb">cd</span> meltano_example_implementations/meltano_projects/singer_dbt_jaffle/
+
+meltano install
+touch .env
+<span class="nb">echo</span> <span class="nv">PG_PASSWORD</span><span class="o">=</span><span class="s2">&#34;lineage_ref&#34;</span> &gt;&gt; .env
+<span class="nb">echo</span> <span class="nv">PG_USERNAME</span><span class="o">=</span><span class="s2">&#34;lineage_ref&#34;</span> &gt;&gt; .env
+
+<span class="c1"># Extract and Load(with Singer)</span>
+meltano run tap-csv target-postgres
+
+<span class="c1"># Trasnform(with dbt)</span>
+meltano run dbt:run
+
+<span class="c1"># Generate dbt docs</span>
+meltano invoke dbt docs generate
+
+<span class="c1"># Serve generated dbt docs</span>
+meltano invoke dbt docs to serve
+
+<span class="c1"># Then visit http://localhost:8080</span>
+</code></pre></td></tr></table>
 </div>
 </div><p>现在，我们可以连接到 Postgres 来查看 加载和转换后的数据预览如下，截图来自 VS Code 的 SQLTool：</p>
 <p>Payments 表里长这样子：</p>
@@ -320,12 +320,12 @@
 </span><span class="lnt">5
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">mkdir .venv
-</span></span><span class="line"><span class="cl">python3 -m venv .venv/meltano
-</span></span><span class="line"><span class="cl"><span class="nb">source</span> .venv/meltano/bin/activate
-</span></span><span class="line"><span class="cl">python3 -m pip install wheel
-</span></span><span class="line"><span class="cl">python3 -m pip install meltano
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">mkdir .venv
+python3 -m venv .venv/meltano
+<span class="nb">source</span> .venv/meltano/bin/activate
+python3 -m pip install wheel
+python3 -m pip install meltano
+</code></pre></td></tr></table>
 </div>
 </div><p>参考 Pat 的 Guide（https://github.com/pnadolny13/meltano_example_implementations/tree/main/meltano_projects/jaffle_superset），稍微做一些修改：</p>
 <ul>
@@ -337,9 +337,9 @@
 </span><span class="lnt">2
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">git clone https://github.com/pnadolny13/meltano_example_implementations.git
-</span></span><span class="line"><span class="cl"><span class="nb">cd</span> meltano_example_implementations/meltano_projects/jaffle_superset/
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">git clone https://github.com/pnadolny13/meltano_example_implementations.git
+<span class="nb">cd</span> meltano_example_implementations/meltano_projects/jaffle_superset/
+</code></pre></td></tr></table>
 </div>
 </div><ul>
 <li>修改meltano配置文件，让 Superset 连接到我们创建的 Postgres：</li>
@@ -349,8 +349,8 @@
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">vim meltano_projects/jaffle_superset/meltano.yml
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">vim meltano_projects/jaffle_superset/meltano.yml
+</code></pre></td></tr></table>
 </div>
 </div><p>这里，我将主机名更改为“10.1.1.111”，这是我当前主机的 IP，而如果读者在 Windows 或者 macOS 机器的 Docker Desktop 上跑的话，这里不要修改，否则要参考我去改成自己实际的地址：</p>
 <div class="highlight"><div class="chroma">
@@ -368,18 +368,18 @@
 </span><span class="lnt">11
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-diff" data-lang="diff"><span class="line"><span class="cl"><span class="gd">--- a/meltano_projects/jaffle_superset/meltano.yml
-</span></span></span><span class="line"><span class="cl"><span class="gd"></span><span class="gi">+++ b/meltano_projects/jaffle_superset/meltano.yml
-</span></span></span><span class="line"><span class="cl"><span class="gi"></span><span class="gu">@@ -71,7 +71,7 @@ plugins:
-</span></span></span><span class="line"><span class="cl"><span class="gu"></span>               A list of database driver dependencies can be found here https://superset.apache.org/docs/databases/installing-database-drivers
-</span></span><span class="line"><span class="cl">     config:
-</span></span><span class="line"><span class="cl">       database_name: my_postgres
-</span></span><span class="line"><span class="cl"><span class="gd">-      sqlalchemy_uri: postgresql+psycopg2://${PG_USERNAME}:${PG_PASSWORD}@host.docker.internal:${PG_PORT}/${PG_DATABASE}
-</span></span></span><span class="line"><span class="cl"><span class="gd"></span><span class="gi">+      sqlalchemy_uri: postgresql+psycopg2://${PG_USERNAME}:${PG_PASSWORD}@10.1.1.168:${PG_PORT}/${PG_DATABASE}
-</span></span></span><span class="line"><span class="cl"><span class="gi"></span>       tables:
-</span></span><span class="line"><span class="cl">       - model.my_meltano_project.customers
-</span></span><span class="line"><span class="cl">       - model.my_meltano_project.orders
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-diff" data-lang="diff"><span class="gd">--- a/meltano_projects/jaffle_superset/meltano.yml
+</span><span class="gd"></span><span class="gi">+++ b/meltano_projects/jaffle_superset/meltano.yml
+</span><span class="gi"></span><span class="gu">@@ -71,7 +71,7 @@ plugins:
+</span><span class="gu"></span>               A list of database driver dependencies can be found here https://superset.apache.org/docs/databases/installing-database-drivers
+     config:
+       database_name: my_postgres
+<span class="gd">-      sqlalchemy_uri: postgresql+psycopg2://${PG_USERNAME}:${PG_PASSWORD}@host.docker.internal:${PG_PORT}/${PG_DATABASE}
+</span><span class="gd"></span><span class="gi">+      sqlalchemy_uri: postgresql+psycopg2://${PG_USERNAME}:${PG_PASSWORD}@10.1.1.168:${PG_PORT}/${PG_DATABASE}
+</span><span class="gi"></span>       tables:
+       - model.my_meltano_project.customers
+       - model.my_meltano_project.orders
+</code></pre></td></tr></table>
 </div>
 </div><ul>
 <li>添加 Postgres 登录的信息到  <code>.env</code> 文件：</li>
@@ -390,9 +390,9 @@
 </span><span class="lnt">2
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nb">echo</span> <span class="nv">PG_USERNAME</span><span class="o">=</span>lineage_ref &gt;&gt; .env
-</span></span><span class="line"><span class="cl"><span class="nb">echo</span> <span class="nv">PG_PASSWORD</span><span class="o">=</span>lineage_ref &gt;&gt; .env
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="nb">echo</span> <span class="nv">PG_USERNAME</span><span class="o">=</span>lineage_ref &gt;&gt; .env
+<span class="nb">echo</span> <span class="nv">PG_PASSWORD</span><span class="o">=</span>lineage_ref &gt;&gt; .env
+</code></pre></td></tr></table>
 </div>
 </div><ul>
 <li>安装 Meltano 项目，运行 ETL 任务</li>
@@ -403,9 +403,9 @@
 </span><span class="lnt">2
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">meltano install
-</span></span><span class="line"><span class="cl">meltano run tap-csv target-postgres dbt:run
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">meltano install
+meltano run tap-csv target-postgres dbt:run
+</code></pre></td></tr></table>
 </div>
 </div><ul>
 <li>调用、启动 superset，这里注意 <code>ui</code> 不是 meltano 的内部命令，而是一个配置进去的自定义行为（user-defined action）</li>
@@ -415,8 +415,8 @@
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">meltano invoke superset:ui
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">meltano invoke superset:ui
+</code></pre></td></tr></table>
 </div>
 </div><ul>
 <li>在另一个命令行终端，执行另一个自定义的命令 <code>load_datasources</code></li>
@@ -426,8 +426,8 @@
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-gdscript3" data-lang="gdscript3"><span class="line"><span class="cl"><span class="n">meltano</span> <span class="n">invoke</span> <span class="n">superset</span><span class="p">:</span><span class="n">load_datasources</span>
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">meltano invoke superset:load_datasources
+</code></pre></td></tr></table>
 </div>
 </div><ul>
 <li>通过浏览器访问 http://localhost:8088/ 就是Superset 的图形界面了：</li>
@@ -543,9 +543,9 @@
 </span><span class="lnt">2
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">git clone -b amundsen_nebula_graph --recursive git@github.com:wey-gu/amundsen.git
-</span></span><span class="line"><span class="cl"><span class="nb">cd</span> amundsen
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">git clone -b amundsen_nebula_graph --recursive git@github.com:wey-gu/amundsen.git
+<span class="nb">cd</span> amundsen
+</code></pre></td></tr></table>
 </div>
 </div><p>然后，启动所有目录服务（catalog services）及其后端存储：</p>
 <div class="highlight"><div class="chroma">
@@ -553,8 +553,8 @@
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker-compose -f docker-amundsen-nebula.yml up
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">docker-compose -f docker-amundsen-nebula.yml up
+</code></pre></td></tr></table>
 </div>
 </div><blockquote>
 <p>注：可以添加 <code>-d</code> 来让容器在后台运行：</p>
@@ -563,8 +563,8 @@
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker-compose -f docker-amundsen-nebula.yml up -d
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">docker-compose -f docker-amundsen-nebula.yml up -d
+</code></pre></td></tr></table>
 </div>
 </div><p>关闭后台运行的集群</p>
 <div class="highlight"><div class="chroma">
@@ -572,8 +572,8 @@
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker-compose -f docker-amundsen-nebula.yml stop
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">docker-compose -f docker-amundsen-nebula.yml stop
+</code></pre></td></tr></table>
 </div>
 </div><p>删除后台运行的集群</p>
 <div class="highlight"><div class="chroma">
@@ -581,8 +581,8 @@
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker-compose -f docker-amundsen-nebula.yml down
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">docker-compose -f docker-amundsen-nebula.yml down
+</code></pre></td></tr></table>
 </div>
 </div></blockquote>
 <p>由于这个 docker-compose 文件是供开发人员试玩、调试 Amundsen 用的，而不是给生产部署准备的，它在启动的时候会从代码库构建镜像，第一次跑的时候启动会慢一些。</p>
@@ -600,13 +600,13 @@
 </span><span class="lnt">6
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nb">cd</span> databuilder
-</span></span><span class="line"><span class="cl">python3 -m venv .venv
-</span></span><span class="line"><span class="cl"><span class="nb">source</span> .venv/bin/activate
-</span></span><span class="line"><span class="cl">python3 -m pip install wheel
-</span></span><span class="line"><span class="cl">python3 -m pip install -r requirements.txt
-</span></span><span class="line"><span class="cl">python3 setup.py install
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="nb">cd</span> databuilder
+python3 -m venv .venv
+<span class="nb">source</span> .venv/bin/activate
+python3 -m pip install wheel
+python3 -m pip install -r requirements.txt
+python3 setup.py install
+</code></pre></td></tr></table>
 </div>
 </div><p>调用这个示例数据构建器 ETL 脚本来把示例的虚拟数据导进去。</p>
 <div class="highlight"><div class="chroma">
@@ -614,8 +614,8 @@
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">python3 example/scripts/sample_data_loader_nebula.py
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">python3 example/scripts/sample_data_loader_nebula.py
+</code></pre></td></tr></table>
 </div>
 </div><h5 id="验证一下-amundsen" class="headerLink">
     <a href="#%e9%aa%8c%e8%af%81%e4%b8%80%e4%b8%8b-amundsen" class="header-mark"></a>3.4.1.3 验证一下 Amundsen</h5><p>在访问 Amundsen 之前，我们需要创建一个测试用户：</p>
@@ -633,17 +633,17 @@
 </span><span class="lnt">10
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># run a container with curl attached to amundsenfrontend</span>
-</span></span><span class="line"><span class="cl">docker run -it --rm --net container:amundsenfrontend nicolaka/netshoot
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="c1"># Create a user with id test_user_id</span>
-</span></span><span class="line"><span class="cl">curl -X PUT -v http://amundsenmetadata:5002/user <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    -H <span class="s2">&#34;Content-Type: application/json&#34;</span> <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    --data <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    <span class="s1">&#39;{&#34;user_id&#34;:&#34;test_user_id&#34;,&#34;first_name&#34;:&#34;test&#34;,&#34;last_name&#34;:&#34;user&#34;, &#34;email&#34;:&#34;test_user_id@mail.com&#34;}&#39;</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="nb">exit</span>
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="c1"># run a container with curl attached to amundsenfrontend</span>
+docker run -it --rm --net container:amundsenfrontend nicolaka/netshoot
+
+<span class="c1"># Create a user with id test_user_id</span>
+curl -X PUT -v http://amundsenmetadata:5002/user <span class="se">\
+</span><span class="se"></span>    -H <span class="s2">&#34;Content-Type: application/json&#34;</span> <span class="se">\
+</span><span class="se"></span>    --data <span class="se">\
+</span><span class="se"></span>    <span class="s1">&#39;{&#34;user_id&#34;:&#34;test_user_id&#34;,&#34;first_name&#34;:&#34;test&#34;,&#34;last_name&#34;:&#34;user&#34;, &#34;email&#34;:&#34;test_user_id@mail.com&#34;}&#39;</span>
+
+<span class="nb">exit</span>
+</code></pre></td></tr></table>
 </div>
 </div><p>然后我们可以在 <a href="http://localhost:5000/" target="_blank" rel="noopener noreferrer">http://localhost:5000</a> 查看 UI 并尝试搜索 <code>test</code>，它应该会返回一些结果。</p>
 <p><figure><img
@@ -711,49 +711,49 @@
 </span><span class="lnt">42
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-gdscript3" data-lang="gdscript3"><span class="line"><span class="cl">       <span class="err">┌────────────────────────┐</span> <span class="err">┌────────────────────────────────────────┐</span>
-</span></span><span class="line"><span class="cl">       <span class="err">│</span> <span class="n">Frontend</span><span class="p">:</span><span class="mi">5000</span>          <span class="err">│</span> <span class="err">│</span> <span class="n">Metadata</span> <span class="n">Sources</span>                       <span class="err">│</span>
-</span></span><span class="line"><span class="cl">       <span class="err">├────────────────────────┤</span> <span class="err">│</span> <span class="err">┌────────┐</span> <span class="err">┌─────────┐</span> <span class="err">┌─────────────┐</span> <span class="err">│</span>
-</span></span><span class="line"><span class="cl">       <span class="err">│</span> <span class="n">Metaservice</span><span class="p">:</span><span class="mi">5001</span>       <span class="err">│</span> <span class="err">│</span> <span class="err">│</span>        <span class="err">│</span> <span class="err">│</span>         <span class="err">│</span> <span class="err">│</span>             <span class="err">│</span> <span class="err">│</span>
-</span></span><span class="line"><span class="cl">       <span class="err">│</span> <span class="err">┌──────────────┐</span>       <span class="err">│</span> <span class="err">│</span> <span class="err">│</span> <span class="n">Foo</span> <span class="n">DB</span> <span class="err">│</span> <span class="err">│</span> <span class="n">Bar</span> <span class="n">App</span> <span class="err">│</span> <span class="err">│</span> <span class="n">X</span> <span class="n">Dashboard</span> <span class="err">│</span> <span class="err">│</span>
-</span></span><span class="line"><span class="cl">  <span class="err">┌────┼─┤</span> <span class="n">Nebula</span> <span class="n">Proxy</span> <span class="err">│</span>       <span class="err">│</span> <span class="err">│</span> <span class="err">│</span>        <span class="err">│</span> <span class="err">│</span>         <span class="err">│</span> <span class="err">│</span>             <span class="err">│</span> <span class="err">│</span>
-</span></span><span class="line"><span class="cl">  <span class="err">│</span>    <span class="err">│</span> <span class="err">└──────────────┘</span>       <span class="err">│</span> <span class="err">│</span> <span class="err">│</span>        <span class="err">│</span> <span class="err">│</span>         <span class="err">│</span> <span class="err">│</span>             <span class="err">│</span> <span class="err">│</span>
-</span></span><span class="line"><span class="cl">  <span class="err">│</span>    <span class="err">├────────────────────────┤</span> <span class="err">│</span> <span class="err">└────────┘</span> <span class="err">└─────┬───┘</span> <span class="err">└─────────────┘</span> <span class="err">│</span>
-</span></span><span class="line"><span class="cl"><span class="err">┌─┼────┤</span> <span class="n">Search</span> <span class="n">searvice</span><span class="p">:</span><span class="mi">5002</span>   <span class="err">│</span> <span class="err">│</span>                  <span class="err">│</span>                     <span class="err">│</span>
-</span></span><span class="line"><span class="cl"><span class="err">│</span> <span class="err">│</span>    <span class="err">└────────────────────────┘</span> <span class="err">└──────────────────┼─────────────────────┘</span>
-</span></span><span class="line"><span class="cl"><span class="err">│</span> <span class="err">│</span>    <span class="err">┌─────────────────────────────────────────────┼───────────────────────┐</span>
-</span></span><span class="line"><span class="cl"><span class="err">│</span> <span class="err">│</span>    <span class="err">│</span>                                             <span class="err">│</span>                       <span class="err">│</span>
-</span></span><span class="line"><span class="cl"><span class="err">│</span> <span class="err">│</span>    <span class="err">│</span> <span class="n">Databuilder</span>     <span class="err">┌───────────────────────────┘</span>                       <span class="err">│</span>
-</span></span><span class="line"><span class="cl"><span class="err">│</span> <span class="err">│</span>    <span class="err">│</span>                 <span class="err">│</span>                                                   <span class="err">│</span>
-</span></span><span class="line"><span class="cl"><span class="err">│</span> <span class="err">│</span>    <span class="err">│</span> <span class="err">┌───────────────▼────────────────┐</span> <span class="err">┌──────────────────────────────┐</span> <span class="err">│</span>
-</span></span><span class="line"><span class="cl"><span class="err">│</span> <span class="err">│</span> <span class="err">┌──┼─►</span> <span class="n">Extractor</span> <span class="n">of</span> <span class="n">Sources</span>           <span class="err">├─►</span> <span class="n">nebula_search_data_extractor</span> <span class="err">│</span> <span class="err">│</span>
-</span></span><span class="line"><span class="cl"><span class="err">│</span> <span class="err">│</span> <span class="err">│</span>  <span class="err">│</span> <span class="err">└───────────────┬────────────────┘</span> <span class="err">└──────────────┬───────────────┘</span> <span class="err">│</span>
-</span></span><span class="line"><span class="cl"><span class="err">│</span> <span class="err">│</span> <span class="err">│</span>  <span class="err">│</span> <span class="err">┌───────────────▼────────────────┐</span> <span class="err">┌──────────────▼───────────────┐</span> <span class="err">│</span>
-</span></span><span class="line"><span class="cl"><span class="err">│</span> <span class="err">│</span> <span class="err">│</span>  <span class="err">│</span> <span class="err">│</span> <span class="n">Loader</span> <span class="n">filesystem_csv_nebula</span>   <span class="err">│</span> <span class="err">│</span> <span class="n">Loader</span> <span class="n">Elastic</span> <span class="n">FS</span> <span class="n">loader</span>     <span class="err">│</span> <span class="err">│</span>
-</span></span><span class="line"><span class="cl"><span class="err">│</span> <span class="err">│</span> <span class="err">│</span>  <span class="err">│</span> <span class="err">└───────────────┬────────────────┘</span> <span class="err">└──────────────┬───────────────┘</span> <span class="err">│</span>
-</span></span><span class="line"><span class="cl"><span class="err">│</span> <span class="err">│</span> <span class="err">│</span>  <span class="err">│</span> <span class="err">┌───────────────▼────────────────┐</span> <span class="err">┌──────────────▼───────────────┐</span> <span class="err">│</span>
-</span></span><span class="line"><span class="cl"><span class="err">│</span> <span class="err">│</span> <span class="err">│</span>  <span class="err">│</span> <span class="err">│</span> <span class="n">Publisher</span> <span class="n">nebula_csv_publisher</span> <span class="err">│</span> <span class="err">│</span> <span class="n">Publisher</span> <span class="n">Elasticsearch</span>      <span class="err">│</span> <span class="err">│</span>
-</span></span><span class="line"><span class="cl"><span class="err">│</span> <span class="err">│</span> <span class="err">│</span>  <span class="err">│</span> <span class="err">└───────────────┬────────────────┘</span> <span class="err">└──────────────┬───────────────┘</span> <span class="err">│</span>
-</span></span><span class="line"><span class="cl"><span class="err">│</span> <span class="err">│</span> <span class="err">│</span>  <span class="err">└─────────────────┼─────────────────────────────────┼─────────────────┘</span>
-</span></span><span class="line"><span class="cl"><span class="err">│</span> <span class="err">│</span> <span class="err">└────────────────┐</span>   <span class="err">│</span>                                 <span class="err">│</span>
-</span></span><span class="line"><span class="cl"><span class="err">│</span> <span class="err">│</span>    <span class="err">┌─────────────┼───►─────────────────────────┐</span> <span class="err">┌─────▼─────┐</span>
-</span></span><span class="line"><span class="cl"><span class="err">│</span> <span class="err">│</span>    <span class="err">│</span> <span class="n">Nebula</span> <span class="n">Graph</span><span class="err">│</span>   <span class="err">│</span>                         <span class="err">│</span> <span class="err">│</span>           <span class="err">│</span>
-</span></span><span class="line"><span class="cl"><span class="err">│</span> <span class="err">└────┼─────┬───────┴───┼───────────┐</span>     <span class="err">┌─────┐</span> <span class="err">│</span> <span class="err">│</span>           <span class="err">│</span>
-</span></span><span class="line"><span class="cl"><span class="err">│</span>      <span class="err">│</span>     <span class="err">│</span>           <span class="err">│</span>           <span class="err">│</span>     <span class="err">│</span><span class="n">MetaD</span><span class="err">│</span> <span class="err">│</span> <span class="err">│</span>           <span class="err">│</span>
-</span></span><span class="line"><span class="cl"><span class="err">│</span>      <span class="err">│</span> <span class="err">┌───▼──┐</span>    <span class="err">┌───▼──┐</span>    <span class="err">┌───▼──┐</span>  <span class="err">└─────┘</span> <span class="err">│</span> <span class="err">│</span>           <span class="err">│</span>
-</span></span><span class="line"><span class="cl"><span class="err">│</span> <span class="err">┌────┼─►</span><span class="n">GraphD</span><span class="err">│</span>    <span class="err">│</span><span class="n">GraphD</span><span class="err">│</span>    <span class="err">│</span><span class="n">GraphD</span><span class="err">│</span>          <span class="err">│</span> <span class="err">│</span>           <span class="err">│</span>
-</span></span><span class="line"><span class="cl"><span class="err">│</span> <span class="err">│</span>    <span class="err">│</span> <span class="err">└──────┘</span>    <span class="err">└──────┘</span>    <span class="err">└──────┘</span>  <span class="err">┌─────┐</span> <span class="err">│</span> <span class="err">│</span>           <span class="err">│</span>
-</span></span><span class="line"><span class="cl"><span class="err">│</span> <span class="err">│</span>    <span class="err">│</span> <span class="p">:</span><span class="mi">9669</span>                             <span class="err">│</span><span class="n">MetaD</span><span class="err">│</span> <span class="err">│</span> <span class="err">│</span>  <span class="n">Elastic</span>  <span class="err">│</span>
-</span></span><span class="line"><span class="cl"><span class="err">│</span> <span class="err">│</span>    <span class="err">│</span> <span class="err">┌────────┐</span> <span class="err">┌────────┐</span> <span class="err">┌────────┐</span>  <span class="err">└─────┘</span> <span class="err">│</span> <span class="err">│</span>  <span class="n">Search</span>   <span class="err">│</span>
-</span></span><span class="line"><span class="cl"><span class="err">│</span> <span class="err">│</span>    <span class="err">│</span> <span class="err">│</span>        <span class="err">│</span> <span class="err">│</span>        <span class="err">│</span> <span class="err">│</span>        <span class="err">│</span>          <span class="err">│</span> <span class="err">│</span>  <span class="n">Cluster</span>  <span class="err">│</span>
-</span></span><span class="line"><span class="cl"><span class="err">│</span> <span class="err">│</span>    <span class="err">│</span> <span class="err">│</span><span class="n">StorageD</span><span class="err">│</span> <span class="err">│</span><span class="n">StorageD</span><span class="err">│</span> <span class="err">│</span><span class="n">StorageD</span><span class="err">│</span>  <span class="err">┌─────┐</span> <span class="err">│</span> <span class="err">│</span>  <span class="p">:</span><span class="mi">9200</span>    <span class="err">│</span>
-</span></span><span class="line"><span class="cl"><span class="err">│</span> <span class="err">│</span>    <span class="err">│</span> <span class="err">│</span>        <span class="err">│</span> <span class="err">│</span>        <span class="err">│</span> <span class="err">│</span>        <span class="err">│</span>  <span class="err">│</span><span class="n">MetaD</span><span class="err">│</span> <span class="err">│</span> <span class="err">│</span>           <span class="err">│</span>
-</span></span><span class="line"><span class="cl"><span class="err">│</span> <span class="err">│</span>    <span class="err">│</span> <span class="err">└────────┘</span> <span class="err">└────────┘</span> <span class="err">└────────┘</span>  <span class="err">└─────┘</span> <span class="err">│</span> <span class="err">│</span>           <span class="err">│</span>
-</span></span><span class="line"><span class="cl"><span class="err">│</span> <span class="err">│</span>    <span class="err">├───────────────────────────────────────────┤</span> <span class="err">│</span>           <span class="err">│</span>
-</span></span><span class="line"><span class="cl"><span class="err">│</span> <span class="err">└────┤</span> <span class="n">Nebula</span> <span class="n">Studio</span><span class="p">:</span><span class="mi">7001</span>                        <span class="err">│</span> <span class="err">│</span>           <span class="err">│</span>
-</span></span><span class="line"><span class="cl"><span class="err">│</span>      <span class="err">└───────────────────────────────────────────┘</span> <span class="err">└─────▲─────┘</span>
-</span></span><span class="line"><span class="cl"><span class="err">└──────────────────────────────────────────────────────────┘</span>
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">       ┌────────────────────────┐ ┌────────────────────────────────────────┐
+       │ Frontend:5000          │ │ Metadata Sources                       │
+       ├────────────────────────┤ │ ┌────────┐ ┌─────────┐ ┌─────────────┐ │
+       │ Metaservice:5001       │ │ │        │ │         │ │             │ │
+       │ ┌──────────────┐       │ │ │ Foo DB │ │ Bar App │ │ X Dashboard │ │
+  ┌────┼─┤ Nebula Proxy │       │ │ │        │ │         │ │             │ │
+  │    │ └──────────────┘       │ │ │        │ │         │ │             │ │
+  │    ├────────────────────────┤ │ └────────┘ └─────┬───┘ └─────────────┘ │
+┌─┼────┤ Search searvice:5002   │ │                  │                     │
+│ │    └────────────────────────┘ └──────────────────┼─────────────────────┘
+│ │    ┌─────────────────────────────────────────────┼───────────────────────┐
+│ │    │                                             │                       │
+│ │    │ Databuilder     ┌───────────────────────────┘                       │
+│ │    │                 │                                                   │
+│ │    │ ┌───────────────▼────────────────┐ ┌──────────────────────────────┐ │
+│ │ ┌──┼─► Extractor of Sources           ├─► nebula_search_data_extractor │ │
+│ │ │  │ └───────────────┬────────────────┘ └──────────────┬───────────────┘ │
+│ │ │  │ ┌───────────────▼────────────────┐ ┌──────────────▼───────────────┐ │
+│ │ │  │ │ Loader filesystem_csv_nebula   │ │ Loader Elastic FS loader     │ │
+│ │ │  │ └───────────────┬────────────────┘ └──────────────┬───────────────┘ │
+│ │ │  │ ┌───────────────▼────────────────┐ ┌──────────────▼───────────────┐ │
+│ │ │  │ │ Publisher nebula_csv_publisher │ │ Publisher Elasticsearch      │ │
+│ │ │  │ └───────────────┬────────────────┘ └──────────────┬───────────────┘ │
+│ │ │  └─────────────────┼─────────────────────────────────┼─────────────────┘
+│ │ └────────────────┐   │                                 │
+│ │    ┌─────────────┼───►─────────────────────────┐ ┌─────▼─────┐
+│ │    │ Nebula Graph│   │                         │ │           │
+│ └────┼─────┬───────┴───┼───────────┐     ┌─────┐ │ │           │
+│      │     │           │           │     │MetaD│ │ │           │
+│      │ ┌───▼──┐    ┌───▼──┐    ┌───▼──┐  └─────┘ │ │           │
+│ ┌────┼─►GraphD│    │GraphD│    │GraphD│          │ │           │
+│ │    │ └──────┘    └──────┘    └──────┘  ┌─────┐ │ │           │
+│ │    │ :9669                             │MetaD│ │ │  Elastic  │
+│ │    │ ┌────────┐ ┌────────┐ ┌────────┐  └─────┘ │ │  Search   │
+│ │    │ │        │ │        │ │        │          │ │  Cluster  │
+│ │    │ │StorageD│ │StorageD│ │StorageD│  ┌─────┐ │ │  :9200    │
+│ │    │ │        │ │        │ │        │  │MetaD│ │ │           │
+│ │    │ └────────┘ └────────┘ └────────┘  └─────┘ │ │           │
+│ │    ├───────────────────────────────────────────┤ │           │
+│ └────┤ Nebula Studio:7001                        │ │           │
+│      └───────────────────────────────────────────┘ └─────▲─────┘
+└──────────────────────────────────────────────────────────┘
+</code></pre></td></tr></table>
 </div>
 </div><h2 id="穿针引线元数据发现" class="headerLink">
     <a href="#%e7%a9%bf%e9%92%88%e5%bc%95%e7%ba%bf%e5%85%83%e6%95%b0%e6%8d%ae%e5%8f%91%e7%8e%b0" class="header-mark"></a>4 穿针引线：元数据发现</h2><p>设置好基本环境后，让我们把所有东西穿起来。还记得我们有 ELT 一些数据到 PostgreSQL 吗？</p>
@@ -775,9 +775,9 @@
 </span><span class="lnt">2
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sudo apt-get install libpq-dev
-</span></span><span class="line"><span class="cl">pip3 install Psycopg2
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">sudo apt-get install libpq-dev
+pip3 install Psycopg2
+</code></pre></td></tr></table>
 </div>
 </div><h4 id="执行-postgres-元数据-etl" class="headerLink">
     <a href="#%e6%89%a7%e8%a1%8c-postgres-%e5%85%83%e6%95%b0%e6%8d%ae-etl" class="header-mark"></a>4.1.1 执行 Postgres 元数据 ETL</h4><p>运行一个脚本来解析 Postgres 元数据：</p>
@@ -790,12 +790,12 @@
 </span><span class="lnt">5
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">CREDENTIALS_POSTGRES_USER</span><span class="o">=</span>lineage_ref
-</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">CREDENTIALS_POSTGRES_PASSWORD</span><span class="o">=</span>lineage_ref
-</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">CREDENTIALS_POSTGRES_DATABASE</span><span class="o">=</span>warehouse
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">python3 example/scripts/sample_postgres_loader_nebula.py
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="nb">export</span> <span class="nv">CREDENTIALS_POSTGRES_USER</span><span class="o">=</span>lineage_ref
+<span class="nb">export</span> <span class="nv">CREDENTIALS_POSTGRES_PASSWORD</span><span class="o">=</span>lineage_ref
+<span class="nb">export</span> <span class="nv">CREDENTIALS_POSTGRES_DATABASE</span><span class="o">=</span>warehouse
+
+python3 example/scripts/sample_postgres_loader_nebula.py
+</code></pre></td></tr></table>
 </div>
 </div><p>If you look into the code of the sample script for loading Postgres metadata to Nebula, the main lines are quite straightforward:</p>
 <p>我们看看把 Postgres 元数据加载到 NebulaGraph 的示例脚本的代码，非常简单直接：</p>
@@ -817,21 +817,21 @@
 </span><span class="lnt">14
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="c1"># part 1: PostgressMetadata --&gt; CSV --&gt; Nebula Graph</span>
-</span></span><span class="line"><span class="cl"><span class="n">job</span> <span class="o">=</span> <span class="n">DefaultJob</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">      <span class="n">conf</span><span class="o">=</span><span class="n">job_config</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">      <span class="n">task</span><span class="o">=</span><span class="n">DefaultTask</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">          <span class="n">extractor</span><span class="o">=</span><span class="n">PostgresMetadataExtractor</span><span class="p">(),</span>
-</span></span><span class="line"><span class="cl">          <span class="n">loader</span><span class="o">=</span><span class="n">FsNebulaCSVLoader</span><span class="p">()),</span>
-</span></span><span class="line"><span class="cl">      <span class="n">publisher</span><span class="o">=</span><span class="n">NebulaCsvPublisher</span><span class="p">())</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="o">...</span>
-</span></span><span class="line"><span class="cl"><span class="c1"># part 2: Metadata stored in NebulaGraph --&gt; Elasticsearch</span>
-</span></span><span class="line"><span class="cl"><span class="n">extractor</span> <span class="o">=</span> <span class="n">NebulaSearchDataExtractor</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl"><span class="n">task</span> <span class="o">=</span> <span class="n">SearchMetadatatoElasticasearchTask</span><span class="p">(</span><span class="n">extractor</span><span class="o">=</span><span class="n">extractor</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">job</span> <span class="o">=</span> <span class="n">DefaultJob</span><span class="p">(</span><span class="n">conf</span><span class="o">=</span><span class="n">job_config</span><span class="p">,</span> <span class="n">task</span><span class="o">=</span><span class="n">task</span><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="c1"># part 1: PostgressMetadata --&gt; CSV --&gt; Nebula Graph</span>
+<span class="n">job</span> <span class="o">=</span> <span class="n">DefaultJob</span><span class="p">(</span>
+      <span class="n">conf</span><span class="o">=</span><span class="n">job_config</span><span class="p">,</span>
+      <span class="n">task</span><span class="o">=</span><span class="n">DefaultTask</span><span class="p">(</span>
+          <span class="n">extractor</span><span class="o">=</span><span class="n">PostgresMetadataExtractor</span><span class="p">(),</span>
+          <span class="n">loader</span><span class="o">=</span><span class="n">FsNebulaCSVLoader</span><span class="p">()),</span>
+      <span class="n">publisher</span><span class="o">=</span><span class="n">NebulaCsvPublisher</span><span class="p">())</span>
+
+<span class="o">...</span>
+<span class="c1"># part 2: Metadata stored in NebulaGraph --&gt; Elasticsearch</span>
+<span class="n">extractor</span> <span class="o">=</span> <span class="n">NebulaSearchDataExtractor</span><span class="p">()</span>
+<span class="n">task</span> <span class="o">=</span> <span class="n">SearchMetadatatoElasticasearchTask</span><span class="p">(</span><span class="n">extractor</span><span class="o">=</span><span class="n">extractor</span><span class="p">)</span>
+
+<span class="n">job</span> <span class="o">=</span> <span class="n">DefaultJob</span><span class="p">(</span><span class="n">conf</span><span class="o">=</span><span class="n">job_config</span><span class="p">,</span> <span class="n">task</span><span class="o">=</span><span class="n">task</span><span class="p">)</span>
+</code></pre></td></tr></table>
 </div>
 </div><p>第一个工作路径是：<code>PostgressMetadata --&gt; CSV --&gt; Nebula Graph</code></p>
 <ul>
@@ -869,10 +869,10 @@
 </span><span class="lnt">3
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">14:23:15  Done.
-</span></span><span class="line"><span class="cl">14:23:15  Building catalog
-</span></span><span class="line"><span class="cl">14:23:15  Catalog written to /home/ubuntu/ref-data-lineage/meltano_example_implementations/meltano_projects/singer_dbt_jaffle/.meltano/transformers/dbt/target/catalog.json
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">14:23:15  Done.
+14:23:15  Building catalog
+14:23:15  Catalog written to /home/ubuntu/ref-data-lineage/meltano_example_implementations/meltano_projects/singer_dbt_jaffle/.meltano/transformers/dbt/target/catalog.json
+</code></pre></td></tr></table>
 </div>
 </div><h4 id="dbt-元数据-etl-的执行" class="headerLink">
     <a href="#dbt-%e5%85%83%e6%95%b0%e6%8d%ae-etl-%e7%9a%84%e6%89%a7%e8%a1%8c" class="header-mark"></a>4.2.1 dbt 元数据 ETL 的执行</h4><p>我们试着解析示例 dbt 文件中的元数据吧：</p>
@@ -884,11 +884,11 @@
 </span><span class="lnt">4
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ ls -l example/sample_data/dbt/
-</span></span><span class="line"><span class="cl">total <span class="m">184</span>
-</span></span><span class="line"><span class="cl">-rw-rw-r-- <span class="m">1</span> w w   <span class="m">5320</span> May <span class="m">15</span> 07:17 catalog.json
-</span></span><span class="line"><span class="cl">-rw-rw-r-- <span class="m">1</span> w w <span class="m">177163</span> May <span class="m">15</span> 07:17 manifest.json
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ ls -l example/sample_data/dbt/
+total <span class="m">184</span>
+-rw-rw-r-- <span class="m">1</span> w w   <span class="m">5320</span> May <span class="m">15</span> 07:17 catalog.json
+-rw-rw-r-- <span class="m">1</span> w w <span class="m">177163</span> May <span class="m">15</span> 07:17 manifest.json
+</code></pre></td></tr></table>
 </div>
 </div><p>我写的这个示例的加载例子如下：</p>
 <div class="highlight"><div class="chroma">
@@ -896,8 +896,8 @@
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">python3 example/scripts/sample_dbt_loader_nebula.py
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">python3 example/scripts/sample_dbt_loader_nebula.py
+</code></pre></td></tr></table>
 </div>
 </div><p>其中主要的代码如下：</p>
 <div class="highlight"><div class="chroma">
@@ -918,21 +918,21 @@
 </span><span class="lnt">14
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="c1"># part 1: Dbt manifest --&gt; CSV --&gt; Nebula Graph</span>
-</span></span><span class="line"><span class="cl"><span class="n">job</span> <span class="o">=</span> <span class="n">DefaultJob</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">      <span class="n">conf</span><span class="o">=</span><span class="n">job_config</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">      <span class="n">task</span><span class="o">=</span><span class="n">DefaultTask</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">          <span class="n">extractor</span><span class="o">=</span><span class="n">DbtExtractor</span><span class="p">(),</span>
-</span></span><span class="line"><span class="cl">          <span class="n">loader</span><span class="o">=</span><span class="n">FsNebulaCSVLoader</span><span class="p">()),</span>
-</span></span><span class="line"><span class="cl">      <span class="n">publisher</span><span class="o">=</span><span class="n">NebulaCsvPublisher</span><span class="p">())</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="o">...</span>
-</span></span><span class="line"><span class="cl"><span class="c1"># part 2: Metadata stored in NebulaGraph --&gt; Elasticsearch</span>
-</span></span><span class="line"><span class="cl"><span class="n">extractor</span> <span class="o">=</span> <span class="n">NebulaSearchDataExtractor</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl"><span class="n">task</span> <span class="o">=</span> <span class="n">SearchMetadatatoElasticasearchTask</span><span class="p">(</span><span class="n">extractor</span><span class="o">=</span><span class="n">extractor</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">job</span> <span class="o">=</span> <span class="n">DefaultJob</span><span class="p">(</span><span class="n">conf</span><span class="o">=</span><span class="n">job_config</span><span class="p">,</span> <span class="n">task</span><span class="o">=</span><span class="n">task</span><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="c1"># part 1: Dbt manifest --&gt; CSV --&gt; Nebula Graph</span>
+<span class="n">job</span> <span class="o">=</span> <span class="n">DefaultJob</span><span class="p">(</span>
+      <span class="n">conf</span><span class="o">=</span><span class="n">job_config</span><span class="p">,</span>
+      <span class="n">task</span><span class="o">=</span><span class="n">DefaultTask</span><span class="p">(</span>
+          <span class="n">extractor</span><span class="o">=</span><span class="n">DbtExtractor</span><span class="p">(),</span>
+          <span class="n">loader</span><span class="o">=</span><span class="n">FsNebulaCSVLoader</span><span class="p">()),</span>
+      <span class="n">publisher</span><span class="o">=</span><span class="n">NebulaCsvPublisher</span><span class="p">())</span>
+
+<span class="o">...</span>
+<span class="c1"># part 2: Metadata stored in NebulaGraph --&gt; Elasticsearch</span>
+<span class="n">extractor</span> <span class="o">=</span> <span class="n">NebulaSearchDataExtractor</span><span class="p">()</span>
+<span class="n">task</span> <span class="o">=</span> <span class="n">SearchMetadatatoElasticasearchTask</span><span class="p">(</span><span class="n">extractor</span><span class="o">=</span><span class="n">extractor</span><span class="p">)</span>
+
+<span class="n">job</span> <span class="o">=</span> <span class="n">DefaultJob</span><span class="p">(</span><span class="n">conf</span><span class="o">=</span><span class="n">job_config</span><span class="p">,</span> <span class="n">task</span><span class="o">=</span><span class="n">task</span><span class="p">)</span>
+</code></pre></td></tr></table>
 </div>
 </div><p>它和 Postgres 元数据 ETL 的唯一区别是 <code>extractor=DbtExtractor()</code>，它带有以下配置以获取有关 dbt 项目的以下信息：</p>
 <ul>
@@ -949,12 +949,12 @@
 </span><span class="lnt">5
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">job_config</span> <span class="o">=</span> <span class="n">ConfigFactory</span><span class="o">.</span><span class="n">from_dict</span><span class="p">({</span>
-</span></span><span class="line"><span class="cl">  <span class="s1">&#39;extractor.dbt.database_name&#39;</span><span class="p">:</span> <span class="n">database_name</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">  <span class="s1">&#39;extractor.dbt.catalog_json&#39;</span><span class="p">:</span> <span class="n">catalog_file_loc</span><span class="p">,</span>  <span class="c1"># File</span>
-</span></span><span class="line"><span class="cl">  <span class="s1">&#39;extractor.dbt.manifest_json&#39;</span><span class="p">:</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">manifest_data</span><span class="p">),</span>  <span class="c1"># JSON Dumped objecy</span>
-</span></span><span class="line"><span class="cl">  <span class="s1">&#39;extractor.dbt.source_url&#39;</span><span class="p">:</span> <span class="n">source_url</span><span class="p">})</span>
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">job_config</span> <span class="o">=</span> <span class="n">ConfigFactory</span><span class="o">.</span><span class="n">from_dict</span><span class="p">({</span>
+  <span class="s1">&#39;extractor.dbt.database_name&#39;</span><span class="p">:</span> <span class="n">database_name</span><span class="p">,</span>
+  <span class="s1">&#39;extractor.dbt.catalog_json&#39;</span><span class="p">:</span> <span class="n">catalog_file_loc</span><span class="p">,</span>  <span class="c1"># File</span>
+  <span class="s1">&#39;extractor.dbt.manifest_json&#39;</span><span class="p">:</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">manifest_data</span><span class="p">),</span>  <span class="c1"># JSON Dumped objecy</span>
+  <span class="s1">&#39;extractor.dbt.source_url&#39;</span><span class="p">:</span> <span class="n">source_url</span><span class="p">})</span>
+</code></pre></td></tr></table>
 </div>
 </div><h4 id="验证-dbt-抓取结果" class="headerLink">
     <a href="#%e9%aa%8c%e8%af%81-dbt-%e6%8a%93%e5%8f%96%e7%bb%93%e6%9e%9c" class="header-mark"></a>4.2.2 验证 dbt 抓取结果</h4><p>搜索 <code>dbt_demo</code> 或者直接访问 http://localhost:5000/table_detail/dbt_demo/snowflake/public/raw_inventory_value，可以看到</p>
@@ -974,9 +974,9 @@
 </span><span class="lnt">2
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-diff" data-lang="diff"><span class="line"><span class="cl"><span class="gd">- logging.basicConfig(level=logging.INFO)
-</span></span></span><span class="line"><span class="cl"><span class="gd"></span><span class="gi">+ logging.basicConfig(level=logging.DEBUG)
-</span></span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-diff" data-lang="diff"><span class="gd">- logging.basicConfig(level=logging.INFO)
+</span><span class="gd"></span><span class="gi">+ logging.basicConfig(level=logging.DEBUG)
+</span></code></pre></td></tr></table>
 </div>
 </div></blockquote>
 <p>或者，在 NebulaStudio 中探索导入的数据：</p>
@@ -1040,8 +1040,8 @@
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">python3</span> <span class="n">sample_superset_data_loader_nebula</span><span class="o">.</span><span class="n">py</span>
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">python3</span> <span class="n">sample_superset_data_loader_nebula</span><span class="o">.</span><span class="n">py</span>
+</code></pre></td></tr></table>
 </div>
 </div><p>如果我们将日志记录级别设置为“DEBUG”，我们实际上可以看到这些中间的过程日志：</p>
 <div class="highlight"><div class="chroma">
@@ -1066,25 +1066,25 @@
 </span><span class="lnt">18
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="c1"># fetching metadata from superset</span>
-</span></span><span class="line"><span class="cl"><span class="n">DEBUG</span><span class="p">:</span><span class="n">urllib3</span><span class="o">.</span><span class="n">connectionpool</span><span class="p">:</span><span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">localhost</span><span class="p">:</span><span class="mi">8088</span> <span class="s2">&#34;POST /api/v1/security/login HTTP/1.1&#34;</span> <span class="mi">200</span> <span class="mi">280</span>
-</span></span><span class="line"><span class="cl"><span class="n">INFO</span><span class="p">:</span><span class="n">databuilder</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">task</span><span class="p">:</span><span class="n">Running</span> <span class="n">a</span> <span class="n">task</span>
-</span></span><span class="line"><span class="cl"><span class="n">DEBUG</span><span class="p">:</span><span class="n">urllib3</span><span class="o">.</span><span class="n">connectionpool</span><span class="p">:</span><span class="n">Starting</span> <span class="n">new</span> <span class="n">HTTP</span> <span class="n">connection</span> <span class="p">(</span><span class="mi">1</span><span class="p">):</span> <span class="n">localhost</span><span class="p">:</span><span class="mi">8088</span>
-</span></span><span class="line"><span class="cl"><span class="n">DEBUG</span><span class="p">:</span><span class="n">urllib3</span><span class="o">.</span><span class="n">connectionpool</span><span class="p">:</span><span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">localhost</span><span class="p">:</span><span class="mi">8088</span> <span class="s2">&#34;GET /api/v1/dashboard?q=(page_size:20,page:0,order_direction:desc) HTTP/1.1&#34;</span> <span class="mi">308</span> <span class="mi">374</span>
-</span></span><span class="line"><span class="cl"><span class="n">DEBUG</span><span class="p">:</span><span class="n">urllib3</span><span class="o">.</span><span class="n">connectionpool</span><span class="p">:</span><span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">localhost</span><span class="p">:</span><span class="mi">8088</span> <span class="s2">&#34;GET /api/v1/dashboard/?q=(page_size:20,page:0,order_direction:desc) HTTP/1.1&#34;</span> <span class="mi">200</span> <span class="mi">1058</span>
-</span></span><span class="line"><span class="cl"><span class="o">...</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="c1"># insert Dashboard</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">DEBUG</span><span class="p">:</span><span class="n">databuilder</span><span class="o">.</span><span class="n">publisher</span><span class="o">.</span><span class="n">nebula_csv_publisher</span><span class="p">:</span><span class="n">Query</span><span class="p">:</span> <span class="n">INSERT</span> <span class="n">VERTEX</span> <span class="err">`</span><span class="n">Dashboard</span><span class="err">`</span> <span class="p">(</span><span class="err">`</span><span class="n">dashboard_url</span><span class="err">`</span><span class="p">,</span> <span class="err">`</span><span class="n">name</span><span class="err">`</span><span class="p">,</span> <span class="n">published_tag</span><span class="p">,</span> <span class="n">publisher_last_updated_epoch_ms</span><span class="p">)</span> <span class="n">VALUES</span>  <span class="s2">&#34;superset_dashboard://my_cluster.1/3&#34;</span><span class="p">:(</span><span class="s2">&#34;http://localhost:8088/superset/dashboard/3/&#34;</span><span class="p">,</span><span class="s2">&#34;my_dashboard&#34;</span><span class="p">,</span><span class="s2">&#34;unique_tag&#34;</span><span class="p">,</span><span class="n">timestamp</span><span class="p">());</span>
-</span></span><span class="line"><span class="cl"><span class="o">...</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="c1"># insert a DASHBOARD_WITH_TABLE relationship/edge</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">INFO</span><span class="p">:</span><span class="n">databuilder</span><span class="o">.</span><span class="n">publisher</span><span class="o">.</span><span class="n">nebula_csv_publisher</span><span class="p">:</span><span class="n">Importing</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">edge</span> <span class="n">files</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;/tmp/amundsen/dashboard/relationships/Dashboard_Table_DASHBOARD_WITH_TABLE.csv&#39;</span><span class="p">]</span>
-</span></span><span class="line"><span class="cl"><span class="n">DEBUG</span><span class="p">:</span><span class="n">databuilder</span><span class="o">.</span><span class="n">publisher</span><span class="o">.</span><span class="n">nebula_csv_publisher</span><span class="p">:</span><span class="n">Query</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl"><span class="n">INSERT</span> <span class="n">edge</span> <span class="err">`</span><span class="n">DASHBOARD_WITH_TABLE</span><span class="err">`</span> <span class="p">(</span><span class="err">`</span><span class="n">END_LABEL</span><span class="err">`</span><span class="p">,</span> <span class="err">`</span><span class="n">START_LABEL</span><span class="err">`</span><span class="p">,</span> <span class="n">published_tag</span><span class="p">,</span> <span class="n">publisher_last_updated_epoch_ms</span><span class="p">)</span> <span class="n">VALUES</span> <span class="s2">&#34;superset_dashboard://my_cluster.1/3&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;postgresql+psycopg2://my_cluster.warehouse/orders&#34;</span><span class="p">:(</span><span class="s2">&#34;Table&#34;</span><span class="p">,</span><span class="s2">&#34;Dashboard&#34;</span><span class="p">,</span><span class="s2">&#34;unique_tag&#34;</span><span class="p">,</span> <span class="n">timestamp</span><span class="p">()),</span> <span class="s2">&#34;superset_dashboard://my_cluster.1/3&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;postgresql+psycopg2://my_cluster.warehouse/customers&#34;</span><span class="p">:(</span><span class="s2">&#34;Table&#34;</span><span class="p">,</span><span class="s2">&#34;Dashboard&#34;</span><span class="p">,</span><span class="s2">&#34;unique_tag&#34;</span><span class="p">,</span> <span class="n">timestamp</span><span class="p">());</span>
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="c1"># fetching metadata from superset</span>
+<span class="n">DEBUG</span><span class="p">:</span><span class="n">urllib3</span><span class="o">.</span><span class="n">connectionpool</span><span class="p">:</span><span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">localhost</span><span class="p">:</span><span class="mi">8088</span> <span class="s2">&#34;POST /api/v1/security/login HTTP/1.1&#34;</span> <span class="mi">200</span> <span class="mi">280</span>
+<span class="n">INFO</span><span class="p">:</span><span class="n">databuilder</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">task</span><span class="p">:</span><span class="n">Running</span> <span class="n">a</span> <span class="n">task</span>
+<span class="n">DEBUG</span><span class="p">:</span><span class="n">urllib3</span><span class="o">.</span><span class="n">connectionpool</span><span class="p">:</span><span class="n">Starting</span> <span class="n">new</span> <span class="n">HTTP</span> <span class="n">connection</span> <span class="p">(</span><span class="mi">1</span><span class="p">):</span> <span class="n">localhost</span><span class="p">:</span><span class="mi">8088</span>
+<span class="n">DEBUG</span><span class="p">:</span><span class="n">urllib3</span><span class="o">.</span><span class="n">connectionpool</span><span class="p">:</span><span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">localhost</span><span class="p">:</span><span class="mi">8088</span> <span class="s2">&#34;GET /api/v1/dashboard?q=(page_size:20,page:0,order_direction:desc) HTTP/1.1&#34;</span> <span class="mi">308</span> <span class="mi">374</span>
+<span class="n">DEBUG</span><span class="p">:</span><span class="n">urllib3</span><span class="o">.</span><span class="n">connectionpool</span><span class="p">:</span><span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">localhost</span><span class="p">:</span><span class="mi">8088</span> <span class="s2">&#34;GET /api/v1/dashboard/?q=(page_size:20,page:0,order_direction:desc) HTTP/1.1&#34;</span> <span class="mi">200</span> <span class="mi">1058</span>
+<span class="o">...</span>
+
+<span class="c1"># insert Dashboard</span>
+
+<span class="n">DEBUG</span><span class="p">:</span><span class="n">databuilder</span><span class="o">.</span><span class="n">publisher</span><span class="o">.</span><span class="n">nebula_csv_publisher</span><span class="p">:</span><span class="n">Query</span><span class="p">:</span> <span class="n">INSERT</span> <span class="n">VERTEX</span> <span class="err">`</span><span class="n">Dashboard</span><span class="err">`</span> <span class="p">(</span><span class="err">`</span><span class="n">dashboard_url</span><span class="err">`</span><span class="p">,</span> <span class="err">`</span><span class="n">name</span><span class="err">`</span><span class="p">,</span> <span class="n">published_tag</span><span class="p">,</span> <span class="n">publisher_last_updated_epoch_ms</span><span class="p">)</span> <span class="n">VALUES</span>  <span class="s2">&#34;superset_dashboard://my_cluster.1/3&#34;</span><span class="p">:(</span><span class="s2">&#34;http://localhost:8088/superset/dashboard/3/&#34;</span><span class="p">,</span><span class="s2">&#34;my_dashboard&#34;</span><span class="p">,</span><span class="s2">&#34;unique_tag&#34;</span><span class="p">,</span><span class="n">timestamp</span><span class="p">());</span>
+<span class="o">...</span>
+
+<span class="c1"># insert a DASHBOARD_WITH_TABLE relationship/edge</span>
+
+<span class="n">INFO</span><span class="p">:</span><span class="n">databuilder</span><span class="o">.</span><span class="n">publisher</span><span class="o">.</span><span class="n">nebula_csv_publisher</span><span class="p">:</span><span class="n">Importing</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">edge</span> <span class="n">files</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;/tmp/amundsen/dashboard/relationships/Dashboard_Table_DASHBOARD_WITH_TABLE.csv&#39;</span><span class="p">]</span>
+<span class="n">DEBUG</span><span class="p">:</span><span class="n">databuilder</span><span class="o">.</span><span class="n">publisher</span><span class="o">.</span><span class="n">nebula_csv_publisher</span><span class="p">:</span><span class="n">Query</span><span class="p">:</span>
+<span class="n">INSERT</span> <span class="n">edge</span> <span class="err">`</span><span class="n">DASHBOARD_WITH_TABLE</span><span class="err">`</span> <span class="p">(</span><span class="err">`</span><span class="n">END_LABEL</span><span class="err">`</span><span class="p">,</span> <span class="err">`</span><span class="n">START_LABEL</span><span class="err">`</span><span class="p">,</span> <span class="n">published_tag</span><span class="p">,</span> <span class="n">publisher_last_updated_epoch_ms</span><span class="p">)</span> <span class="n">VALUES</span> <span class="s2">&#34;superset_dashboard://my_cluster.1/3&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;postgresql+psycopg2://my_cluster.warehouse/orders&#34;</span><span class="p">:(</span><span class="s2">&#34;Table&#34;</span><span class="p">,</span><span class="s2">&#34;Dashboard&#34;</span><span class="p">,</span><span class="s2">&#34;unique_tag&#34;</span><span class="p">,</span> <span class="n">timestamp</span><span class="p">()),</span> <span class="s2">&#34;superset_dashboard://my_cluster.1/3&#34;</span><span class="o">-&gt;</span><span class="s2">&#34;postgresql+psycopg2://my_cluster.warehouse/customers&#34;</span><span class="p">:(</span><span class="s2">&#34;Table&#34;</span><span class="p">,</span><span class="s2">&#34;Dashboard&#34;</span><span class="p">,</span><span class="s2">&#34;unique_tag&#34;</span><span class="p">,</span> <span class="n">timestamp</span><span class="p">());</span>
+</code></pre></td></tr></table>
 </div>
 </div><h4 id="验证-superset-dashboard-元数据" class="headerLink">
     <a href="#%e9%aa%8c%e8%af%81-superset-dashboard-%e5%85%83%e6%95%b0%e6%8d%ae" class="header-mark"></a>4.3.2 验证 Superset Dashboard 元数据</h4><p>通过在 Amundsen 中搜索它，我们现在可以获得 Dashboard 信息。</p>
@@ -1128,8 +1128,8 @@
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nb">cd</span> amundsen
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="nb">cd</span> amundsen
+</code></pre></td></tr></table>
 </div>
 </div><ol>
 <li>修改 frontend 下的 typescript 配置</li>
@@ -1148,17 +1148,17 @@
 </span><span class="lnt">10
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-diff" data-lang="diff"><span class="line"><span class="cl"><span class="gd">--- a/frontend/amundsen_application/static/js/config/config-default.ts
-</span></span></span><span class="line"><span class="cl"><span class="gd"></span><span class="gi">+++ b/frontend/amundsen_application/static/js/config/config-default.ts
-</span></span></span><span class="line"><span class="cl"><span class="gi"></span>   tableLineage: {
-</span></span><span class="line"><span class="cl"><span class="gd">-    inAppListEnabled: false,
-</span></span></span><span class="line"><span class="cl"><span class="gd">-    inAppPageEnabled: false,
-</span></span></span><span class="line"><span class="cl"><span class="gd"></span><span class="gi">+    inAppListEnabled: true,
-</span></span></span><span class="line"><span class="cl"><span class="gi">+    inAppPageEnabled: true,
-</span></span></span><span class="line"><span class="cl"><span class="gi"></span>     externalEnabled: false,
-</span></span><span class="line"><span class="cl">     iconPath: &#39;PATH_TO_ICON&#39;,
-</span></span><span class="line"><span class="cl">     isBeta: false,
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-diff" data-lang="diff"><span class="gd">--- a/frontend/amundsen_application/static/js/config/config-default.ts
+</span><span class="gd"></span><span class="gi">+++ b/frontend/amundsen_application/static/js/config/config-default.ts
+</span><span class="gi"></span>   tableLineage: {
+<span class="gd">-    inAppListEnabled: false,
+</span><span class="gd">-    inAppPageEnabled: false,
+</span><span class="gd"></span><span class="gi">+    inAppListEnabled: true,
+</span><span class="gi">+    inAppPageEnabled: true,
+</span><span class="gi"></span>     externalEnabled: false,
+     iconPath: &#39;PATH_TO_ICON&#39;,
+     isBeta: false,
+</code></pre></td></tr></table>
 </div>
 </div><ol start="2">
 <li>重新构建 docker 镜像，其中将重建前端图像。</li>
@@ -1168,8 +1168,8 @@
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker-compose -f docker-amundsen-nebula.yml build
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">docker-compose -f docker-amundsen-nebula.yml build
+</code></pre></td></tr></table>
 </div>
 </div><p>然后，重新运行 <code>up -d</code> 以确保前端用新的配置：</p>
 <div class="highlight"><div class="chroma">
@@ -1177,8 +1177,8 @@
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker-compose -f docker-amundsen-nebula.yml up -d
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">docker-compose -f docker-amundsen-nebula.yml up -d
+</code></pre></td></tr></table>
 </div>
 </div><p>结果大概长这样子：</p>
 <div class="highlight"><div class="chroma">
@@ -1188,10 +1188,10 @@
 </span><span class="lnt">3
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ docker-compose -f docker-amundsen-nebula.yml up -d
-</span></span><span class="line"><span class="cl">...
-</span></span><span class="line"><span class="cl">Recreating amundsenfrontend           ... <span class="k">done</span>
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ docker-compose -f docker-amundsen-nebula.yml up -d
+...
+Recreating amundsenfrontend           ... <span class="k">done</span>
+</code></pre></td></tr></table>
 </div>
 </div><p>之后，我们可以访问 http://localhost:5000/lineage/table/gold/hive/test_schema/test_table1 看到 <code>Lineage （beta）</code> 血缘按钮已经显示出来了：</p>
 <p><figure><img
@@ -1228,10 +1228,10 @@
 </span><span class="lnt">3
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker run -it --rm --net container:amundsenfrontend nicolaka/netshoot
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">curl <span class="s2">&#34;http://amundsenmetadata:5002/table/snowflake://dbt_demo.public/raw_inventory_value/lineage?depth=3&amp;direction=both&#34;</span>
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">docker run -it --rm --net container:amundsenfrontend nicolaka/netshoot
+
+curl <span class="s2">&#34;http://amundsenmetadata:5002/table/snowflake://dbt_demo.public/raw_inventory_value/lineage?depth=3&amp;direction=both&#34;</span>
+</code></pre></td></tr></table>
 </div>
 </div><p>上面的 API 调用是查询上游和下游方向的 linage，表 <code>snowflake://dbt_demo.public/raw_inventory_value</code> 的深度为 3。</p>
 <p>结果应该是这样的：</p>
@@ -1263,31 +1263,31 @@
 </span><span class="lnt">24
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="p">{</span>
-</span></span><span class="line"><span class="cl">    <span class="nt">&#34;depth&#34;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="nt">&#34;downstream_entities&#34;</span><span class="p">:</span> <span class="p">[</span>
-</span></span><span class="line"><span class="cl">        <span class="p">{</span>
-</span></span><span class="line"><span class="cl">            <span class="nt">&#34;level&#34;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">            <span class="nt">&#34;usage&#34;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">            <span class="nt">&#34;key&#34;</span><span class="p">:</span> <span class="s2">&#34;snowflake://dbt_demo.public/fact_daily_expenses&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">            <span class="nt">&#34;parent&#34;</span><span class="p">:</span> <span class="s2">&#34;snowflake://dbt_demo.public/fact_warehouse_inventory&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">            <span class="nt">&#34;badges&#34;</span><span class="p">:</span> <span class="p">[],</span>
-</span></span><span class="line"><span class="cl">            <span class="nt">&#34;source&#34;</span><span class="p">:</span> <span class="s2">&#34;snowflake&#34;</span>
-</span></span><span class="line"><span class="cl">        <span class="p">},</span>
-</span></span><span class="line"><span class="cl">        <span class="p">{</span>
-</span></span><span class="line"><span class="cl">            <span class="nt">&#34;level&#34;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">            <span class="nt">&#34;usage&#34;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">            <span class="nt">&#34;key&#34;</span><span class="p">:</span> <span class="s2">&#34;snowflake://dbt_demo.public/fact_warehouse_inventory&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">            <span class="nt">&#34;parent&#34;</span><span class="p">:</span> <span class="s2">&#34;snowflake://dbt_demo.public/raw_inventory_value&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">            <span class="nt">&#34;badges&#34;</span><span class="p">:</span> <span class="p">[],</span>
-</span></span><span class="line"><span class="cl">            <span class="nt">&#34;source&#34;</span><span class="p">:</span> <span class="s2">&#34;snowflake&#34;</span>
-</span></span><span class="line"><span class="cl">        <span class="p">}</span>
-</span></span><span class="line"><span class="cl">    <span class="p">],</span>
-</span></span><span class="line"><span class="cl">    <span class="nt">&#34;key&#34;</span><span class="p">:</span> <span class="s2">&#34;snowflake://dbt_demo.public/raw_inventory_value&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="nt">&#34;direction&#34;</span><span class="p">:</span> <span class="s2">&#34;both&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="nt">&#34;upstream_entities&#34;</span><span class="p">:</span> <span class="p">[]</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+    <span class="nt">&#34;depth&#34;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+    <span class="nt">&#34;downstream_entities&#34;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="nt">&#34;level&#34;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+            <span class="nt">&#34;usage&#34;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="nt">&#34;key&#34;</span><span class="p">:</span> <span class="s2">&#34;snowflake://dbt_demo.public/fact_daily_expenses&#34;</span><span class="p">,</span>
+            <span class="nt">&#34;parent&#34;</span><span class="p">:</span> <span class="s2">&#34;snowflake://dbt_demo.public/fact_warehouse_inventory&#34;</span><span class="p">,</span>
+            <span class="nt">&#34;badges&#34;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="nt">&#34;source&#34;</span><span class="p">:</span> <span class="s2">&#34;snowflake&#34;</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="nt">&#34;level&#34;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="nt">&#34;usage&#34;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="nt">&#34;key&#34;</span><span class="p">:</span> <span class="s2">&#34;snowflake://dbt_demo.public/fact_warehouse_inventory&#34;</span><span class="p">,</span>
+            <span class="nt">&#34;parent&#34;</span><span class="p">:</span> <span class="s2">&#34;snowflake://dbt_demo.public/raw_inventory_value&#34;</span><span class="p">,</span>
+            <span class="nt">&#34;badges&#34;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="nt">&#34;source&#34;</span><span class="p">:</span> <span class="s2">&#34;snowflake&#34;</span>
+        <span class="p">}</span>
+    <span class="p">],</span>
+    <span class="nt">&#34;key&#34;</span><span class="p">:</span> <span class="s2">&#34;snowflake://dbt_demo.public/raw_inventory_value&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;direction&#34;</span><span class="p">:</span> <span class="s2">&#34;both&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;upstream_entities&#34;</span><span class="p">:</span> <span class="p">[]</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
 </div>
 </div><p>实际上，这个血缘数据就是在我们的 <a href="https://github.com/amundsen-io/amundsen/blob/main/databuilder/databuilder/extractor/dbt_extractor.py" target="_blank" rel="noopener noreferrer">DbtExtractor</a> 执行期间提取和加载的，其中 <code>extractor .dbt.{DbtExtractor.EXTRACT_LINEAGE}</code> 默认为 <code>True</code>，因此创建了血缘元数据并将其加载到了 Amundsen。</p>
 <h4 id="在-nebulagraph-中洞察血缘" class="headerLink">
@@ -1301,9 +1301,9 @@
 </span><span class="lnt">2
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="line"><span class="cl"><span class="k">MATCH</span><span class="w"> </span><span class="n">p</span><span class="o">=</span><span class="p">(</span><span class="n">t</span><span class="p">:</span><span class="o">`</span><span class="k">Table</span><span class="o">`</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="p">[:</span><span class="o">`</span><span class="n">HAS_UPSTREAM</span><span class="o">`|</span><span class="p">:</span><span class="o">`</span><span class="n">HAS_DOWNSTREAM</span><span class="o">`</span><span class="w"> </span><span class="o">*</span><span class="mi">1</span><span class="p">..</span><span class="mi">3</span><span class="p">]</span><span class="o">-&gt;</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">WHERE</span><span class="w"> </span><span class="nf">id</span><span class="p">(</span><span class="n">t</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&#34;snowflake://dbt_demo.public/raw_inventory_value&#34;</span><span class="w"> </span><span class="k">RETURN</span><span class="w"> </span><span class="n">p</span><span class="w">
-</span></span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="k">MATCH</span><span class="w"> </span><span class="n">p</span><span class="o">=</span><span class="p">(</span><span class="n">t</span><span class="p">:</span><span class="o">`</span><span class="k">Table</span><span class="o">`</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="p">[:</span><span class="o">`</span><span class="n">HAS_UPSTREAM</span><span class="o">`|</span><span class="p">:</span><span class="o">`</span><span class="n">HAS_DOWNSTREAM</span><span class="o">`</span><span class="w"> </span><span class="o">*</span><span class="mi">1</span><span class="p">..</span><span class="mi">3</span><span class="p">]</span><span class="o">-&gt;</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="w">
+</span><span class="w"></span><span class="k">WHERE</span><span class="w"> </span><span class="nf">id</span><span class="p">(</span><span class="n">t</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&#34;snowflake://dbt_demo.public/raw_inventory_value&#34;</span><span class="w"> </span><span class="k">RETURN</span><span class="w"> </span><span class="n">p</span><span class="w">
+</span></code></pre></td></tr></table>
 </div>
 </div><ul>
 <li>我们现在甚至可以在 NebulaGraph Studio 或者 Explorer 的控制台中查询它</li>
@@ -1348,18 +1348,18 @@
 </span><span class="lnt">11
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">dict_config</span> <span class="o">=</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">    <span class="c1"># ...</span>
-</span></span><span class="line"><span class="cl">    <span class="sa">f</span><span class="s1">&#39;extractor.openlineage_tablelineage.</span><span class="si">{</span><span class="n">OpenLineageTableLineageExtractor</span><span class="o">.</span><span class="n">CLUSTER_NAME</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">:</span> <span class="s1">&#39;datalab&#39;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="sa">f</span><span class="s1">&#39;extractor.openlineage_tablelineage.</span><span class="si">{</span><span class="n">OpenLineageTableLineageExtractor</span><span class="o">.</span><span class="n">OL_DATASET_NAMESPACE_OVERRIDE</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">:</span> <span class="s1">&#39;hive_table&#39;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="sa">f</span><span class="s1">&#39;extractor.openlineage_tablelineage.</span><span class="si">{</span><span class="n">OpenLineageTableLineageExtractor</span><span class="o">.</span><span class="n">TABLE_LINEAGE_FILE_LOCATION</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">:</span> <span class="s1">&#39;input_dir/openlineage_nd.json&#39;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span><span class="line"><span class="cl"><span class="o">...</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">task</span> <span class="o">=</span> <span class="n">DefaultTask</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="n">extractor</span><span class="o">=</span><span class="n">OpenLineageTableLineageExtractor</span><span class="p">(),</span>
-</span></span><span class="line"><span class="cl">    <span class="n">loader</span><span class="o">=</span><span class="n">FsNebulaCSVLoader</span><span class="p">())</span>
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">dict_config</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="c1"># ...</span>
+    <span class="sa">f</span><span class="s1">&#39;extractor.openlineage_tablelineage.</span><span class="si">{</span><span class="n">OpenLineageTableLineageExtractor</span><span class="o">.</span><span class="n">CLUSTER_NAME</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">:</span> <span class="s1">&#39;datalab&#39;</span><span class="p">,</span>
+    <span class="sa">f</span><span class="s1">&#39;extractor.openlineage_tablelineage.</span><span class="si">{</span><span class="n">OpenLineageTableLineageExtractor</span><span class="o">.</span><span class="n">OL_DATASET_NAMESPACE_OVERRIDE</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">:</span> <span class="s1">&#39;hive_table&#39;</span><span class="p">,</span>
+    <span class="sa">f</span><span class="s1">&#39;extractor.openlineage_tablelineage.</span><span class="si">{</span><span class="n">OpenLineageTableLineageExtractor</span><span class="o">.</span><span class="n">TABLE_LINEAGE_FILE_LOCATION</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">:</span> <span class="s1">&#39;input_dir/openlineage_nd.json&#39;</span><span class="p">,</span>
+<span class="p">}</span>
+<span class="o">...</span>
+
+<span class="n">task</span> <span class="o">=</span> <span class="n">DefaultTask</span><span class="p">(</span>
+    <span class="n">extractor</span><span class="o">=</span><span class="n">OpenLineageTableLineageExtractor</span><span class="p">(),</span>
+    <span class="n">loader</span><span class="o">=</span><span class="n">FsNebulaCSVLoader</span><span class="p">())</span>
+</code></pre></td></tr></table>
 </div>
 </div><h2 id="回顾" class="headerLink">
     <a href="#%e5%9b%9e%e9%a1%be" class="header-mark"></a>5 回顾</h2><p>整套元数据治理/发现的方案思路如下：</p>

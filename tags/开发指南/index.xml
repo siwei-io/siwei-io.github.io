@@ -3,7 +3,7 @@
         <title>开发指南 - 标签 - siwei.io</title>
         <link>https://siwei.io/tags/%E5%BC%80%E5%8F%91%E6%8C%87%E5%8D%97/</link>
         <description>开发指南 - 标签 - siwei.io</description>
-        <generator>Hugo -- gohugo.io</generator><language>zh-cn</language><managingEditor>weyl.gu@gmail.com (Wey Gu)</managingEditor>
+        <generator>Hugo -- gohugo.io</generator><managingEditor>weyl.gu@gmail.com (Wey Gu)</managingEditor>
             <webMaster>weyl.gu@gmail.com (Wey Gu)</webMaster><lastBuildDate>Sun, 23 Oct 2022 14:57:07 &#43;0800</lastBuildDate><atom:link href="https://siwei.io/tags/%E5%BC%80%E5%8F%91%E6%8C%87%E5%8D%97/" rel="self" type="application/rss+xml" /><item>
     <title>NebulaGraph 内核贡献开发指南</title>
     <link>https://siwei.io/nebulagraph-hacking-guide/</link>
@@ -115,9 +115,9 @@
 </span><span class="lnt">2
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">git clone git@github.com:vesoft-inc/nebula.git
-</span></span><span class="line"><span class="cl"><span class="nb">cd</span> nebula
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">git clone git@github.com:vesoft-inc/nebula.git
+<span class="nb">cd</span> nebula
+</code></pre></td></tr></table>
 </div>
 </div><h3 id="创建开发容器" class="headerLink">
     <a href="#%e5%88%9b%e5%bb%ba%e5%bc%80%e5%8f%91%e5%ae%b9%e5%99%a8" class="header-mark"></a>2.3 创建开发容器</h3><p>有了 NebulaGraph 集群，我们可以借助 <a href="https://github.com/vesoft-inc/nebula-dev-docker/" target="_blank" rel="noopener noreferrer">https://github.com/vesoft-inc/nebula-dev-docker/</a> 提供的开箱即用开发容器镜像，搭建开发环境：</p>
@@ -134,16 +134,16 @@
 </span><span class="lnt">9
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">TAG</span><span class="o">=</span>ubuntu2004
-</span></span><span class="line"><span class="cl">docker run -ti <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>  --network nebula-net <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>  --security-opt <span class="nv">seccomp</span><span class="o">=</span>unconfined <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>  -v <span class="s2">&#34;</span><span class="nv">$PWD</span><span class="s2">&#34;</span>:/home/nebula <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>  -w /home/nebula <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>  --name nebula_dev <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>  vesoft/nebula-dev:<span class="nv">$TAG</span> <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>  bash
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="nb">export</span> <span class="nv">TAG</span><span class="o">=</span>ubuntu2004
+docker run -ti <span class="se">\
+</span><span class="se"></span>  --network nebula-net <span class="se">\
+</span><span class="se"></span>  --security-opt <span class="nv">seccomp</span><span class="o">=</span>unconfined <span class="se">\
+</span><span class="se"></span>  -v <span class="s2">&#34;</span><span class="nv">$PWD</span><span class="s2">&#34;</span>:/home/nebula <span class="se">\
+</span><span class="se"></span>  -w /home/nebula <span class="se">\
+</span><span class="se"></span>  --name nebula_dev <span class="se">\
+</span><span class="se"></span>  vesoft/nebula-dev:<span class="nv">$TAG</span> <span class="se">\
+</span><span class="se"></span>  bash
+</code></pre></td></tr></table>
 </div>
 </div><blockquote>
 <p>这其中，<code>-v &quot;$PWD&quot;</code> 表示当前的 NebulaGraph 代码本地的路径会被映射到开发容器内部的 <code>/home/nebula</code>，而启动的容器名字是 <code>nebula_dev</code>。</p>
@@ -154,8 +154,8 @@
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker start nebula_dev
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">docker start nebula_dev
+</code></pre></td></tr></table>
 </div>
 </div><p>之后，我们的编译、Debug、测试工作都在 <code>nebula_dev</code> 容器内部进行，在容器是运行状态的情况下，可以随时新建一个容器内部的 bash shell 进程：</p>
 <div class="highlight"><div class="chroma">
@@ -163,8 +163,8 @@
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker <span class="nb">exec</span> -ti nebula_dev bash
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">docker <span class="nb">exec</span> -ti nebula_dev bash
+</code></pre></td></tr></table>
 </div>
 </div><blockquote>
 <p>注，为了保持编译环境是最新的，我们可以定期删除、拉取、重建这个开发容器，以保持环境与代码相匹配。</p>
@@ -177,8 +177,8 @@
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker <span class="nb">exec</span> -ti nebula_dev bash
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">docker <span class="nb">exec</span> -ti nebula_dev bash
+</code></pre></td></tr></table>
 </div>
 </div><p>用 CMake 准备 makefile，第一次构建的时候，为了节省时间、内存，我关闭了测试（<code>-DENABLE_TESTING=OFF</code>）：</p>
 <div class="highlight"><div class="chroma">
@@ -187,9 +187,9 @@
 </span><span class="lnt">2
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">mkdir build <span class="o">&amp;&amp;</span> <span class="nb">cd</span> build
-</span></span><span class="line"><span class="cl">cmake -DCMAKE_CXX_COMPILER<span class="o">=</span><span class="nv">$TOOLSET_CLANG_DIR</span>/bin/g++ -DCMAKE_C_COMPILER<span class="o">=</span><span class="nv">$TOOLSET_CLANG_DIR</span>/bin/gcc -DENABLE_WERROR<span class="o">=</span>OFF -DCMAKE_BUILD_TYPE<span class="o">=</span>Debug -DENABLE_TESTING<span class="o">=</span>OFF ..
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">mkdir build <span class="o">&amp;&amp;</span> <span class="nb">cd</span> build
+cmake -DCMAKE_CXX_COMPILER<span class="o">=</span><span class="nv">$TOOLSET_CLANG_DIR</span>/bin/g++ -DCMAKE_C_COMPILER<span class="o">=</span><span class="nv">$TOOLSET_CLANG_DIR</span>/bin/gcc -DENABLE_WERROR<span class="o">=</span>OFF -DCMAKE_BUILD_TYPE<span class="o">=</span>Debug -DENABLE_TESTING<span class="o">=</span>OFF ..
+</code></pre></td></tr></table>
 </div>
 </div><p>开始编译，根据服务器的空闲 CPU 个数和内存量力而行，比如我在自己 72 核心的服务器上准备允许同时运行 64 个 job，则运行：</p>
 <div class="highlight"><div class="chroma">
@@ -197,8 +197,8 @@
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">make -j64
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">make -j64
+</code></pre></td></tr></table>
 </div>
 </div><p>第一次构建的时间会慢一些，在 make 成功之后，我们也可以执行 <code>make install</code> 把二进制安装到像生产安装时候一样的路径：</p>
 <div class="highlight"><div class="chroma">
@@ -212,14 +212,14 @@
 </span><span class="lnt">7
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">root@1827b82e88bf:/home/nebula/build# make install
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">root@1827b82e88bf:/home/nebula/build# ls /usr/local/nebula/bin
-</span></span><span class="line"><span class="cl">db_dump  db_upgrader  meta_dump  nebula-graphd  nebula-metad  nebula-storaged
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">root@1827b82e88bf:/home/nebula/build# ls /usr/local/nebula/
-</span></span><span class="line"><span class="cl">bin  etc  pids  scripts  share
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">root@1827b82e88bf:/home/nebula/build# make install
+
+root@1827b82e88bf:/home/nebula/build# ls /usr/local/nebula/bin
+db_dump  db_upgrader  meta_dump  nebula-graphd  nebula-metad  nebula-storaged
+
+root@1827b82e88bf:/home/nebula/build# ls /usr/local/nebula/
+bin  etc  pids  scripts  share
+</code></pre></td></tr></table>
 </div>
 </div><h2 id="调试-nebulagraph" class="headerLink">
     <a href="#%e8%b0%83%e8%af%95-nebulagraph" class="header-mark"></a>3 调试 NebulaGraph</h2><p>以 GraphD 调试为例。</p>
@@ -238,16 +238,16 @@
 </span><span class="lnt">9
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 装一个 ping，测试一下 nebula-up 安装的集群可以访问</span>
-</span></span><span class="line"><span class="cl">apt update <span class="o">&amp;&amp;</span> apt install iputils-ping -y
-</span></span><span class="line"><span class="cl"><span class="c1"># ping graphd 试试看</span>
-</span></span><span class="line"><span class="cl">ping graphd -c <span class="m">4</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="c1"># 安装 gdb gdb-dashboard</span>
-</span></span><span class="line"><span class="cl">apt install gdb -y
-</span></span><span class="line"><span class="cl">wget -P ~ https://git.io/.gdbinit
-</span></span><span class="line"><span class="cl">pip install pygments
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="c1"># 装一个 ping，测试一下 nebula-up 安装的集群可以访问</span>
+apt update <span class="o">&amp;&amp;</span> apt install iputils-ping -y
+<span class="c1"># ping graphd 试试看</span>
+ping graphd -c <span class="m">4</span>
+
+<span class="c1"># 安装 gdb gdb-dashboard</span>
+apt install gdb -y
+wget -P ~ https://git.io/.gdbinit
+pip install pygments
+</code></pre></td></tr></table>
 </div>
 </div><h3 id="准备客户端" class="headerLink">
     <a href="#%e5%87%86%e5%a4%87%e5%ae%a2%e6%88%b7%e7%ab%af" class="header-mark"></a>3.2 准备客户端</h3><p>准备一个 NebulaGraph 的命令行客户端：</p>
@@ -262,14 +262,14 @@
 </span><span class="lnt">7
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 新开一个 nebula_dev 的 shell</span>
-</span></span><span class="line"><span class="cl">docker <span class="nb">exec</span> -ti nebula_dev bash
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="c1"># 下载 nebula-console 二进制文件，并赋予可执行权限，命名为 nebula-console 并安装到 /usr/bin/ 下</span>
-</span></span><span class="line"><span class="cl">wget https://github.com/vesoft-inc/nebula-console/releases/download/v3.2.0/nebula-console-linux-amd64-v3.2.0
-</span></span><span class="line"><span class="cl">chmod +x nebula-console*
-</span></span><span class="line"><span class="cl">mv nebula-console* /usr/bin/nebula-console
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="c1"># 新开一个 nebula_dev 的 shell</span>
+docker <span class="nb">exec</span> -ti nebula_dev bash
+
+<span class="c1"># 下载 nebula-console 二进制文件，并赋予可执行权限，命名为 nebula-console 并安装到 /usr/bin/ 下</span>
+wget https://github.com/vesoft-inc/nebula-console/releases/download/v3.2.0/nebula-console-linux-amd64-v3.2.0
+chmod +x nebula-console*
+mv nebula-console* /usr/bin/nebula-console
+</code></pre></td></tr></table>
 </div>
 </div><p>连接到前边我们 nebula-up 准备的集群之上，加载 basketballplayer 这个测试数据：</p>
 <div class="highlight"><div class="chroma">
@@ -279,10 +279,10 @@
 </span><span class="lnt">3
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">nebula-console -u root -p nebula --address<span class="o">=</span>graphd --port<span class="o">=</span><span class="m">9669</span>
-</span></span><span class="line"><span class="cl">:play basketballplayer<span class="p">;</span>
-</span></span><span class="line"><span class="cl"><span class="nb">exit</span>
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">nebula-console -u root -p nebula --address<span class="o">=</span>graphd --port<span class="o">=</span><span class="m">9669</span>
+:play basketballplayer<span class="p">;</span>
+<span class="nb">exit</span>
+</code></pre></td></tr></table>
 </div>
 </div><h3 id="gdb-运行-graphd" class="headerLink">
     <a href="#gdb-%e8%bf%90%e8%a1%8c-graphd" class="header-mark"></a>3.3 gdb 运行 graphd</h3><p>我们用 gdb 执行刚刚编译的 nebula-graphd 二进制，让他成为一个新的 graphd 服务，名字就叫 <code>nebula_dev</code>。</p>
@@ -297,13 +297,13 @@
 </span><span class="lnt">6
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 新开一个 nebula_dev 的 shell</span>
-</span></span><span class="line"><span class="cl">docker <span class="nb">exec</span> -ti nebula_dev bash
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="nb">cd</span> /usr/local/nebula/
-</span></span><span class="line"><span class="cl">mkdir -p /home/nebula/build/log
-</span></span><span class="line"><span class="cl">gdb bin/nebula-graphd
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="c1"># 新开一个 nebula_dev 的 shell</span>
+docker <span class="nb">exec</span> -ti nebula_dev bash
+
+<span class="nb">cd</span> /usr/local/nebula/
+mkdir -p /home/nebula/build/log
+gdb bin/nebula-graphd
+</code></pre></td></tr></table>
 </div>
 </div><p>在 gdb 内部执行设置必要的参数</p>
 <p>跟随 fork 的子进程</p>
@@ -312,8 +312,8 @@
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-makefile" data-lang="makefile"><span class="line"><span class="cl"><span class="err">set</span> <span class="err">follow-fork-mode</span> <span class="err">child</span>
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-makefile" data-lang="makefile"><span class="err">set</span> <span class="err">follow-fork-mode</span> <span class="err">child</span>
+</code></pre></td></tr></table>
 </div>
 </div><p>设置待调试 graphd 的启动参数（配置）：</p>
 <ul>
@@ -334,16 +334,16 @@
 </span><span class="lnt">9
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-makefile" data-lang="makefile"><span class="line"><span class="cl"><span class="err">set</span> <span class="err">args</span> <span class="nv">--flagfile</span><span class="o">=</span>/usr/local/nebula/etc/nebula-graphd.conf.default <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    --meta_server_addrs<span class="o">=</span>metad0:9559,metad1:9559,metad2:9559 <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    --port<span class="o">=</span><span class="m">9669</span> <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    --local_ip<span class="o">=</span>nebula_dev <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    --ws_ip<span class="o">=</span>nebula_dev <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    --ws_http_port<span class="o">=</span><span class="m">19669</span> <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    --log_dir<span class="o">=</span>/home/nebula/build/log <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    --v<span class="o">=</span><span class="m">4</span> <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    --minloglevel<span class="o">=</span><span class="m">0</span>
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-makefile" data-lang="makefile"><span class="err">set</span> <span class="err">args</span> <span class="nv">--flagfile</span><span class="o">=</span>/usr/local/nebula/etc/nebula-graphd.conf.default <span class="se">\
+</span><span class="se"></span>    --meta_server_addrs<span class="o">=</span>metad0:9559,metad1:9559,metad2:9559 <span class="se">\
+</span><span class="se"></span>    --port<span class="o">=</span><span class="m">9669</span> <span class="se">\
+</span><span class="se"></span>    --local_ip<span class="o">=</span>nebula_dev <span class="se">\
+</span><span class="se"></span>    --ws_ip<span class="o">=</span>nebula_dev <span class="se">\
+</span><span class="se"></span>    --ws_http_port<span class="o">=</span><span class="m">19669</span> <span class="se">\
+</span><span class="se"></span>    --log_dir<span class="o">=</span>/home/nebula/build/log <span class="se">\
+</span><span class="se"></span>    --v<span class="o">=</span><span class="m">4</span> <span class="se">\
+</span><span class="se"></span>    --minloglevel<span class="o">=</span><span class="m">0</span>
+</code></pre></td></tr></table>
 </div>
 </div><p>如果我们想加断点在 <code>src/common/function/FunctionManager.cpp</code> 2783 行，可以再执行：</p>
 <div class="highlight"><div class="chroma">
@@ -351,8 +351,8 @@
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-makefile" data-lang="makefile"><span class="line"><span class="cl"><span class="nf">b /home/nebula/src/common/function/FunctionManager.cpp</span><span class="o">:</span>2783
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-makefile" data-lang="makefile"><span class="nf">b /home/nebula/src/common/function/FunctionManager.cpp</span><span class="o">:</span>2783
+</code></pre></td></tr></table>
 </div>
 </div><p>配置前边安装的 gdb-dashboard，一个开源的 gdb 界面插件。</p>
 <div class="highlight"><div class="chroma">
@@ -361,9 +361,9 @@
 </span><span class="lnt">2
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-makefile" data-lang="makefile"><span class="line"><span class="cl"><span class="c"># 设定在 gdb 界面上展示 代码、历史、回调栈、变量、表达几个部分，详细参考 https://github.com/cyrus-and/gdb-dashboard
-</span></span></span><span class="line"><span class="cl"><span class="c"></span><span class="err">dashboard</span> <span class="err">-layout</span> <span class="err">source</span> <span class="err">history</span> <span class="err">stack</span> <span class="err">variables</span> <span class="err">expressions</span>
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-makefile" data-lang="makefile"><span class="c"># 设定在 gdb 界面上展示 代码、历史、回调栈、变量、表达几个部分，详细参考 https://github.com/cyrus-and/gdb-dashboard
+</span><span class="c"></span><span class="err">dashboard</span> <span class="err">-layout</span> <span class="err">source</span> <span class="err">history</span> <span class="err">stack</span> <span class="err">variables</span> <span class="err">expressions</span>
+</code></pre></td></tr></table>
 </div>
 </div><p>最后我们让进程通过 gdb 跑起来吧：</p>
 <div class="highlight"><div class="chroma">
@@ -371,8 +371,8 @@
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-makefile" data-lang="makefile"><span class="line"><span class="cl"><span class="err">run</span>
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-makefile" data-lang="makefile"><span class="err">run</span>
+</code></pre></td></tr></table>
 </div>
 </div><p>之后，我们就可以在这个窗口/shell 会话下调试 graphd 程序了。</p>
 <h2 id="修改-nebulagraph-代码" class="headerLink">
@@ -398,10 +398,10 @@
 </span><span class="lnt">3
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">git checkout master
-</span></span><span class="line"><span class="cl">git pull
-</span></span><span class="line"><span class="cl">git checkout -b fn_JSON_EXTRACT
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">git checkout master
+git pull
+git checkout -b fn_JSON_EXTRACT
+</code></pre></td></tr></table>
 </div>
 </div></blockquote>
 <p>通过 Google 了解与交叉验证 NebulaGraph 内部使用的 utils 库，我知道我应该用 <code>folly::parseJson</code> 把字符串读成 <code>folly::dynamic</code> 然后再 cast 成 NebulaGraph 内置的 Map() 类型，然后，借助于 StackOverflow/GitHub Copilot，我终于完成了第一个版本的代码修改。</p>
@@ -428,11 +428,11 @@
 </span><span class="lnt">4
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 先确定修改的文件</span>
-</span></span><span class="line"><span class="cl">$ git status
-</span></span><span class="line"><span class="cl"><span class="c1"># 再看看修改的内容</span>
-</span></span><span class="line"><span class="cl">$ git diff
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="c1"># 先确定修改的文件</span>
+$ git status
+<span class="c1"># 再看看修改的内容</span>
+$ git diff
+</code></pre></td></tr></table>
 </div>
 </div><p>然后，把它们 commit（提交在本地仓库）</p>
 <div class="highlight"><div class="chroma">
@@ -445,13 +445,13 @@
 </span><span class="lnt">6
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 添加所有当前目录（. 这个点表示当前目录）修改过的文件为待 commit</span>
-</span></span><span class="line"><span class="cl">$ git add .
-</span></span><span class="line"><span class="cl"><span class="c1"># 然后我们可以看一下状态，这些修改的文件状态已经不同了</span>
-</span></span><span class="line"><span class="cl">$ git status
-</span></span><span class="line"><span class="cl"><span class="c1"># 最后，提交在本地仓库，并用 -m 参数指定单行的 commit message</span>
-</span></span><span class="line"><span class="cl">$ git commit -m <span class="s2">&#34;feat: introduce function JSON_EXTRACT&#34;</span>
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="c1"># 添加所有当前目录（. 这个点表示当前目录）修改过的文件为待 commit</span>
+$ git add .
+<span class="c1"># 然后我们可以看一下状态，这些修改的文件状态已经不同了</span>
+$ git status
+<span class="c1"># 最后，提交在本地仓库，并用 -m 参数指定单行的 commit message</span>
+$ git commit -m <span class="s2">&#34;feat: introduce function JSON_EXTRACT&#34;</span>
+</code></pre></td></tr></table>
 </div>
 </div><h4 id="提交到自己远程的分支" class="headerLink">
     <a href="#%e6%8f%90%e4%ba%a4%e5%88%b0%e8%87%aa%e5%b7%b1%e8%bf%9c%e7%a8%8b%e7%9a%84%e5%88%86%e6%94%af" class="header-mark"></a>5.1.2 提交到自己远程的分支</h4><p>在提交之前，要确保自己的 GitHub 账号之下确实存在 NebulaGraph 代码仓库的分叉（fork），比如我的 GitHub 账号是 wey-gu，我访问，那么我对 <a href="https://github.com/vesoft-inc/nebula" target="_blank" rel="noopener noreferrer">https://github.com/vesoft-inc/nebula</a> 的分叉应该就是 <a href="https://github.com/wey-gu/nebula" target="_blank" rel="noopener noreferrer">https://github.com/wey-gu/nebula</a> 。</p>
@@ -465,11 +465,11 @@
 </span><span class="lnt">4
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 添加一个新的远程仓库叫 wey</span>
-</span></span><span class="line"><span class="cl">git remote add wey git@github.com:wey-gu/nebula.git
-</span></span><span class="line"><span class="cl"><span class="c1"># 提交 JSON_EXTRACT 分支到 wey 这个 remote 仓库</span>
-</span></span><span class="line"><span class="cl">git push wey JSON_EXTRACT
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="c1"># 添加一个新的远程仓库叫 wey</span>
+git remote add wey git@github.com:wey-gu/nebula.git
+<span class="c1"># 提交 JSON_EXTRACT 分支到 wey 这个 remote 仓库</span>
+git push wey JSON_EXTRACT
+</code></pre></td></tr></table>
 </div>
 </div><h4 id="在个人远程分叉分支上创建-pr" class="headerLink">
     <a href="#%e5%9c%a8%e4%b8%aa%e4%ba%ba%e8%bf%9c%e7%a8%8b%e5%88%86%e5%8f%89%e5%88%86%e6%94%af%e4%b8%8a%e5%88%9b%e5%bb%ba-pr" class="header-mark"></a>5.1.3 在个人远程分叉分支上创建 PR</h4><p>这时候，我们访问这个远程分支：https://github.com/wey-gu/nebula/tree/fn_JSON_EXTRACT ，就能找到 Open PR 的入口：</p>
@@ -560,52 +560,52 @@
 </span><span class="lnt">45
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 我们需要进入到我们的编译容器内部的 build 目录下</span>
-</span></span><span class="line"><span class="cl">$ docker <span class="nb">exec</span> -ti nebula_dev bash
-</span></span><span class="line"><span class="cl">$ <span class="nb">cd</span> build
-</span></span><span class="line"><span class="cl"><span class="c1"># 在 -DENABLE_TESTING=ON 之中编译，如果之前的编译 job 数下内存已经跑满了的话，这次可以把 job 数调小一点，因为开启测试会占用更多内存</span>
-</span></span><span class="line"><span class="cl">$ cmake -DCMAKE_CXX_COMPILER<span class="o">=</span><span class="nv">$TOOLSET_CLANG_DIR</span>/bin/g++ -DCMAKE_C_COMPILER<span class="o">=</span><span class="nv">$TOOLSET_CLANG_DIR</span>/bin/gcc -DENABLE_WERROR<span class="o">=</span>OFF -DCMAKE_BUILD_TYPE<span class="o">=</span>Debug -DENABLE_TESTING<span class="o">=</span>ON ..
-</span></span><span class="line"><span class="cl">$ make -j <span class="m">48</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="c1"># 可以看到编译成功了 CTest 的单元测试二进制可执行文件</span>
-</span></span><span class="line"><span class="cl"><span class="c1"># [100%] Linking CXX executable ../../../../bin/test/function_manager_test</span>
-</span></span><span class="line"><span class="cl"><span class="c1"># [100%] Built target function_manager_test</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="c1"># 执行重新修改过的单元测试！</span>
-</span></span><span class="line"><span class="cl">$ bin/test/function_manager_test
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="o">[==========]</span> Running <span class="m">11</span> tests from <span class="m">1</span> <span class="nb">test</span> suite.
-</span></span><span class="line"><span class="cl"><span class="o">[</span>----------<span class="o">]</span> Global <span class="nb">test</span> environment set-up.
-</span></span><span class="line"><span class="cl"><span class="o">[</span>----------<span class="o">]</span> <span class="m">11</span> tests from FunctionManagerTest
-</span></span><span class="line"><span class="cl"><span class="o">[</span> RUN      <span class="o">]</span> FunctionManagerTest.testNull
-</span></span><span class="line"><span class="cl"><span class="o">[</span>       OK <span class="o">]</span> FunctionManagerTest.testNull <span class="o">(</span><span class="m">0</span> ms<span class="o">)</span>
-</span></span><span class="line"><span class="cl"><span class="o">[</span> RUN      <span class="o">]</span> FunctionManagerTest.functionCall
-</span></span><span class="line"><span class="cl">W20221020 23:35:18.579897 <span class="m">28679</span> Map.cpp:77<span class="o">]</span> JSON_EXTRACT nested layer 1: Map can be populated only by Bool, Double, Int, String value and null, now trying to parse from: object
-</span></span><span class="line"><span class="cl"><span class="o">[</span>       OK <span class="o">]</span> FunctionManagerTest.functionCall <span class="o">(</span><span class="m">2</span> ms<span class="o">)</span>
-</span></span><span class="line"><span class="cl"><span class="o">[</span> RUN      <span class="o">]</span> FunctionManagerTest.time
-</span></span><span class="line"><span class="cl"><span class="o">[</span>       OK <span class="o">]</span> FunctionManagerTest.time <span class="o">(</span><span class="m">0</span> ms<span class="o">)</span>
-</span></span><span class="line"><span class="cl"><span class="o">[</span> RUN      <span class="o">]</span> FunctionManagerTest.returnType
-</span></span><span class="line"><span class="cl"><span class="o">[</span>       OK <span class="o">]</span> FunctionManagerTest.returnType <span class="o">(</span><span class="m">0</span> ms<span class="o">)</span>
-</span></span><span class="line"><span class="cl"><span class="o">[</span> RUN      <span class="o">]</span> FunctionManagerTest.SchemaRelated
-</span></span><span class="line"><span class="cl"><span class="o">[</span>       OK <span class="o">]</span> FunctionManagerTest.SchemaRelated <span class="o">(</span><span class="m">0</span> ms<span class="o">)</span>
-</span></span><span class="line"><span class="cl"><span class="o">[</span> RUN      <span class="o">]</span> FunctionManagerTest.ScalarFunctionTest
-</span></span><span class="line"><span class="cl"><span class="o">[</span>       OK <span class="o">]</span> FunctionManagerTest.ScalarFunctionTest <span class="o">(</span><span class="m">0</span> ms<span class="o">)</span>
-</span></span><span class="line"><span class="cl"><span class="o">[</span> RUN      <span class="o">]</span> FunctionManagerTest.ListFunctionTest
-</span></span><span class="line"><span class="cl"><span class="o">[</span>       OK <span class="o">]</span> FunctionManagerTest.ListFunctionTest <span class="o">(</span><span class="m">0</span> ms<span class="o">)</span>
-</span></span><span class="line"><span class="cl"><span class="o">[</span> RUN      <span class="o">]</span> FunctionManagerTest.duplicateEdgesORVerticesInPath
-</span></span><span class="line"><span class="cl"><span class="o">[</span>       OK <span class="o">]</span> FunctionManagerTest.duplicateEdgesORVerticesInPath <span class="o">(</span><span class="m">0</span> ms<span class="o">)</span>
-</span></span><span class="line"><span class="cl"><span class="o">[</span> RUN      <span class="o">]</span> FunctionManagerTest.ReversePath
-</span></span><span class="line"><span class="cl"><span class="o">[</span>       OK <span class="o">]</span> FunctionManagerTest.ReversePath <span class="o">(</span><span class="m">0</span> ms<span class="o">)</span>
-</span></span><span class="line"><span class="cl"><span class="o">[</span> RUN      <span class="o">]</span> FunctionManagerTest.DataSetRowCol
-</span></span><span class="line"><span class="cl"><span class="o">[</span>       OK <span class="o">]</span> FunctionManagerTest.DataSetRowCol <span class="o">(</span><span class="m">0</span> ms<span class="o">)</span>
-</span></span><span class="line"><span class="cl"><span class="o">[</span> RUN      <span class="o">]</span> FunctionManagerTest.PurityTest
-</span></span><span class="line"><span class="cl"><span class="o">[</span>       OK <span class="o">]</span> FunctionManagerTest.PurityTest <span class="o">(</span><span class="m">0</span> ms<span class="o">)</span>
-</span></span><span class="line"><span class="cl"><span class="o">[</span>----------<span class="o">]</span> <span class="m">11</span> tests from FunctionManagerTest <span class="o">(</span><span class="m">5</span> ms total<span class="o">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="o">[</span>----------<span class="o">]</span> Global <span class="nb">test</span> environment tear-down
-</span></span><span class="line"><span class="cl"><span class="o">[==========]</span> <span class="m">11</span> tests from <span class="m">1</span> <span class="nb">test</span> suite ran. <span class="o">(</span><span class="m">5</span> ms total<span class="o">)</span>
-</span></span><span class="line"><span class="cl"><span class="o">[</span>  PASSED  <span class="o">]</span> <span class="m">11</span> tests.
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="c1"># 我们需要进入到我们的编译容器内部的 build 目录下</span>
+$ docker <span class="nb">exec</span> -ti nebula_dev bash
+$ <span class="nb">cd</span> build
+<span class="c1"># 在 -DENABLE_TESTING=ON 之中编译，如果之前的编译 job 数下内存已经跑满了的话，这次可以把 job 数调小一点，因为开启测试会占用更多内存</span>
+$ cmake -DCMAKE_CXX_COMPILER<span class="o">=</span><span class="nv">$TOOLSET_CLANG_DIR</span>/bin/g++ -DCMAKE_C_COMPILER<span class="o">=</span><span class="nv">$TOOLSET_CLANG_DIR</span>/bin/gcc -DENABLE_WERROR<span class="o">=</span>OFF -DCMAKE_BUILD_TYPE<span class="o">=</span>Debug -DENABLE_TESTING<span class="o">=</span>ON ..
+$ make -j <span class="m">48</span>
+
+<span class="c1"># 可以看到编译成功了 CTest 的单元测试二进制可执行文件</span>
+<span class="c1"># [100%] Linking CXX executable ../../../../bin/test/function_manager_test</span>
+<span class="c1"># [100%] Built target function_manager_test</span>
+
+<span class="c1"># 执行重新修改过的单元测试！</span>
+$ bin/test/function_manager_test
+
+<span class="o">[==========]</span> Running <span class="m">11</span> tests from <span class="m">1</span> <span class="nb">test</span> suite.
+<span class="o">[</span>----------<span class="o">]</span> Global <span class="nb">test</span> environment set-up.
+<span class="o">[</span>----------<span class="o">]</span> <span class="m">11</span> tests from FunctionManagerTest
+<span class="o">[</span> RUN      <span class="o">]</span> FunctionManagerTest.testNull
+<span class="o">[</span>       OK <span class="o">]</span> FunctionManagerTest.testNull <span class="o">(</span><span class="m">0</span> ms<span class="o">)</span>
+<span class="o">[</span> RUN      <span class="o">]</span> FunctionManagerTest.functionCall
+W20221020 23:35:18.579897 <span class="m">28679</span> Map.cpp:77<span class="o">]</span> JSON_EXTRACT nested layer 1: Map can be populated only by Bool, Double, Int, String value and null, now trying to parse from: object
+<span class="o">[</span>       OK <span class="o">]</span> FunctionManagerTest.functionCall <span class="o">(</span><span class="m">2</span> ms<span class="o">)</span>
+<span class="o">[</span> RUN      <span class="o">]</span> FunctionManagerTest.time
+<span class="o">[</span>       OK <span class="o">]</span> FunctionManagerTest.time <span class="o">(</span><span class="m">0</span> ms<span class="o">)</span>
+<span class="o">[</span> RUN      <span class="o">]</span> FunctionManagerTest.returnType
+<span class="o">[</span>       OK <span class="o">]</span> FunctionManagerTest.returnType <span class="o">(</span><span class="m">0</span> ms<span class="o">)</span>
+<span class="o">[</span> RUN      <span class="o">]</span> FunctionManagerTest.SchemaRelated
+<span class="o">[</span>       OK <span class="o">]</span> FunctionManagerTest.SchemaRelated <span class="o">(</span><span class="m">0</span> ms<span class="o">)</span>
+<span class="o">[</span> RUN      <span class="o">]</span> FunctionManagerTest.ScalarFunctionTest
+<span class="o">[</span>       OK <span class="o">]</span> FunctionManagerTest.ScalarFunctionTest <span class="o">(</span><span class="m">0</span> ms<span class="o">)</span>
+<span class="o">[</span> RUN      <span class="o">]</span> FunctionManagerTest.ListFunctionTest
+<span class="o">[</span>       OK <span class="o">]</span> FunctionManagerTest.ListFunctionTest <span class="o">(</span><span class="m">0</span> ms<span class="o">)</span>
+<span class="o">[</span> RUN      <span class="o">]</span> FunctionManagerTest.duplicateEdgesORVerticesInPath
+<span class="o">[</span>       OK <span class="o">]</span> FunctionManagerTest.duplicateEdgesORVerticesInPath <span class="o">(</span><span class="m">0</span> ms<span class="o">)</span>
+<span class="o">[</span> RUN      <span class="o">]</span> FunctionManagerTest.ReversePath
+<span class="o">[</span>       OK <span class="o">]</span> FunctionManagerTest.ReversePath <span class="o">(</span><span class="m">0</span> ms<span class="o">)</span>
+<span class="o">[</span> RUN      <span class="o">]</span> FunctionManagerTest.DataSetRowCol
+<span class="o">[</span>       OK <span class="o">]</span> FunctionManagerTest.DataSetRowCol <span class="o">(</span><span class="m">0</span> ms<span class="o">)</span>
+<span class="o">[</span> RUN      <span class="o">]</span> FunctionManagerTest.PurityTest
+<span class="o">[</span>       OK <span class="o">]</span> FunctionManagerTest.PurityTest <span class="o">(</span><span class="m">0</span> ms<span class="o">)</span>
+<span class="o">[</span>----------<span class="o">]</span> <span class="m">11</span> tests from FunctionManagerTest <span class="o">(</span><span class="m">5</span> ms total<span class="o">)</span>
+
+<span class="o">[</span>----------<span class="o">]</span> Global <span class="nb">test</span> environment tear-down
+<span class="o">[==========]</span> <span class="m">11</span> tests from <span class="m">1</span> <span class="nb">test</span> suite ran. <span class="o">(</span><span class="m">5</span> ms total<span class="o">)</span>
+<span class="o">[</span>  PASSED  <span class="o">]</span> <span class="m">11</span> tests.
+</code></pre></td></tr></table>
 </div>
 </div><p>成功！</p>
 <p>于是，我把新的更改提交到远程分支上，在 PR 的网页中，可以看到 CI 已经在新的提交的触发下重新编译、执行了，过一会儿果然都 pass 了，于是我兴高采烈地等待着两位以上的审查者帮忙批准代码，然后合并它！</p>
@@ -654,35 +654,35 @@
 </span><span class="lnt">28
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-tcl" data-lang="tcl"><span class="line"><span class="cl"><span class="c"># tests/tck/features/function/json_extract.feature
-</span></span></span><span class="line"><span class="cl"><span class="c"></span><span class="nv">Feature</span><span class="o">:</span> json_extract Function
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">  <span class="nv">Background</span><span class="o">:</span>
-</span></span><span class="line"><span class="cl">    <span class="nv">Test</span> json_extract function
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">  <span class="nv">Scenario</span><span class="o">:</span> Test Positive Cases
-</span></span><span class="line"><span class="cl">    <span class="nv">When</span> executing query:
-</span></span><span class="line"><span class="cl">      <span class="s2">&#34;&#34;&#34;
-</span></span></span><span class="line"><span class="cl"><span class="s2">      YIELD JSON_EXTRACT(&#39;{&#34;</span><span class="nv">a</span><span class="s2">&#34;: &#34;</span>foo<span class="s2">&#34;, &#34;</span>b<span class="s2">&#34;: 0.2, &#34;</span>c<span class="s2">&#34;: true}&#39;) AS result;
-</span></span></span><span class="line"><span class="cl"><span class="s2">      &#34;&#34;&#34;</span>
-</span></span><span class="line"><span class="cl">    <span class="nv">Then</span> the result should be<span class="err">,</span> <span class="ow">in</span> any order:
-</span></span><span class="line"><span class="cl">      <span class="o">|</span> <span class="nv">result</span>                      <span class="o">|</span>
-</span></span><span class="line"><span class="cl">      <span class="o">|</span> <span class="k">{</span><span class="nv">a</span><span class="o">:</span> <span class="s2">&#34;foo&#34;</span><span class="err">,</span> b: <span class="mf">0.2</span><span class="err">,</span> c: true<span class="k">}</span> <span class="o">|</span>
-</span></span><span class="line"><span class="cl">    <span class="nv">When</span> executing query:
-</span></span><span class="line"><span class="cl">      <span class="s2">&#34;&#34;&#34;
-</span></span></span><span class="line"><span class="cl"><span class="s2">      YIELD JSON_EXTRACT(&#39;{&#34;</span><span class="nv">a</span><span class="s2">&#34;: 1, &#34;</span>b<span class="s2">&#34;: {}, &#34;</span>c<span class="s2">&#34;: {&#34;</span>d<span class="s2">&#34;: true}}&#39;) AS result;
-</span></span></span><span class="line"><span class="cl"><span class="s2">      &#34;&#34;&#34;</span>
-</span></span><span class="line"><span class="cl">    <span class="nv">Then</span> the result should be<span class="err">,</span> <span class="ow">in</span> any order:
-</span></span><span class="line"><span class="cl">      <span class="o">|</span> <span class="nv">result</span>                      <span class="o">|</span>
-</span></span><span class="line"><span class="cl">      <span class="o">|</span> <span class="k">{</span><span class="nv">a</span><span class="o">:</span> <span class="mi">1</span><span class="err">,</span> b: <span class="k">{}</span><span class="err">,</span> c: <span class="k">{</span><span class="nv">d</span><span class="o">:</span> true<span class="k">}}</span> <span class="o">|</span>
-</span></span><span class="line"><span class="cl">    <span class="nv">When</span> executing query:
-</span></span><span class="line"><span class="cl">      <span class="s2">&#34;&#34;&#34;
-</span></span></span><span class="line"><span class="cl"><span class="s2">      YIELD JSON_EXTRACT(&#39;{}&#39;) AS result;
-</span></span></span><span class="line"><span class="cl"><span class="s2">      &#34;&#34;&#34;</span>
-</span></span><span class="line"><span class="cl">    <span class="nv">Then</span> the result should be<span class="err">,</span> <span class="ow">in</span> any order:
-</span></span><span class="line"><span class="cl">      <span class="o">|</span> <span class="nv">result</span> <span class="o">|</span>
-</span></span><span class="line"><span class="cl">      <span class="o">|</span> <span class="k">{}</span>     <span class="o">|</span>
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-tcl" data-lang="tcl"><span class="c"># tests/tck/features/function/json_extract.feature
+</span><span class="c"></span><span class="nv">Feature</span><span class="o">:</span> json_extract Function
+
+  <span class="nv">Background</span><span class="o">:</span>
+    <span class="nv">Test</span> json_extract function
+
+  <span class="nv">Scenario</span><span class="o">:</span> Test Positive Cases
+    <span class="nv">When</span> executing query:
+      <span class="s2">&#34;&#34;&#34;
+</span><span class="s2">      YIELD JSON_EXTRACT(&#39;{&#34;</span><span class="nv">a</span><span class="s2">&#34;: &#34;</span>foo<span class="s2">&#34;, &#34;</span>b<span class="s2">&#34;: 0.2, &#34;</span>c<span class="s2">&#34;: true}&#39;) AS result;
+</span><span class="s2">      &#34;&#34;&#34;</span>
+    <span class="nv">Then</span> the result should be<span class="err">,</span> <span class="ow">in</span> any order:
+      <span class="o">|</span> <span class="nv">result</span>                      <span class="o">|</span>
+      <span class="o">|</span> <span class="k">{</span><span class="nv">a</span><span class="o">:</span> <span class="s2">&#34;foo&#34;</span><span class="err">,</span> b: <span class="mf">0.2</span><span class="err">,</span> c: true<span class="k">}</span> <span class="o">|</span>
+    <span class="nv">When</span> executing query:
+      <span class="s2">&#34;&#34;&#34;
+</span><span class="s2">      YIELD JSON_EXTRACT(&#39;{&#34;</span><span class="nv">a</span><span class="s2">&#34;: 1, &#34;</span>b<span class="s2">&#34;: {}, &#34;</span>c<span class="s2">&#34;: {&#34;</span>d<span class="s2">&#34;: true}}&#39;) AS result;
+</span><span class="s2">      &#34;&#34;&#34;</span>
+    <span class="nv">Then</span> the result should be<span class="err">,</span> <span class="ow">in</span> any order:
+      <span class="o">|</span> <span class="nv">result</span>                      <span class="o">|</span>
+      <span class="o">|</span> <span class="k">{</span><span class="nv">a</span><span class="o">:</span> <span class="mi">1</span><span class="err">,</span> b: <span class="k">{}</span><span class="err">,</span> c: <span class="k">{</span><span class="nv">d</span><span class="o">:</span> true<span class="k">}}</span> <span class="o">|</span>
+    <span class="nv">When</span> executing query:
+      <span class="s2">&#34;&#34;&#34;
+</span><span class="s2">      YIELD JSON_EXTRACT(&#39;{}&#39;) AS result;
+</span><span class="s2">      &#34;&#34;&#34;</span>
+    <span class="nv">Then</span> the result should be<span class="err">,</span> <span class="ow">in</span> any order:
+      <span class="o">|</span> <span class="nv">result</span> <span class="o">|</span>
+      <span class="o">|</span> <span class="k">{}</span>     <span class="o">|</span>
+</code></pre></td></tr></table>
 </div>
 </div><p>在添加了自己的一个新的 tck 测试用例文本文件之后，我们只需要在测试文件中临时增加标签，并在执行的时候指定标签，就可以单独执行新增的 tck 测试用例了：</p>
 <div class="highlight"><div class="chroma">
@@ -702,20 +702,20 @@
 </span><span class="lnt">13
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 还是在编译容器内部，进入到 tests 目录下</span>
-</span></span><span class="line"><span class="cl"><span class="nb">cd</span> ../tests
-</span></span><span class="line"><span class="cl"><span class="c1"># 安装 tck 测试所需依赖</span>
-</span></span><span class="line"><span class="cl">python3 -m pip install -r requirements.txt
-</span></span><span class="line"><span class="cl">python3 -m pip install nebula3-python<span class="o">==</span>3.1.0
-</span></span><span class="line"><span class="cl"><span class="c1"># 运行一个单独为 tck 测试准备的集群</span>
-</span></span><span class="line"><span class="cl">make <span class="nv">CONTAINERIZED</span><span class="o">=</span><span class="nb">true</span> <span class="nv">ENABLE_SSL</span><span class="o">=</span><span class="nb">true</span> <span class="nv">CA_SIGNED</span><span class="o">=</span><span class="nb">true</span> up
-</span></span><span class="line"><span class="cl"><span class="c1"># 给 tests/tck/features/function/json_extract.feature 以@开头第一行加上标签，比如 @wey</span>
-</span></span><span class="line"><span class="cl">vi tests/tck/features/function/json_extract.feature
-</span></span><span class="line"><span class="cl"><span class="c1"># 执行 pytest (包含 tck 用例)，因为制定了 -m &#34;wey&#34;，只有 tests/tck/features/function/json_extract.feature 会被执行</span>
-</span></span><span class="line"><span class="cl">python3 -m pytest -m <span class="s2">&#34;wey&#34;</span>
-</span></span><span class="line"><span class="cl"><span class="c1"># 关闭 pytest 所依赖的集群</span>
-</span></span><span class="line"><span class="cl">make <span class="nv">CONTAINERIZED</span><span class="o">=</span><span class="nb">true</span> <span class="nv">ENABLE_SSL</span><span class="o">=</span><span class="nb">true</span> <span class="nv">CA_SIGNED</span><span class="o">=</span><span class="nb">true</span> down
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="c1"># 还是在编译容器内部，进入到 tests 目录下</span>
+<span class="nb">cd</span> ../tests
+<span class="c1"># 安装 tck 测试所需依赖</span>
+python3 -m pip install -r requirements.txt
+python3 -m pip install nebula3-python<span class="o">==</span>3.1.0
+<span class="c1"># 运行一个单独为 tck 测试准备的集群</span>
+make <span class="nv">CONTAINERIZED</span><span class="o">=</span><span class="nb">true</span> <span class="nv">ENABLE_SSL</span><span class="o">=</span><span class="nb">true</span> <span class="nv">CA_SIGNED</span><span class="o">=</span><span class="nb">true</span> up
+<span class="c1"># 给 tests/tck/features/function/json_extract.feature 以@开头第一行加上标签，比如 @wey</span>
+vi tests/tck/features/function/json_extract.feature
+<span class="c1"># 执行 pytest (包含 tck 用例)，因为制定了 -m &#34;wey&#34;，只有 tests/tck/features/function/json_extract.feature 会被执行</span>
+python3 -m pytest -m <span class="s2">&#34;wey&#34;</span>
+<span class="c1"># 关闭 pytest 所依赖的集群</span>
+make <span class="nv">CONTAINERIZED</span><span class="o">=</span><span class="nb">true</span> <span class="nv">ENABLE_SSL</span><span class="o">=</span><span class="nb">true</span> <span class="nv">CA_SIGNED</span><span class="o">=</span><span class="nb">true</span> down
+</code></pre></td></tr></table>
 </div>
 </div><blockquote>
 <p>延伸阅读：</p>

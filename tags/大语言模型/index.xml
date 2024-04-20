@@ -3,7 +3,7 @@
         <title>大语言模型 - 标签 - siwei.io</title>
         <link>https://siwei.io/tags/%E5%A4%A7%E8%AF%AD%E8%A8%80%E6%A8%A1%E5%9E%8B/</link>
         <description>大语言模型 - 标签 - siwei.io</description>
-        <generator>Hugo -- gohugo.io</generator><language>zh-cn</language><managingEditor>weyl.gu@gmail.com (Wey Gu)</managingEditor>
+        <generator>Hugo -- gohugo.io</generator><managingEditor>weyl.gu@gmail.com (Wey Gu)</managingEditor>
             <webMaster>weyl.gu@gmail.com (Wey Gu)</webMaster><lastBuildDate>Tue, 15 Aug 2023 11:10:34 &#43;0800</lastBuildDate><atom:link href="https://siwei.io/tags/%E5%A4%A7%E8%AF%AD%E8%A8%80%E6%A8%A1%E5%9E%8B/" rel="self" type="application/rss+xml" /><item>
     <title>Graph RAG: 知识图谱结合 LLM 的检索增强</title>
     <link>https://siwei.io/graph-rag/</link>
@@ -60,25 +60,25 @@
 </span><span class="lnt">18
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="c1"># 伪代码</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">_get_key_entities</span><span class="p">(</span><span class="n">query_str</span><span class="p">,</span> <span class="n">llm</span><span class="o">=</span><span class="kc">None</span> <span class="p">,</span><span class="n">with_llm</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-</span></span><span class="line"><span class="cl">    <span class="o">...</span>
-</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">_expand_synonyms</span><span class="p">(</span><span class="n">entities</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">_retrieve_subgraph_context</span><span class="p">(</span><span class="n">entities</span><span class="p">,</span> <span class="n">depth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="mi">30</span><span class="p">):</span>
-</span></span><span class="line"><span class="cl">    <span class="o">...</span>
-</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">nebulagraph_store</span><span class="o">.</span><span class="n">get_relations</span><span class="p">(</span><span class="n">entities</span><span class="p">,</span> <span class="n">depth</span><span class="p">,</span> <span class="n">limit</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">_synthesize_answer</span><span class="p">(</span><span class="n">query_str</span><span class="p">,</span> <span class="n">graph_rag_context</span><span class="p">,</span> <span class="n">llm</span><span class="p">):</span>
-</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">llm</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">PROMPT_SYNTHESIZE_AND_REFINE</span><span class="p">,</span> <span class="n">query_str</span><span class="p">,</span> <span class="n">graph_rag_context</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">simple_graph_rag</span><span class="p">(</span><span class="n">query_str</span><span class="p">,</span> <span class="n">nebulagraph_store</span><span class="p">,</span> <span class="n">llm</span><span class="p">):</span>
-</span></span><span class="line"><span class="cl">    <span class="n">entities</span> <span class="o">=</span> <span class="n">_get_key_entities</span><span class="p">(</span><span class="n">query_str</span><span class="p">,</span> <span class="n">llm</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="n">graph_rag_context</span> <span class="o">=</span> <span class="n">_retrieve_subgraph_context</span><span class="p">(</span><span class="n">entities</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">_synthesize_answer</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">        <span class="n">query_str</span><span class="p">,</span> <span class="n">graph_rag_context</span><span class="p">,</span> <span class="n">llm</span><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="c1"># 伪代码</span>
+
+<span class="k">def</span> <span class="nf">_get_key_entities</span><span class="p">(</span><span class="n">query_str</span><span class="p">,</span> <span class="n">llm</span><span class="o">=</span><span class="kc">None</span> <span class="p">,</span><span class="n">with_llm</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="o">...</span>
+    <span class="k">return</span> <span class="n">_expand_synonyms</span><span class="p">(</span><span class="n">entities</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">_retrieve_subgraph_context</span><span class="p">(</span><span class="n">entities</span><span class="p">,</span> <span class="n">depth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="mi">30</span><span class="p">):</span>
+    <span class="o">...</span>
+    <span class="k">return</span> <span class="n">nebulagraph_store</span><span class="o">.</span><span class="n">get_relations</span><span class="p">(</span><span class="n">entities</span><span class="p">,</span> <span class="n">depth</span><span class="p">,</span> <span class="n">limit</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">_synthesize_answer</span><span class="p">(</span><span class="n">query_str</span><span class="p">,</span> <span class="n">graph_rag_context</span><span class="p">,</span> <span class="n">llm</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">llm</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">PROMPT_SYNTHESIZE_AND_REFINE</span><span class="p">,</span> <span class="n">query_str</span><span class="p">,</span> <span class="n">graph_rag_context</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">simple_graph_rag</span><span class="p">(</span><span class="n">query_str</span><span class="p">,</span> <span class="n">nebulagraph_store</span><span class="p">,</span> <span class="n">llm</span><span class="p">):</span>
+    <span class="n">entities</span> <span class="o">=</span> <span class="n">_get_key_entities</span><span class="p">(</span><span class="n">query_str</span><span class="p">,</span> <span class="n">llm</span><span class="p">)</span>
+    <span class="n">graph_rag_context</span> <span class="o">=</span> <span class="n">_retrieve_subgraph_context</span><span class="p">(</span><span class="n">entities</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_synthesize_answer</span><span class="p">(</span>
+        <span class="n">query_str</span><span class="p">,</span> <span class="n">graph_rag_context</span><span class="p">,</span> <span class="n">llm</span><span class="p">)</span>
+</code></pre></td></tr></table>
 </div>
 </div><p>然而，有了像 Llama Index 这样方便的 LLM 编排工具，开发者可以专注于 LLM 的编排逻辑和 pipeline 设计，而不用亲自处理很多细节的抽象与实现。</p>
 <p>所以，用 Llama Index，我们可以轻松搭建 Graph RAG，甚至整合更复杂的 RAG 逻辑，比如 <a href="https://gpt-index.readthedocs.io/en/latest/examples/index_structs/knowledge_graph/KnowledgeGraphIndex_vs_VectorStoreIndex_vs_CustomIndex_combined.html" target="_blank" rel="noopener noreferrer">Graph+Vector RAG</a>。</p>
@@ -118,27 +118,27 @@
 </span><span class="lnt">20
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">graph_store = NebulaGraphStore(
-</span></span><span class="line"><span class="cl">    space_name=space_name,
-</span></span><span class="line"><span class="cl">    edge_types=edge_types,
-</span></span><span class="line"><span class="cl">    rel_prop_names=rel_prop_names,
-</span></span><span class="line"><span class="cl">    tags=tags,
-</span></span><span class="line"><span class="cl">)
-</span></span><span class="line"><span class="cl">storage_context = StorageContext.from_defaults(graph_store=graph_store)
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"># Build KG
-</span></span><span class="line"><span class="cl">kg_index = KnowledgeGraphIndex.from_documents(
-</span></span><span class="line"><span class="cl">    documents,
-</span></span><span class="line"><span class="cl">    storage_context=storage_context,
-</span></span><span class="line"><span class="cl">    max_triplets_per_chunk=10,
-</span></span><span class="line"><span class="cl">    space_name=space_name,
-</span></span><span class="line"><span class="cl">    edge_types=edge_types,
-</span></span><span class="line"><span class="cl">    rel_prop_names=rel_prop_names,
-</span></span><span class="line"><span class="cl">    tags=tags,
-</span></span><span class="line"><span class="cl">)
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">kg_query_engine = kg_index.as_query_engine()
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">graph_store = NebulaGraphStore(
+    space_name=space_name,
+    edge_types=edge_types,
+    rel_prop_names=rel_prop_names,
+    tags=tags,
+)
+storage_context = StorageContext.from_defaults(graph_store=graph_store)
+
+# Build KG
+kg_index = KnowledgeGraphIndex.from_documents(
+    documents,
+    storage_context=storage_context,
+    max_triplets_per_chunk=10,
+    space_name=space_name,
+    edge_types=edge_types,
+    rel_prop_names=rel_prop_names,
+    tags=tags,
+)
+
+kg_query_engine = kg_index.as_query_engine()
+</code></pre></td></tr></table>
 </div>
 </div><ul>
 <li><code>KnowledgeGraphRAGQueryEngine</code> 则可以在任何已经存在的知识图谱上进行 Graph RAG，不过我还没有完成这个 <a href="https://github.com/jerryjliu/llama_index/pull/7204" target="_blank" rel="noopener noreferrer">PR</a>。</li>
@@ -158,18 +158,18 @@
 </span><span class="lnt">11
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">graph_store = NebulaGraphStore(
-</span></span><span class="line"><span class="cl">    space_name=space_name,
-</span></span><span class="line"><span class="cl">    edge_types=edge_types,
-</span></span><span class="line"><span class="cl">    rel_prop_names=rel_prop_names,
-</span></span><span class="line"><span class="cl">    tags=tags,
-</span></span><span class="line"><span class="cl">)
-</span></span><span class="line"><span class="cl">storage_context = StorageContext.from_defaults(graph_store=graph_store)
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">graph_rag_query_engine = KnowledgeGraphRAGQueryEngine(
-</span></span><span class="line"><span class="cl">    storage_context=storage_context,
-</span></span><span class="line"><span class="cl">)
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">graph_store = NebulaGraphStore(
+    space_name=space_name,
+    edge_types=edge_types,
+    rel_prop_names=rel_prop_names,
+    tags=tags,
+)
+storage_context = StorageContext.from_defaults(graph_store=graph_store)
+
+graph_rag_query_engine = KnowledgeGraphRAGQueryEngine(
+    storage_context=storage_context,
+)
+</code></pre></td></tr></table>
 </div>
 </div><p>最后，我做了<a href="https://www.siwei.io/demos/graph-rag/" target="_blank" rel="noopener noreferrer">一个 streamlit 的 demo</a>来比较 Graph RAG 与 Vector RAG，从中我们可以看到 Graph RAG 并没有取代 Embedding、向量搜索的方法，而是增强了/补充了它的不足。</p>
 <iframe width="800" height="857" src="https://github.com/siwei-io/talks/assets/1651790/102d00bc-6146-4856-a81f-f953c7254b29"> </iframe>
@@ -212,8 +212,8 @@
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">In this thread, you are a Chinese Tech blogger to help translate my blog in markdown from English into Chinese, the blog style is clear, fun yet professional. I will paste chapters in markdown to you and you will send back the translated and polished version.
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">In this thread, you are a Chinese Tech blogger to help translate my blog in markdown from English into Chinese, the blog style is clear, fun yet professional. I will paste chapters in markdown to you and you will send back the translated and polished version.
+</code></pre></td></tr></table>
 </div>
 </div></blockquote>
 <h2 id="llm-应用的范式" class="headerLink">
@@ -236,14 +236,14 @@
 </span><span class="lnt">7
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">┌───────┐         ┌─────────────────┐         ┌─────────┐
-</span></span><span class="line"><span class="cl">│       │         │ Docs/Knowledge  │         │         │
-</span></span><span class="line"><span class="cl">│       │         └─────────────────┘         │         │
-</span></span><span class="line"><span class="cl">│ User  │─────────────────────────────────────▶   LLM   │
-</span></span><span class="line"><span class="cl">│       │                                     │         │
-</span></span><span class="line"><span class="cl">│       │                                     │         │
-</span></span><span class="line"><span class="cl">└───────┘                                     └─────────┘
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">┌───────┐         ┌─────────────────┐         ┌─────────┐
+│       │         │ Docs/Knowledge  │         │         │
+│       │         └─────────────────┘         │         │
+│ User  │─────────────────────────────────────▶   LLM   │
+│       │                                     │         │
+│       │                                     │         │
+└───────┘                                     └─────────┘
+</code></pre></td></tr></table>
 </div>
 </div><p>在这种搜索方法中，实现从文档/知识（上述示例中的那本书）中获取与特定任务相关信息的最有效方式之一是利用嵌入（Embedding）。</p>
 <h3 id="嵌入embedding" class="headerLink">
@@ -291,26 +291,26 @@
 </span><span class="lnt">19
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">                  ┌────┬────┬────┬────┐                  
-</span></span><span class="line"><span class="cl">                  │ 1  │ 2  │ 3  │ 4  │                  
-</span></span><span class="line"><span class="cl">                  ├────┴────┴────┴────┤                  
-</span></span><span class="line"><span class="cl">                  │  Docs/Knowledge   │                  
-</span></span><span class="line"><span class="cl">┌───────┐         │        ...        │       ┌─────────┐
-</span></span><span class="line"><span class="cl">│       │         ├────┬────┬────┬────┤       │         │
-</span></span><span class="line"><span class="cl">│       │         │ 95 │ 96 │    │    │       │         │
-</span></span><span class="line"><span class="cl">│       │         └────┴────┴────┴────┘       │         │
-</span></span><span class="line"><span class="cl">│ User  │─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─▶   LLM   │
-</span></span><span class="line"><span class="cl">│       │                                     │         │
-</span></span><span class="line"><span class="cl">│       │                                     │         │
-</span></span><span class="line"><span class="cl">└───────┘    ┌ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┐  └─────────┘
-</span></span><span class="line"><span class="cl">    │          ┌──────────────────────────┐        ▲     
-</span></span><span class="line"><span class="cl">    └────────┼▶│  Tell me ....., please   │├───────┘     
-</span></span><span class="line"><span class="cl">               └──────────────────────────┘              
-</span></span><span class="line"><span class="cl">             │ ┌────┐ ┌────┐               │             
-</span></span><span class="line"><span class="cl">               │ 3  │ │ 96 │                             
-</span></span><span class="line"><span class="cl">             │ └────┘ └────┘               │             
-</span></span><span class="line"><span class="cl">              ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ 
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">                  ┌────┬────┬────┬────┐                  
+                  │ 1  │ 2  │ 3  │ 4  │                  
+                  ├────┴────┴────┴────┤                  
+                  │  Docs/Knowledge   │                  
+┌───────┐         │        ...        │       ┌─────────┐
+│       │         ├────┬────┬────┬────┤       │         │
+│       │         │ 95 │ 96 │    │    │       │         │
+│       │         └────┴────┴────┴────┘       │         │
+│ User  │─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─▶   LLM   │
+│       │                                     │         │
+│       │                                     │         │
+└───────┘    ┌ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┐  └─────────┘
+    │          ┌──────────────────────────┐        ▲     
+    └────────┼▶│  Tell me ....., please   │├───────┘     
+               └──────────────────────────┘              
+             │ ┌────┐ ┌────┐               │             
+               │ 3  │ │ 96 │                             
+             │ └────┘ └────┘               │             
+              ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ 
+</code></pre></td></tr></table>
 </div>
 </div><h3 id="llama-index" class="headerLink">
     <a href="#llama-index" class="header-mark"></a>2.3 Llama Index</h3><p>Llama Index 是一个开源工具包，它能帮助我们以最佳实践去做 in-context learning：</p>
@@ -334,15 +334,15 @@
 </span><span class="lnt">8
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">┌────┬────┬────┬────┐
-</span></span><span class="line"><span class="cl">│ 1  │ 2  │ 3  │ 4  │
-</span></span><span class="line"><span class="cl">├────┴────┴────┴────┤
-</span></span><span class="line"><span class="cl">│  Docs/Knowledge   │
-</span></span><span class="line"><span class="cl">│        ...        │
-</span></span><span class="line"><span class="cl">├────┬────┬────┬────┤
-</span></span><span class="line"><span class="cl">│ 95 │ 96 │    │    │
-</span></span><span class="line"><span class="cl">└────┴────┴────┴────┘
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">┌────┬────┬────┬────┐
+│ 1  │ 2  │ 3  │ 4  │
+├────┴────┴────┴────┤
+│  Docs/Knowledge   │
+│        ...        │
+├────┬────┬────┬────┤
+│ 95 │ 96 │    │    │
+└────┴────┴────┴────┘
+</code></pre></td></tr></table>
 </div>
 </div><p>而解决、缓解这个问题的方法，在 Llama Index 工具的语境下，就是创建<a href="https://gpt-index.readthedocs.io/en/latest/how_to/index_structs/composability.html" target="_blank" rel="noopener noreferrer">组合索引</a>和<a href="https://gpt-index.readthedocs.io/en/latest/guides/primer/index_guide.html" target="_blank" rel="noopener noreferrer">综合索引</a>。</p>
 <p>其中，向量存储（VectorStore）只是其中的一部分。除此之外，我们可以定义一个摘要索引和/或树形索引等，以<a href="https://gpt-index.readthedocs.io/en/latest/guides/tutorials/unified_query.html" target="_blank" rel="noopener noreferrer">将不同类型的问题路由到不同的索引</a>，从而避免在需要全局上下文时丧失它。</p>
@@ -397,28 +397,28 @@
 </span><span class="lnt">21
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">┌──────────────────┬──────────────────┬──────────────────┬──────────────────┐
-</span></span><span class="line"><span class="cl">│ .─.       .─.    │  .─.       .─.   │            .─.   │  .─.       .─.   │
-</span></span><span class="line"><span class="cl">│( x )─────▶ y )   │ ( x )─────▶ a )  │           ( j )  │ ( m )◀────( x )  │
-</span></span><span class="line"><span class="cl">│ `▲&#39;       `─&#39;    │  `─&#39;       `─&#39;   │            `─&#39;   │  `─&#39;       `─&#39;   │
-</span></span><span class="line"><span class="cl">│  │     1         │        2         │        3    │    │        4         │
-</span></span><span class="line"><span class="cl">│ .─.              │                  │            .▼.   │                  │
-</span></span><span class="line"><span class="cl">│( z )─────────────┼──────────────────┼──────────▶( i )─┐│                  │
-</span></span><span class="line"><span class="cl">│ `◀────┐          │                  │            `─&#39;  ││                  │
-</span></span><span class="line"><span class="cl">├───────┼──────────┴──────────────────┴─────────────────┼┴──────────────────┤
-</span></span><span class="line"><span class="cl">│       │                      Docs/Knowledge           │                   │
-</span></span><span class="line"><span class="cl">│       │                            ...                │                   │
-</span></span><span class="line"><span class="cl">│       │                                               │                   │
-</span></span><span class="line"><span class="cl">├───────┼──────────┬──────────────────┬─────────────────┼┬──────────────────┤
-</span></span><span class="line"><span class="cl">│  .─.  └──────.   │  .─.             │                 ││  .─.             │
-</span></span><span class="line"><span class="cl">│ ( x ◀─────( b )  │ ( x )            │                 └┼▶( n )            │
-</span></span><span class="line"><span class="cl">│  `─&#39;       `─&#39;   │  `─&#39;             │                  │  `─&#39;             │
-</span></span><span class="line"><span class="cl">│        95   │    │   │    96        │                  │   │    98        │
-</span></span><span class="line"><span class="cl">│            .▼.   │  .▼.             │                  │   ▼              │
-</span></span><span class="line"><span class="cl">│           ( c )  │ ( d )            │                  │  .─.             │
-</span></span><span class="line"><span class="cl">│            `─&#39;   │  `─&#39;             │                  │ ( x )            │
-</span></span><span class="line"><span class="cl">└──────────────────┴──────────────────┴──────────────────┴──`─&#39;─────────────┘
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">┌──────────────────┬──────────────────┬──────────────────┬──────────────────┐
+│ .─.       .─.    │  .─.       .─.   │            .─.   │  .─.       .─.   │
+│( x )─────▶ y )   │ ( x )─────▶ a )  │           ( j )  │ ( m )◀────( x )  │
+│ `▲&#39;       `─&#39;    │  `─&#39;       `─&#39;   │            `─&#39;   │  `─&#39;       `─&#39;   │
+│  │     1         │        2         │        3    │    │        4         │
+│ .─.              │                  │            .▼.   │                  │
+│( z )─────────────┼──────────────────┼──────────▶( i )─┐│                  │
+│ `◀────┐          │                  │            `─&#39;  ││                  │
+├───────┼──────────┴──────────────────┴─────────────────┼┴──────────────────┤
+│       │                      Docs/Knowledge           │                   │
+│       │                            ...                │                   │
+│       │                                               │                   │
+├───────┼──────────┬──────────────────┬─────────────────┼┬──────────────────┤
+│  .─.  └──────.   │  .─.             │                 ││  .─.             │
+│ ( x ◀─────( b )  │ ( x )            │                 └┼▶( n )            │
+│  `─&#39;       `─&#39;   │  `─&#39;             │                  │  `─&#39;             │
+│        95   │    │   │    96        │                  │   │    98        │
+│            .▼.   │  .▼.             │                  │   ▼              │
+│           ( c )  │ ( d )            │                  │  .─.             │
+│            `─&#39;   │  `─&#39;             │                  │ ( x )            │
+└──────────────────┴──────────────────┴──────────────────┴──`─&#39;─────────────┘
+</code></pre></td></tr></table>
 </div>
 </div><p>显然，那些（可能很宝贵的）涉及到主题 <code>x</code> 的精炼信息来自于其他节点以及跨节点的信息，都因为我们引入知识图谱的步骤，而能够被包含在 prompt 中，用于进行上下文学习，从而克服了前边提到的问题。</p>
 <h2 id="llama-index-中的知识图谱进展" class="headerLink">

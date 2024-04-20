@@ -3,7 +3,7 @@
         <title>Nebula Algorithm - Tag - siwei.io</title>
         <link>https://siwei.io/en/tags/nebula-algorithm/</link>
         <description>Nebula Algorithm - Tag - siwei.io</description>
-        <generator>Hugo -- gohugo.io</generator><language>en</language><managingEditor>weyl.gu@gmail.com (Wey Gu)</managingEditor>
+        <generator>Hugo -- gohugo.io</generator><managingEditor>weyl.gu@gmail.com (Wey Gu)</managingEditor>
             <webMaster>weyl.gu@gmail.com (Wey Gu)</webMaster><lastBuildDate>Tue, 24 Aug 2021 11:22:55 &#43;0800</lastBuildDate><atom:link href="https://siwei.io/en/tags/nebula-algorithm/" rel="self" type="application/rss+xml" /><item>
     <title>Nebula LiveJournal, Import LiveJournal Dataset into Nebula Graph and Run Nebula Algorithm</title>
     <link>https://siwei.io/en/nebula-livejournal/</link>
@@ -11,7 +11,7 @@
         <name>Wey Gu</name>
     </author><guid>https://siwei.io/en/nebula-livejournal/</guid>
     <description><![CDATA[<div class="featured-image">
-                <img src="/nebula-livejournal/featured-image.webp" referrerpolicy="no-referrer">
+                <img src="/en/nebula-livejournal/featured-image.webp" referrerpolicy="no-referrer">
             </div><blockquote>
 <p>一个导入 Livejournal 数据集到 Nebula Graph 图数据库，并执行 Nebula Algorithm 图算法的过程分享。</p>
 </blockquote>
@@ -33,18 +33,18 @@
 </span><span class="lnt">11
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ head soc-LiveJournal1.txt
-</span></span><span class="line"><span class="cl"><span class="c1"># Directed graph (each unordered pair of nodes is saved once): soc-LiveJournal1.txt</span>
-</span></span><span class="line"><span class="cl"><span class="c1"># Directed LiveJournal friednship social network</span>
-</span></span><span class="line"><span class="cl"><span class="c1"># Nodes: 4847571 Edges: 68993773</span>
-</span></span><span class="line"><span class="cl"><span class="c1"># FromNodeId	ToNodeId</span>
-</span></span><span class="line"><span class="cl">0	<span class="m">1</span>
-</span></span><span class="line"><span class="cl">0	<span class="m">2</span>
-</span></span><span class="line"><span class="cl">0	<span class="m">3</span>
-</span></span><span class="line"><span class="cl">0	<span class="m">4</span>
-</span></span><span class="line"><span class="cl">0	<span class="m">5</span>
-</span></span><span class="line"><span class="cl">0	<span class="m">6</span>
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ head soc-LiveJournal1.txt
+<span class="c1"># Directed graph (each unordered pair of nodes is saved once): soc-LiveJournal1.txt</span>
+<span class="c1"># Directed LiveJournal friednship social network</span>
+<span class="c1"># Nodes: 4847571 Edges: 68993773</span>
+<span class="c1"># FromNodeId	ToNodeId</span>
+0	<span class="m">1</span>
+0	<span class="m">2</span>
+0	<span class="m">3</span>
+0	<span class="m">4</span>
+0	<span class="m">5</span>
+0	<span class="m">6</span>
+</code></pre></td></tr></table>
 </div>
 </div><p>It could be accessed in <a href="https://snap.stanford.edu/data/soc-LiveJournal1.html" target="_blank" rel="noopener noreferrer">https://snap.stanford.edu/data/soc-LiveJournal1.html</a>.</p>
 <table>
@@ -110,9 +110,9 @@
 </span><span class="lnt">2
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ <span class="nb">cd</span> nebula-livejournal/data
-</span></span><span class="line"><span class="cl">$ wget https://snap.stanford.edu/data/soc-LiveJournal1.txt.gz
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ <span class="nb">cd</span> nebula-livejournal/data
+$ wget https://snap.stanford.edu/data/soc-LiveJournal1.txt.gz
+</code></pre></td></tr></table>
 </div>
 </div><p>Comments in data file should be removed to make the data import tool happy.</p>
 <h3 id="preprocessing" class="headerLink">
@@ -122,9 +122,9 @@
 </span><span class="lnt">2
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ gzip -d soc-LiveJournal1.txt.gz
-</span></span><span class="line"><span class="cl">$ sed -i <span class="s1">&#39;1,4d&#39;</span> soc-LiveJournal1.txt
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ gzip -d soc-LiveJournal1.txt.gz
+$ sed -i <span class="s1">&#39;1,4d&#39;</span> soc-LiveJournal1.txt
+</code></pre></td></tr></table>
 </div>
 </div><h2 id="import-dataset-to-nebula-graph" class="headerLink">
     <a href="#import-dataset-to-nebula-graph" class="header-mark"></a>2 Import dataset to Nebula Graph</h2><h3 id="with-nebula-importer" class="headerLink">
@@ -143,15 +143,15 @@
 </span><span class="lnt">8
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ <span class="nb">cd</span> nebula-livejournal
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">$ docker run --rm -ti <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    --network<span class="o">=</span>nebula-net <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    -v nebula-importer/importer.yaml:/root/importer.yaml <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    -v data/:/root <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    vesoft/nebula-importer:v2 <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    --config /root/importer.yaml
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ <span class="nb">cd</span> nebula-livejournal
+
+$ docker run --rm -ti <span class="se">\
+</span><span class="se"></span>    --network<span class="o">=</span>nebula-net <span class="se">\
+</span><span class="se"></span>    -v nebula-importer/importer.yaml:/root/importer.yaml <span class="se">\
+</span><span class="se"></span>    -v data/:/root <span class="se">\
+</span><span class="se"></span>    vesoft/nebula-importer:v2 <span class="se">\
+</span><span class="se"></span>    --config /root/importer.yaml
+</code></pre></td></tr></table>
 </div>
 </div><p>Or if you have the binary nebula-importer locally:</p>
 <div class="highlight"><div class="chroma">
@@ -160,9 +160,9 @@
 </span><span class="lnt">2
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ <span class="nb">cd</span> data
-</span></span><span class="line"><span class="cl">$ &lt;path_to_nebula-importer_binary&gt; --config ../nebula-importer/importer.yaml
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ <span class="nb">cd</span> data
+$ &lt;path_to_nebula-importer_binary&gt; --config ../nebula-importer/importer.yaml
+</code></pre></td></tr></table>
 </div>
 </div><h3 id="with-nebula-exchange" class="headerLink">
     <a href="#with-nebula-exchange" class="header-mark"></a>2.2 With Nebula Exchange</h3><p><a href="https://github.com/vesoft-inc/nebula-spark-utils/tree/master/nebula-exchange" target="_blank" rel="noopener noreferrer">Nebula-Exchange</a> is a Spark Application to enable batch and streaming data import from multiple data sources to Nebula Graph.</p>
@@ -231,11 +231,11 @@
 </span><span class="lnt">4
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker run --name spark-master --network nebula-docker-compose_nebula-net <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    -h spark-master -e <span class="nv">ENABLE_INIT_DAEMON</span><span class="o">=</span><span class="nb">false</span> -d <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    -v nebula-algorithm/:/root <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    bde2020/spark-master:2.4.5-hadoop2.7
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">docker run --name spark-master --network nebula-docker-compose_nebula-net <span class="se">\
+</span><span class="se"></span>    -h spark-master -e <span class="nv">ENABLE_INIT_DAEMON</span><span class="o">=</span><span class="nb">false</span> -d <span class="se">\
+</span><span class="se"></span>    -v nebula-algorithm/:/root <span class="se">\
+</span><span class="se"></span>    bde2020/spark-master:2.4.5-hadoop2.7
+</code></pre></td></tr></table>
 </div>
 </div><p>Thus we could make spark application submt inside this container:</p>
 <div class="highlight"><div class="chroma">
@@ -246,11 +246,11 @@
 </span><span class="lnt">4
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker <span class="nb">exec</span> -it spark-master bash
-</span></span><span class="line"><span class="cl"><span class="nb">cd</span> /root/
-</span></span><span class="line"><span class="cl"><span class="c1"># download Nebula-Algorithm Jar Packagem, 2.0.0 for example, for other versions, refer to nebula-algorithm github repo and documentations.</span>
-</span></span><span class="line"><span class="cl">wget https://repo1.maven.org/maven2/com/vesoft/nebula-algorithm/2.0.0/nebula-algorithm-2.0.0.jar
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">docker <span class="nb">exec</span> -it spark-master bash
+<span class="nb">cd</span> /root/
+<span class="c1"># download Nebula-Algorithm Jar Packagem, 2.0.0 for example, for other versions, refer to nebula-algorithm github repo and documentations.</span>
+wget https://repo1.maven.org/maven2/com/vesoft/nebula-algorithm/2.0.0/nebula-algorithm-2.0.0.jar
+</code></pre></td></tr></table>
 </div>
 </div><h3 id="run-algorithms" class="headerLink">
     <a href="#run-algorithms" class="header-mark"></a>3.2 Run Algorithms</h3><p>There are many altorithms supported by Nebula-Algorithm, here some of their configuration files were put under nebula-algorithm as an example.</p>
@@ -260,8 +260,8 @@
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">vim nebula-altorithm/algo-pagerank.conf
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">vim nebula-altorithm/algo-pagerank.conf
+</code></pre></td></tr></table>
 </div>
 </div><p>Then we could enter the spark container and call corresponding algorithms as follow.</p>
 <p>Please adjust your <code>--driver-memeory</code> accordingly, i.e. pagerank altorithm:</p>
@@ -273,11 +273,11 @@
 </span><span class="lnt">4
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">/spark/bin/spark-submit --master <span class="s2">&#34;local&#34;</span> --conf spark.rpc.askTimeout<span class="o">=</span>6000s <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    --class com.vesoft.nebula.algorithm.Main <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    --driver-memory 16g nebula-algorithm-2.0.0.jar <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    -p pagerank.conf
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">/spark/bin/spark-submit --master <span class="s2">&#34;local&#34;</span> --conf spark.rpc.askTimeout<span class="o">=</span>6000s <span class="se">\
+</span><span class="se"></span>    --class com.vesoft.nebula.algorithm.Main <span class="se">\
+</span><span class="se"></span>    --driver-memory 16g nebula-algorithm-2.0.0.jar <span class="se">\
+</span><span class="se"></span>    -p pagerank.conf
+</code></pre></td></tr></table>
 </div>
 </div><p>After the algorithm finished, the output will be under the path insdie the container defined in conf file:</p>
 <div class="highlight"><div class="chroma">
@@ -287,10 +287,10 @@
 </span><span class="lnt">3
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-toml" data-lang="toml"><span class="line"><span class="cl">    <span class="nx">write</span><span class="err">:</span><span class="p">{</span>
-</span></span><span class="line"><span class="cl">        <span class="nx">resultPath</span><span class="err">:/</span><span class="nx">output</span><span class="err">/</span>
-</span></span><span class="line"><span class="cl">    <span class="p">}</span>
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-toml" data-lang="toml">    <span class="nx">write</span><span class="err">:</span><span class="p">{</span>
+        <span class="nx">resultPath</span><span class="err">:/</span><span class="nx">output</span><span class="err">/</span>
+    <span class="p">}</span>
+</code></pre></td></tr></table>
 </div>
 </div><blockquote>
 <p>题图版权：<a href="https://unsplash.com/photos/eTgMFFzroGc" target="_blank" rel="noopener noreferrer">@sigmund</a></p>

@@ -3,7 +3,7 @@
         <title>Spark - Tag - siwei.io</title>
         <link>https://siwei.io/en/tags/spark/</link>
         <description>Spark - Tag - siwei.io</description>
-        <generator>Hugo -- gohugo.io</generator><language>en</language><managingEditor>weyl.gu@gmail.com (Wey Gu)</managingEditor>
+        <generator>Hugo -- gohugo.io</generator><managingEditor>weyl.gu@gmail.com (Wey Gu)</managingEditor>
             <webMaster>weyl.gu@gmail.com (Wey Gu)</webMaster><lastBuildDate>Tue, 19 Apr 2022 17:19:11 &#43;0800</lastBuildDate><atom:link href="https://siwei.io/en/tags/spark/" rel="self" type="application/rss+xml" /><item>
     <title>Spark on Nebula Graph</title>
     <link>https://siwei.io/en/spark-on-nebula-graph/</link>
@@ -11,7 +11,7 @@
         <name>Wey Gu</name>
     </author><guid>https://siwei.io/en/spark-on-nebula-graph/</guid>
     <description><![CDATA[<div class="featured-image">
-                <img src="/spark-on-nebula-graph/featured-image.webp" referrerpolicy="no-referrer">
+                <img src="/en/spark-on-nebula-graph/featured-image.webp" referrerpolicy="no-referrer">
             </div><blockquote>
 <p>What could be done with Spark and PySpark on top of Nebula Graph, this post covers everything we should know.</p>
 </blockquote>
@@ -61,29 +61,29 @@
 </span><span class="lnt">22
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-scala" data-lang="scala"><span class="line"><span class="cl">  <span class="k">def</span> <span class="n">readVertex</span><span class="o">(</span><span class="n">spark</span><span class="k">:</span> <span class="kt">SparkSession</span><span class="o">)</span><span class="k">:</span> <span class="kt">Unit</span> <span class="o">=</span> <span class="o">{</span>
-</span></span><span class="line"><span class="cl">    <span class="nc">LOG</span><span class="o">.</span><span class="n">info</span><span class="o">(</span><span class="s">&#34;start to read nebula vertices&#34;</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">    <span class="k">val</span> <span class="n">config</span> <span class="k">=</span>
-</span></span><span class="line"><span class="cl">      <span class="nc">NebulaConnectionConfig</span>
-</span></span><span class="line"><span class="cl">        <span class="o">.</span><span class="n">builder</span><span class="o">()</span>
-</span></span><span class="line"><span class="cl">        <span class="o">.</span><span class="n">withMetaAddress</span><span class="o">(</span><span class="s">&#34;metad0:9559,metad1:9559,metad2:9559&#34;</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">        <span class="o">.</span><span class="n">withConenctionRetry</span><span class="o">(</span><span class="mi">2</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">        <span class="o">.</span><span class="n">build</span><span class="o">()</span>
-</span></span><span class="line"><span class="cl">    <span class="k">val</span> <span class="n">nebulaReadVertexConfig</span><span class="k">:</span> <span class="kt">ReadNebulaConfig</span> <span class="o">=</span> <span class="nc">ReadNebulaConfig</span>
-</span></span><span class="line"><span class="cl">      <span class="o">.</span><span class="n">builder</span><span class="o">()</span>
-</span></span><span class="line"><span class="cl">      <span class="o">.</span><span class="n">withSpace</span><span class="o">(</span><span class="s">&#34;basketballplayer&#34;</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">      <span class="o">.</span><span class="n">withLabel</span><span class="o">(</span><span class="s">&#34;player&#34;</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">      <span class="o">.</span><span class="n">withNoColumn</span><span class="o">(</span><span class="kc">false</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">      <span class="o">.</span><span class="n">withReturnCols</span><span class="o">(</span><span class="nc">List</span><span class="o">(</span><span class="s">&#34;name&#34;</span><span class="o">,</span> <span class="s">&#34;age&#34;</span><span class="o">))</span>
-</span></span><span class="line"><span class="cl">      <span class="o">.</span><span class="n">withLimit</span><span class="o">(</span><span class="mi">10</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">      <span class="o">.</span><span class="n">withPartitionNum</span><span class="o">(</span><span class="mi">10</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">      <span class="o">.</span><span class="n">build</span><span class="o">()</span>
-</span></span><span class="line"><span class="cl">    <span class="k">val</span> <span class="n">vertex</span> <span class="k">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">nebula</span><span class="o">(</span><span class="n">config</span><span class="o">,</span> <span class="n">nebulaReadVertexConfig</span><span class="o">).</span><span class="n">loadVerticesToDF</span><span class="o">()</span>
-</span></span><span class="line"><span class="cl">    <span class="n">vertex</span><span class="o">.</span><span class="n">printSchema</span><span class="o">()</span>
-</span></span><span class="line"><span class="cl">    <span class="n">vertex</span><span class="o">.</span><span class="n">show</span><span class="o">(</span><span class="mi">20</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">    <span class="n">println</span><span class="o">(</span><span class="s">&#34;vertex count: &#34;</span> <span class="o">+</span> <span class="n">vertex</span><span class="o">.</span><span class="n">count</span><span class="o">())</span>
-</span></span><span class="line"><span class="cl">  <span class="o">}</span>
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-scala" data-lang="scala">  <span class="k">def</span> <span class="n">readVertex</span><span class="o">(</span><span class="n">spark</span><span class="k">:</span> <span class="kt">SparkSession</span><span class="o">)</span><span class="k">:</span> <span class="kt">Unit</span> <span class="o">=</span> <span class="o">{</span>
+    <span class="nc">LOG</span><span class="o">.</span><span class="n">info</span><span class="o">(</span><span class="s">&#34;start to read nebula vertices&#34;</span><span class="o">)</span>
+    <span class="k">val</span> <span class="n">config</span> <span class="k">=</span>
+      <span class="nc">NebulaConnectionConfig</span>
+        <span class="o">.</span><span class="n">builder</span><span class="o">()</span>
+        <span class="o">.</span><span class="n">withMetaAddress</span><span class="o">(</span><span class="s">&#34;metad0:9559,metad1:9559,metad2:9559&#34;</span><span class="o">)</span>
+        <span class="o">.</span><span class="n">withConenctionRetry</span><span class="o">(</span><span class="mi">2</span><span class="o">)</span>
+        <span class="o">.</span><span class="n">build</span><span class="o">()</span>
+    <span class="k">val</span> <span class="n">nebulaReadVertexConfig</span><span class="k">:</span> <span class="kt">ReadNebulaConfig</span> <span class="o">=</span> <span class="nc">ReadNebulaConfig</span>
+      <span class="o">.</span><span class="n">builder</span><span class="o">()</span>
+      <span class="o">.</span><span class="n">withSpace</span><span class="o">(</span><span class="s">&#34;basketballplayer&#34;</span><span class="o">)</span>
+      <span class="o">.</span><span class="n">withLabel</span><span class="o">(</span><span class="s">&#34;player&#34;</span><span class="o">)</span>
+      <span class="o">.</span><span class="n">withNoColumn</span><span class="o">(</span><span class="kc">false</span><span class="o">)</span>
+      <span class="o">.</span><span class="n">withReturnCols</span><span class="o">(</span><span class="nc">List</span><span class="o">(</span><span class="s">&#34;name&#34;</span><span class="o">,</span> <span class="s">&#34;age&#34;</span><span class="o">))</span>
+      <span class="o">.</span><span class="n">withLimit</span><span class="o">(</span><span class="mi">10</span><span class="o">)</span>
+      <span class="o">.</span><span class="n">withPartitionNum</span><span class="o">(</span><span class="mi">10</span><span class="o">)</span>
+      <span class="o">.</span><span class="n">build</span><span class="o">()</span>
+    <span class="k">val</span> <span class="n">vertex</span> <span class="k">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">nebula</span><span class="o">(</span><span class="n">config</span><span class="o">,</span> <span class="n">nebulaReadVertexConfig</span><span class="o">).</span><span class="n">loadVerticesToDF</span><span class="o">()</span>
+    <span class="n">vertex</span><span class="o">.</span><span class="n">printSchema</span><span class="o">()</span>
+    <span class="n">vertex</span><span class="o">.</span><span class="n">show</span><span class="o">(</span><span class="mi">20</span><span class="o">)</span>
+    <span class="n">println</span><span class="o">(</span><span class="s">&#34;vertex count: &#34;</span> <span class="o">+</span> <span class="n">vertex</span><span class="o">.</span><span class="n">count</span><span class="o">())</span>
+  <span class="o">}</span>
+</code></pre></td></tr></table>
 </div>
 </div><p>It&rsquo;s similar for the writer part and one big difference here is the writing path is done via GraphD as the underlying Spark Connector is shooting nGQL <code>INSERT</code> queries.</p>
 <p>Then let&rsquo;s do the hands-on end-to-end practice.</p>
@@ -96,8 +96,8 @@
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">curl -fsSL nebula-up.siwei.io/install.sh <span class="p">|</span> bash -s -- v3.0
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">curl -fsSL nebula-up.siwei.io/install.sh <span class="p">|</span> bash -s -- v3.0
+</code></pre></td></tr></table>
 </div>
 </div><p>After the above script is executed, let&rsquo;s connect to it with Nebula-Console, the command line client for Nebula Graph.</p>
 <ul>
@@ -108,8 +108,8 @@
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">~/.nebula-up/console.sh
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">~/.nebula-up/console.sh
+</code></pre></td></tr></table>
 </div>
 </div><ul>
 <li>Connect to the Nebula Graph</li>
@@ -119,8 +119,8 @@
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">nebula-console -addr graphd -port <span class="m">9669</span> -user root -p nebula
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">nebula-console -addr graphd -port <span class="m">9669</span> -user root -p nebula
+</code></pre></td></tr></table>
 </div>
 </div><ul>
 <li>
@@ -136,9 +136,9 @@
 </span><span class="lnt">2
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">ADD HOSTS <span class="s2">&#34;storaged0&#34;</span>:9779,<span class="s2">&#34;storaged1&#34;</span>:9779,<span class="s2">&#34;storaged2&#34;</span>:9779<span class="p">;</span>
-</span></span><span class="line"><span class="cl">SHOW HOSTS<span class="p">;</span>
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">ADD HOSTS <span class="s2">&#34;storaged0&#34;</span>:9779,<span class="s2">&#34;storaged1&#34;</span>:9779,<span class="s2">&#34;storaged2&#34;</span>:9779<span class="p">;</span>
+SHOW HOSTS<span class="p">;</span>
+</code></pre></td></tr></table>
 </div>
 </div><ul>
 <li>Load the <a href="https://docs.nebula-graph.io/3.0.2/3.ngql-guide/1.nGQL-overview/1.overview/#example_data_basketballplayer" target="_blank" rel="noopener noreferrer">test graph data</a>, which will take one or two minutes to finish.</li>
@@ -148,8 +148,8 @@
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">:play basketballplayer<span class="p">;</span>
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">:play basketballplayer<span class="p">;</span>
+</code></pre></td></tr></table>
 </div>
 </div><h4 id="create-a-spark-playground" class="headerLink">
     <a href="#create-a-spark-playground" class="header-mark"></a>2.2.2 Create a Spark playground</h4><p>Thanks to <a href="https://github.com/big-data-europe/docker-spark" target="_blank" rel="noopener noreferrer">Big data europe</a>, it&rsquo;s quite handly to do so:</p>
@@ -161,11 +161,11 @@
 </span><span class="lnt">4
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker run --name spark-master-0 --network nebula-docker-compose_nebula-net <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    -h spark-master-0 -e <span class="nv">ENABLE_INIT_DAEMON</span><span class="o">=</span><span class="nb">false</span> -d <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    -v <span class="si">${</span><span class="nv">PWD</span><span class="si">}</span>/:/root <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    bde2020/spark-master:2.4.5-hadoop2.7
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">docker run --name spark-master-0 --network nebula-docker-compose_nebula-net <span class="se">\
+</span><span class="se"></span>    -h spark-master-0 -e <span class="nv">ENABLE_INIT_DAEMON</span><span class="o">=</span><span class="nb">false</span> -d <span class="se">\
+</span><span class="se"></span>    -v <span class="si">${</span><span class="nv">PWD</span><span class="si">}</span>/:/root <span class="se">\
+</span><span class="se"></span>    bde2020/spark-master:2.4.5-hadoop2.7
+</code></pre></td></tr></table>
 </div>
 </div><p>In the above one line command, we created a container named <code>spark-master-0</code> with a built-in Hadoop 2.7 and spark 2.4.5, connected to the Nebula Graph cluster in its docker network named <code>nebula-docker-compose_nebula-net</code>, and it mapped the current path to <code>/root</code> of the spark container.</p>
 <p>Then, we could access the spark env container with:</p>
@@ -174,8 +174,8 @@
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker <span class="nb">exec</span> -it spark-master-0 bash
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">docker <span class="nb">exec</span> -it spark-master-0 bash
+</code></pre></td></tr></table>
 </div>
 </div><p>Optionally, we could install <code>mvn</code> inside the container:</p>
 <div class="highlight"><div class="chroma">
@@ -193,18 +193,18 @@
 </span><span class="lnt">11
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker <span class="nb">exec</span> -it spark-master-0 bash
-</span></span><span class="line"><span class="cl"><span class="c1"># in the container shell</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">MAVEN_VERSION</span><span class="o">=</span>3.5.4
-</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">MAVEN_HOME</span><span class="o">=</span>/usr/lib/mvn
-</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">PATH</span><span class="o">=</span><span class="nv">$MAVEN_HOME</span>/bin:<span class="nv">$PATH</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">wget http://archive.apache.org/dist/maven/maven-3/<span class="nv">$MAVEN_VERSION</span>/binaries/apache-maven-<span class="nv">$MAVEN_VERSION</span>-bin.tar.gz <span class="o">&amp;&amp;</span> <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>  tar -zxvf apache-maven-<span class="nv">$MAVEN_VERSION</span>-bin.tar.gz <span class="o">&amp;&amp;</span> <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>  rm apache-maven-<span class="nv">$MAVEN_VERSION</span>-bin.tar.gz <span class="o">&amp;&amp;</span> <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>  mv apache-maven-<span class="nv">$MAVEN_VERSION</span> /usr/lib/mvn
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">docker <span class="nb">exec</span> -it spark-master-0 bash
+<span class="c1"># in the container shell</span>
+
+<span class="nb">export</span> <span class="nv">MAVEN_VERSION</span><span class="o">=</span>3.5.4
+<span class="nb">export</span> <span class="nv">MAVEN_HOME</span><span class="o">=</span>/usr/lib/mvn
+<span class="nb">export</span> <span class="nv">PATH</span><span class="o">=</span><span class="nv">$MAVEN_HOME</span>/bin:<span class="nv">$PATH</span>
+
+wget http://archive.apache.org/dist/maven/maven-3/<span class="nv">$MAVEN_VERSION</span>/binaries/apache-maven-<span class="nv">$MAVEN_VERSION</span>-bin.tar.gz <span class="o">&amp;&amp;</span> <span class="se">\
+</span><span class="se"></span>  tar -zxvf apache-maven-<span class="nv">$MAVEN_VERSION</span>-bin.tar.gz <span class="o">&amp;&amp;</span> <span class="se">\
+</span><span class="se"></span>  rm apache-maven-<span class="nv">$MAVEN_VERSION</span>-bin.tar.gz <span class="o">&amp;&amp;</span> <span class="se">\
+</span><span class="se"></span>  mv apache-maven-<span class="nv">$MAVEN_VERSION</span> /usr/lib/mvn
+</code></pre></td></tr></table>
 </div>
 </div><h4 id="run-spark-connector-example" class="headerLink">
     <a href="#run-spark-connector-example" class="header-mark"></a>2.2.3 Run spark connector example</h4><p>Let&rsquo;s clone the connector and the example code base, and build(or place the connector Jar package) the connector:</p>
@@ -218,13 +218,13 @@
 </span><span class="lnt">6
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">git clone https://github.com/vesoft-inc/nebula-spark-connector.git
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">docker <span class="nb">exec</span> -it spark-master-0 bash
-</span></span><span class="line"><span class="cl"><span class="nb">cd</span> /root/nebula-spark-connector
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">/usr/lib/mvn/bin/mvn install -Dgpg.skip -Dmaven.javadoc.skip<span class="o">=</span><span class="nb">true</span> -Dmaven.test.skip<span class="o">=</span><span class="nb">true</span>
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">git clone https://github.com/vesoft-inc/nebula-spark-connector.git
+
+docker <span class="nb">exec</span> -it spark-master-0 bash
+<span class="nb">cd</span> /root/nebula-spark-connector
+
+/usr/lib/mvn/bin/mvn install -Dgpg.skip -Dmaven.javadoc.skip<span class="o">=</span><span class="nb">true</span> -Dmaven.test.skip<span class="o">=</span><span class="nb">true</span>
+</code></pre></td></tr></table>
 </div>
 </div><p>Then we replace the example code:</p>
 <div class="highlight"><div class="chroma">
@@ -232,8 +232,8 @@
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">vi example/src/main/scala/com/vesoft/nebula/examples/connector/NebulaSparkReaderExample.scala
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">vi example/src/main/scala/com/vesoft/nebula/examples/connector/NebulaSparkReaderExample.scala
+</code></pre></td></tr></table>
 </div>
 </div><p>We put the code as the following, where two functions <code>readVertex</code> and <code>readEdges</code> was created on the <code>basketballplayer</code> graph space:</p>
 <div class="highlight"><div class="chroma">
@@ -321,88 +321,88 @@
 </span><span class="lnt">81
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-scala" data-lang="scala"><span class="line"><span class="cl"><span class="k">package</span> <span class="nn">com.vesoft.nebula.examples.connector</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="k">import</span> <span class="nn">com.facebook.thrift.protocol.TCompactProtocol</span>
-</span></span><span class="line"><span class="cl"><span class="k">import</span> <span class="nn">com.vesoft.nebula.connector.connector.NebulaDataFrameReader</span>
-</span></span><span class="line"><span class="cl"><span class="k">import</span> <span class="nn">com.vesoft.nebula.connector.</span><span class="o">{</span><span class="nc">NebulaConnectionConfig</span><span class="o">,</span> <span class="nc">ReadNebulaConfig</span><span class="o">}</span>
-</span></span><span class="line"><span class="cl"><span class="k">import</span> <span class="nn">org.apache.spark.SparkConf</span>
-</span></span><span class="line"><span class="cl"><span class="k">import</span> <span class="nn">org.apache.spark.sql.SparkSession</span>
-</span></span><span class="line"><span class="cl"><span class="k">import</span> <span class="nn">org.slf4j.LoggerFactory</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="k">object</span> <span class="nc">NebulaSparkReaderExample</span> <span class="o">{</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">  <span class="k">private</span> <span class="k">val</span> <span class="nc">LOG</span> <span class="k">=</span> <span class="nc">LoggerFactory</span><span class="o">.</span><span class="n">getLogger</span><span class="o">(</span><span class="k">this</span><span class="o">.</span><span class="n">getClass</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">  <span class="k">def</span> <span class="n">main</span><span class="o">(</span><span class="n">args</span><span class="k">:</span> <span class="kt">Array</span><span class="o">[</span><span class="kt">String</span><span class="o">])</span><span class="k">:</span> <span class="kt">Unit</span> <span class="o">=</span> <span class="o">{</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="k">val</span> <span class="n">sparkConf</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">SparkConf</span>
-</span></span><span class="line"><span class="cl">    <span class="n">sparkConf</span>
-</span></span><span class="line"><span class="cl">      <span class="o">.</span><span class="n">set</span><span class="o">(</span><span class="s">&#34;spark.serializer&#34;</span><span class="o">,</span> <span class="s">&#34;org.apache.spark.serializer.KryoSerializer&#34;</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">      <span class="o">.</span><span class="n">registerKryoClasses</span><span class="o">(</span><span class="nc">Array</span><span class="o">[</span><span class="kt">Class</span><span class="o">[</span><span class="k">_</span><span class="o">]](</span><span class="n">classOf</span><span class="o">[</span><span class="kt">TCompactProtocol</span><span class="o">]))</span>
-</span></span><span class="line"><span class="cl">    <span class="k">val</span> <span class="n">spark</span> <span class="k">=</span> <span class="nc">SparkSession</span>
-</span></span><span class="line"><span class="cl">      <span class="o">.</span><span class="n">builder</span><span class="o">()</span>
-</span></span><span class="line"><span class="cl">      <span class="o">.</span><span class="n">master</span><span class="o">(</span><span class="s">&#34;local&#34;</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">      <span class="o">.</span><span class="n">config</span><span class="o">(</span><span class="n">sparkConf</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">      <span class="o">.</span><span class="n">getOrCreate</span><span class="o">()</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="n">readVertex</span><span class="o">(</span><span class="n">spark</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">    <span class="n">readEdges</span><span class="o">(</span><span class="n">spark</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="n">spark</span><span class="o">.</span><span class="n">close</span><span class="o">()</span>
-</span></span><span class="line"><span class="cl">    <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="o">()</span>
-</span></span><span class="line"><span class="cl">  <span class="o">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">  <span class="k">def</span> <span class="n">readVertex</span><span class="o">(</span><span class="n">spark</span><span class="k">:</span> <span class="kt">SparkSession</span><span class="o">)</span><span class="k">:</span> <span class="kt">Unit</span> <span class="o">=</span> <span class="o">{</span>
-</span></span><span class="line"><span class="cl">    <span class="nc">LOG</span><span class="o">.</span><span class="n">info</span><span class="o">(</span><span class="s">&#34;start to read nebula vertices&#34;</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">    <span class="k">val</span> <span class="n">config</span> <span class="k">=</span>
-</span></span><span class="line"><span class="cl">      <span class="nc">NebulaConnectionConfig</span>
-</span></span><span class="line"><span class="cl">        <span class="o">.</span><span class="n">builder</span><span class="o">()</span>
-</span></span><span class="line"><span class="cl">        <span class="o">.</span><span class="n">withMetaAddress</span><span class="o">(</span><span class="s">&#34;metad0:9559,metad1:9559,metad2:9559&#34;</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">        <span class="o">.</span><span class="n">withConenctionRetry</span><span class="o">(</span><span class="mi">2</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">        <span class="o">.</span><span class="n">build</span><span class="o">()</span>
-</span></span><span class="line"><span class="cl">    <span class="k">val</span> <span class="n">nebulaReadVertexConfig</span><span class="k">:</span> <span class="kt">ReadNebulaConfig</span> <span class="o">=</span> <span class="nc">ReadNebulaConfig</span>
-</span></span><span class="line"><span class="cl">      <span class="o">.</span><span class="n">builder</span><span class="o">()</span>
-</span></span><span class="line"><span class="cl">      <span class="o">.</span><span class="n">withSpace</span><span class="o">(</span><span class="s">&#34;basketballplayer&#34;</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">      <span class="o">.</span><span class="n">withLabel</span><span class="o">(</span><span class="s">&#34;player&#34;</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">      <span class="o">.</span><span class="n">withNoColumn</span><span class="o">(</span><span class="kc">false</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">      <span class="o">.</span><span class="n">withReturnCols</span><span class="o">(</span><span class="nc">List</span><span class="o">(</span><span class="s">&#34;name&#34;</span><span class="o">,</span> <span class="s">&#34;age&#34;</span><span class="o">))</span>
-</span></span><span class="line"><span class="cl">      <span class="o">.</span><span class="n">withLimit</span><span class="o">(</span><span class="mi">10</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">      <span class="o">.</span><span class="n">withPartitionNum</span><span class="o">(</span><span class="mi">10</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">      <span class="o">.</span><span class="n">build</span><span class="o">()</span>
-</span></span><span class="line"><span class="cl">    <span class="k">val</span> <span class="n">vertex</span> <span class="k">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">nebula</span><span class="o">(</span><span class="n">config</span><span class="o">,</span> <span class="n">nebulaReadVertexConfig</span><span class="o">).</span><span class="n">loadVerticesToDF</span><span class="o">()</span>
-</span></span><span class="line"><span class="cl">    <span class="n">vertex</span><span class="o">.</span><span class="n">printSchema</span><span class="o">()</span>
-</span></span><span class="line"><span class="cl">    <span class="n">vertex</span><span class="o">.</span><span class="n">show</span><span class="o">(</span><span class="mi">20</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">    <span class="n">println</span><span class="o">(</span><span class="s">&#34;vertex count: &#34;</span> <span class="o">+</span> <span class="n">vertex</span><span class="o">.</span><span class="n">count</span><span class="o">())</span>
-</span></span><span class="line"><span class="cl">  <span class="o">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">  <span class="k">def</span> <span class="n">readEdges</span><span class="o">(</span><span class="n">spark</span><span class="k">:</span> <span class="kt">SparkSession</span><span class="o">)</span><span class="k">:</span> <span class="kt">Unit</span> <span class="o">=</span> <span class="o">{</span>
-</span></span><span class="line"><span class="cl">    <span class="nc">LOG</span><span class="o">.</span><span class="n">info</span><span class="o">(</span><span class="s">&#34;start to read nebula edges&#34;</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="k">val</span> <span class="n">config</span> <span class="k">=</span>
-</span></span><span class="line"><span class="cl">      <span class="nc">NebulaConnectionConfig</span>
-</span></span><span class="line"><span class="cl">        <span class="o">.</span><span class="n">builder</span><span class="o">()</span>
-</span></span><span class="line"><span class="cl">        <span class="o">.</span><span class="n">withMetaAddress</span><span class="o">(</span><span class="s">&#34;metad0:9559,metad1:9559,metad2:9559&#34;</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">        <span class="o">.</span><span class="n">withTimeout</span><span class="o">(</span><span class="mi">6000</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">        <span class="o">.</span><span class="n">withConenctionRetry</span><span class="o">(</span><span class="mi">2</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">        <span class="o">.</span><span class="n">build</span><span class="o">()</span>
-</span></span><span class="line"><span class="cl">    <span class="k">val</span> <span class="n">nebulaReadEdgeConfig</span><span class="k">:</span> <span class="kt">ReadNebulaConfig</span> <span class="o">=</span> <span class="nc">ReadNebulaConfig</span>
-</span></span><span class="line"><span class="cl">      <span class="o">.</span><span class="n">builder</span><span class="o">()</span>
-</span></span><span class="line"><span class="cl">      <span class="o">.</span><span class="n">withSpace</span><span class="o">(</span><span class="s">&#34;basketballplayer&#34;</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">      <span class="o">.</span><span class="n">withLabel</span><span class="o">(</span><span class="s">&#34;follow&#34;</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">      <span class="o">.</span><span class="n">withNoColumn</span><span class="o">(</span><span class="kc">false</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">      <span class="o">.</span><span class="n">withReturnCols</span><span class="o">(</span><span class="nc">List</span><span class="o">(</span><span class="s">&#34;degree&#34;</span><span class="o">))</span>
-</span></span><span class="line"><span class="cl">      <span class="o">.</span><span class="n">withLimit</span><span class="o">(</span><span class="mi">10</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">      <span class="o">.</span><span class="n">withPartitionNum</span><span class="o">(</span><span class="mi">10</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">      <span class="o">.</span><span class="n">build</span><span class="o">()</span>
-</span></span><span class="line"><span class="cl">    <span class="k">val</span> <span class="n">edge</span> <span class="k">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">nebula</span><span class="o">(</span><span class="n">config</span><span class="o">,</span> <span class="n">nebulaReadEdgeConfig</span><span class="o">).</span><span class="n">loadEdgesToDF</span><span class="o">()</span>
-</span></span><span class="line"><span class="cl">    <span class="n">edge</span><span class="o">.</span><span class="n">printSchema</span><span class="o">()</span>
-</span></span><span class="line"><span class="cl">    <span class="n">edge</span><span class="o">.</span><span class="n">show</span><span class="o">(</span><span class="mi">20</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">    <span class="n">println</span><span class="o">(</span><span class="s">&#34;edge count: &#34;</span> <span class="o">+</span> <span class="n">edge</span><span class="o">.</span><span class="n">count</span><span class="o">())</span>
-</span></span><span class="line"><span class="cl">  <span class="o">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="o">}</span>
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-scala" data-lang="scala"><span class="k">package</span> <span class="nn">com.vesoft.nebula.examples.connector</span>
+
+<span class="k">import</span> <span class="nn">com.facebook.thrift.protocol.TCompactProtocol</span>
+<span class="k">import</span> <span class="nn">com.vesoft.nebula.connector.connector.NebulaDataFrameReader</span>
+<span class="k">import</span> <span class="nn">com.vesoft.nebula.connector.</span><span class="o">{</span><span class="nc">NebulaConnectionConfig</span><span class="o">,</span> <span class="nc">ReadNebulaConfig</span><span class="o">}</span>
+<span class="k">import</span> <span class="nn">org.apache.spark.SparkConf</span>
+<span class="k">import</span> <span class="nn">org.apache.spark.sql.SparkSession</span>
+<span class="k">import</span> <span class="nn">org.slf4j.LoggerFactory</span>
+
+<span class="k">object</span> <span class="nc">NebulaSparkReaderExample</span> <span class="o">{</span>
+
+  <span class="k">private</span> <span class="k">val</span> <span class="nc">LOG</span> <span class="k">=</span> <span class="nc">LoggerFactory</span><span class="o">.</span><span class="n">getLogger</span><span class="o">(</span><span class="k">this</span><span class="o">.</span><span class="n">getClass</span><span class="o">)</span>
+
+  <span class="k">def</span> <span class="n">main</span><span class="o">(</span><span class="n">args</span><span class="k">:</span> <span class="kt">Array</span><span class="o">[</span><span class="kt">String</span><span class="o">])</span><span class="k">:</span> <span class="kt">Unit</span> <span class="o">=</span> <span class="o">{</span>
+
+    <span class="k">val</span> <span class="n">sparkConf</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">SparkConf</span>
+    <span class="n">sparkConf</span>
+      <span class="o">.</span><span class="n">set</span><span class="o">(</span><span class="s">&#34;spark.serializer&#34;</span><span class="o">,</span> <span class="s">&#34;org.apache.spark.serializer.KryoSerializer&#34;</span><span class="o">)</span>
+      <span class="o">.</span><span class="n">registerKryoClasses</span><span class="o">(</span><span class="nc">Array</span><span class="o">[</span><span class="kt">Class</span><span class="o">[</span><span class="k">_</span><span class="o">]](</span><span class="n">classOf</span><span class="o">[</span><span class="kt">TCompactProtocol</span><span class="o">]))</span>
+    <span class="k">val</span> <span class="n">spark</span> <span class="k">=</span> <span class="nc">SparkSession</span>
+      <span class="o">.</span><span class="n">builder</span><span class="o">()</span>
+      <span class="o">.</span><span class="n">master</span><span class="o">(</span><span class="s">&#34;local&#34;</span><span class="o">)</span>
+      <span class="o">.</span><span class="n">config</span><span class="o">(</span><span class="n">sparkConf</span><span class="o">)</span>
+      <span class="o">.</span><span class="n">getOrCreate</span><span class="o">()</span>
+
+    <span class="n">readVertex</span><span class="o">(</span><span class="n">spark</span><span class="o">)</span>
+    <span class="n">readEdges</span><span class="o">(</span><span class="n">spark</span><span class="o">)</span>
+
+    <span class="n">spark</span><span class="o">.</span><span class="n">close</span><span class="o">()</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="o">()</span>
+  <span class="o">}</span>
+
+  <span class="k">def</span> <span class="n">readVertex</span><span class="o">(</span><span class="n">spark</span><span class="k">:</span> <span class="kt">SparkSession</span><span class="o">)</span><span class="k">:</span> <span class="kt">Unit</span> <span class="o">=</span> <span class="o">{</span>
+    <span class="nc">LOG</span><span class="o">.</span><span class="n">info</span><span class="o">(</span><span class="s">&#34;start to read nebula vertices&#34;</span><span class="o">)</span>
+    <span class="k">val</span> <span class="n">config</span> <span class="k">=</span>
+      <span class="nc">NebulaConnectionConfig</span>
+        <span class="o">.</span><span class="n">builder</span><span class="o">()</span>
+        <span class="o">.</span><span class="n">withMetaAddress</span><span class="o">(</span><span class="s">&#34;metad0:9559,metad1:9559,metad2:9559&#34;</span><span class="o">)</span>
+        <span class="o">.</span><span class="n">withConenctionRetry</span><span class="o">(</span><span class="mi">2</span><span class="o">)</span>
+        <span class="o">.</span><span class="n">build</span><span class="o">()</span>
+    <span class="k">val</span> <span class="n">nebulaReadVertexConfig</span><span class="k">:</span> <span class="kt">ReadNebulaConfig</span> <span class="o">=</span> <span class="nc">ReadNebulaConfig</span>
+      <span class="o">.</span><span class="n">builder</span><span class="o">()</span>
+      <span class="o">.</span><span class="n">withSpace</span><span class="o">(</span><span class="s">&#34;basketballplayer&#34;</span><span class="o">)</span>
+      <span class="o">.</span><span class="n">withLabel</span><span class="o">(</span><span class="s">&#34;player&#34;</span><span class="o">)</span>
+      <span class="o">.</span><span class="n">withNoColumn</span><span class="o">(</span><span class="kc">false</span><span class="o">)</span>
+      <span class="o">.</span><span class="n">withReturnCols</span><span class="o">(</span><span class="nc">List</span><span class="o">(</span><span class="s">&#34;name&#34;</span><span class="o">,</span> <span class="s">&#34;age&#34;</span><span class="o">))</span>
+      <span class="o">.</span><span class="n">withLimit</span><span class="o">(</span><span class="mi">10</span><span class="o">)</span>
+      <span class="o">.</span><span class="n">withPartitionNum</span><span class="o">(</span><span class="mi">10</span><span class="o">)</span>
+      <span class="o">.</span><span class="n">build</span><span class="o">()</span>
+    <span class="k">val</span> <span class="n">vertex</span> <span class="k">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">nebula</span><span class="o">(</span><span class="n">config</span><span class="o">,</span> <span class="n">nebulaReadVertexConfig</span><span class="o">).</span><span class="n">loadVerticesToDF</span><span class="o">()</span>
+    <span class="n">vertex</span><span class="o">.</span><span class="n">printSchema</span><span class="o">()</span>
+    <span class="n">vertex</span><span class="o">.</span><span class="n">show</span><span class="o">(</span><span class="mi">20</span><span class="o">)</span>
+    <span class="n">println</span><span class="o">(</span><span class="s">&#34;vertex count: &#34;</span> <span class="o">+</span> <span class="n">vertex</span><span class="o">.</span><span class="n">count</span><span class="o">())</span>
+  <span class="o">}</span>
+
+  <span class="k">def</span> <span class="n">readEdges</span><span class="o">(</span><span class="n">spark</span><span class="k">:</span> <span class="kt">SparkSession</span><span class="o">)</span><span class="k">:</span> <span class="kt">Unit</span> <span class="o">=</span> <span class="o">{</span>
+    <span class="nc">LOG</span><span class="o">.</span><span class="n">info</span><span class="o">(</span><span class="s">&#34;start to read nebula edges&#34;</span><span class="o">)</span>
+
+    <span class="k">val</span> <span class="n">config</span> <span class="k">=</span>
+      <span class="nc">NebulaConnectionConfig</span>
+        <span class="o">.</span><span class="n">builder</span><span class="o">()</span>
+        <span class="o">.</span><span class="n">withMetaAddress</span><span class="o">(</span><span class="s">&#34;metad0:9559,metad1:9559,metad2:9559&#34;</span><span class="o">)</span>
+        <span class="o">.</span><span class="n">withTimeout</span><span class="o">(</span><span class="mi">6000</span><span class="o">)</span>
+        <span class="o">.</span><span class="n">withConenctionRetry</span><span class="o">(</span><span class="mi">2</span><span class="o">)</span>
+        <span class="o">.</span><span class="n">build</span><span class="o">()</span>
+    <span class="k">val</span> <span class="n">nebulaReadEdgeConfig</span><span class="k">:</span> <span class="kt">ReadNebulaConfig</span> <span class="o">=</span> <span class="nc">ReadNebulaConfig</span>
+      <span class="o">.</span><span class="n">builder</span><span class="o">()</span>
+      <span class="o">.</span><span class="n">withSpace</span><span class="o">(</span><span class="s">&#34;basketballplayer&#34;</span><span class="o">)</span>
+      <span class="o">.</span><span class="n">withLabel</span><span class="o">(</span><span class="s">&#34;follow&#34;</span><span class="o">)</span>
+      <span class="o">.</span><span class="n">withNoColumn</span><span class="o">(</span><span class="kc">false</span><span class="o">)</span>
+      <span class="o">.</span><span class="n">withReturnCols</span><span class="o">(</span><span class="nc">List</span><span class="o">(</span><span class="s">&#34;degree&#34;</span><span class="o">))</span>
+      <span class="o">.</span><span class="n">withLimit</span><span class="o">(</span><span class="mi">10</span><span class="o">)</span>
+      <span class="o">.</span><span class="n">withPartitionNum</span><span class="o">(</span><span class="mi">10</span><span class="o">)</span>
+      <span class="o">.</span><span class="n">build</span><span class="o">()</span>
+    <span class="k">val</span> <span class="n">edge</span> <span class="k">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">nebula</span><span class="o">(</span><span class="n">config</span><span class="o">,</span> <span class="n">nebulaReadEdgeConfig</span><span class="o">).</span><span class="n">loadEdgesToDF</span><span class="o">()</span>
+    <span class="n">edge</span><span class="o">.</span><span class="n">printSchema</span><span class="o">()</span>
+    <span class="n">edge</span><span class="o">.</span><span class="n">show</span><span class="o">(</span><span class="mi">20</span><span class="o">)</span>
+    <span class="n">println</span><span class="o">(</span><span class="s">&#34;edge count: &#34;</span> <span class="o">+</span> <span class="n">edge</span><span class="o">.</span><span class="n">count</span><span class="o">())</span>
+  <span class="o">}</span>
+
+<span class="o">}</span>
+</code></pre></td></tr></table>
 </div>
 </div><p>Then build it:</p>
 <div class="highlight"><div class="chroma">
@@ -411,9 +411,9 @@
 </span><span class="lnt">2
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nb">cd</span> example
-</span></span><span class="line"><span class="cl">/usr/lib/mvn/bin/mvn install -Dgpg.skip -Dmaven.javadoc.skip<span class="o">=</span><span class="nb">true</span> -Dmaven.test.skip<span class="o">=</span><span class="nb">true</span>
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="nb">cd</span> example
+/usr/lib/mvn/bin/mvn install -Dgpg.skip -Dmaven.javadoc.skip<span class="o">=</span><span class="nb">true</span> -Dmaven.test.skip<span class="o">=</span><span class="nb">true</span>
+</code></pre></td></tr></table>
 </div>
 </div><p>Execute it on spark:</p>
 <div class="highlight"><div class="chroma">
@@ -423,10 +423,10 @@
 </span><span class="lnt">3
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">/spark/bin/spark-submit --master <span class="s2">&#34;local&#34;</span> <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    --class com.vesoft.nebula.examples.connector.NebulaSparkReaderExample <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    --driver-memory 16g target/example-3.0-SNAPSHOT.jar
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">/spark/bin/spark-submit --master <span class="s2">&#34;local&#34;</span> <span class="se">\
+</span><span class="se"></span>    --class com.vesoft.nebula.examples.connector.NebulaSparkReaderExample <span class="se">\
+</span><span class="se"></span>    --driver-memory 16g target/example-3.0-SNAPSHOT.jar
+</code></pre></td></tr></table>
 </div>
 </div><p>And the result should include:</p>
 <div class="highlight"><div class="chroma">
@@ -486,60 +486,60 @@
 </span><span class="lnt">53
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">22/04/19 07:29:34 INFO DAGScheduler: Job 1 finished: show at NebulaSparkReaderExample.scala:57, took 0.199310 s
-</span></span><span class="line"><span class="cl">+---------+------------------+---+
-</span></span><span class="line"><span class="cl">|_vertexId|              name|age|
-</span></span><span class="line"><span class="cl">+---------+------------------+---+
-</span></span><span class="line"><span class="cl">|player105|       Danny Green| 31|
-</span></span><span class="line"><span class="cl">|player109|    Tiago Splitter| 34|
-</span></span><span class="line"><span class="cl">|player111|        David West| 38|
-</span></span><span class="line"><span class="cl">|player118| Russell Westbrook| 30|
-</span></span><span class="line"><span class="cl">|player143|Kristaps Porzingis| 23|
-</span></span><span class="line"><span class="cl">|player114|     Tracy McGrady| 39|
-</span></span><span class="line"><span class="cl">|player150|       Luka Doncic| 20|
-</span></span><span class="line"><span class="cl">|player103|          Rudy Gay| 32|
-</span></span><span class="line"><span class="cl">|player113|   Dejounte Murray| 29|
-</span></span><span class="line"><span class="cl">|player121|        Chris Paul| 33|
-</span></span><span class="line"><span class="cl">|player128|   Carmelo Anthony| 34|
-</span></span><span class="line"><span class="cl">|player130|       Joel Embiid| 25|
-</span></span><span class="line"><span class="cl">|player136|        Steve Nash| 45|
-</span></span><span class="line"><span class="cl">|player108|        Boris Diaw| 36|
-</span></span><span class="line"><span class="cl">|player122|    DeAndre Jordan| 30|
-</span></span><span class="line"><span class="cl">|player123|       Ricky Rubio| 28|
-</span></span><span class="line"><span class="cl">|player139|        Marc Gasol| 34|
-</span></span><span class="line"><span class="cl">|player142|     Klay Thompson| 29|
-</span></span><span class="line"><span class="cl">|player145|      JaVale McGee| 31|
-</span></span><span class="line"><span class="cl">|player102| LaMarcus Aldridge| 33|
-</span></span><span class="line"><span class="cl">+---------+------------------+---+
-</span></span><span class="line"><span class="cl">only showing top 20 rows
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">22/04/19 07:29:36 INFO DAGScheduler: Job 4 finished: show at NebulaSparkReaderExample.scala:82, took 0.135543 s
-</span></span><span class="line"><span class="cl">+---------+---------+-----+------+
-</span></span><span class="line"><span class="cl">|   _srcId|   _dstId|_rank|degree|
-</span></span><span class="line"><span class="cl">+---------+---------+-----+------+
-</span></span><span class="line"><span class="cl">|player105|player100|    0|    70|
-</span></span><span class="line"><span class="cl">|player105|player104|    0|    83|
-</span></span><span class="line"><span class="cl">|player105|player116|    0|    80|
-</span></span><span class="line"><span class="cl">|player109|player100|    0|    80|
-</span></span><span class="line"><span class="cl">|player109|player125|    0|    90|
-</span></span><span class="line"><span class="cl">|player118|player120|    0|    90|
-</span></span><span class="line"><span class="cl">|player118|player131|    0|    90|
-</span></span><span class="line"><span class="cl">|player143|player150|    0|    90|
-</span></span><span class="line"><span class="cl">|player114|player103|    0|    90|
-</span></span><span class="line"><span class="cl">|player114|player115|    0|    90|
-</span></span><span class="line"><span class="cl">|player114|player140|    0|    90|
-</span></span><span class="line"><span class="cl">|player150|player120|    0|    80|
-</span></span><span class="line"><span class="cl">|player150|player137|    0|    90|
-</span></span><span class="line"><span class="cl">|player150|player143|    0|    90|
-</span></span><span class="line"><span class="cl">|player103|player102|    0|    70|
-</span></span><span class="line"><span class="cl">|player113|player100|    0|    99|
-</span></span><span class="line"><span class="cl">|player113|player101|    0|    99|
-</span></span><span class="line"><span class="cl">|player113|player104|    0|    99|
-</span></span><span class="line"><span class="cl">|player113|player105|    0|    99|
-</span></span><span class="line"><span class="cl">|player113|player106|    0|    99|
-</span></span><span class="line"><span class="cl">+---------+---------+-----+------+
-</span></span><span class="line"><span class="cl">only showing top 20 rows
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">22/04/19 07:29:34 INFO DAGScheduler: Job 1 finished: show at NebulaSparkReaderExample.scala:57, took 0.199310 s
++---------+------------------+---+
+|_vertexId|              name|age|
++---------+------------------+---+
+|player105|       Danny Green| 31|
+|player109|    Tiago Splitter| 34|
+|player111|        David West| 38|
+|player118| Russell Westbrook| 30|
+|player143|Kristaps Porzingis| 23|
+|player114|     Tracy McGrady| 39|
+|player150|       Luka Doncic| 20|
+|player103|          Rudy Gay| 32|
+|player113|   Dejounte Murray| 29|
+|player121|        Chris Paul| 33|
+|player128|   Carmelo Anthony| 34|
+|player130|       Joel Embiid| 25|
+|player136|        Steve Nash| 45|
+|player108|        Boris Diaw| 36|
+|player122|    DeAndre Jordan| 30|
+|player123|       Ricky Rubio| 28|
+|player139|        Marc Gasol| 34|
+|player142|     Klay Thompson| 29|
+|player145|      JaVale McGee| 31|
+|player102| LaMarcus Aldridge| 33|
++---------+------------------+---+
+only showing top 20 rows
+
+22/04/19 07:29:36 INFO DAGScheduler: Job 4 finished: show at NebulaSparkReaderExample.scala:82, took 0.135543 s
++---------+---------+-----+------+
+|   _srcId|   _dstId|_rank|degree|
++---------+---------+-----+------+
+|player105|player100|    0|    70|
+|player105|player104|    0|    83|
+|player105|player116|    0|    80|
+|player109|player100|    0|    80|
+|player109|player125|    0|    90|
+|player118|player120|    0|    90|
+|player118|player131|    0|    90|
+|player143|player150|    0|    90|
+|player114|player103|    0|    90|
+|player114|player115|    0|    90|
+|player114|player140|    0|    90|
+|player150|player120|    0|    80|
+|player150|player137|    0|    90|
+|player150|player143|    0|    90|
+|player103|player102|    0|    70|
+|player113|player100|    0|    99|
+|player113|player101|    0|    99|
+|player113|player104|    0|    99|
+|player113|player105|    0|    99|
+|player113|player106|    0|    99|
++---------+---------+-----+------+
+only showing top 20 rows
+</code></pre></td></tr></table>
 </div>
 </div><p>And there are more examples under the repo, especially one for GraphX, you could try exploring yourself for that part. Please be noted in GraphX assumed vertex ID to be in numeric type, thus for string typed vertex ID case a conversion on the fly is needed, please refer to <a href="https://github.com/vesoft-inc/nebula-algorithm/blob/a82d7092d928a2f3abc45a727c24afb888ff8e4f/example/src/main/scala/com/vesoft/nebula/algorithm/PageRankExample.scala#L31" target="_blank" rel="noopener noreferrer">the example in Nebula Algorithom</a> on how to mitigate that.</p>
 <h2 id="exchange" class="headerLink">
@@ -568,9 +568,9 @@
 </span><span class="lnt">2
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">player800,<span class="s2">&#34;Foo Bar&#34;</span>,23
-</span></span><span class="line"><span class="cl">player801,<span class="s2">&#34;Another Name&#34;</span>,21
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">player800,<span class="s2">&#34;Foo Bar&#34;</span>,23
+player801,<span class="s2">&#34;Another Name&#34;</span>,21
+</code></pre></td></tr></table>
 </div>
 </div><ul>
 <li>Let&rsquo;s get into the spark container created in the last chapter, and download the Jar package of Nebula Exchange:</li>
@@ -581,13 +581,15 @@
 </span><span class="lnt">2
 </span><span class="lnt">3
 </span><span class="lnt">4
+</span><span class="lnt">5
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker <span class="nb">exec</span> -it spark-master bash
-</span></span><span class="line"><span class="cl"><span class="nb">cd</span> /root/
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">wget https://github.com/vesoft-inc/nebula-exchange/releases/download/v3.0.0/nebula-exchange_spark_2.4-3.0.0.jar
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">docker <span class="nb">exec</span> -it spark-master bash
+<span class="nb">cd</span> /root/
+
+wget https://github.com/vesoft-inc/nebula-exchange/releases/download/v3.0.0/nebula-exchange_spark_2.4-3.0.0.jar
+
+</code></pre></td></tr></table>
 </div>
 </div><ul>
 <li>Create a conf file named <code>exchange.conf</code> in format <code>HOCON</code>, where:
@@ -691,97 +693,97 @@
 </span><span class="lnt">90
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-zed" data-lang="zed"><span class="line"><span class="cl"><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="err">#</span><span class="w"> </span><span class="n">Spark</span><span class="w"> </span><span class="kn">relation</span><span class="w"> </span><span class="n">config</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">spark</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">app</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">name</span><span class="o">:</span><span class="w"> </span><span class="n">Nebula</span><span class="w"> </span><span class="n">Exchange</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">master</span><span class="o">:</span><span class="n">local</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">driver</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">cores</span><span class="o">:</span><span class="w"> </span><span class="err">1</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">maxResultSize</span><span class="o">:</span><span class="w"> </span><span class="err">1</span><span class="n">G</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">executor</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">memory</span><span class="o">:</span><span class="w"> </span><span class="err">1</span><span class="n">G</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">cores</span><span class="o">:</span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">max</span><span class="o">:</span><span class="w"> </span><span class="err">16</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="err">#</span><span class="w"> </span><span class="n">Nebula</span><span class="w"> </span><span class="n">Graph</span><span class="w"> </span><span class="kn">relation</span><span class="w"> </span><span class="n">config</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">nebula</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">address</span><span class="o">:</span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">graph</span><span class="o">:</span><span class="p">[</span><span class="err">&#34;</span><span class="n">graphd</span><span class="o">:</span><span class="err">9669&#34;</span><span class="p">]</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">meta</span><span class="o">:</span><span class="p">[</span><span class="err">&#34;</span><span class="n">metad0</span><span class="o">:</span><span class="err">9559&#34;</span><span class="p">,</span><span class="w"> </span><span class="err">&#34;</span><span class="n">metad1</span><span class="o">:</span><span class="err">9559&#34;</span><span class="p">,</span><span class="w"> </span><span class="err">&#34;</span><span class="n">metad2</span><span class="o">:</span><span class="err">9559&#34;</span><span class="p">]</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">user</span><span class="o">:</span><span class="w"> </span><span class="n">root</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">pswd</span><span class="o">:</span><span class="w"> </span><span class="n">nebula</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">space</span><span class="o">:</span><span class="w"> </span><span class="n">basketballplayer</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="err">#</span><span class="w"> </span><span class="n">parameters</span><span class="w"> </span><span class="n">for</span><span class="w"> </span><span class="n">SST</span><span class="w"> </span><span class="n">import</span><span class="p">,</span><span class="w"> </span><span class="n">not</span><span class="w"> </span><span class="n">required</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">path</span><span class="o">:</span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">local</span><span class="o">:</span><span class="err">&#34;</span><span class="o">/</span><span class="n">tmp</span><span class="err">&#34;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">remote</span><span class="o">:</span><span class="err">&#34;</span><span class="o">/</span><span class="n">sst</span><span class="err">&#34;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">hdfs</span><span class="p">.</span><span class="n">namenode</span><span class="o">:</span><span class="w"> </span><span class="err">&#34;</span><span class="n">hdfs</span><span class="o">:</span><span class="c1">//localhost:9000&#34;
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">    </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="err">#</span><span class="w"> </span><span class="n">nebula</span><span class="w"> </span><span class="n">client</span><span class="w"> </span><span class="n">connection</span><span class="w"> </span><span class="n">parameters</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">connection</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="err">#</span><span class="w"> </span><span class="n">socket</span><span class="w"> </span><span class="n">connect</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">execute</span><span class="w"> </span><span class="n">timeout</span><span class="p">,</span><span class="w"> </span><span class="n">unit</span><span class="o">:</span><span class="w"> </span><span class="n">millisecond</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">timeout</span><span class="o">:</span><span class="w"> </span><span class="err">30000</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">error</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="err">#</span><span class="w"> </span><span class="n">max</span><span class="w"> </span><span class="n">number</span><span class="w"> </span><span class="n">of</span><span class="w"> </span><span class="n">failures</span><span class="p">,</span><span class="w"> </span><span class="n">if</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">number</span><span class="w"> </span><span class="n">of</span><span class="w"> </span><span class="n">failures</span><span class="w"> </span><span class="n">is</span><span class="w"> </span><span class="n">bigger</span><span class="w"> </span><span class="n">than</span><span class="w"> </span><span class="n">max</span><span class="p">,</span><span class="w"> </span><span class="n">then</span><span class="w"> </span><span class="n">exit</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">application</span><span class="p">.</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">max</span><span class="o">:</span><span class="w"> </span><span class="err">32</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="err">#</span><span class="w"> </span><span class="n">failed</span><span class="w"> </span><span class="n">import</span><span class="w"> </span><span class="n">job</span><span class="w"> </span><span class="n">will</span><span class="w"> </span><span class="n">be</span><span class="w"> </span><span class="n">recorded</span><span class="w"> </span><span class="n">in</span><span class="w"> </span><span class="n">output</span><span class="w"> </span><span class="n">path</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">output</span><span class="o">:</span><span class="w"> </span><span class="o">/</span><span class="nn">tmp/</span><span class="n">errors</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="err">#</span><span class="w"> </span><span class="n">use</span><span class="w"> </span><span class="n">google</span><span class="err">&#39;</span><span class="n">s</span><span class="w"> </span><span class="n">RateLimiter</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">limit</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">requests</span><span class="w"> </span><span class="n">send</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">NebulaGraph</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">rate</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="err">#</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">stable</span><span class="w"> </span><span class="n">throughput</span><span class="w"> </span><span class="n">of</span><span class="w"> </span><span class="n">RateLimiter</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">limit</span><span class="o">:</span><span class="w"> </span><span class="err">1024</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="err">#</span><span class="w"> </span><span class="n">Acquires</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">permit</span><span class="w"> </span><span class="n">from</span><span class="w"> </span><span class="n">RateLimiter</span><span class="p">,</span><span class="w"> </span><span class="n">unit</span><span class="o">:</span><span class="w"> </span><span class="n">MILLISECONDS</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="err">#</span><span class="w"> </span><span class="n">if</span><span class="w"> </span><span class="n">it</span><span class="w"> </span><span class="n">can</span><span class="err">&#39;</span><span class="n">t</span><span class="w"> </span><span class="n">be</span><span class="w"> </span><span class="n">obtained</span><span class="w"> </span><span class="n">within</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">specified</span><span class="w"> </span><span class="n">timeout</span><span class="p">,</span><span class="w"> </span><span class="n">then</span><span class="w"> </span><span class="n">give</span><span class="w"> </span><span class="n">up</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">request</span><span class="p">.</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">timeout</span><span class="o">:</span><span class="w"> </span><span class="err">1000</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="err">#</span><span class="w"> </span><span class="n">Processing</span><span class="w"> </span><span class="n">tags</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="err">#</span><span class="w"> </span><span class="n">There</span><span class="w"> </span><span class="n">are</span><span class="w"> </span><span class="n">tag</span><span class="w"> </span><span class="n">config</span><span class="w"> </span><span class="n">examples</span><span class="w"> </span><span class="n">for</span><span class="w"> </span><span class="n">different</span><span class="w"> </span><span class="n">data</span><span class="w"> </span><span class="n">Sources</span><span class="p">.</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">tags</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="err">#</span><span class="w"> </span><span class="n">HDFS</span><span class="w"> </span><span class="n">CSV</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="err">#</span><span class="w"> </span><span class="n">Import</span><span class="w"> </span><span class="n">mode</span><span class="w"> </span><span class="n">is</span><span class="w"> </span><span class="n">client</span><span class="p">,</span><span class="w"> </span><span class="n">just</span><span class="w"> </span><span class="n">change</span><span class="w"> </span><span class="n">type</span><span class="p">.</span><span class="n">sink</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">sst</span><span class="w"> </span><span class="n">if</span><span class="w"> </span><span class="n">you</span><span class="w"> </span><span class="n">want</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">use</span><span class="w"> </span><span class="n">client</span><span class="w"> </span><span class="n">import</span><span class="w"> </span><span class="n">mode</span><span class="p">.</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">name</span><span class="o">:</span><span class="w"> </span><span class="n">player</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">type</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">source</span><span class="o">:</span><span class="w"> </span><span class="n">csv</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">sink</span><span class="o">:</span><span class="w"> </span><span class="n">client</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">path</span><span class="o">:</span><span class="w"> </span><span class="err">&#34;</span><span class="n">file</span><span class="o">:</span><span class="c1">///root/player.csv&#34;
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">      </span><span class="err">#</span><span class="w"> </span><span class="n">if</span><span class="w"> </span><span class="n">your</span><span class="w"> </span><span class="n">csv</span><span class="w"> </span><span class="n">file</span><span class="w"> </span><span class="n">has</span><span class="w"> </span><span class="n">no</span><span class="w"> </span><span class="n">header</span><span class="p">,</span><span class="w"> </span><span class="n">then</span><span class="w"> </span><span class="n">use</span><span class="w"> </span><span class="n">_c0</span><span class="p">,</span><span class="n">_c1</span><span class="p">,</span><span class="n">_c2</span><span class="p">,..</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">indicate</span><span class="w"> </span><span class="n">fields</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">fields</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="n">_c1</span><span class="p">,</span><span class="w"> </span><span class="n">_c2</span><span class="p">]</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">nebula</span><span class="p">.</span><span class="n">fields</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">age</span><span class="p">]</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">vertex</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">field</span><span class="o">:</span><span class="n">_c0</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">separator</span><span class="o">:</span><span class="w"> </span><span class="err">&#34;</span><span class="p">,</span><span class="err">&#34;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">header</span><span class="o">:</span><span class="w"> </span><span class="n">false</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">batch</span><span class="o">:</span><span class="w"> </span><span class="err">256</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">partition</span><span class="o">:</span><span class="w"> </span><span class="err">32</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">]</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
-</span></span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">{
+  # Spark relation config
+  spark: {
+    app: {
+      name: Nebula Exchange
+    }
+
+    master:local
+
+    driver: {
+      cores: 1
+      maxResultSize: 1G
+    }
+
+    executor: {
+        memory: 1G
+    }
+
+    cores:{
+      max: 16
+    }
+  }
+
+  # Nebula Graph relation config
+  nebula: {
+    address:{
+      graph:[&#34;graphd:9669&#34;]
+      meta:[&#34;metad0:9559&#34;, &#34;metad1:9559&#34;, &#34;metad2:9559&#34;]
+    }
+    user: root
+    pswd: nebula
+    space: basketballplayer
+
+    # parameters for SST import, not required
+    path:{
+        local:&#34;/tmp&#34;
+        remote:&#34;/sst&#34;
+        hdfs.namenode: &#34;hdfs://localhost:9000&#34;
+    }
+
+    # nebula client connection parameters
+    connection {
+      # socket connect &amp; execute timeout, unit: millisecond
+      timeout: 30000
+    }
+
+    error: {
+      # max number of failures, if the number of failures is bigger than max, then exit the application.
+      max: 32
+      # failed import job will be recorded in output path
+      output: /tmp/errors
+    }
+
+    # use google&#39;s RateLimiter to limit the requests send to NebulaGraph
+    rate: {
+      # the stable throughput of RateLimiter
+      limit: 1024
+      # Acquires a permit from RateLimiter, unit: MILLISECONDS
+      # if it can&#39;t be obtained within the specified timeout, then give up the request.
+      timeout: 1000
+    }
+  }
+
+  # Processing tags
+  # There are tag config examples for different data Sources.
+  tags: [
+
+    # HDFS CSV
+    # Import mode is client, just change type.sink to sst if you want to use client import mode.
+    {
+      name: player
+      type: {
+        source: csv
+        sink: client
+      }
+      path: &#34;file:///root/player.csv&#34;
+      # if your csv file has no header, then use _c0,_c1,_c2,.. to indicate fields
+      fields: [_c1, _c2]
+      nebula.fields: [name, age]
+      vertex: {
+        field:_c0
+      }
+      separator: &#34;,&#34;
+      header: false
+      batch: 256
+      partition: 32
+    }
+
+  ]
+}
+</code></pre></td></tr></table>
 </div>
 </div><ul>
 <li>Finally, let&rsquo;s create <code>player.csv</code> and <code>exchange.conf</code>, it should be listed as the following:</li>
@@ -795,12 +797,12 @@
 </span><span class="lnt">5
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># ls -l</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">-rw-r--r--    <span class="m">1</span> root     root          <span class="m">1912</span> Apr <span class="m">19</span> 08:21 exchange.conf
-</span></span><span class="line"><span class="cl">-rw-r--r--    <span class="m">1</span> root     root     <span class="m">157814140</span> Apr <span class="m">19</span> 08:17 nebula-exchange_spark_2.4-3.0.0.jar
-</span></span><span class="line"><span class="cl">-rw-r--r--    <span class="m">1</span> root     root            <span class="m">52</span> Apr <span class="m">19</span> 08:06 player.csv
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="c1"># ls -l</span>
+
+-rw-r--r--    <span class="m">1</span> root     root          <span class="m">1912</span> Apr <span class="m">19</span> 08:21 exchange.conf
+-rw-r--r--    <span class="m">1</span> root     root     <span class="m">157814140</span> Apr <span class="m">19</span> 08:17 nebula-exchange_spark_2.4-3.0.0.jar
+-rw-r--r--    <span class="m">1</span> root     root            <span class="m">52</span> Apr <span class="m">19</span> 08:06 player.csv
+</code></pre></td></tr></table>
 </div>
 </div><ul>
 <li>And we could call the exchange as:</li>
@@ -812,10 +814,10 @@
 </span><span class="lnt">3
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">/spark/bin/spark-submit --master <span class="nb">local</span> <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    --class com.vesoft.nebula.exchange.Exchange nebula-exchange_spark_2.4-3.0.0.jar <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    -c exchange.conf
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">/spark/bin/spark-submit --master <span class="nb">local</span> <span class="se">\
+</span><span class="se"></span>    --class com.vesoft.nebula.exchange.Exchange nebula-exchange_spark_2.4-3.0.0.jar <span class="se">\
+</span><span class="se"></span>    -c exchange.conf
+</code></pre></td></tr></table>
 </div>
 </div><p>And the result should be like</p>
 <div class="highlight"><div class="chroma">
@@ -827,12 +829,12 @@
 </span><span class="lnt">5
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">...
-</span></span><span class="line"><span class="cl">22/04/19 08:22:08 INFO Exchange$: import for tag player cost time: 1.32 s
-</span></span><span class="line"><span class="cl">22/04/19 08:22:08 INFO Exchange$: Client-Import: batchSuccess.player: 2
-</span></span><span class="line"><span class="cl">22/04/19 08:22:08 INFO Exchange$: Client-Import: batchFailure.player: 0
-</span></span><span class="line"><span class="cl">...
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">...
+22/04/19 08:22:08 INFO Exchange$: import for tag player cost time: 1.32 s
+22/04/19 08:22:08 INFO Exchange$: Client-Import: batchSuccess.player: 2
+22/04/19 08:22:08 INFO Exchange$: Client-Import: batchFailure.player: 0
+...
+</code></pre></td></tr></table>
 </div>
 </div><p>Please refer to the documentation and conf examples for more data sources. For hands-on Exchange writing to SST Files, you could refer to both Documentation and <a href="https://www.siwei.io/nebula-exchange-sst-2.x/" target="_blank" rel="noopener noreferrer">Nebula Exchange SST 2.x Hands-on Guide</a>.</p>
 <h2 id="algorithm" class="headerLink">
@@ -862,12 +864,12 @@
 </span><span class="lnt">5
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">docker</span> <span class="n">exec</span> <span class="o">-</span><span class="n">it</span> <span class="n">spark</span><span class="o">-</span><span class="n">master</span><span class="o">-</span><span class="mi">0</span> <span class="n">bash</span>
-</span></span><span class="line"><span class="cl"><span class="n">cd</span> <span class="n">root</span>
-</span></span><span class="line"><span class="cl"><span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">repo1</span><span class="o">.</span><span class="n">maven</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">maven2</span><span class="o">/</span><span class="n">com</span><span class="o">/</span><span class="n">vesoft</span><span class="o">/</span><span class="n">nebula</span><span class="o">-</span><span class="n">spark</span><span class="o">-</span><span class="n">connector</span><span class="o">/</span><span class="mf">3.0.0</span><span class="o">/</span><span class="n">nebula</span><span class="o">-</span><span class="n">spark</span><span class="o">-</span><span class="n">connector</span><span class="o">-</span><span class="mf">3.0.0</span><span class="o">.</span><span class="n">jar</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="o">/</span><span class="n">spark</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">pyspark</span> <span class="o">--</span><span class="n">driver</span><span class="o">-</span><span class="n">class</span><span class="o">-</span><span class="n">path</span> <span class="n">nebula</span><span class="o">-</span><span class="n">spark</span><span class="o">-</span><span class="n">connector</span><span class="o">-</span><span class="mf">3.0.0</span><span class="o">.</span><span class="n">jar</span> <span class="o">--</span><span class="n">jars</span> <span class="n">nebula</span><span class="o">-</span><span class="n">spark</span><span class="o">-</span><span class="n">connector</span><span class="o">-</span><span class="mf">3.0.0</span><span class="o">.</span><span class="n">jar</span>
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">docker</span> <span class="n">exec</span> <span class="o">-</span><span class="n">it</span> <span class="n">spark</span><span class="o">-</span><span class="n">master</span><span class="o">-</span><span class="mi">0</span> <span class="n">bash</span>
+<span class="n">cd</span> <span class="n">root</span>
+<span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">repo1</span><span class="o">.</span><span class="n">maven</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">maven2</span><span class="o">/</span><span class="n">com</span><span class="o">/</span><span class="n">vesoft</span><span class="o">/</span><span class="n">nebula</span><span class="o">-</span><span class="n">spark</span><span class="o">-</span><span class="n">connector</span><span class="o">/</span><span class="mf">3.0.0</span><span class="o">/</span><span class="n">nebula</span><span class="o">-</span><span class="n">spark</span><span class="o">-</span><span class="n">connector</span><span class="o">-</span><span class="mf">3.0.0</span><span class="o">.</span><span class="n">jar</span>
+
+<span class="o">/</span><span class="n">spark</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">pyspark</span> <span class="o">--</span><span class="n">driver</span><span class="o">-</span><span class="n">class</span><span class="o">-</span><span class="n">path</span> <span class="n">nebula</span><span class="o">-</span><span class="n">spark</span><span class="o">-</span><span class="n">connector</span><span class="o">-</span><span class="mf">3.0.0</span><span class="o">.</span><span class="n">jar</span> <span class="o">--</span><span class="n">jars</span> <span class="n">nebula</span><span class="o">-</span><span class="n">spark</span><span class="o">-</span><span class="n">connector</span><span class="o">-</span><span class="mf">3.0.0</span><span class="o">.</span><span class="n">jar</span>
+</code></pre></td></tr></table>
 </div>
 </div><p>Then, rather than pass <code>NebulaConnectionConfig</code> and <code>ReadNebulaConfig</code> to <code>spark.read.nebula</code>, we should instead call <code>spark.read.format(&quot;com.vesoft.nebula.connector.NebulaDataSource&quot;)</code>.</p>
 <p>Voilà!</p>
@@ -892,24 +894,24 @@
 </span><span class="lnt">17
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">df</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">  <span class="s2">&#34;com.vesoft.nebula.connector.NebulaDataSource&#34;</span><span class="p">)</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="s2">&#34;type&#34;</span><span class="p">,</span> <span class="s2">&#34;vertex&#34;</span><span class="p">)</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="s2">&#34;spaceName&#34;</span><span class="p">,</span> <span class="s2">&#34;basketballplayer&#34;</span><span class="p">)</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="s2">&#34;label&#34;</span><span class="p">,</span> <span class="s2">&#34;player&#34;</span><span class="p">)</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="s2">&#34;returnCols&#34;</span><span class="p">,</span> <span class="s2">&#34;name,age&#34;</span><span class="p">)</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="s2">&#34;metaAddress&#34;</span><span class="p">,</span> <span class="s2">&#34;metad0:9559&#34;</span><span class="p">)</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="s2">&#34;partitionNumber&#34;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="o">&gt;&gt;&gt;</span> <span class="n">df</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="o">+---------+--------------+---+</span>
-</span></span><span class="line"><span class="cl"><span class="o">|</span><span class="n">_vertexId</span><span class="o">|</span>          <span class="n">name</span><span class="o">|</span><span class="n">age</span><span class="o">|</span>
-</span></span><span class="line"><span class="cl"><span class="o">+---------+--------------+---+</span>
-</span></span><span class="line"><span class="cl"><span class="o">|</span><span class="n">player105</span><span class="o">|</span>   <span class="n">Danny</span> <span class="n">Green</span><span class="o">|</span> <span class="mi">31</span><span class="o">|</span>
-</span></span><span class="line"><span class="cl"><span class="o">|</span><span class="n">player109</span><span class="o">|</span><span class="n">Tiago</span> <span class="n">Splitter</span><span class="o">|</span> <span class="mi">34</span><span class="o">|</span>
-</span></span><span class="line"><span class="cl"><span class="o">+---------+--------------+---+</span>
-</span></span><span class="line"><span class="cl"><span class="n">only</span> <span class="n">showing</span> <span class="n">top</span> <span class="mi">2</span> <span class="n">rows</span>
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">df</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+  <span class="s2">&#34;com.vesoft.nebula.connector.NebulaDataSource&#34;</span><span class="p">)</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
+    <span class="s2">&#34;type&#34;</span><span class="p">,</span> <span class="s2">&#34;vertex&#34;</span><span class="p">)</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
+    <span class="s2">&#34;spaceName&#34;</span><span class="p">,</span> <span class="s2">&#34;basketballplayer&#34;</span><span class="p">)</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
+    <span class="s2">&#34;label&#34;</span><span class="p">,</span> <span class="s2">&#34;player&#34;</span><span class="p">)</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
+    <span class="s2">&#34;returnCols&#34;</span><span class="p">,</span> <span class="s2">&#34;name,age&#34;</span><span class="p">)</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
+    <span class="s2">&#34;metaAddress&#34;</span><span class="p">,</span> <span class="s2">&#34;metad0:9559&#34;</span><span class="p">)</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
+    <span class="s2">&#34;partitionNumber&#34;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">df</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="o">+---------+--------------+---+</span>
+<span class="o">|</span><span class="n">_vertexId</span><span class="o">|</span>          <span class="n">name</span><span class="o">|</span><span class="n">age</span><span class="o">|</span>
+<span class="o">+---------+--------------+---+</span>
+<span class="o">|</span><span class="n">player105</span><span class="o">|</span>   <span class="n">Danny</span> <span class="n">Green</span><span class="o">|</span> <span class="mi">31</span><span class="o">|</span>
+<span class="o">|</span><span class="n">player109</span><span class="o">|</span><span class="n">Tiago</span> <span class="n">Splitter</span><span class="o">|</span> <span class="mi">34</span><span class="o">|</span>
+<span class="o">+---------+--------------+---+</span>
+<span class="n">only</span> <span class="n">showing</span> <span class="n">top</span> <span class="mi">2</span> <span class="n">rows</span>
+</code></pre></td></tr></table>
 </div>
 </div><p>Below are how I figured out how to make this work with almost zero scala knowledge:-P.</p>
 <ul>
@@ -950,38 +952,38 @@
 </span><span class="lnt">31
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-scala" data-lang="scala"><span class="line"><span class="cl">      <span class="k">def</span> <span class="n">loadVerticesToDF</span><span class="o">()</span><span class="k">:</span> <span class="kt">DataFrame</span> <span class="o">=</span> <span class="o">{</span>
-</span></span><span class="line"><span class="cl">        <span class="n">assert</span><span class="o">(</span><span class="n">connectionConfig</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">&amp;&amp;</span> <span class="n">readConfig</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">,</span>
-</span></span><span class="line"><span class="cl">               <span class="s">&#34;nebula config is not set, please call nebula() before loadVerticesToDF&#34;</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">        <span class="k">val</span> <span class="n">dfReader</span> <span class="k">=</span> <span class="n">reader</span>
-</span></span><span class="line"><span class="cl">          <span class="o">.</span><span class="n">format</span><span class="o">(</span><span class="n">classOf</span><span class="o">[</span><span class="kt">NebulaDataSource</span><span class="o">].</span><span class="n">getName</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">          <span class="o">.</span><span class="n">option</span><span class="o">(</span><span class="nc">NebulaOptions</span><span class="o">.</span><span class="nc">TYPE</span><span class="o">,</span> <span class="nc">DataTypeEnum</span><span class="o">.</span><span class="nc">VERTEX</span><span class="o">.</span><span class="n">toString</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">          <span class="o">.</span><span class="n">option</span><span class="o">(</span><span class="nc">NebulaOptions</span><span class="o">.</span><span class="nc">SPACE_NAME</span><span class="o">,</span> <span class="n">readConfig</span><span class="o">.</span><span class="n">getSpace</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">          <span class="o">.</span><span class="n">option</span><span class="o">(</span><span class="nc">NebulaOptions</span><span class="o">.</span><span class="nc">LABEL</span><span class="o">,</span> <span class="n">readConfig</span><span class="o">.</span><span class="n">getLabel</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">          <span class="o">.</span><span class="n">option</span><span class="o">(</span><span class="nc">NebulaOptions</span><span class="o">.</span><span class="nc">PARTITION_NUMBER</span><span class="o">,</span> <span class="n">readConfig</span><span class="o">.</span><span class="n">getPartitionNum</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">          <span class="o">.</span><span class="n">option</span><span class="o">(</span><span class="nc">NebulaOptions</span><span class="o">.</span><span class="nc">RETURN_COLS</span><span class="o">,</span> <span class="n">readConfig</span><span class="o">.</span><span class="n">getReturnCols</span><span class="o">.</span><span class="n">mkString</span><span class="o">(</span><span class="s">&#34;,&#34;</span><span class="o">))</span>
-</span></span><span class="line"><span class="cl">          <span class="o">.</span><span class="n">option</span><span class="o">(</span><span class="nc">NebulaOptions</span><span class="o">.</span><span class="nc">NO_COLUMN</span><span class="o">,</span> <span class="n">readConfig</span><span class="o">.</span><span class="n">getNoColumn</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">          <span class="o">.</span><span class="n">option</span><span class="o">(</span><span class="nc">NebulaOptions</span><span class="o">.</span><span class="nc">LIMIT</span><span class="o">,</span> <span class="n">readConfig</span><span class="o">.</span><span class="n">getLimit</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">          <span class="o">.</span><span class="n">option</span><span class="o">(</span><span class="nc">NebulaOptions</span><span class="o">.</span><span class="nc">META_ADDRESS</span><span class="o">,</span> <span class="n">connectionConfig</span><span class="o">.</span><span class="n">getMetaAddress</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">          <span class="o">.</span><span class="n">option</span><span class="o">(</span><span class="nc">NebulaOptions</span><span class="o">.</span><span class="nc">TIMEOUT</span><span class="o">,</span> <span class="n">connectionConfig</span><span class="o">.</span><span class="n">getTimeout</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">          <span class="o">.</span><span class="n">option</span><span class="o">(</span><span class="nc">NebulaOptions</span><span class="o">.</span><span class="nc">CONNECTION_RETRY</span><span class="o">,</span> <span class="n">connectionConfig</span><span class="o">.</span><span class="n">getConnectionRetry</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">          <span class="o">.</span><span class="n">option</span><span class="o">(</span><span class="nc">NebulaOptions</span><span class="o">.</span><span class="nc">EXECUTION_RETRY</span><span class="o">,</span> <span class="n">connectionConfig</span><span class="o">.</span><span class="n">getExecRetry</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">          <span class="o">.</span><span class="n">option</span><span class="o">(</span><span class="nc">NebulaOptions</span><span class="o">.</span><span class="nc">ENABLE_META_SSL</span><span class="o">,</span> <span class="n">connectionConfig</span><span class="o">.</span><span class="n">getEnableMetaSSL</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">          <span class="o">.</span><span class="n">option</span><span class="o">(</span><span class="nc">NebulaOptions</span><span class="o">.</span><span class="nc">ENABLE_STORAGE_SSL</span><span class="o">,</span> <span class="n">connectionConfig</span><span class="o">.</span><span class="n">getEnableStorageSSL</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">  
-</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="o">(</span><span class="n">connectionConfig</span><span class="o">.</span><span class="n">getEnableStorageSSL</span> <span class="o">||</span> <span class="n">connectionConfig</span><span class="o">.</span><span class="n">getEnableMetaSSL</span><span class="o">)</span> <span class="o">{</span>
-</span></span><span class="line"><span class="cl">          <span class="n">dfReader</span><span class="o">.</span><span class="n">option</span><span class="o">(</span><span class="nc">NebulaOptions</span><span class="o">.</span><span class="nc">SSL_SIGN_TYPE</span><span class="o">,</span> <span class="n">connectionConfig</span><span class="o">.</span><span class="n">getSignType</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">          <span class="nc">SSLSignType</span><span class="o">.</span><span class="n">withName</span><span class="o">(</span><span class="n">connectionConfig</span><span class="o">.</span><span class="n">getSignType</span><span class="o">)</span> <span class="k">match</span> <span class="o">{</span>
-</span></span><span class="line"><span class="cl">            <span class="k">case</span> <span class="nc">SSLSignType</span><span class="o">.</span><span class="nc">CA</span> <span class="k">=&gt;</span>
-</span></span><span class="line"><span class="cl">              <span class="n">dfReader</span><span class="o">.</span><span class="n">option</span><span class="o">(</span><span class="nc">NebulaOptions</span><span class="o">.</span><span class="nc">CA_SIGN_PARAM</span><span class="o">,</span> <span class="n">connectionConfig</span><span class="o">.</span><span class="n">getCaSignParam</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">            <span class="k">case</span> <span class="nc">SSLSignType</span><span class="o">.</span><span class="nc">SELF</span> <span class="k">=&gt;</span>
-</span></span><span class="line"><span class="cl">              <span class="n">dfReader</span><span class="o">.</span><span class="n">option</span><span class="o">(</span><span class="nc">NebulaOptions</span><span class="o">.</span><span class="nc">SELF_SIGN_PARAM</span><span class="o">,</span> <span class="n">connectionConfig</span><span class="o">.</span><span class="n">getSelfSignParam</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">          <span class="o">}</span>
-</span></span><span class="line"><span class="cl">        <span class="o">}</span>
-</span></span><span class="line"><span class="cl">  
-</span></span><span class="line"><span class="cl">        <span class="n">dfReader</span><span class="o">.</span><span class="n">load</span><span class="o">()</span>
-</span></span><span class="line"><span class="cl">      <span class="o">}</span>
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-scala" data-lang="scala">      <span class="k">def</span> <span class="n">loadVerticesToDF</span><span class="o">()</span><span class="k">:</span> <span class="kt">DataFrame</span> <span class="o">=</span> <span class="o">{</span>
+        <span class="n">assert</span><span class="o">(</span><span class="n">connectionConfig</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">&amp;&amp;</span> <span class="n">readConfig</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">,</span>
+               <span class="s">&#34;nebula config is not set, please call nebula() before loadVerticesToDF&#34;</span><span class="o">)</span>
+        <span class="k">val</span> <span class="n">dfReader</span> <span class="k">=</span> <span class="n">reader</span>
+          <span class="o">.</span><span class="n">format</span><span class="o">(</span><span class="n">classOf</span><span class="o">[</span><span class="kt">NebulaDataSource</span><span class="o">].</span><span class="n">getName</span><span class="o">)</span>
+          <span class="o">.</span><span class="n">option</span><span class="o">(</span><span class="nc">NebulaOptions</span><span class="o">.</span><span class="nc">TYPE</span><span class="o">,</span> <span class="nc">DataTypeEnum</span><span class="o">.</span><span class="nc">VERTEX</span><span class="o">.</span><span class="n">toString</span><span class="o">)</span>
+          <span class="o">.</span><span class="n">option</span><span class="o">(</span><span class="nc">NebulaOptions</span><span class="o">.</span><span class="nc">SPACE_NAME</span><span class="o">,</span> <span class="n">readConfig</span><span class="o">.</span><span class="n">getSpace</span><span class="o">)</span>
+          <span class="o">.</span><span class="n">option</span><span class="o">(</span><span class="nc">NebulaOptions</span><span class="o">.</span><span class="nc">LABEL</span><span class="o">,</span> <span class="n">readConfig</span><span class="o">.</span><span class="n">getLabel</span><span class="o">)</span>
+          <span class="o">.</span><span class="n">option</span><span class="o">(</span><span class="nc">NebulaOptions</span><span class="o">.</span><span class="nc">PARTITION_NUMBER</span><span class="o">,</span> <span class="n">readConfig</span><span class="o">.</span><span class="n">getPartitionNum</span><span class="o">)</span>
+          <span class="o">.</span><span class="n">option</span><span class="o">(</span><span class="nc">NebulaOptions</span><span class="o">.</span><span class="nc">RETURN_COLS</span><span class="o">,</span> <span class="n">readConfig</span><span class="o">.</span><span class="n">getReturnCols</span><span class="o">.</span><span class="n">mkString</span><span class="o">(</span><span class="s">&#34;,&#34;</span><span class="o">))</span>
+          <span class="o">.</span><span class="n">option</span><span class="o">(</span><span class="nc">NebulaOptions</span><span class="o">.</span><span class="nc">NO_COLUMN</span><span class="o">,</span> <span class="n">readConfig</span><span class="o">.</span><span class="n">getNoColumn</span><span class="o">)</span>
+          <span class="o">.</span><span class="n">option</span><span class="o">(</span><span class="nc">NebulaOptions</span><span class="o">.</span><span class="nc">LIMIT</span><span class="o">,</span> <span class="n">readConfig</span><span class="o">.</span><span class="n">getLimit</span><span class="o">)</span>
+          <span class="o">.</span><span class="n">option</span><span class="o">(</span><span class="nc">NebulaOptions</span><span class="o">.</span><span class="nc">META_ADDRESS</span><span class="o">,</span> <span class="n">connectionConfig</span><span class="o">.</span><span class="n">getMetaAddress</span><span class="o">)</span>
+          <span class="o">.</span><span class="n">option</span><span class="o">(</span><span class="nc">NebulaOptions</span><span class="o">.</span><span class="nc">TIMEOUT</span><span class="o">,</span> <span class="n">connectionConfig</span><span class="o">.</span><span class="n">getTimeout</span><span class="o">)</span>
+          <span class="o">.</span><span class="n">option</span><span class="o">(</span><span class="nc">NebulaOptions</span><span class="o">.</span><span class="nc">CONNECTION_RETRY</span><span class="o">,</span> <span class="n">connectionConfig</span><span class="o">.</span><span class="n">getConnectionRetry</span><span class="o">)</span>
+          <span class="o">.</span><span class="n">option</span><span class="o">(</span><span class="nc">NebulaOptions</span><span class="o">.</span><span class="nc">EXECUTION_RETRY</span><span class="o">,</span> <span class="n">connectionConfig</span><span class="o">.</span><span class="n">getExecRetry</span><span class="o">)</span>
+          <span class="o">.</span><span class="n">option</span><span class="o">(</span><span class="nc">NebulaOptions</span><span class="o">.</span><span class="nc">ENABLE_META_SSL</span><span class="o">,</span> <span class="n">connectionConfig</span><span class="o">.</span><span class="n">getEnableMetaSSL</span><span class="o">)</span>
+          <span class="o">.</span><span class="n">option</span><span class="o">(</span><span class="nc">NebulaOptions</span><span class="o">.</span><span class="nc">ENABLE_STORAGE_SSL</span><span class="o">,</span> <span class="n">connectionConfig</span><span class="o">.</span><span class="n">getEnableStorageSSL</span><span class="o">)</span>
+  
+        <span class="k">if</span> <span class="o">(</span><span class="n">connectionConfig</span><span class="o">.</span><span class="n">getEnableStorageSSL</span> <span class="o">||</span> <span class="n">connectionConfig</span><span class="o">.</span><span class="n">getEnableMetaSSL</span><span class="o">)</span> <span class="o">{</span>
+          <span class="n">dfReader</span><span class="o">.</span><span class="n">option</span><span class="o">(</span><span class="nc">NebulaOptions</span><span class="o">.</span><span class="nc">SSL_SIGN_TYPE</span><span class="o">,</span> <span class="n">connectionConfig</span><span class="o">.</span><span class="n">getSignType</span><span class="o">)</span>
+          <span class="nc">SSLSignType</span><span class="o">.</span><span class="n">withName</span><span class="o">(</span><span class="n">connectionConfig</span><span class="o">.</span><span class="n">getSignType</span><span class="o">)</span> <span class="k">match</span> <span class="o">{</span>
+            <span class="k">case</span> <span class="nc">SSLSignType</span><span class="o">.</span><span class="nc">CA</span> <span class="k">=&gt;</span>
+              <span class="n">dfReader</span><span class="o">.</span><span class="n">option</span><span class="o">(</span><span class="nc">NebulaOptions</span><span class="o">.</span><span class="nc">CA_SIGN_PARAM</span><span class="o">,</span> <span class="n">connectionConfig</span><span class="o">.</span><span class="n">getCaSignParam</span><span class="o">)</span>
+            <span class="k">case</span> <span class="nc">SSLSignType</span><span class="o">.</span><span class="nc">SELF</span> <span class="k">=&gt;</span>
+              <span class="n">dfReader</span><span class="o">.</span><span class="n">option</span><span class="o">(</span><span class="nc">NebulaOptions</span><span class="o">.</span><span class="nc">SELF_SIGN_PARAM</span><span class="o">,</span> <span class="n">connectionConfig</span><span class="o">.</span><span class="n">getSelfSignParam</span><span class="o">)</span>
+          <span class="o">}</span>
+        <span class="o">}</span>
+  
+        <span class="n">dfReader</span><span class="o">.</span><span class="n">load</span><span class="o">()</span>
+      <span class="o">}</span>
+</code></pre></td></tr></table>
 </div>
 </div><ul>
 <li><a href="https://github.com/vesoft-inc/nebula-spark-connector/blob/master/nebula-spark-connector/src/main/scala/com/vesoft/nebula/connector/NebulaOptions.scala" target="_blank" rel="noopener noreferrer">How Option String should be like</a></li>
@@ -1059,76 +1061,76 @@
 </span><span class="lnt">69
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-scala" data-lang="scala"><span class="line"><span class="cl"><span class="k">#</span> 
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="k">object</span> <span class="nc">NebulaOptions</span> <span class="o">{</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">  <span class="cm">/** nebula common config */</span>
-</span></span><span class="line"><span class="cl">  <span class="k">val</span> <span class="nc">SPACE_NAME</span><span class="k">:</span> <span class="kt">String</span>    <span class="o">=</span> <span class="s">&#34;spaceName&#34;</span>
-</span></span><span class="line"><span class="cl">  <span class="k">val</span> <span class="nc">META_ADDRESS</span><span class="k">:</span> <span class="kt">String</span>  <span class="o">=</span> <span class="s">&#34;metaAddress&#34;</span>
-</span></span><span class="line"><span class="cl">  <span class="k">val</span> <span class="nc">GRAPH_ADDRESS</span><span class="k">:</span> <span class="kt">String</span> <span class="o">=</span> <span class="s">&#34;graphAddress&#34;</span>
-</span></span><span class="line"><span class="cl">  <span class="k">val</span> <span class="nc">TYPE</span><span class="k">:</span> <span class="kt">String</span>          <span class="o">=</span> <span class="s">&#34;type&#34;</span>
-</span></span><span class="line"><span class="cl">  <span class="k">val</span> <span class="nc">LABEL</span><span class="k">:</span> <span class="kt">String</span>         <span class="o">=</span> <span class="s">&#34;label&#34;</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">  <span class="cm">/** connection config */</span>
-</span></span><span class="line"><span class="cl">  <span class="k">val</span> <span class="nc">TIMEOUT</span><span class="k">:</span> <span class="kt">String</span>            <span class="o">=</span> <span class="s">&#34;timeout&#34;</span>
-</span></span><span class="line"><span class="cl">  <span class="k">val</span> <span class="nc">CONNECTION_RETRY</span><span class="k">:</span> <span class="kt">String</span>   <span class="o">=</span> <span class="s">&#34;connectionRetry&#34;</span>
-</span></span><span class="line"><span class="cl">  <span class="k">val</span> <span class="nc">EXECUTION_RETRY</span><span class="k">:</span> <span class="kt">String</span>    <span class="o">=</span> <span class="s">&#34;executionRetry&#34;</span>
-</span></span><span class="line"><span class="cl">  <span class="k">val</span> <span class="nc">RATE_TIME_OUT</span><span class="k">:</span> <span class="kt">String</span>      <span class="o">=</span> <span class="s">&#34;reteTimeOut&#34;</span>
-</span></span><span class="line"><span class="cl">  <span class="k">val</span> <span class="nc">USER_NAME</span><span class="k">:</span> <span class="kt">String</span>          <span class="o">=</span> <span class="s">&#34;user&#34;</span>
-</span></span><span class="line"><span class="cl">  <span class="k">val</span> <span class="nc">PASSWD</span><span class="k">:</span> <span class="kt">String</span>             <span class="o">=</span> <span class="s">&#34;passwd&#34;</span>
-</span></span><span class="line"><span class="cl">  <span class="k">val</span> <span class="nc">ENABLE_GRAPH_SSL</span><span class="k">:</span> <span class="kt">String</span>   <span class="o">=</span> <span class="s">&#34;enableGraphSSL&#34;</span>
-</span></span><span class="line"><span class="cl">  <span class="k">val</span> <span class="nc">ENABLE_META_SSL</span><span class="k">:</span> <span class="kt">String</span>    <span class="o">=</span> <span class="s">&#34;enableMetaSSL&#34;</span>
-</span></span><span class="line"><span class="cl">  <span class="k">val</span> <span class="nc">ENABLE_STORAGE_SSL</span><span class="k">:</span> <span class="kt">String</span> <span class="o">=</span> <span class="s">&#34;enableStorageSSL&#34;</span>
-</span></span><span class="line"><span class="cl">  <span class="k">val</span> <span class="nc">SSL_SIGN_TYPE</span><span class="k">:</span> <span class="kt">String</span>      <span class="o">=</span> <span class="s">&#34;sslSignType&#34;</span>
-</span></span><span class="line"><span class="cl">  <span class="k">val</span> <span class="nc">CA_SIGN_PARAM</span><span class="k">:</span> <span class="kt">String</span>      <span class="o">=</span> <span class="s">&#34;caSignParam&#34;</span>
-</span></span><span class="line"><span class="cl">  <span class="k">val</span> <span class="nc">SELF_SIGN_PARAM</span><span class="k">:</span> <span class="kt">String</span>    <span class="o">=</span> <span class="s">&#34;selfSignParam&#34;</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">  <span class="cm">/** read config */</span>
-</span></span><span class="line"><span class="cl">  <span class="k">val</span> <span class="nc">RETURN_COLS</span><span class="k">:</span> <span class="kt">String</span>      <span class="o">=</span> <span class="s">&#34;returnCols&#34;</span>
-</span></span><span class="line"><span class="cl">  <span class="k">val</span> <span class="nc">NO_COLUMN</span><span class="k">:</span> <span class="kt">String</span>        <span class="o">=</span> <span class="s">&#34;noColumn&#34;</span>
-</span></span><span class="line"><span class="cl">  <span class="k">val</span> <span class="nc">PARTITION_NUMBER</span><span class="k">:</span> <span class="kt">String</span> <span class="o">=</span> <span class="s">&#34;partitionNumber&#34;</span>
-</span></span><span class="line"><span class="cl">  <span class="k">val</span> <span class="nc">LIMIT</span><span class="k">:</span> <span class="kt">String</span>            <span class="o">=</span> <span class="s">&#34;limit&#34;</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">  <span class="cm">/** write config */</span>
-</span></span><span class="line"><span class="cl">  <span class="k">val</span> <span class="nc">RATE_LIMIT</span><span class="k">:</span> <span class="kt">String</span>   <span class="o">=</span> <span class="s">&#34;rateLimit&#34;</span>
-</span></span><span class="line"><span class="cl">  <span class="k">val</span> <span class="nc">VID_POLICY</span><span class="k">:</span> <span class="kt">String</span>   <span class="o">=</span> <span class="s">&#34;vidPolicy&#34;</span>
-</span></span><span class="line"><span class="cl">  <span class="k">val</span> <span class="nc">SRC_POLICY</span><span class="k">:</span> <span class="kt">String</span>   <span class="o">=</span> <span class="s">&#34;srcPolicy&#34;</span>
-</span></span><span class="line"><span class="cl">  <span class="k">val</span> <span class="nc">DST_POLICY</span><span class="k">:</span> <span class="kt">String</span>   <span class="o">=</span> <span class="s">&#34;dstPolicy&#34;</span>
-</span></span><span class="line"><span class="cl">  <span class="k">val</span> <span class="nc">VERTEX_FIELD</span>         <span class="k">=</span> <span class="s">&#34;vertexField&#34;</span>
-</span></span><span class="line"><span class="cl">  <span class="k">val</span> <span class="nc">SRC_VERTEX_FIELD</span>     <span class="k">=</span> <span class="s">&#34;srcVertexField&#34;</span>
-</span></span><span class="line"><span class="cl">  <span class="k">val</span> <span class="nc">DST_VERTEX_FIELD</span>     <span class="k">=</span> <span class="s">&#34;dstVertexField&#34;</span>
-</span></span><span class="line"><span class="cl">  <span class="k">val</span> <span class="nc">RANK_FIELD</span>           <span class="k">=</span> <span class="s">&#34;rankFiled&#34;</span>
-</span></span><span class="line"><span class="cl">  <span class="k">val</span> <span class="nc">BATCH</span><span class="k">:</span> <span class="kt">String</span>        <span class="o">=</span> <span class="s">&#34;batch&#34;</span>
-</span></span><span class="line"><span class="cl">  <span class="k">val</span> <span class="nc">VID_AS_PROP</span><span class="k">:</span> <span class="kt">String</span>  <span class="o">=</span> <span class="s">&#34;vidAsProp&#34;</span>
-</span></span><span class="line"><span class="cl">  <span class="k">val</span> <span class="nc">SRC_AS_PROP</span><span class="k">:</span> <span class="kt">String</span>  <span class="o">=</span> <span class="s">&#34;srcAsProp&#34;</span>
-</span></span><span class="line"><span class="cl">  <span class="k">val</span> <span class="nc">DST_AS_PROP</span><span class="k">:</span> <span class="kt">String</span>  <span class="o">=</span> <span class="s">&#34;dstAsProp&#34;</span>
-</span></span><span class="line"><span class="cl">  <span class="k">val</span> <span class="nc">RANK_AS_PROP</span><span class="k">:</span> <span class="kt">String</span> <span class="o">=</span> <span class="s">&#34;rankAsProp&#34;</span>
-</span></span><span class="line"><span class="cl">  <span class="k">val</span> <span class="nc">WRITE_MODE</span><span class="k">:</span> <span class="kt">String</span>   <span class="o">=</span> <span class="s">&#34;writeMode&#34;</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">  <span class="k">val</span> <span class="nc">DEFAULT_TIMEOUT</span><span class="k">:</span> <span class="kt">Int</span>            <span class="o">=</span> <span class="mi">3000</span>
-</span></span><span class="line"><span class="cl">  <span class="k">val</span> <span class="nc">DEFAULT_CONNECTION_TIMEOUT</span><span class="k">:</span> <span class="kt">Int</span> <span class="o">=</span> <span class="mi">3000</span>
-</span></span><span class="line"><span class="cl">  <span class="k">val</span> <span class="nc">DEFAULT_CONNECTION_RETRY</span><span class="k">:</span> <span class="kt">Int</span>   <span class="o">=</span> <span class="mi">3</span>
-</span></span><span class="line"><span class="cl">  <span class="k">val</span> <span class="nc">DEFAULT_EXECUTION_RETRY</span><span class="k">:</span> <span class="kt">Int</span>    <span class="o">=</span> <span class="mi">3</span>
-</span></span><span class="line"><span class="cl">  <span class="k">val</span> <span class="nc">DEFAULT_USER_NAME</span><span class="k">:</span> <span class="kt">String</span>       <span class="o">=</span> <span class="s">&#34;root&#34;</span>
-</span></span><span class="line"><span class="cl">  <span class="k">val</span> <span class="nc">DEFAULT_PASSWD</span><span class="k">:</span> <span class="kt">String</span>          <span class="o">=</span> <span class="s">&#34;nebula&#34;</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">  <span class="k">val</span> <span class="nc">DEFAULT_ENABLE_GRAPH_SSL</span><span class="k">:</span> <span class="kt">Boolean</span>   <span class="o">=</span> <span class="kc">false</span>
-</span></span><span class="line"><span class="cl">  <span class="k">val</span> <span class="nc">DEFAULT_ENABLE_META_SSL</span><span class="k">:</span> <span class="kt">Boolean</span>    <span class="o">=</span> <span class="kc">false</span>
-</span></span><span class="line"><span class="cl">  <span class="k">val</span> <span class="nc">DEFAULT_ENABLE_STORAGE_SSL</span><span class="k">:</span> <span class="kt">Boolean</span> <span class="o">=</span> <span class="kc">false</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">  <span class="k">val</span> <span class="nc">DEFAULT_LIMIT</span><span class="k">:</span> <span class="kt">Int</span> <span class="o">=</span> <span class="mi">1000</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">  <span class="k">val</span> <span class="nc">DEFAULT_RATE_LIMIT</span><span class="k">:</span> <span class="kt">Long</span>    <span class="o">=</span> <span class="mi">1024L</span>
-</span></span><span class="line"><span class="cl">  <span class="k">val</span> <span class="nc">DEFAULT_RATE_TIME_OUT</span><span class="k">:</span> <span class="kt">Long</span> <span class="o">=</span> <span class="mi">100</span>
-</span></span><span class="line"><span class="cl">  <span class="k">val</span> <span class="nc">DEFAULT_POLICY</span><span class="k">:</span> <span class="kt">String</span>      <span class="o">=</span> <span class="kc">null</span>
-</span></span><span class="line"><span class="cl">  <span class="k">val</span> <span class="nc">DEFAULT_BATCH</span><span class="k">:</span> <span class="kt">Int</span>          <span class="o">=</span> <span class="mi">1000</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">  <span class="k">val</span> <span class="nc">DEFAULT_WRITE_MODE</span> <span class="k">=</span> <span class="nc">WriteMode</span><span class="o">.</span><span class="nc">INSERT</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">  <span class="k">val</span> <span class="nc">EMPTY_STRING</span><span class="k">:</span> <span class="kt">String</span> <span class="o">=</span> <span class="s">&#34;&#34;</span>
-</span></span><span class="line"><span class="cl"><span class="o">}</span>
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-scala" data-lang="scala"><span class="k">#</span> 
+
+<span class="k">object</span> <span class="nc">NebulaOptions</span> <span class="o">{</span>
+
+  <span class="cm">/** nebula common config */</span>
+  <span class="k">val</span> <span class="nc">SPACE_NAME</span><span class="k">:</span> <span class="kt">String</span>    <span class="o">=</span> <span class="s">&#34;spaceName&#34;</span>
+  <span class="k">val</span> <span class="nc">META_ADDRESS</span><span class="k">:</span> <span class="kt">String</span>  <span class="o">=</span> <span class="s">&#34;metaAddress&#34;</span>
+  <span class="k">val</span> <span class="nc">GRAPH_ADDRESS</span><span class="k">:</span> <span class="kt">String</span> <span class="o">=</span> <span class="s">&#34;graphAddress&#34;</span>
+  <span class="k">val</span> <span class="nc">TYPE</span><span class="k">:</span> <span class="kt">String</span>          <span class="o">=</span> <span class="s">&#34;type&#34;</span>
+  <span class="k">val</span> <span class="nc">LABEL</span><span class="k">:</span> <span class="kt">String</span>         <span class="o">=</span> <span class="s">&#34;label&#34;</span>
+
+  <span class="cm">/** connection config */</span>
+  <span class="k">val</span> <span class="nc">TIMEOUT</span><span class="k">:</span> <span class="kt">String</span>            <span class="o">=</span> <span class="s">&#34;timeout&#34;</span>
+  <span class="k">val</span> <span class="nc">CONNECTION_RETRY</span><span class="k">:</span> <span class="kt">String</span>   <span class="o">=</span> <span class="s">&#34;connectionRetry&#34;</span>
+  <span class="k">val</span> <span class="nc">EXECUTION_RETRY</span><span class="k">:</span> <span class="kt">String</span>    <span class="o">=</span> <span class="s">&#34;executionRetry&#34;</span>
+  <span class="k">val</span> <span class="nc">RATE_TIME_OUT</span><span class="k">:</span> <span class="kt">String</span>      <span class="o">=</span> <span class="s">&#34;reteTimeOut&#34;</span>
+  <span class="k">val</span> <span class="nc">USER_NAME</span><span class="k">:</span> <span class="kt">String</span>          <span class="o">=</span> <span class="s">&#34;user&#34;</span>
+  <span class="k">val</span> <span class="nc">PASSWD</span><span class="k">:</span> <span class="kt">String</span>             <span class="o">=</span> <span class="s">&#34;passwd&#34;</span>
+  <span class="k">val</span> <span class="nc">ENABLE_GRAPH_SSL</span><span class="k">:</span> <span class="kt">String</span>   <span class="o">=</span> <span class="s">&#34;enableGraphSSL&#34;</span>
+  <span class="k">val</span> <span class="nc">ENABLE_META_SSL</span><span class="k">:</span> <span class="kt">String</span>    <span class="o">=</span> <span class="s">&#34;enableMetaSSL&#34;</span>
+  <span class="k">val</span> <span class="nc">ENABLE_STORAGE_SSL</span><span class="k">:</span> <span class="kt">String</span> <span class="o">=</span> <span class="s">&#34;enableStorageSSL&#34;</span>
+  <span class="k">val</span> <span class="nc">SSL_SIGN_TYPE</span><span class="k">:</span> <span class="kt">String</span>      <span class="o">=</span> <span class="s">&#34;sslSignType&#34;</span>
+  <span class="k">val</span> <span class="nc">CA_SIGN_PARAM</span><span class="k">:</span> <span class="kt">String</span>      <span class="o">=</span> <span class="s">&#34;caSignParam&#34;</span>
+  <span class="k">val</span> <span class="nc">SELF_SIGN_PARAM</span><span class="k">:</span> <span class="kt">String</span>    <span class="o">=</span> <span class="s">&#34;selfSignParam&#34;</span>
+
+  <span class="cm">/** read config */</span>
+  <span class="k">val</span> <span class="nc">RETURN_COLS</span><span class="k">:</span> <span class="kt">String</span>      <span class="o">=</span> <span class="s">&#34;returnCols&#34;</span>
+  <span class="k">val</span> <span class="nc">NO_COLUMN</span><span class="k">:</span> <span class="kt">String</span>        <span class="o">=</span> <span class="s">&#34;noColumn&#34;</span>
+  <span class="k">val</span> <span class="nc">PARTITION_NUMBER</span><span class="k">:</span> <span class="kt">String</span> <span class="o">=</span> <span class="s">&#34;partitionNumber&#34;</span>
+  <span class="k">val</span> <span class="nc">LIMIT</span><span class="k">:</span> <span class="kt">String</span>            <span class="o">=</span> <span class="s">&#34;limit&#34;</span>
+
+  <span class="cm">/** write config */</span>
+  <span class="k">val</span> <span class="nc">RATE_LIMIT</span><span class="k">:</span> <span class="kt">String</span>   <span class="o">=</span> <span class="s">&#34;rateLimit&#34;</span>
+  <span class="k">val</span> <span class="nc">VID_POLICY</span><span class="k">:</span> <span class="kt">String</span>   <span class="o">=</span> <span class="s">&#34;vidPolicy&#34;</span>
+  <span class="k">val</span> <span class="nc">SRC_POLICY</span><span class="k">:</span> <span class="kt">String</span>   <span class="o">=</span> <span class="s">&#34;srcPolicy&#34;</span>
+  <span class="k">val</span> <span class="nc">DST_POLICY</span><span class="k">:</span> <span class="kt">String</span>   <span class="o">=</span> <span class="s">&#34;dstPolicy&#34;</span>
+  <span class="k">val</span> <span class="nc">VERTEX_FIELD</span>         <span class="k">=</span> <span class="s">&#34;vertexField&#34;</span>
+  <span class="k">val</span> <span class="nc">SRC_VERTEX_FIELD</span>     <span class="k">=</span> <span class="s">&#34;srcVertexField&#34;</span>
+  <span class="k">val</span> <span class="nc">DST_VERTEX_FIELD</span>     <span class="k">=</span> <span class="s">&#34;dstVertexField&#34;</span>
+  <span class="k">val</span> <span class="nc">RANK_FIELD</span>           <span class="k">=</span> <span class="s">&#34;rankFiled&#34;</span>
+  <span class="k">val</span> <span class="nc">BATCH</span><span class="k">:</span> <span class="kt">String</span>        <span class="o">=</span> <span class="s">&#34;batch&#34;</span>
+  <span class="k">val</span> <span class="nc">VID_AS_PROP</span><span class="k">:</span> <span class="kt">String</span>  <span class="o">=</span> <span class="s">&#34;vidAsProp&#34;</span>
+  <span class="k">val</span> <span class="nc">SRC_AS_PROP</span><span class="k">:</span> <span class="kt">String</span>  <span class="o">=</span> <span class="s">&#34;srcAsProp&#34;</span>
+  <span class="k">val</span> <span class="nc">DST_AS_PROP</span><span class="k">:</span> <span class="kt">String</span>  <span class="o">=</span> <span class="s">&#34;dstAsProp&#34;</span>
+  <span class="k">val</span> <span class="nc">RANK_AS_PROP</span><span class="k">:</span> <span class="kt">String</span> <span class="o">=</span> <span class="s">&#34;rankAsProp&#34;</span>
+  <span class="k">val</span> <span class="nc">WRITE_MODE</span><span class="k">:</span> <span class="kt">String</span>   <span class="o">=</span> <span class="s">&#34;writeMode&#34;</span>
+
+  <span class="k">val</span> <span class="nc">DEFAULT_TIMEOUT</span><span class="k">:</span> <span class="kt">Int</span>            <span class="o">=</span> <span class="mi">3000</span>
+  <span class="k">val</span> <span class="nc">DEFAULT_CONNECTION_TIMEOUT</span><span class="k">:</span> <span class="kt">Int</span> <span class="o">=</span> <span class="mi">3000</span>
+  <span class="k">val</span> <span class="nc">DEFAULT_CONNECTION_RETRY</span><span class="k">:</span> <span class="kt">Int</span>   <span class="o">=</span> <span class="mi">3</span>
+  <span class="k">val</span> <span class="nc">DEFAULT_EXECUTION_RETRY</span><span class="k">:</span> <span class="kt">Int</span>    <span class="o">=</span> <span class="mi">3</span>
+  <span class="k">val</span> <span class="nc">DEFAULT_USER_NAME</span><span class="k">:</span> <span class="kt">String</span>       <span class="o">=</span> <span class="s">&#34;root&#34;</span>
+  <span class="k">val</span> <span class="nc">DEFAULT_PASSWD</span><span class="k">:</span> <span class="kt">String</span>          <span class="o">=</span> <span class="s">&#34;nebula&#34;</span>
+
+  <span class="k">val</span> <span class="nc">DEFAULT_ENABLE_GRAPH_SSL</span><span class="k">:</span> <span class="kt">Boolean</span>   <span class="o">=</span> <span class="kc">false</span>
+  <span class="k">val</span> <span class="nc">DEFAULT_ENABLE_META_SSL</span><span class="k">:</span> <span class="kt">Boolean</span>    <span class="o">=</span> <span class="kc">false</span>
+  <span class="k">val</span> <span class="nc">DEFAULT_ENABLE_STORAGE_SSL</span><span class="k">:</span> <span class="kt">Boolean</span> <span class="o">=</span> <span class="kc">false</span>
+
+  <span class="k">val</span> <span class="nc">DEFAULT_LIMIT</span><span class="k">:</span> <span class="kt">Int</span> <span class="o">=</span> <span class="mi">1000</span>
+
+  <span class="k">val</span> <span class="nc">DEFAULT_RATE_LIMIT</span><span class="k">:</span> <span class="kt">Long</span>    <span class="o">=</span> <span class="mi">1024L</span>
+  <span class="k">val</span> <span class="nc">DEFAULT_RATE_TIME_OUT</span><span class="k">:</span> <span class="kt">Long</span> <span class="o">=</span> <span class="mi">100</span>
+  <span class="k">val</span> <span class="nc">DEFAULT_POLICY</span><span class="k">:</span> <span class="kt">String</span>      <span class="o">=</span> <span class="kc">null</span>
+  <span class="k">val</span> <span class="nc">DEFAULT_BATCH</span><span class="k">:</span> <span class="kt">Int</span>          <span class="o">=</span> <span class="mi">1000</span>
+
+  <span class="k">val</span> <span class="nc">DEFAULT_WRITE_MODE</span> <span class="k">=</span> <span class="nc">WriteMode</span><span class="o">.</span><span class="nc">INSERT</span>
+
+  <span class="k">val</span> <span class="nc">EMPTY_STRING</span><span class="k">:</span> <span class="kt">String</span> <span class="o">=</span> <span class="s">&#34;&#34;</span>
+<span class="o">}</span>
+</code></pre></td></tr></table>
 </div>
 </div><ul>
 <li><a href="https://databricks.com/session/how-to-connect-spark-to-your-own-datasource" target="_blank" rel="noopener noreferrer">https://databricks.com/session/how-to-connect-spark-to-your-own-datasource</a></li>

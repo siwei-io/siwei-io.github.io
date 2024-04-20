@@ -1,7 +1,7 @@
 
 
 <!DOCTYPE html>
-<html lang="zh-cn">
+<html lang="">
 
 <head>
     <meta charset="utf-8">
@@ -10,20 +10,21 @@
     <title>Graph RAG: 知识图谱结合 LLM 的检索增强 - siwei.io</title><meta name="Description" content="Graph RAG， LLM 开发的图谱驱动新技术栈与上下文学习方式"><meta property="og:title" content="Graph RAG: 知识图谱结合 LLM 的检索增强" />
 <meta property="og:description" content="Graph RAG， LLM 开发的图谱驱动新技术栈与上下文学习方式" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://siwei.io/graph-rag/" /><meta property="og:image" content="https://siwei.io/graph-rag/featured-image.png" /><meta property="article:section" content="posts" />
+<meta property="og:url" content="https://siwei.io/graph-rag/" /><meta property="og:image" content="https://siwei.io/graph-rag/featured-image.png"/><meta property="article:section" content="posts" />
 <meta property="article:published_time" content="2023-08-15T11:10:34+08:00" />
 <meta property="article:modified_time" content="2023-09-07T17:07:48+08:00" /><meta property="og:site_name" content="siwei.io" />
-<meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:image" content="https://siwei.io/graph-rag/featured-image.png" /><meta name="twitter:title" content="Graph RAG: 知识图谱结合 LLM 的检索增强"/>
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://siwei.io/graph-rag/featured-image.png"/>
+<meta name="twitter:title" content="Graph RAG: 知识图谱结合 LLM 的检索增强"/>
 <meta name="twitter:description" content="Graph RAG， LLM 开发的图谱驱动新技术栈与上下文学习方式"/>
-      <meta name="twitter:site" content="@wey_gu"/>
 <meta name="application-name" content="DoIt">
 <meta name="apple-mobile-web-app-title" content="DoIt">
 
 <meta name="theme-color" content="#f8f8f8"><meta name="msapplication-TileColor" content="#da532c"><meta name="twitter:creator" content="@wey_gu" /><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
         <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
         <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="manifest" href="/site.webmanifest"><link rel="canonical" href="https://siwei.io/graph-rag/" /><link rel="prev" href="https://siwei.io/llm-text-to-nebulagraph-query/" />
-<link rel="stylesheet" href="/css/main.css"><link rel="stylesheet" href="/lib/normalize/normalize.min.css"><link rel="stylesheet" href="/css/color.css"><link rel="stylesheet" href="/css/style.min.css"><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/fontawesome-free/all.min.css">
+<link rel="stylesheet" href="/css/main.css"><link rel="stylesheet" href="/lib/normalize/normalize.min.css"><link rel="stylesheet" href="/css/color.css"><link rel="stylesheet" href="/css/style.scss"><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/fontawesome-free/all.min.css">
         <noscript><link rel="stylesheet" href="/lib/fontawesome-free/all.min.css"></noscript><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/animate/animate.min.css">
         <noscript><link rel="stylesheet" href="/lib/animate/animate.min.css"></noscript>
     
@@ -34,7 +35,7 @@
         "@context": "http://schema.org",
         "@type": "BlogPosting",
         "headline": "Graph RAG: 知识图谱结合 LLM 的检索增强",
-        "inLanguage": "zh-cn",
+        "inLanguage": "",
         "mainEntityOfPage": {
             "@type": "WebPage",
             "@id": "https://siwei.io/graph-rag/"
@@ -231,25 +232,25 @@
 </span><span class="lnt">18
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="c1"># 伪代码</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">_get_key_entities</span><span class="p">(</span><span class="n">query_str</span><span class="p">,</span> <span class="n">llm</span><span class="o">=</span><span class="kc">None</span> <span class="p">,</span><span class="n">with_llm</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-</span></span><span class="line"><span class="cl">    <span class="o">...</span>
-</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">_expand_synonyms</span><span class="p">(</span><span class="n">entities</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">_retrieve_subgraph_context</span><span class="p">(</span><span class="n">entities</span><span class="p">,</span> <span class="n">depth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="mi">30</span><span class="p">):</span>
-</span></span><span class="line"><span class="cl">    <span class="o">...</span>
-</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">nebulagraph_store</span><span class="o">.</span><span class="n">get_relations</span><span class="p">(</span><span class="n">entities</span><span class="p">,</span> <span class="n">depth</span><span class="p">,</span> <span class="n">limit</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">_synthesize_answer</span><span class="p">(</span><span class="n">query_str</span><span class="p">,</span> <span class="n">graph_rag_context</span><span class="p">,</span> <span class="n">llm</span><span class="p">):</span>
-</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">llm</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">PROMPT_SYNTHESIZE_AND_REFINE</span><span class="p">,</span> <span class="n">query_str</span><span class="p">,</span> <span class="n">graph_rag_context</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">simple_graph_rag</span><span class="p">(</span><span class="n">query_str</span><span class="p">,</span> <span class="n">nebulagraph_store</span><span class="p">,</span> <span class="n">llm</span><span class="p">):</span>
-</span></span><span class="line"><span class="cl">    <span class="n">entities</span> <span class="o">=</span> <span class="n">_get_key_entities</span><span class="p">(</span><span class="n">query_str</span><span class="p">,</span> <span class="n">llm</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="n">graph_rag_context</span> <span class="o">=</span> <span class="n">_retrieve_subgraph_context</span><span class="p">(</span><span class="n">entities</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">_synthesize_answer</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">        <span class="n">query_str</span><span class="p">,</span> <span class="n">graph_rag_context</span><span class="p">,</span> <span class="n">llm</span><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="c1"># 伪代码</span>
+
+<span class="k">def</span> <span class="nf">_get_key_entities</span><span class="p">(</span><span class="n">query_str</span><span class="p">,</span> <span class="n">llm</span><span class="o">=</span><span class="kc">None</span> <span class="p">,</span><span class="n">with_llm</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="o">...</span>
+    <span class="k">return</span> <span class="n">_expand_synonyms</span><span class="p">(</span><span class="n">entities</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">_retrieve_subgraph_context</span><span class="p">(</span><span class="n">entities</span><span class="p">,</span> <span class="n">depth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="mi">30</span><span class="p">):</span>
+    <span class="o">...</span>
+    <span class="k">return</span> <span class="n">nebulagraph_store</span><span class="o">.</span><span class="n">get_relations</span><span class="p">(</span><span class="n">entities</span><span class="p">,</span> <span class="n">depth</span><span class="p">,</span> <span class="n">limit</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">_synthesize_answer</span><span class="p">(</span><span class="n">query_str</span><span class="p">,</span> <span class="n">graph_rag_context</span><span class="p">,</span> <span class="n">llm</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">llm</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">PROMPT_SYNTHESIZE_AND_REFINE</span><span class="p">,</span> <span class="n">query_str</span><span class="p">,</span> <span class="n">graph_rag_context</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">simple_graph_rag</span><span class="p">(</span><span class="n">query_str</span><span class="p">,</span> <span class="n">nebulagraph_store</span><span class="p">,</span> <span class="n">llm</span><span class="p">):</span>
+    <span class="n">entities</span> <span class="o">=</span> <span class="n">_get_key_entities</span><span class="p">(</span><span class="n">query_str</span><span class="p">,</span> <span class="n">llm</span><span class="p">)</span>
+    <span class="n">graph_rag_context</span> <span class="o">=</span> <span class="n">_retrieve_subgraph_context</span><span class="p">(</span><span class="n">entities</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_synthesize_answer</span><span class="p">(</span>
+        <span class="n">query_str</span><span class="p">,</span> <span class="n">graph_rag_context</span><span class="p">,</span> <span class="n">llm</span><span class="p">)</span>
+</code></pre></td></tr></table>
 </div>
 </div><p>然而，有了像 Llama Index 这样方便的 LLM 编排工具，开发者可以专注于 LLM 的编排逻辑和 pipeline 设计，而不用亲自处理很多细节的抽象与实现。</p>
 <p>所以，用 Llama Index，我们可以轻松搭建 Graph RAG，甚至整合更复杂的 RAG 逻辑，比如 <a href="https://gpt-index.readthedocs.io/en/latest/examples/index_structs/knowledge_graph/KnowledgeGraphIndex_vs_VectorStoreIndex_vs_CustomIndex_combined.html" target="_blank" rel="noopener noreferrer">Graph+Vector RAG</a>。</p>
@@ -289,27 +290,27 @@
 </span><span class="lnt">20
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">graph_store = NebulaGraphStore(
-</span></span><span class="line"><span class="cl">    space_name=space_name,
-</span></span><span class="line"><span class="cl">    edge_types=edge_types,
-</span></span><span class="line"><span class="cl">    rel_prop_names=rel_prop_names,
-</span></span><span class="line"><span class="cl">    tags=tags,
-</span></span><span class="line"><span class="cl">)
-</span></span><span class="line"><span class="cl">storage_context = StorageContext.from_defaults(graph_store=graph_store)
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"># Build KG
-</span></span><span class="line"><span class="cl">kg_index = KnowledgeGraphIndex.from_documents(
-</span></span><span class="line"><span class="cl">    documents,
-</span></span><span class="line"><span class="cl">    storage_context=storage_context,
-</span></span><span class="line"><span class="cl">    max_triplets_per_chunk=10,
-</span></span><span class="line"><span class="cl">    space_name=space_name,
-</span></span><span class="line"><span class="cl">    edge_types=edge_types,
-</span></span><span class="line"><span class="cl">    rel_prop_names=rel_prop_names,
-</span></span><span class="line"><span class="cl">    tags=tags,
-</span></span><span class="line"><span class="cl">)
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">kg_query_engine = kg_index.as_query_engine()
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">graph_store = NebulaGraphStore(
+    space_name=space_name,
+    edge_types=edge_types,
+    rel_prop_names=rel_prop_names,
+    tags=tags,
+)
+storage_context = StorageContext.from_defaults(graph_store=graph_store)
+
+# Build KG
+kg_index = KnowledgeGraphIndex.from_documents(
+    documents,
+    storage_context=storage_context,
+    max_triplets_per_chunk=10,
+    space_name=space_name,
+    edge_types=edge_types,
+    rel_prop_names=rel_prop_names,
+    tags=tags,
+)
+
+kg_query_engine = kg_index.as_query_engine()
+</code></pre></td></tr></table>
 </div>
 </div><ul>
 <li><code>KnowledgeGraphRAGQueryEngine</code> 则可以在任何已经存在的知识图谱上进行 Graph RAG，不过我还没有完成这个 <a href="https://github.com/jerryjliu/llama_index/pull/7204" target="_blank" rel="noopener noreferrer">PR</a>。</li>
@@ -329,18 +330,18 @@
 </span><span class="lnt">11
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">graph_store = NebulaGraphStore(
-</span></span><span class="line"><span class="cl">    space_name=space_name,
-</span></span><span class="line"><span class="cl">    edge_types=edge_types,
-</span></span><span class="line"><span class="cl">    rel_prop_names=rel_prop_names,
-</span></span><span class="line"><span class="cl">    tags=tags,
-</span></span><span class="line"><span class="cl">)
-</span></span><span class="line"><span class="cl">storage_context = StorageContext.from_defaults(graph_store=graph_store)
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">graph_rag_query_engine = KnowledgeGraphRAGQueryEngine(
-</span></span><span class="line"><span class="cl">    storage_context=storage_context,
-</span></span><span class="line"><span class="cl">)
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">graph_store = NebulaGraphStore(
+    space_name=space_name,
+    edge_types=edge_types,
+    rel_prop_names=rel_prop_names,
+    tags=tags,
+)
+storage_context = StorageContext.from_defaults(graph_store=graph_store)
+
+graph_rag_query_engine = KnowledgeGraphRAGQueryEngine(
+    storage_context=storage_context,
+)
+</code></pre></td></tr></table>
 </div>
 </div><p>最后，我做了<a href="https://www.siwei.io/demos/graph-rag/" target="_blank" rel="noopener noreferrer">一个 streamlit 的 demo</a>来比较 Graph RAG 与 Vector RAG，从中我们可以看到 Graph RAG 并没有取代 Embedding、向量搜索的方法，而是增强了/补充了它的不足。</p>
 <iframe width="800" height="857" src="https://github.com/siwei-io/talks/assets/1651790/102d00bc-6146-4856-a81f-f953c7254b29"> </iframe>
@@ -444,7 +445,7 @@
     </div>
 
     <div class="post-info-more">
-        <section class="post-tags"><i class="fas fa-tags fa-fw"></i>&nbsp;<a href="/tags/nebula-graph/">Nebula Graph</a>,&nbsp;<a href="/tags/llm/">LLM</a>,&nbsp;<a href="/tags/llama-index/">Llama-Index</a>,&nbsp;<a href="/tags/in-context-learning/">In-Context Learning</a>,&nbsp;<a href="/tags/%E5%A4%A7%E8%AF%AD%E8%A8%80%E6%A8%A1%E5%9E%8B/">大语言模型</a>,&nbsp;<a href="/tags/rag/">RAG</a>,&nbsp;<a href="/tags/graph-rag/">Graph RAG</a></section>
+        <section class="post-tags"><i class="fas fa-tags fa-fw"></i>&nbsp;<a href="/tags/nebula-graph/">Nebula Graph</a>,&nbsp;<a href="/tags/llm/">LLM</a>,&nbsp;<a href="/tags/llama-index/">Llama-Index</a>,&nbsp;<a href="/tags/in-context-learning/">In-context Learning</a>,&nbsp;<a href="/tags/%E5%A4%A7%E8%AF%AD%E8%A8%80%E6%A8%A1%E5%9E%8B/">大语言模型</a>,&nbsp;<a href="/tags/rag/">RAG</a>,&nbsp;<a href="/tags/graph-rag/">Graph RAG</a></section>
         <section>
             <span><a href="javascript:void(0);" onclick="window.history.back();">返回</a></span>&nbsp;|&nbsp;<span><a href="/">主页</a></span>
         </section>
@@ -457,7 +458,7 @@
             </noscript></div></article></div>
         </main><footer class="footer">
         <div class="footer-container"><div class="footer-line">
-                    由 <a href="https://gohugo.io/" target="_blank" rel="noopener noreferrer" title="Hugo 0.124.1">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreferrer" title="DoIt 0.4.0"><i class="far fa-edit fa-fw"></i> DoIt</a>
+                    由 <a href="https://gohugo.io/" target="_blank" rel="noopener noreferrer" title="Hugo 0.91.2">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreferrer" title="DoIt 0.4.0"><i class="far fa-edit fa-fw"></i> DoIt</a>
                 </div><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2018 - 2024</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="https://siwei.io" target="_blank" rel="noopener noreferrer">Wey Gu</a></span>&nbsp;|&nbsp;<span class="license"><a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">CC BY-NC 4.0</a></span></div>
             <div class="footer-line"></div>
             <div class="footer-line">

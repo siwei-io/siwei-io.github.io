@@ -3,7 +3,7 @@
         <title>图计算 - 标签 - siwei.io</title>
         <link>https://siwei.io/tags/%E5%9B%BE%E8%AE%A1%E7%AE%97/</link>
         <description>图计算 - 标签 - siwei.io</description>
-        <generator>Hugo -- gohugo.io</generator><language>zh-cn</language><managingEditor>weyl.gu@gmail.com (Wey Gu)</managingEditor>
+        <generator>Hugo -- gohugo.io</generator><managingEditor>weyl.gu@gmail.com (Wey Gu)</managingEditor>
             <webMaster>weyl.gu@gmail.com (Wey Gu)</webMaster><lastBuildDate>Tue, 02 May 2023 16:37:28 &#43;0800</lastBuildDate><atom:link href="https://siwei.io/tags/%E5%9B%BE%E8%AE%A1%E7%AE%97/" rel="self" type="application/rss+xml" /><item>
     <title>Nebulagraph Artificial Intelligence Suite</title>
     <link>https://siwei.io/nebulagraph-ai-suite/</link>
@@ -49,16 +49,16 @@
 </span><span class="lnt">9
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">ng_ai</span> <span class="kn">import</span> <span class="n">NebulaReader</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="c1"># read data with spark engine, scan mode</span>
-</span></span><span class="line"><span class="cl"><span class="n">reader</span> <span class="o">=</span> <span class="n">NebulaReader</span><span class="p">(</span><span class="n">engine</span><span class="o">=</span><span class="s2">&#34;spark&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="n">reader</span><span class="o">.</span><span class="n">scan</span><span class="p">(</span><span class="n">edge</span><span class="o">=</span><span class="s2">&#34;follow&#34;</span><span class="p">,</span> <span class="n">props</span><span class="o">=</span><span class="s2">&#34;degree&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="n">df</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="c1"># run pagerank algorithm</span>
-</span></span><span class="line"><span class="cl"><span class="n">pr_result</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">algo</span><span class="o">.</span><span class="n">pagerank</span><span class="p">(</span><span class="n">reset_prob</span><span class="o">=</span><span class="mf">0.15</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">ng_ai</span> <span class="kn">import</span> <span class="n">NebulaReader</span>
+
+<span class="c1"># read data with spark engine, scan mode</span>
+<span class="n">reader</span> <span class="o">=</span> <span class="n">NebulaReader</span><span class="p">(</span><span class="n">engine</span><span class="o">=</span><span class="s2">&#34;spark&#34;</span><span class="p">)</span>
+<span class="n">reader</span><span class="o">.</span><span class="n">scan</span><span class="p">(</span><span class="n">edge</span><span class="o">=</span><span class="s2">&#34;follow&#34;</span><span class="p">,</span> <span class="n">props</span><span class="o">=</span><span class="s2">&#34;degree&#34;</span><span class="p">)</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+
+<span class="c1"># run pagerank algorithm</span>
+<span class="n">pr_result</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">algo</span><span class="o">.</span><span class="n">pagerank</span><span class="p">(</span><span class="n">reset_prob</span><span class="o">=</span><span class="mf">0.15</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+</code></pre></td></tr></table>
 </div>
 </div><h3 id="写回算法结果到-nebulagraph" class="headerLink">
     <a href="#%e5%86%99%e5%9b%9e%e7%ae%97%e6%b3%95%e7%bb%93%e6%9e%9c%e5%88%b0-nebulagraph" class="header-mark"></a>2.2 写回算法结果到 NebulaGraph</h3><p>假设我们要跑一个 label propagation 算法，然后把结果写回 NebulaGraph，我们可以这么做：</p>
@@ -70,19 +70,21 @@
 </span><span class="lnt">3
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">CREATE</span><span class="w"> </span><span class="n">TAG</span><span class="w"> </span><span class="k">IF</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">EXISTS</span><span class="w"> </span><span class="n">label_propagation</span><span class="w"> </span><span class="p">(</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">cluster_id</span><span class="w"> </span><span class="n">string</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">);</span><span class="w">
-</span></span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="k">CREATE</span><span class="w"> </span><span class="n">TAG</span><span class="w"> </span><span class="k">IF</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">EXISTS</span><span class="w"> </span><span class="n">label_propagation</span><span class="w"> </span><span class="p">(</span><span class="w">
+</span><span class="w">    </span><span class="n">cluster_id</span><span class="w"> </span><span class="n">string</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w">
+</span><span class="w"></span><span class="p">);</span><span class="w">
+</span></code></pre></td></tr></table>
 </div>
 </div><p>我们先执行算法：</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">df_result</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">algo</span><span class="o">.</span><span class="n">label_propagation</span><span class="p">()</span>
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">df_result</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">algo</span><span class="o">.</span><span class="n">label_propagation</span><span class="p">()</span>
+
+</code></pre></td></tr></table>
 </div>
 </div><p>再看一下结果的 schema：</p>
 <div class="highlight"><div class="chroma">
@@ -94,12 +96,12 @@
 </span><span class="lnt">5
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">df_result</span><span class="o">.</span><span class="n">printSchema</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">root</span>
-</span></span><span class="line"><span class="cl"> <span class="o">|--</span> <span class="n">_id</span><span class="p">:</span> <span class="n">string</span> <span class="p">(</span><span class="n">nullable</span> <span class="o">=</span> <span class="n">false</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl"> <span class="o">|--</span> <span class="n">lpa</span><span class="p">:</span> <span class="n">string</span> <span class="p">(</span><span class="n">nullable</span> <span class="o">=</span> <span class="n">false</span><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">df_result</span><span class="o">.</span><span class="n">printSchema</span><span class="p">()</span>
+
+<span class="n">root</span>
+ <span class="o">|--</span> <span class="n">_id</span><span class="p">:</span> <span class="n">string</span> <span class="p">(</span><span class="n">nullable</span> <span class="o">=</span> <span class="n">false</span><span class="p">)</span>
+ <span class="o">|--</span> <span class="n">lpa</span><span class="p">:</span> <span class="n">string</span> <span class="p">(</span><span class="n">nullable</span> <span class="o">=</span> <span class="n">false</span><span class="p">)</span>
+</code></pre></td></tr></table>
 </div>
 </div><p>然后，代码里这么写，我们把 lpa 的结果写回 NebulaGraph 中的 cluster_id 字段里（<code>{&quot;lpa&quot;: &quot;cluster_id&quot;}</code>）：</p>
 <div class="highlight"><div class="chroma">
@@ -124,29 +126,31 @@
 </span><span class="lnt">18
 </span><span class="lnt">19
 </span><span class="lnt">20
+</span><span class="lnt">21
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">ng_ai</span> <span class="kn">import</span> <span class="n">NebulaWriter</span>
-</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">ng_ai.config</span> <span class="kn">import</span> <span class="n">NebulaGraphConfig</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">config</span> <span class="o">=</span> <span class="n">NebulaGraphConfig</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl"><span class="n">writer</span> <span class="o">=</span> <span class="n">NebulaWriter</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="n">data</span><span class="o">=</span><span class="n">df_result</span><span class="p">,</span> <span class="n">sink</span><span class="o">=</span><span class="s2">&#34;nebulagraph_vertex&#34;</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="s2">&#34;spark&#34;</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="c1"># map column louvain into property cluster_id</span>
-</span></span><span class="line"><span class="cl"><span class="n">properties</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&#34;lpa&#34;</span><span class="p">:</span> <span class="s2">&#34;cluster_id&#34;</span><span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">writer</span><span class="o">.</span><span class="n">set_options</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="n">tag</span><span class="o">=</span><span class="s2">&#34;label_propagation&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="n">vid_field</span><span class="o">=</span><span class="s2">&#34;_id&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="n">properties</span><span class="o">=</span><span class="n">properties</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="n">batch_size</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="n">write_mode</span><span class="o">=</span><span class="s2">&#34;insert&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="c1"># write back to NebulaGraph</span>
-</span></span><span class="line"><span class="cl"><span class="n">writer</span><span class="o">.</span><span class="n">write</span><span class="p">()</span>
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">ng_ai</span> <span class="kn">import</span> <span class="n">NebulaWriter</span>
+<span class="kn">from</span> <span class="nn">ng_ai.config</span> <span class="kn">import</span> <span class="n">NebulaGraphConfig</span>
+
+<span class="n">config</span> <span class="o">=</span> <span class="n">NebulaGraphConfig</span><span class="p">()</span>
+<span class="n">writer</span> <span class="o">=</span> <span class="n">NebulaWriter</span><span class="p">(</span>
+    <span class="n">data</span><span class="o">=</span><span class="n">df_result</span><span class="p">,</span> <span class="n">sink</span><span class="o">=</span><span class="s2">&#34;nebulagraph_vertex&#34;</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="s2">&#34;spark&#34;</span>
+<span class="p">)</span>
+
+<span class="c1"># map column louvain into property cluster_id</span>
+<span class="n">properties</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&#34;lpa&#34;</span><span class="p">:</span> <span class="s2">&#34;cluster_id&#34;</span><span class="p">}</span>
+
+<span class="n">writer</span><span class="o">.</span><span class="n">set_options</span><span class="p">(</span>
+    <span class="n">tag</span><span class="o">=</span><span class="s2">&#34;label_propagation&#34;</span><span class="p">,</span>
+    <span class="n">vid_field</span><span class="o">=</span><span class="s2">&#34;_id&#34;</span><span class="p">,</span>
+    <span class="n">properties</span><span class="o">=</span><span class="n">properties</span><span class="p">,</span>
+    <span class="n">batch_size</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span>
+    <span class="n">write_mode</span><span class="o">=</span><span class="s2">&#34;insert&#34;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="c1"># write back to NebulaGraph</span>
+<span class="n">writer</span><span class="o">.</span><span class="n">write</span><span class="p">()</span>
+
+</code></pre></td></tr></table>
 </div>
 </div><p>最后，我们可以验证一下结果啦：</p>
 <div class="highlight"><div class="chroma">
@@ -156,10 +160,10 @@
 </span><span class="lnt">3
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">USE basketballplayer;
-</span></span><span class="line"><span class="cl">MATCH (v:label_propagation)
-</span></span><span class="line"><span class="cl">RETURN id(v), v.label_propagation.cluster_id LIMIT 3;
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">USE basketballplayer;
+MATCH (v:label_propagation)
+RETURN id(v), v.label_propagation.cluster_id LIMIT 3;
+</code></pre></td></tr></table>
 </div>
 </div><p>结果：</p>
 <div class="highlight"><div class="chroma">
@@ -173,14 +177,14 @@
 </span><span class="lnt">7
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-SQL" data-lang="SQL"><span class="line"><span class="cl"><span class="o">+</span><span class="c1">-------------+--------------------------------+
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="o">|</span><span class="w"> </span><span class="n">id</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="w">       </span><span class="o">|</span><span class="w"> </span><span class="n">v</span><span class="p">.</span><span class="n">label_propagation</span><span class="p">.</span><span class="n">cluster_id</span><span class="w"> </span><span class="o">|</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">+</span><span class="c1">-------------+--------------------------------+
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;player103&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;player101&#34;</span><span class="w">                    </span><span class="o">|</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;player113&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;player129&#34;</span><span class="w">                    </span><span class="o">|</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;player121&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;player129&#34;</span><span class="w">                    </span><span class="o">|</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">+</span><span class="c1">-------------+--------------------------------+
-</span></span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-SQL" data-lang="SQL"><span class="o">+</span><span class="c1">-------------+--------------------------------+
+</span><span class="c1"></span><span class="o">|</span><span class="w"> </span><span class="n">id</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="w">       </span><span class="o">|</span><span class="w"> </span><span class="n">v</span><span class="p">.</span><span class="n">label_propagation</span><span class="p">.</span><span class="n">cluster_id</span><span class="w"> </span><span class="o">|</span><span class="w">
+</span><span class="w"></span><span class="o">+</span><span class="c1">-------------+--------------------------------+
+</span><span class="c1"></span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;player103&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;player101&#34;</span><span class="w">                    </span><span class="o">|</span><span class="w">
+</span><span class="w"></span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;player113&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;player129&#34;</span><span class="w">                    </span><span class="o">|</span><span class="w">
+</span><span class="w"></span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;player121&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;player129&#34;</span><span class="w">                    </span><span class="o">|</span><span class="w">
+</span><span class="w"></span><span class="o">+</span><span class="c1">-------------+--------------------------------+
+</span></code></pre></td></tr></table>
 </div>
 </div><p>更详细的例子参考：<a href="https://github.com/wey-gu/nebulagraph-ai/blob/main/examples/spark_engine.ipynb" target="_blank" rel="noopener noreferrer">ng_ai/examples</a></p>
 <h4 id="通过-ngql-调用算法" class="headerLink">
@@ -195,13 +199,13 @@
 </span><span class="lnt">6
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="c1">-- Prepare the write schema
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">USE</span><span class="w"> </span><span class="n">basketballplayer</span><span class="p">;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">CREATE</span><span class="w"> </span><span class="n">TAG</span><span class="w"> </span><span class="k">IF</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">EXISTS</span><span class="w"> </span><span class="n">pagerank</span><span class="p">(</span><span class="n">pagerank</span><span class="w"> </span><span class="n">string</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">:</span><span class="n">sleep</span><span class="w"> </span><span class="mi">20</span><span class="p">;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">-- Call with ng_ai()
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">RETURN</span><span class="w"> </span><span class="n">ng_ai</span><span class="p">(</span><span class="s2">&#34;pagerank&#34;</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="s2">&#34;follow&#34;</span><span class="p">],</span><span class="w"> </span><span class="p">[</span><span class="s2">&#34;degree&#34;</span><span class="p">],</span><span class="w"> </span><span class="s2">&#34;spark&#34;</span><span class="p">,</span><span class="w"> </span><span class="err">{</span><span class="k">space</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;basketballplayer&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">max_iter</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="err">}</span><span class="p">,</span><span class="w"> </span><span class="err">{</span><span class="n">write_mode</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;insert&#34;</span><span class="err">}</span><span class="p">)</span><span class="w">
-</span></span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="c1">-- Prepare the write schema
+</span><span class="c1"></span><span class="n">USE</span><span class="w"> </span><span class="n">basketballplayer</span><span class="p">;</span><span class="w">
+</span><span class="w"></span><span class="k">CREATE</span><span class="w"> </span><span class="n">TAG</span><span class="w"> </span><span class="k">IF</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">EXISTS</span><span class="w"> </span><span class="n">pagerank</span><span class="p">(</span><span class="n">pagerank</span><span class="w"> </span><span class="n">string</span><span class="p">);</span><span class="w">
+</span><span class="w"></span><span class="p">:</span><span class="n">sleep</span><span class="w"> </span><span class="mi">20</span><span class="p">;</span><span class="w">
+</span><span class="w"></span><span class="c1">-- Call with ng_ai()
+</span><span class="c1"></span><span class="k">RETURN</span><span class="w"> </span><span class="n">ng_ai</span><span class="p">(</span><span class="s2">&#34;pagerank&#34;</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="s2">&#34;follow&#34;</span><span class="p">],</span><span class="w"> </span><span class="p">[</span><span class="s2">&#34;degree&#34;</span><span class="p">],</span><span class="w"> </span><span class="s2">&#34;spark&#34;</span><span class="p">,</span><span class="w"> </span><span class="err">{</span><span class="k">space</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;basketballplayer&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">max_iter</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="err">}</span><span class="p">,</span><span class="w"> </span><span class="err">{</span><span class="n">write_mode</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;insert&#34;</span><span class="err">}</span><span class="p">)</span><span class="w">
+</span></code></pre></td></tr></table>
 </div>
 </div><p>更详细的例子参考：<a href="https://github.com/wey-gu/nebulagraph-ai/blob/main/examples/ng_ai_from_ngql_udf.ipynb" target="_blank" rel="noopener noreferrer">ng_ai/examples</a></p>
 <h4 id="单机运行算法" class="headerLink">
@@ -225,21 +229,21 @@
 </span><span class="lnt">14
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">ng_ai</span> <span class="kn">import</span> <span class="n">NebulaReader</span>
-</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">ng_ai.config</span> <span class="kn">import</span> <span class="n">NebulaGraphConfig</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="c1"># read data with nebula/networkx engine, query mode</span>
-</span></span><span class="line"><span class="cl"><span class="n">config_dict</span> <span class="o">=</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">    <span class="s2">&#34;graphd_hosts&#34;</span><span class="p">:</span> <span class="s2">&#34;graphd:9669&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="s2">&#34;user&#34;</span><span class="p">:</span> <span class="s2">&#34;root&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="s2">&#34;password&#34;</span><span class="p">:</span> <span class="s2">&#34;nebula&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="s2">&#34;space&#34;</span><span class="p">:</span> <span class="s2">&#34;basketballplayer&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span><span class="line"><span class="cl"><span class="n">config</span> <span class="o">=</span> <span class="n">NebulaGraphConfig</span><span class="p">(</span><span class="o">**</span><span class="n">config_dict</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="n">reader</span> <span class="o">=</span> <span class="n">NebulaReader</span><span class="p">(</span><span class="n">engine</span><span class="o">=</span><span class="s2">&#34;nebula&#34;</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="n">reader</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">edges</span><span class="o">=</span><span class="p">[</span><span class="s2">&#34;follow&#34;</span><span class="p">,</span> <span class="s2">&#34;serve&#34;</span><span class="p">],</span> <span class="n">props</span><span class="o">=</span><span class="p">[[</span><span class="s2">&#34;degree&#34;</span><span class="p">],</span> <span class="p">[]])</span>
-</span></span><span class="line"><span class="cl"><span class="n">g</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">ng_ai</span> <span class="kn">import</span> <span class="n">NebulaReader</span>
+<span class="kn">from</span> <span class="nn">ng_ai.config</span> <span class="kn">import</span> <span class="n">NebulaGraphConfig</span>
+
+<span class="c1"># read data with nebula/networkx engine, query mode</span>
+<span class="n">config_dict</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&#34;graphd_hosts&#34;</span><span class="p">:</span> <span class="s2">&#34;graphd:9669&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;user&#34;</span><span class="p">:</span> <span class="s2">&#34;root&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;password&#34;</span><span class="p">:</span> <span class="s2">&#34;nebula&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;space&#34;</span><span class="p">:</span> <span class="s2">&#34;basketballplayer&#34;</span><span class="p">,</span>
+<span class="p">}</span>
+<span class="n">config</span> <span class="o">=</span> <span class="n">NebulaGraphConfig</span><span class="p">(</span><span class="o">**</span><span class="n">config_dict</span><span class="p">)</span>
+<span class="n">reader</span> <span class="o">=</span> <span class="n">NebulaReader</span><span class="p">(</span><span class="n">engine</span><span class="o">=</span><span class="s2">&#34;nebula&#34;</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
+<span class="n">reader</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">edges</span><span class="o">=</span><span class="p">[</span><span class="s2">&#34;follow&#34;</span><span class="p">,</span> <span class="s2">&#34;serve&#34;</span><span class="p">],</span> <span class="n">props</span><span class="o">=</span><span class="p">[[</span><span class="s2">&#34;degree&#34;</span><span class="p">],</span> <span class="p">[]])</span>
+<span class="n">g</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+</code></pre></td></tr></table>
 </div>
 </div><p>查看、画图：</p>
 <div class="highlight"><div class="chroma">
@@ -248,9 +252,9 @@
 </span><span class="lnt">2
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">g</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="n">g</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">g</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">g</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+</code></pre></td></tr></table>
 </div>
 </div><p>运行算法：</p>
 <div class="highlight"><div class="chroma">
@@ -258,8 +262,8 @@
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">pr_result</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">algo</span><span class="o">.</span><span class="n">pagerank</span><span class="p">(</span><span class="n">reset_prob</span><span class="o">=</span><span class="mf">0.15</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">pr_result</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">algo</span><span class="o">.</span><span class="n">pagerank</span><span class="p">(</span><span class="n">reset_prob</span><span class="o">=</span><span class="mf">0.15</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+</code></pre></td></tr></table>
 </div>
 </div><p>写回 NebulaGraph：</p>
 <div class="highlight"><div class="chroma">
@@ -286,27 +290,27 @@
 </span><span class="lnt">20
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">ng_ai</span> <span class="kn">import</span> <span class="n">NebulaWriter</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">writer</span> <span class="o">=</span> <span class="n">NebulaWriter</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="n">data</span><span class="o">=</span><span class="n">pr_result</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="n">sink</span><span class="o">=</span><span class="s2">&#34;nebulagraph_vertex&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="n">engine</span><span class="o">=</span><span class="s2">&#34;nebula&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="c1"># properties to write</span>
-</span></span><span class="line"><span class="cl"><span class="n">properties</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&#34;pagerank&#34;</span><span class="p">]</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">writer</span><span class="o">.</span><span class="n">set_options</span><span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="n">tag</span><span class="o">=</span><span class="s2">&#34;pagerank&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="n">properties</span><span class="o">=</span><span class="n">properties</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="n">batch_size</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">    <span class="n">write_mode</span><span class="o">=</span><span class="s2">&#34;insert&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="c1"># write back to NebulaGraph</span>
-</span></span><span class="line"><span class="cl"><span class="n">writer</span><span class="o">.</span><span class="n">write</span><span class="p">()</span>
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">ng_ai</span> <span class="kn">import</span> <span class="n">NebulaWriter</span>
+
+<span class="n">writer</span> <span class="o">=</span> <span class="n">NebulaWriter</span><span class="p">(</span>
+    <span class="n">data</span><span class="o">=</span><span class="n">pr_result</span><span class="p">,</span>
+    <span class="n">sink</span><span class="o">=</span><span class="s2">&#34;nebulagraph_vertex&#34;</span><span class="p">,</span>
+    <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">,</span>
+    <span class="n">engine</span><span class="o">=</span><span class="s2">&#34;nebula&#34;</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># properties to write</span>
+<span class="n">properties</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&#34;pagerank&#34;</span><span class="p">]</span>
+
+<span class="n">writer</span><span class="o">.</span><span class="n">set_options</span><span class="p">(</span>
+    <span class="n">tag</span><span class="o">=</span><span class="s2">&#34;pagerank&#34;</span><span class="p">,</span>
+    <span class="n">properties</span><span class="o">=</span><span class="n">properties</span><span class="p">,</span>
+    <span class="n">batch_size</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span>
+    <span class="n">write_mode</span><span class="o">=</span><span class="s2">&#34;insert&#34;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="c1"># write back to NebulaGraph</span>
+<span class="n">writer</span><span class="o">.</span><span class="n">write</span><span class="p">()</span>
+</code></pre></td></tr></table>
 </div>
 </div><p>其他算法：</p>
 <div class="highlight"><div class="chroma">
@@ -321,15 +325,15 @@
 </span><span class="lnt">8
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="c1"># get all algorithms</span>
-</span></span><span class="line"><span class="cl"><span class="n">g</span><span class="o">.</span><span class="n">algo</span><span class="o">.</span><span class="n">get_all_algo</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="c1"># get help of each algo</span>
-</span></span><span class="line"><span class="cl"><span class="n">help</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">algo</span><span class="o">.</span><span class="n">node2vec</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="c1"># call the algo</span>
-</span></span><span class="line"><span class="cl"><span class="n">g</span><span class="o">.</span><span class="n">algo</span><span class="o">.</span><span class="n">node2vec</span><span class="p">()</span>
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="c1"># get all algorithms</span>
+<span class="n">g</span><span class="o">.</span><span class="n">algo</span><span class="o">.</span><span class="n">get_all_algo</span><span class="p">()</span>
+
+<span class="c1"># get help of each algo</span>
+<span class="n">help</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">algo</span><span class="o">.</span><span class="n">node2vec</span><span class="p">)</span>
+
+<span class="c1"># call the algo</span>
+<span class="n">g</span><span class="o">.</span><span class="n">algo</span><span class="o">.</span><span class="n">node2vec</span><span class="p">()</span>
+</code></pre></td></tr></table>
 </div>
 </div><p>更详细的例子参考：<a href="https://github.com/wey-gu/nebulagraph-ai/blob/main/examples/networkx_engine.ipynb" target="_blank" rel="noopener noreferrer">ng_ai/examples</a></p>
 <h4 id="可视化图算法结果" class="headerLink">
@@ -341,9 +345,9 @@
 </span><span class="lnt">2
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">pr_result</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">algo</span><span class="o">.</span><span class="n">pagerank</span><span class="p">(</span><span class="n">reset_prob</span><span class="o">=</span><span class="mf">0.15</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="n">louvain_result</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">algo</span><span class="o">.</span><span class="n">louvain</span><span class="p">()</span>
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">pr_result</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">algo</span><span class="o">.</span><span class="n">pagerank</span><span class="p">(</span><span class="n">reset_prob</span><span class="o">=</span><span class="mf">0.15</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">louvain_result</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">algo</span><span class="o">.</span><span class="n">louvain</span><span class="p">()</span>
+</code></pre></td></tr></table>
 </div>
 </div><p>这次我们手写一个好看一点的画图函数：</p>
 <div class="highlight"><div class="chroma">
@@ -396,53 +400,53 @@
 </span><span class="lnt">46
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">matplotlib.colors</span> <span class="kn">import</span> <span class="n">ListedColormap</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">draw_graph_louvain_pr</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">pr_result</span><span class="p">,</span> <span class="n">louvain_result</span><span class="p">,</span> <span class="n">colors</span><span class="o">=</span><span class="p">[</span><span class="s2">&#34;#1984c5&#34;</span><span class="p">,</span> <span class="s2">&#34;#22a7f0&#34;</span><span class="p">,</span> <span class="s2">&#34;#63bff0&#34;</span><span class="p">,</span> <span class="s2">&#34;#a7d5ed&#34;</span><span class="p">,</span> <span class="s2">&#34;#e2e2e2&#34;</span><span class="p">,</span> <span class="s2">&#34;#e1a692&#34;</span><span class="p">,</span> <span class="s2">&#34;#de6e56&#34;</span><span class="p">,</span> <span class="s2">&#34;#e14b31&#34;</span><span class="p">,</span> <span class="s2">&#34;#c23728&#34;</span><span class="p">]):</span>
-</span></span><span class="line"><span class="cl">    <span class="c1"># Define positions for the nodes</span>
-</span></span><span class="line"><span class="cl">    <span class="n">pos</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">spring_layout</span><span class="p">(</span><span class="n">G</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="c1"># Create a figure and set the axis limits</span>
-</span></span><span class="line"><span class="cl">    <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">35</span><span class="p">,</span> <span class="mi">15</span><span class="p">))</span>
-</span></span><span class="line"><span class="cl">    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="c1"># Create a colormap from the colors list</span>
-</span></span><span class="line"><span class="cl">    <span class="n">cmap</span> <span class="o">=</span> <span class="n">ListedColormap</span><span class="p">(</span><span class="n">colors</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="c1"># Draw the nodes and edges of the graph</span>
-</span></span><span class="line"><span class="cl">    <span class="n">node_colors</span> <span class="o">=</span> <span class="p">[</span><span class="n">louvain_result</span><span class="p">[</span><span class="n">node</span><span class="p">]</span> <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">()]</span>
-</span></span><span class="line"><span class="cl">    <span class="n">node_sizes</span> <span class="o">=</span> <span class="p">[</span><span class="mi">70000</span> <span class="o">*</span> <span class="n">pr_result</span><span class="p">[</span><span class="n">node</span><span class="p">]</span> <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">()]</span>
-</span></span><span class="line"><span class="cl">    <span class="n">nx</span><span class="o">.</span><span class="n">draw_networkx_nodes</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="n">pos</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">node_color</span><span class="o">=</span><span class="n">node_colors</span><span class="p">,</span> <span class="n">node_size</span><span class="o">=</span><span class="n">node_sizes</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="n">louvain_result</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="n">nx</span><span class="o">.</span><span class="n">draw_networkx_edges</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="n">pos</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">edge_color</span><span class="o">=</span><span class="s1">&#39;gray&#39;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">connectionstyle</span><span class="o">=</span><span class="s1">&#39;arc3, rad=0.2&#39;</span><span class="p">,</span> <span class="n">arrowstyle</span><span class="o">=</span><span class="s1">&#39;-|&gt;&#39;</span><span class="p">,</span> <span class="n">arrows</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="c1"># Extract edge labels as a dictionary</span>
-</span></span><span class="line"><span class="cl">    <span class="n">edge_labels</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">get_edge_attributes</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="s1">&#39;label&#39;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="c1"># Add edge labels to the graph</span>
-</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="n">edge</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">edge_labels</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-</span></span><span class="line"><span class="cl">        <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">((</span><span class="n">pos</span><span class="p">[</span><span class="n">edge</span><span class="p">[</span><span class="mi">0</span><span class="p">]][</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">pos</span><span class="p">[</span><span class="n">edge</span><span class="p">[</span><span class="mi">1</span><span class="p">]][</span><span class="mi">0</span><span class="p">])</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">                <span class="p">(</span><span class="n">pos</span><span class="p">[</span><span class="n">edge</span><span class="p">[</span><span class="mi">0</span><span class="p">]][</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">pos</span><span class="p">[</span><span class="n">edge</span><span class="p">[</span><span class="mi">1</span><span class="p">]][</span><span class="mi">1</span><span class="p">])</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">                <span class="n">label</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">,</span> <span class="n">ha</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span> <span class="n">va</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="c1"># Add node labels to the graph</span>
-</span></span><span class="line"><span class="cl">    <span class="n">node_labels</span> <span class="o">=</span> <span class="p">{</span><span class="n">n</span><span class="p">:</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">n</span><span class="p">][</span><span class="s1">&#39;label&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="s1">&#39;label&#39;</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="k">else</span> <span class="n">n</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">()}</span>
-</span></span><span class="line"><span class="cl">    <span class="n">nx</span><span class="o">.</span><span class="n">draw_networkx_labels</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="n">pos</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="n">node_labels</span><span class="p">,</span> <span class="n">font_size</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">font_color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="c1"># Add colorbar for community colors</span>
-</span></span><span class="line"><span class="cl">    <span class="n">sm</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">ScalarMappable</span><span class="p">(</span><span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">Normalize</span><span class="p">(</span><span class="n">vmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="n">louvain_result</span><span class="o">.</span><span class="n">values</span><span class="p">())))</span>
-</span></span><span class="line"><span class="cl">    <span class="n">sm</span><span class="o">.</span><span class="n">set_array</span><span class="p">([])</span>
-</span></span><span class="line"><span class="cl">    <span class="n">cbar</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">sm</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">ticks</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">louvain_result</span><span class="o">.</span><span class="n">values</span><span class="p">())</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">shrink</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="n">cbar</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_yticklabels</span><span class="p">([</span><span class="sa">f</span><span class="s1">&#39;Community </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">louvain_result</span><span class="o">.</span><span class="n">values</span><span class="p">())</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)])</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="c1"># Show the figure</span>
-</span></span><span class="line"><span class="cl">    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">draw_graph_louvain_pr</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">pr_result</span><span class="o">=</span><span class="n">pr_result</span><span class="p">,</span> <span class="n">louvain_result</span><span class="o">=</span><span class="n">louvain_result</span><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">matplotlib.colors</span> <span class="kn">import</span> <span class="n">ListedColormap</span>
+
+
+<span class="k">def</span> <span class="nf">draw_graph_louvain_pr</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">pr_result</span><span class="p">,</span> <span class="n">louvain_result</span><span class="p">,</span> <span class="n">colors</span><span class="o">=</span><span class="p">[</span><span class="s2">&#34;#1984c5&#34;</span><span class="p">,</span> <span class="s2">&#34;#22a7f0&#34;</span><span class="p">,</span> <span class="s2">&#34;#63bff0&#34;</span><span class="p">,</span> <span class="s2">&#34;#a7d5ed&#34;</span><span class="p">,</span> <span class="s2">&#34;#e2e2e2&#34;</span><span class="p">,</span> <span class="s2">&#34;#e1a692&#34;</span><span class="p">,</span> <span class="s2">&#34;#de6e56&#34;</span><span class="p">,</span> <span class="s2">&#34;#e14b31&#34;</span><span class="p">,</span> <span class="s2">&#34;#c23728&#34;</span><span class="p">]):</span>
+    <span class="c1"># Define positions for the nodes</span>
+    <span class="n">pos</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">spring_layout</span><span class="p">(</span><span class="n">G</span><span class="p">)</span>
+
+    <span class="c1"># Create a figure and set the axis limits</span>
+    <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">35</span><span class="p">,</span> <span class="mi">15</span><span class="p">))</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># Create a colormap from the colors list</span>
+    <span class="n">cmap</span> <span class="o">=</span> <span class="n">ListedColormap</span><span class="p">(</span><span class="n">colors</span><span class="p">)</span>
+
+    <span class="c1"># Draw the nodes and edges of the graph</span>
+    <span class="n">node_colors</span> <span class="o">=</span> <span class="p">[</span><span class="n">louvain_result</span><span class="p">[</span><span class="n">node</span><span class="p">]</span> <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">()]</span>
+    <span class="n">node_sizes</span> <span class="o">=</span> <span class="p">[</span><span class="mi">70000</span> <span class="o">*</span> <span class="n">pr_result</span><span class="p">[</span><span class="n">node</span><span class="p">]</span> <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">()]</span>
+    <span class="n">nx</span><span class="o">.</span><span class="n">draw_networkx_nodes</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="n">pos</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">node_color</span><span class="o">=</span><span class="n">node_colors</span><span class="p">,</span> <span class="n">node_size</span><span class="o">=</span><span class="n">node_sizes</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="n">louvain_result</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
+
+    <span class="n">nx</span><span class="o">.</span><span class="n">draw_networkx_edges</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="n">pos</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">edge_color</span><span class="o">=</span><span class="s1">&#39;gray&#39;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">connectionstyle</span><span class="o">=</span><span class="s1">&#39;arc3, rad=0.2&#39;</span><span class="p">,</span> <span class="n">arrowstyle</span><span class="o">=</span><span class="s1">&#39;-|&gt;&#39;</span><span class="p">,</span> <span class="n">arrows</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># Extract edge labels as a dictionary</span>
+    <span class="n">edge_labels</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">get_edge_attributes</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="s1">&#39;label&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Add edge labels to the graph</span>
+    <span class="k">for</span> <span class="n">edge</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">edge_labels</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">((</span><span class="n">pos</span><span class="p">[</span><span class="n">edge</span><span class="p">[</span><span class="mi">0</span><span class="p">]][</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">pos</span><span class="p">[</span><span class="n">edge</span><span class="p">[</span><span class="mi">1</span><span class="p">]][</span><span class="mi">0</span><span class="p">])</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span>
+                <span class="p">(</span><span class="n">pos</span><span class="p">[</span><span class="n">edge</span><span class="p">[</span><span class="mi">0</span><span class="p">]][</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">pos</span><span class="p">[</span><span class="n">edge</span><span class="p">[</span><span class="mi">1</span><span class="p">]][</span><span class="mi">1</span><span class="p">])</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span>
+                <span class="n">label</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">,</span> <span class="n">ha</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span> <span class="n">va</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Add node labels to the graph</span>
+    <span class="n">node_labels</span> <span class="o">=</span> <span class="p">{</span><span class="n">n</span><span class="p">:</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">n</span><span class="p">][</span><span class="s1">&#39;label&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="s1">&#39;label&#39;</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="k">else</span> <span class="n">n</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">()}</span>
+    <span class="n">nx</span><span class="o">.</span><span class="n">draw_networkx_labels</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="n">pos</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="n">node_labels</span><span class="p">,</span> <span class="n">font_size</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">font_color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Add colorbar for community colors</span>
+    <span class="n">sm</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">ScalarMappable</span><span class="p">(</span><span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">Normalize</span><span class="p">(</span><span class="n">vmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="n">louvain_result</span><span class="o">.</span><span class="n">values</span><span class="p">())))</span>
+    <span class="n">sm</span><span class="o">.</span><span class="n">set_array</span><span class="p">([])</span>
+    <span class="n">cbar</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">sm</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">ticks</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">louvain_result</span><span class="o">.</span><span class="n">values</span><span class="p">())</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">shrink</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+    <span class="n">cbar</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_yticklabels</span><span class="p">([</span><span class="sa">f</span><span class="s1">&#39;Community </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">louvain_result</span><span class="o">.</span><span class="n">values</span><span class="p">())</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)])</span>
+
+    <span class="c1"># Show the figure</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+
+<span class="n">draw_graph_louvain_pr</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">pr_result</span><span class="o">=</span><span class="n">pr_result</span><span class="p">,</span> <span class="n">louvain_result</span><span class="o">=</span><span class="n">louvain_result</span><span class="p">)</span>
+</code></pre></td></tr></table>
 </div>
 </div><p>效果如图：</p>
 <p><figure><img
@@ -463,9 +467,9 @@
 </span><span class="lnt">2
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="o">%</span><span class="n">pip</span> <span class="n">install</span> <span class="n">ng_ai</span><span class="p">[</span><span class="n">jupyter</span><span class="p">]</span>
-</span></span><span class="line"><span class="cl"><span class="o">%</span><span class="n">load_ext</span> <span class="n">ngql</span>
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="o">%</span><span class="n">pip</span> <span class="n">install</span> <span class="n">ng_ai</span><span class="p">[</span><span class="n">jupyter</span><span class="p">]</span>
+<span class="o">%</span><span class="n">load_ext</span> <span class="n">ngql</span>
+</code></pre></td></tr></table>
 </div>
 </div><p>也可以单独安装</p>
 <div class="highlight"><div class="chroma">
@@ -474,9 +478,9 @@
 </span><span class="lnt">2
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="o">%</span><span class="n">pip</span> <span class="n">install</span> <span class="n">ipython</span><span class="o">-</span><span class="n">ngql</span>
-</span></span><span class="line"><span class="cl"><span class="o">%</span><span class="n">load_ext</span> <span class="n">ngql</span>
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="o">%</span><span class="n">pip</span> <span class="n">install</span> <span class="n">ipython</span><span class="o">-</span><span class="n">ngql</span>
+<span class="o">%</span><span class="n">load_ext</span> <span class="n">ngql</span>
+</code></pre></td></tr></table>
 </div>
 </div><p>之后，我们就可以在 Notebook 里直接使用 <code>%ngql</code> 命令来执行 NGQL 语句了：</p>
 <div class="highlight"><div class="chroma">
@@ -486,10 +490,10 @@
 </span><span class="lnt">3
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="o">%</span><span class="n">ngql</span> <span class="o">--</span><span class="n">address</span> <span class="mf">127.0.0.1</span> <span class="o">--</span><span class="n">port</span> <span class="mi">9669</span> <span class="o">--</span><span class="n">user</span> <span class="n">root</span> <span class="o">--</span><span class="n">password</span> <span class="n">nebula</span>
-</span></span><span class="line"><span class="cl"><span class="o">%</span><span class="n">ngql</span> <span class="n">USE</span> <span class="n">basketballplayer</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl"><span class="o">%</span><span class="n">ngql</span> <span class="n">MATCH</span> <span class="p">(</span><span class="n">v</span><span class="p">:</span><span class="n">player</span><span class="p">{</span><span class="n">name</span><span class="p">:</span><span class="s2">&#34;Tim Duncan&#34;</span><span class="p">})</span><span class="o">--&gt;</span><span class="p">(</span><span class="n">v2</span><span class="p">:</span><span class="n">player</span><span class="p">)</span> <span class="n">RETURN</span> <span class="n">v2</span><span class="o">.</span><span class="n">player</span><span class="o">.</span><span class="n">name</span> <span class="n">AS</span> <span class="n">Name</span><span class="p">;</span>
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="o">%</span><span class="n">ngql</span> <span class="o">--</span><span class="n">address</span> <span class="mf">127.0.0.1</span> <span class="o">--</span><span class="n">port</span> <span class="mi">9669</span> <span class="o">--</span><span class="n">user</span> <span class="n">root</span> <span class="o">--</span><span class="n">password</span> <span class="n">nebula</span>
+<span class="o">%</span><span class="n">ngql</span> <span class="n">USE</span> <span class="n">basketballplayer</span><span class="p">;</span>
+<span class="o">%</span><span class="n">ngql</span> <span class="n">MATCH</span> <span class="p">(</span><span class="n">v</span><span class="p">:</span><span class="n">player</span><span class="p">{</span><span class="n">name</span><span class="p">:</span><span class="s2">&#34;Tim Duncan&#34;</span><span class="p">})</span><span class="o">--&gt;</span><span class="p">(</span><span class="n">v2</span><span class="p">:</span><span class="n">player</span><span class="p">)</span> <span class="n">RETURN</span> <span class="n">v2</span><span class="o">.</span><span class="n">player</span><span class="o">.</span><span class="n">name</span> <span class="n">AS</span> <span class="n">Name</span><span class="p">;</span>
+</code></pre></td></tr></table>
 </div>
 </div><blockquote>
 <p>注，多行的 Query 用两个百分号就好了 <code>%%ngql</code></p>
@@ -501,9 +505,9 @@
 </span><span class="lnt">2
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="o">%</span><span class="n">ngql</span> <span class="k">match</span> <span class="n">p</span><span class="o">=</span><span class="p">(:</span><span class="n">player</span><span class="p">)</span><span class="o">-</span><span class="p">[]</span><span class="o">-&gt;</span><span class="p">()</span> <span class="k">return</span> <span class="n">p</span> <span class="n">LIMIT</span> <span class="mi">5</span>
-</span></span><span class="line"><span class="cl"><span class="o">%</span><span class="n">ng_draw</span>
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="o">%</span><span class="n">ngql</span> <span class="n">match</span> <span class="n">p</span><span class="o">=</span><span class="p">(:</span><span class="n">player</span><span class="p">)</span><span class="o">-</span><span class="p">[]</span><span class="o">-&gt;</span><span class="p">()</span> <span class="k">return</span> <span class="n">p</span> <span class="n">LIMIT</span> <span class="mi">5</span>
+<span class="o">%</span><span class="n">ng_draw</span>
+</code></pre></td></tr></table>
 </div>
 </div><p>效果如下：</p>
 <p><figure><img
@@ -529,12 +533,12 @@
 </span><span class="lnt">5
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">model</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">algo</span><span class="o">.</span><span class="n">gnn_link_prediction</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl"><span class="n">result</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl"><span class="c1"># query src, dst to be predicted</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">src_vertex</span><span class="p">,</span> <span class="n">dst_vertices</span><span class="p">)</span>
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="n">model</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">algo</span><span class="o">.</span><span class="n">gnn_link_prediction</span><span class="p">()</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+<span class="c1"># query src, dst to be predicted</span>
+
+<span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">src_vertex</span><span class="p">,</span> <span class="n">dst_vertices</span><span class="p">)</span>
+</code></pre></td></tr></table>
 </div>
 </div><ul>
 <li><i class="far fa-square fa-fw"></i> UDA，自定义算法</li>
@@ -651,62 +655,62 @@
 </span><span class="lnt">55
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">          ┌───────────────────────────────────────────────────┐
-</span></span><span class="line"><span class="cl">          │   Spark Cluster                                   │
-</span></span><span class="line"><span class="cl">          │    .─────.    .─────.    .─────.    .─────.       │
-</span></span><span class="line"><span class="cl">          │   ;       :  ;       :  ;       :  ;       :      │
-</span></span><span class="line"><span class="cl">       ┌─▶│   :       ;  :       ;  :       ;  :       ;      │
-</span></span><span class="line"><span class="cl">       │  │    ╲     ╱    ╲     ╱    ╲     ╱    ╲     ╱       │
-</span></span><span class="line"><span class="cl">       │  │     `───&#39;      `───&#39;      `───&#39;      `───&#39;        │
-</span></span><span class="line"><span class="cl">  Algo Spark                                                  │
-</span></span><span class="line"><span class="cl">    Engine└───────────────────────────────────────────────────┘
-</span></span><span class="line"><span class="cl">       │  ┌────────────────────────────────────────────────────┬──────────┐
-</span></span><span class="line"><span class="cl">       └──┤                                                    │          │
-</span></span><span class="line"><span class="cl">          │   NebulaGraph AI Suite(ngai)                       │ ngai-api │◀─┐
-</span></span><span class="line"><span class="cl">          │                                                    │          │  │
-</span></span><span class="line"><span class="cl">          │                                                    └──────────┤  │
-</span></span><span class="line"><span class="cl">          │     ┌────────┐    ┌──────┐    ┌────────┐   ┌─────┐            │  │
-</span></span><span class="line"><span class="cl">          │     │ Reader │    │ Algo │    │ Writer │   │ GNN │            │  │
-</span></span><span class="line"><span class="cl"> ┌───────▶│     └────────┘    └──────┘    └────────┘   └─────┘            │  │
-</span></span><span class="line"><span class="cl"> │        │          │            │            │          │               │  │
-</span></span><span class="line"><span class="cl"> │        │          ├────────────┴───┬────────┴─────┐    └──────┐        │  │
-</span></span><span class="line"><span class="cl"> │        │          ▼                ▼              ▼           ▼        │  │
-</span></span><span class="line"><span class="cl"> │        │   ┌─────────────┐ ┌──────────────┐ ┌──────────┐ ┌──────────┐  │  │
-</span></span><span class="line"><span class="cl"> │     ┌──┤   │ SparkEngine │ │ NebulaEngine │ │ NetworkX │ │ DGLEngine│  │  │
-</span></span><span class="line"><span class="cl"> │     │  │   └─────────────┘ └──────────────┘ └──────────┘ └──────────┘  │  │
-</span></span><span class="line"><span class="cl"> │     │  └──────────┬────────────────────────────────────────────────────┘  │
-</span></span><span class="line"><span class="cl"> │     │             │        Spark                                          │
-</span></span><span class="line"><span class="cl"> │     │             └────────Reader ────────────┐                           │
-</span></span><span class="line"><span class="cl"> │  Spark                   Query Mode           │                           │
-</span></span><span class="line"><span class="cl"> │  Reader                                       │                           │
-</span></span><span class="line"><span class="cl"> │Scan Mode                                      ▼                      ┌─────────┐
-</span></span><span class="line"><span class="cl"> │     │  ┌───────────────────────────────────────────────────┬─────────┤ ngai-udf│◀─────────────┐
-</span></span><span class="line"><span class="cl"> │     │  │                                                   │         └─────────┤              │
-</span></span><span class="line"><span class="cl"> │     │  │  NebulaGraph Graph Engine         Nebula-GraphD   │   ngai-GraphD     │              │
-</span></span><span class="line"><span class="cl"> │     │  ├──────────────────────────────┬────────────────────┼───────────────────┘              │
-</span></span><span class="line"><span class="cl"> │     │  │                              │                    │                                  │
-</span></span><span class="line"><span class="cl"> │     │  │  NebulaGraph Storage Engine  │                    │                                  │
-</span></span><span class="line"><span class="cl"> │     │  │                              │                    │                                  │
-</span></span><span class="line"><span class="cl"> │     └─▶│  Nebula-StorageD             │    Nebula-Metad    │                                  │
-</span></span><span class="line"><span class="cl"> │        │                              │                    │                                  │
-</span></span><span class="line"><span class="cl"> │        └──────────────────────────────┴────────────────────┘                                  │
-</span></span><span class="line"><span class="cl"> │                                                                                               │
-</span></span><span class="line"><span class="cl"> │    ┌───────────────────────────────────────────────────────────────────────────────────────┐  │
-</span></span><span class="line"><span class="cl"> │    │ RETURN ng_ai(&#34;pagerank&#34;, [&#34;follow&#34;], [&#34;degree&#34;], &#34;spark&#34;, {space:&#34;basketballplayer&#34;}) │──┘
-</span></span><span class="line"><span class="cl"> │    └───────────────────────────────────────────────────────────────────────────────────────┘
-</span></span><span class="line"><span class="cl"> │  ┌─────────────────────────────────────────────────────────────┐
-</span></span><span class="line"><span class="cl"> │  │ from ng_ai import NebulaReader                              │
-</span></span><span class="line"><span class="cl"> │  │                                                             │
-</span></span><span class="line"><span class="cl"> │  │ # read data with spark engine, scan mode                    │
-</span></span><span class="line"><span class="cl"> │  │ reader = NebulaReader(engine=&#34;spark&#34;)                       │
-</span></span><span class="line"><span class="cl"> │  │ reader.scan(edge=&#34;follow&#34;, props=&#34;degree&#34;)                  │
-</span></span><span class="line"><span class="cl"> └──│ df = reader.read()                                          │
-</span></span><span class="line"><span class="cl">    │                                                             │
-</span></span><span class="line"><span class="cl">    │ # run pagerank algorithm                                    │
-</span></span><span class="line"><span class="cl">    │ pr_result = df.algo.pagerank(reset_prob=0.15, max_iter=10)  │
-</span></span><span class="line"><span class="cl">    │                                                             │
-</span></span><span class="line"><span class="cl">    └─────────────────────────────────────────────────────────────┘  
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">          ┌───────────────────────────────────────────────────┐
+          │   Spark Cluster                                   │
+          │    .─────.    .─────.    .─────.    .─────.       │
+          │   ;       :  ;       :  ;       :  ;       :      │
+       ┌─▶│   :       ;  :       ;  :       ;  :       ;      │
+       │  │    ╲     ╱    ╲     ╱    ╲     ╱    ╲     ╱       │
+       │  │     `───&#39;      `───&#39;      `───&#39;      `───&#39;        │
+  Algo Spark                                                  │
+    Engine└───────────────────────────────────────────────────┘
+       │  ┌────────────────────────────────────────────────────┬──────────┐
+       └──┤                                                    │          │
+          │   NebulaGraph AI Suite(ngai)                       │ ngai-api │◀─┐
+          │                                                    │          │  │
+          │                                                    └──────────┤  │
+          │     ┌────────┐    ┌──────┐    ┌────────┐   ┌─────┐            │  │
+          │     │ Reader │    │ Algo │    │ Writer │   │ GNN │            │  │
+ ┌───────▶│     └────────┘    └──────┘    └────────┘   └─────┘            │  │
+ │        │          │            │            │          │               │  │
+ │        │          ├────────────┴───┬────────┴─────┐    └──────┐        │  │
+ │        │          ▼                ▼              ▼           ▼        │  │
+ │        │   ┌─────────────┐ ┌──────────────┐ ┌──────────┐ ┌──────────┐  │  │
+ │     ┌──┤   │ SparkEngine │ │ NebulaEngine │ │ NetworkX │ │ DGLEngine│  │  │
+ │     │  │   └─────────────┘ └──────────────┘ └──────────┘ └──────────┘  │  │
+ │     │  └──────────┬────────────────────────────────────────────────────┘  │
+ │     │             │        Spark                                          │
+ │     │             └────────Reader ────────────┐                           │
+ │  Spark                   Query Mode           │                           │
+ │  Reader                                       │                           │
+ │Scan Mode                                      ▼                      ┌─────────┐
+ │     │  ┌───────────────────────────────────────────────────┬─────────┤ ngai-udf│◀─────────────┐
+ │     │  │                                                   │         └─────────┤              │
+ │     │  │  NebulaGraph Graph Engine         Nebula-GraphD   │   ngai-GraphD     │              │
+ │     │  ├──────────────────────────────┬────────────────────┼───────────────────┘              │
+ │     │  │                              │                    │                                  │
+ │     │  │  NebulaGraph Storage Engine  │                    │                                  │
+ │     │  │                              │                    │                                  │
+ │     └─▶│  Nebula-StorageD             │    Nebula-Metad    │                                  │
+ │        │                              │                    │                                  │
+ │        └──────────────────────────────┴────────────────────┘                                  │
+ │                                                                                               │
+ │    ┌───────────────────────────────────────────────────────────────────────────────────────┐  │
+ │    │ RETURN ng_ai(&#34;pagerank&#34;, [&#34;follow&#34;], [&#34;degree&#34;], &#34;spark&#34;, {space:&#34;basketballplayer&#34;}) │──┘
+ │    └───────────────────────────────────────────────────────────────────────────────────────┘
+ │  ┌─────────────────────────────────────────────────────────────┐
+ │  │ from ng_ai import NebulaReader                              │
+ │  │                                                             │
+ │  │ # read data with spark engine, scan mode                    │
+ │  │ reader = NebulaReader(engine=&#34;spark&#34;)                       │
+ │  │ reader.scan(edge=&#34;follow&#34;, props=&#34;degree&#34;)                  │
+ └──│ df = reader.read()                                          │
+    │                                                             │
+    │ # run pagerank algorithm                                    │
+    │ pr_result = df.algo.pagerank(reset_prob=0.15, max_iter=10)  │
+    │                                                             │
+    └─────────────────────────────────────────────────────────────┘  
+</code></pre></td></tr></table>
 </div>
 </div>]]></description>
 </item></channel>
