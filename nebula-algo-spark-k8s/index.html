@@ -1,30 +1,39 @@
 
 
 <!DOCTYPE html>
-<html lang="">
+<html lang="zh-cn">
 
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noodp" />
-    <title>为什么我的 Nebula-Spark-Connector、Nebula-Algorithm 连不上 K8s 部署的 Nebula Graph 集群？ - siwei.io</title><meta name="Description" content="一文了解 K8s 部署的 Nebula Graph 集群的 Nebula-Algorithm 使用方法。"><meta property="og:title" content="为什么我的 Nebula-Spark-Connector、Nebula-Algorithm 连不上 K8s 部署的 Nebula Graph 集群？" />
-<meta property="og:description" content="一文了解 K8s 部署的 Nebula Graph 集群的 Nebula-Algorithm 使用方法。" />
-<meta property="og:type" content="article" />
-<meta property="og:url" content="https://siwei.io/nebula-algo-spark-k8s/" /><meta property="og:image" content="https://siwei.io/nebula-algo-spark-k8s/featured-image.webp"/><meta property="article:section" content="posts" />
-<meta property="article:published_time" content="2022-02-14T18:47:53+08:00" />
-<meta property="article:modified_time" content="2022-02-16T10:35:24+08:00" /><meta property="og:site_name" content="siwei.io" />
-
-<meta name="twitter:card" content="summary_large_image"/>
-<meta name="twitter:image" content="https://siwei.io/nebula-algo-spark-k8s/featured-image.webp"/>
-<meta name="twitter:title" content="为什么我的 Nebula-Spark-Connector、Nebula-Algorithm 连不上 K8s 部署的 Nebula Graph 集群？"/>
-<meta name="twitter:description" content="一文了解 K8s 部署的 Nebula Graph 集群的 Nebula-Algorithm 使用方法。"/>
+    <title>为什么我的 Nebula-Spark-Connector、Nebula-Algorithm 连不上 K8s 部署的 Nebula Graph 集群？ - siwei.io</title><meta name="Description" content="一文了解 K8s 部署的 Nebula Graph 集群的 Nebula-Algorithm 使用方法。"><meta property="og:url" content="https://siwei.io/nebula-algo-spark-k8s/">
+  <meta property="og:site_name" content="siwei.io">
+  <meta property="og:title" content="为什么我的 Nebula-Spark-Connector、Nebula-Algorithm 连不上 K8s 部署的 Nebula Graph 集群？">
+  <meta property="og:description" content="一文了解 K8s 部署的 Nebula Graph 集群的 Nebula-Algorithm 使用方法。">
+  <meta property="og:locale" content="zh-cn">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2022-02-14T18:47:53+08:00">
+    <meta property="article:modified_time" content="2022-02-16T10:35:24+08:00">
+    <meta property="article:tag" content="Nebula Graph">
+    <meta property="article:tag" content="图数据库">
+    <meta property="article:tag" content="Spark-Connector">
+    <meta property="article:tag" content="Nebula Algorithm">
+    <meta property="article:tag" content="K8s">
+    <meta property="article:tag" content="Nebula Operator">
+    <meta property="og:image" content="https://siwei.io/nebula-algo-spark-k8s/featured-image.webp">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://siwei.io/nebula-algo-spark-k8s/featured-image.webp"><meta name="twitter:title" content="为什么我的 Nebula-Spark-Connector、Nebula-Algorithm 连不上 K8s 部署的 Nebula Graph 集群？">
+<meta name="twitter:description" content="一文了解 K8s 部署的 Nebula Graph 集群的 Nebula-Algorithm 使用方法。">
+      <meta name="twitter:site" content="@wey_gu">
 <meta name="application-name" content="DoIt">
 <meta name="apple-mobile-web-app-title" content="DoIt">
 
 <meta name="theme-color" content="#f8f8f8"><meta name="msapplication-TileColor" content="#da532c"><meta name="twitter:creator" content="@wey_gu" /><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
         <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
         <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="manifest" href="/site.webmanifest"><link rel="canonical" href="https://siwei.io/nebula-algo-spark-k8s/" /><link rel="prev" href="https://siwei.io/siwi/" /><link rel="next" href="https://siwei.io/nebula-index-explained/" />
-<link rel="stylesheet" href="/css/main.css"><link rel="stylesheet" href="/lib/normalize/normalize.min.css"><link rel="stylesheet" href="/css/color.css"><link rel="stylesheet" href="/css/style.scss"><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/fontawesome-free/all.min.css">
+<link rel="stylesheet" href="/css/main.css"><link rel="stylesheet" href="/lib/normalize/normalize.min.css"><link rel="stylesheet" href="/css/color.css"><link rel="stylesheet" href="/css/style.min.css"><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/fontawesome-free/all.min.css">
         <noscript><link rel="stylesheet" href="/lib/fontawesome-free/all.min.css"></noscript><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/animate/animate.min.css">
         <noscript><link rel="stylesheet" href="/lib/animate/animate.min.css"></noscript>
     
@@ -35,11 +44,11 @@
         "@context": "http://schema.org",
         "@type": "BlogPosting",
         "headline": "为什么我的 Nebula-Spark-Connector、Nebula-Algorithm 连不上 K8s 部署的 Nebula Graph 集群？",
-        "inLanguage": "",
+        "inLanguage": "zh-cn",
         "mainEntityOfPage": {
             "@type": "WebPage",
             "@id": "https://siwei.io/nebula-algo-spark-k8s/"
-        },"image": ["https://siwei.io/images/site-feature-image.webp"],"genre": "posts","keywords": "Nebula Graph, 图数据库, Spark-Connector, Nebula-Algorithm, k8s, nebula-operator","wordcount":  629 ,
+        },"image": ["https://siwei.io/images/site-feature-image.webp"],"genre": "posts","keywords": "Nebula Graph, 图数据库, Spark-Connector, Nebula-Algorithm, k8s, nebula-operator","wordcount":  792 ,
         "url": "https://siwei.io/nebula-algo-spark-k8s/","datePublished": "2022-02-14T18:47:53+08:00","dateModified": "2022-02-16T10:35:24+08:00","publisher": {
             "@type": "Organization",
             "name": "Wey Gu","logo": "https://siwei.io/images/site-feature-image.webp"},"author": {
@@ -152,7 +161,7 @@
             <div class="post-meta-line">
                 <span class="post-author"><span class="author fas fa-user-circle fa-fw"></span><a href="https://siwei.io" title="Author" target="_blank" rel="noopener noreferrer author" class="author">Wey Gu</a>
                 </span>&nbsp;<span class="post-category">收录于 </span>&nbsp;<span class="post-category">类别 <a href="/categories/nebula-graph/"><i class="far fa-folder fa-fw"></i>Nebula Graph</a></span></div>
-            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime="2022-02-14">2022-02-14</time>&nbsp;<i class="far fa-edit fa-fw"></i>&nbsp;<time datetime="2022-02-16">2022-02-16</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;约 629 字&nbsp;<i class="far fa-clock fa-fw"></i>&nbsp;预计阅读 3 分钟&nbsp;</div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime="2022-02-14">2022-02-14</time>&nbsp;<i class="far fa-edit fa-fw"></i>&nbsp;<time datetime="2022-02-16">2022-02-16</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;约 792 字&nbsp;<i class="far fa-clock fa-fw"></i>&nbsp;预计阅读 4 分钟&nbsp;</div>
         </div><div class="featured-image"><img
         
         loading="eager"
@@ -200,16 +209,16 @@
 </span><span class="lnt">9
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="o">(</span>root@nebula<span class="o">)</span> <span class="o">[(</span>none<span class="o">)]</span>&gt; show hosts meta
-+------------------------------------------------------------------+------+----------+--------+--------------+---------+
-<span class="p">|</span> Host                                                             <span class="p">|</span> Port <span class="p">|</span> Status   <span class="p">|</span> Role   <span class="p">|</span> Git Info Sha <span class="p">|</span> Version <span class="p">|</span>
-+------------------------------------------------------------------+------+----------+--------+--------------+---------+
-<span class="p">|</span> <span class="s2">&#34;nebula-metad-0.nebula-metad-headless.default.svc.cluster.local&#34;</span> <span class="p">|</span> <span class="m">9559</span> <span class="p">|</span> <span class="s2">&#34;ONLINE&#34;</span> <span class="p">|</span> <span class="s2">&#34;META&#34;</span> <span class="p">|</span> <span class="s2">&#34;d113f4a&#34;</span>    <span class="p">|</span> <span class="s2">&#34;2.6.2&#34;</span> <span class="p">|</span>
-+------------------------------------------------------------------+------+----------+--------+--------------+---------+
-Got <span class="m">1</span> rows <span class="o">(</span><span class="nb">time</span> spent 1378/2598 us<span class="o">)</span>
-
-Mon, <span class="m">14</span> Feb <span class="m">2022</span> 08:22:33 UTC
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="o">(</span>root@nebula<span class="o">)</span> <span class="o">[(</span>none<span class="o">)]</span>&gt; show hosts meta
+</span></span><span class="line"><span class="cl">+------------------------------------------------------------------+------+----------+--------+--------------+---------+
+</span></span><span class="line"><span class="cl"><span class="p">|</span> Host                                                             <span class="p">|</span> Port <span class="p">|</span> Status   <span class="p">|</span> Role   <span class="p">|</span> Git Info Sha <span class="p">|</span> Version <span class="p">|</span>
+</span></span><span class="line"><span class="cl">+------------------------------------------------------------------+------+----------+--------+--------------+---------+
+</span></span><span class="line"><span class="cl"><span class="p">|</span> <span class="s2">&#34;nebula-metad-0.nebula-metad-headless.default.svc.cluster.local&#34;</span> <span class="p">|</span> <span class="m">9559</span> <span class="p">|</span> <span class="s2">&#34;ONLINE&#34;</span> <span class="p">|</span> <span class="s2">&#34;META&#34;</span> <span class="p">|</span> <span class="s2">&#34;d113f4a&#34;</span>    <span class="p">|</span> <span class="s2">&#34;2.6.2&#34;</span> <span class="p">|</span>
+</span></span><span class="line"><span class="cl">+------------------------------------------------------------------+------+----------+--------+--------------+---------+
+</span></span><span class="line"><span class="cl">Got <span class="m">1</span> rows <span class="o">(</span><span class="nb">time</span> spent 1378/2598 us<span class="o">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">Mon, <span class="m">14</span> Feb <span class="m">2022</span> 08:22:33 UTC
+</span></span></code></pre></td></tr></table>
 </div>
 </div><ul>
 <li>填写 Algorithm 的配置文件</li>
@@ -228,14 +237,14 @@ Mon, <span class="m">14</span> Feb <span class="m">2022</span> 08:22:33 UTC
 </span><span class="lnt">7
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-toml" data-lang="toml"><span class="c"># ...</span>
-  <span class="nx">nebula</span><span class="err">:</span> <span class="p">{</span>
-    <span class="c"># algo&#39;s data source from Nebula. If data.source is nebula, then this nebula.read config can be valid.</span>
-    <span class="nx">read</span><span class="err">:</span> <span class="p">{</span>
-        <span class="c"># Nebula metad server address, multiple addresses are split by English comma</span>
-        <span class="nx">metaAddress</span><span class="err">:</span> <span class="s2">&#34;nebula-metad-0.nebula-metad-headless.default.svc.cluster.local:9559&#34;</span>
-<span class="c">#...</span>
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-toml" data-lang="toml"><span class="line"><span class="cl"><span class="c"># ...</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">nebula</span><span class="err">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c"># algo&#39;s data source from Nebula. If data.source is nebula, then this nebula.read config can be valid.</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">read</span><span class="err">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="c"># Nebula metad server address, multiple addresses are split by English comma</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">metaAddress</span><span class="err">:</span> <span class="s2">&#34;nebula-metad-0.nebula-metad-headless.default.svc.cluster.local:9559&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="c">#...</span>
+</span></span></code></pre></td></tr></table>
 </div>
 </div><ul>
 <li>或者是调用 spark-connector 的代码</li>
@@ -262,22 +271,22 @@ Mon, <span class="m">14</span> Feb <span class="m">2022</span> 08:22:33 UTC
 </span><span class="lnt">15
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-scala" data-lang="scala">  <span class="k">val</span> <span class="n">config</span> <span class="k">=</span> <span class="nc">NebulaConnectionConfig</span>
-    <span class="o">.</span><span class="n">builder</span><span class="o">()</span>
-    <span class="o">.</span><span class="n">withMetaAddress</span><span class="o">(</span><span class="s">&#34;nebula-metad-0.nebula-metad-headless.default.svc.cluster.local:9559&#34;</span><span class="o">)</span>
-    <span class="o">.</span><span class="n">withConenctionRetry</span><span class="o">(</span><span class="mi">2</span><span class="o">)</span>
-    <span class="o">.</span><span class="n">build</span><span class="o">()</span>
-  <span class="k">val</span> <span class="n">nebulaReadVertexConfig</span><span class="k">:</span> <span class="kt">ReadNebulaConfig</span> <span class="o">=</span> <span class="nc">ReadNebulaConfig</span>
-    <span class="o">.</span><span class="n">builder</span><span class="o">()</span>
-    <span class="o">.</span><span class="n">withSpace</span><span class="o">(</span><span class="s">&#34;foo_bar_space&#34;</span><span class="o">)</span>
-    <span class="o">.</span><span class="n">withLabel</span><span class="o">(</span><span class="s">&#34;person&#34;</span><span class="o">)</span>
-    <span class="o">.</span><span class="n">withNoColumn</span><span class="o">(</span><span class="kc">false</span><span class="o">)</span>
-    <span class="o">.</span><span class="n">withReturnCols</span><span class="o">(</span><span class="nc">List</span><span class="o">(</span><span class="s">&#34;birthday&#34;</span><span class="o">))</span>
-    <span class="o">.</span><span class="n">withLimit</span><span class="o">(</span><span class="mi">10</span><span class="o">)</span>
-    <span class="o">.</span><span class="n">withPartitionNum</span><span class="o">(</span><span class="mi">10</span><span class="o">)</span>
-    <span class="o">.</span><span class="n">build</span><span class="o">()</span>
-  <span class="k">val</span> <span class="n">vertex</span> <span class="k">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">nebula</span><span class="o">(</span><span class="n">config</span><span class="o">,</span> <span class="n">nebulaReadVertexConfig</span><span class="o">).</span><span class="n">loadVerticesToDF</span><span class="o">()</span>
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-scala" data-lang="scala"><span class="line"><span class="cl">  <span class="k">val</span> <span class="n">config</span> <span class="k">=</span> <span class="nc">NebulaConnectionConfig</span>
+</span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">builder</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">withMetaAddress</span><span class="o">(</span><span class="s">&#34;nebula-metad-0.nebula-metad-headless.default.svc.cluster.local:9559&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">withConenctionRetry</span><span class="o">(</span><span class="mi">2</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">build</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">  <span class="k">val</span> <span class="n">nebulaReadVertexConfig</span><span class="k">:</span> <span class="kt">ReadNebulaConfig</span> <span class="o">=</span> <span class="nc">ReadNebulaConfig</span>
+</span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">builder</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">withSpace</span><span class="o">(</span><span class="s">&#34;foo_bar_space&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">withLabel</span><span class="o">(</span><span class="s">&#34;person&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">withNoColumn</span><span class="o">(</span><span class="kc">false</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">withReturnCols</span><span class="o">(</span><span class="nc">List</span><span class="o">(</span><span class="s">&#34;birthday&#34;</span><span class="o">))</span>
+</span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">withLimit</span><span class="o">(</span><span class="mi">10</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">withPartitionNum</span><span class="o">(</span><span class="mi">10</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="o">.</span><span class="n">build</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">  <span class="k">val</span> <span class="n">vertex</span> <span class="k">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">nebula</span><span class="o">(</span><span class="n">config</span><span class="o">,</span> <span class="n">nebulaReadVertexConfig</span><span class="o">).</span><span class="n">loadVerticesToDF</span><span class="o">()</span>
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>看起来非常简单，那么，为什么这么简单的过程却值得一篇文章呢？</p>
 <h3 id="容易忽略的问题" class="headerLink">
@@ -361,38 +370,38 @@ Mon, <span class="m">14</span> Feb <span class="m">2022</span> 08:22:33 UTC
 </span><span class="lnt">31
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="p">(</span><span class="n">root</span><span class="o">@</span><span class="n">nebula</span><span class="p">)</span><span class="w"> </span><span class="p">[(</span><span class="k">none</span><span class="p">)]</span><span class="o">&gt;</span><span class="w"> </span><span class="k">show</span><span class="w"> </span><span class="n">hosts</span><span class="w"> </span><span class="n">meta</span><span class="w">
-</span><span class="w"></span><span class="o">+</span><span class="c1">------------------------------------------------------------------+------+----------+--------+--------------+---------+
-</span><span class="c1"></span><span class="o">|</span><span class="w"> </span><span class="k">Host</span><span class="w">                                                             </span><span class="o">|</span><span class="w"> </span><span class="n">Port</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">Status</span><span class="w">   </span><span class="o">|</span><span class="w"> </span><span class="k">Role</span><span class="w">   </span><span class="o">|</span><span class="w"> </span><span class="n">Git</span><span class="w"> </span><span class="n">Info</span><span class="w"> </span><span class="n">Sha</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="k">Version</span><span class="w"> </span><span class="o">|</span><span class="w">
-</span><span class="w"></span><span class="o">+</span><span class="c1">------------------------------------------------------------------+------+----------+--------+--------------+---------+
-</span><span class="c1"></span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;nebula-metad-0.nebula-metad-headless.default.svc.cluster.local&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="mi">9559</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;ONLINE&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;META&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;d113f4a&#34;</span><span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;2.6.2&#34;</span><span class="w"> </span><span class="o">|</span><span class="w">
-</span><span class="w"></span><span class="o">+</span><span class="c1">------------------------------------------------------------------+------+----------+--------+--------------+---------+
-</span><span class="c1"></span><span class="n">Got</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">rows</span><span class="w"> </span><span class="p">(</span><span class="n">time</span><span class="w"> </span><span class="n">spent</span><span class="w"> </span><span class="mi">1378</span><span class="o">/</span><span class="mi">2598</span><span class="w"> </span><span class="n">us</span><span class="p">)</span><span class="w">
-</span><span class="w">
-</span><span class="w"></span><span class="n">Mon</span><span class="p">,</span><span class="w"> </span><span class="mi">14</span><span class="w"> </span><span class="n">Feb</span><span class="w"> </span><span class="mi">2022</span><span class="w"> </span><span class="mi">09</span><span class="p">:</span><span class="mi">22</span><span class="p">:</span><span class="mi">33</span><span class="w"> </span><span class="n">UTC</span><span class="w">
-</span><span class="w">
-</span><span class="w"></span><span class="p">(</span><span class="n">root</span><span class="o">@</span><span class="n">nebula</span><span class="p">)</span><span class="w"> </span><span class="p">[(</span><span class="k">none</span><span class="p">)]</span><span class="o">&gt;</span><span class="w"> </span><span class="k">show</span><span class="w"> </span><span class="n">hosts</span><span class="w"> </span><span class="n">graph</span><span class="w">
-</span><span class="w"></span><span class="o">+</span><span class="c1">---------------------------------------------------------------+------+----------+---------+--------------+---------+
-</span><span class="c1"></span><span class="o">|</span><span class="w"> </span><span class="k">Host</span><span class="w">                                                          </span><span class="o">|</span><span class="w"> </span><span class="n">Port</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">Status</span><span class="w">   </span><span class="o">|</span><span class="w"> </span><span class="k">Role</span><span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">Git</span><span class="w"> </span><span class="n">Info</span><span class="w"> </span><span class="n">Sha</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="k">Version</span><span class="w"> </span><span class="o">|</span><span class="w">
-</span><span class="w"></span><span class="o">+</span><span class="c1">---------------------------------------------------------------+------+----------+---------+--------------+---------+
-</span><span class="c1"></span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;nebula-graphd-0.nebula-graphd-svc.default.svc.cluster.local&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="mi">9669</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;ONLINE&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;GRAPH&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;d113f4a&#34;</span><span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;2.6.2&#34;</span><span class="w"> </span><span class="o">|</span><span class="w">
-</span><span class="w"></span><span class="o">+</span><span class="c1">---------------------------------------------------------------+------+----------+---------+--------------+---------+
-</span><span class="c1"></span><span class="n">Got</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">rows</span><span class="w"> </span><span class="p">(</span><span class="n">time</span><span class="w"> </span><span class="n">spent</span><span class="w"> </span><span class="mi">2072</span><span class="o">/</span><span class="mi">3403</span><span class="w"> </span><span class="n">us</span><span class="p">)</span><span class="w">
-</span><span class="w">
-</span><span class="w"></span><span class="n">Mon</span><span class="p">,</span><span class="w"> </span><span class="mi">14</span><span class="w"> </span><span class="n">Feb</span><span class="w"> </span><span class="mi">2022</span><span class="w"> </span><span class="mi">10</span><span class="p">:</span><span class="mi">03</span><span class="p">:</span><span class="mi">58</span><span class="w"> </span><span class="n">UTC</span><span class="w">
-</span><span class="w">
-</span><span class="w"></span><span class="p">(</span><span class="n">root</span><span class="o">@</span><span class="n">nebula</span><span class="p">)</span><span class="w"> </span><span class="p">[(</span><span class="k">none</span><span class="p">)]</span><span class="o">&gt;</span><span class="w"> </span><span class="k">show</span><span class="w"> </span><span class="n">hosts</span><span class="w"> </span><span class="k">storage</span><span class="w">
-</span><span class="w"></span><span class="o">+</span><span class="c1">------------------------------------------------------------------------+------+----------+-----------+--------------+---------+
-</span><span class="c1"></span><span class="o">|</span><span class="w"> </span><span class="k">Host</span><span class="w">                                                                   </span><span class="o">|</span><span class="w"> </span><span class="n">Port</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">Status</span><span class="w">   </span><span class="o">|</span><span class="w"> </span><span class="k">Role</span><span class="w">      </span><span class="o">|</span><span class="w"> </span><span class="n">Git</span><span class="w"> </span><span class="n">Info</span><span class="w"> </span><span class="n">Sha</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="k">Version</span><span class="w"> </span><span class="o">|</span><span class="w">
-</span><span class="w"></span><span class="o">+</span><span class="c1">------------------------------------------------------------------------+------+----------+-----------+--------------+---------+
-</span><span class="c1"></span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;nebula-storaged-0.nebula-storaged-headless.default.svc.cluster.local&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="mi">9779</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;ONLINE&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;STORAGE&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;d113f4a&#34;</span><span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;2.6.2&#34;</span><span class="w"> </span><span class="o">|</span><span class="w">
-</span><span class="w"></span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;nebula-storaged-1.nebula-storaged-headless.default.svc.cluster.local&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="mi">9779</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;ONLINE&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;STORAGE&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;d113f4a&#34;</span><span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;2.6.2&#34;</span><span class="w"> </span><span class="o">|</span><span class="w">
-</span><span class="w"></span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;nebula-storaged-2.nebula-storaged-headless.default.svc.cluster.local&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="mi">9779</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;ONLINE&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;STORAGE&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;d113f4a&#34;</span><span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;2.6.2&#34;</span><span class="w"> </span><span class="o">|</span><span class="w">
-</span><span class="w"></span><span class="o">+</span><span class="c1">------------------------------------------------------------------------+------+----------+-----------+--------------+---------+
-</span><span class="c1"></span><span class="n">Got</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="k">rows</span><span class="w"> </span><span class="p">(</span><span class="n">time</span><span class="w"> </span><span class="n">spent</span><span class="w"> </span><span class="mi">1603</span><span class="o">/</span><span class="mi">2979</span><span class="w"> </span><span class="n">us</span><span class="p">)</span><span class="w">
-</span><span class="w">
-</span><span class="w"></span><span class="n">Mon</span><span class="p">,</span><span class="w"> </span><span class="mi">14</span><span class="w"> </span><span class="n">Feb</span><span class="w"> </span><span class="mi">2022</span><span class="w"> </span><span class="mi">10</span><span class="p">:</span><span class="mi">05</span><span class="p">:</span><span class="mi">24</span><span class="w"> </span><span class="n">UTC</span><span class="w">
-</span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="p">(</span><span class="n">root</span><span class="o">@</span><span class="n">nebula</span><span class="p">)</span><span class="w"> </span><span class="p">[(</span><span class="k">none</span><span class="p">)]</span><span class="o">&gt;</span><span class="w"> </span><span class="k">show</span><span class="w"> </span><span class="n">hosts</span><span class="w"> </span><span class="n">meta</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">+</span><span class="c1">------------------------------------------------------------------+------+----------+--------+--------------+---------+
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="o">|</span><span class="w"> </span><span class="k">Host</span><span class="w">                                                             </span><span class="o">|</span><span class="w"> </span><span class="n">Port</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">Status</span><span class="w">   </span><span class="o">|</span><span class="w"> </span><span class="k">Role</span><span class="w">   </span><span class="o">|</span><span class="w"> </span><span class="n">Git</span><span class="w"> </span><span class="n">Info</span><span class="w"> </span><span class="n">Sha</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="k">Version</span><span class="w"> </span><span class="o">|</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">+</span><span class="c1">------------------------------------------------------------------+------+----------+--------+--------------+---------+
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;nebula-metad-0.nebula-metad-headless.default.svc.cluster.local&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="mi">9559</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;ONLINE&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;META&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;d113f4a&#34;</span><span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;2.6.2&#34;</span><span class="w"> </span><span class="o">|</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">+</span><span class="c1">------------------------------------------------------------------+------+----------+--------+--------------+---------+
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">Got</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">rows</span><span class="w"> </span><span class="p">(</span><span class="n">time</span><span class="w"> </span><span class="n">spent</span><span class="w"> </span><span class="mi">1378</span><span class="o">/</span><span class="mi">2598</span><span class="w"> </span><span class="n">us</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">Mon</span><span class="p">,</span><span class="w"> </span><span class="mi">14</span><span class="w"> </span><span class="n">Feb</span><span class="w"> </span><span class="mi">2022</span><span class="w"> </span><span class="mi">09</span><span class="p">:</span><span class="mi">22</span><span class="p">:</span><span class="mi">33</span><span class="w"> </span><span class="n">UTC</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">(</span><span class="n">root</span><span class="o">@</span><span class="n">nebula</span><span class="p">)</span><span class="w"> </span><span class="p">[(</span><span class="k">none</span><span class="p">)]</span><span class="o">&gt;</span><span class="w"> </span><span class="k">show</span><span class="w"> </span><span class="n">hosts</span><span class="w"> </span><span class="n">graph</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">+</span><span class="c1">---------------------------------------------------------------+------+----------+---------+--------------+---------+
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="o">|</span><span class="w"> </span><span class="k">Host</span><span class="w">                                                          </span><span class="o">|</span><span class="w"> </span><span class="n">Port</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">Status</span><span class="w">   </span><span class="o">|</span><span class="w"> </span><span class="k">Role</span><span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="n">Git</span><span class="w"> </span><span class="n">Info</span><span class="w"> </span><span class="n">Sha</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="k">Version</span><span class="w"> </span><span class="o">|</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">+</span><span class="c1">---------------------------------------------------------------+------+----------+---------+--------------+---------+
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;nebula-graphd-0.nebula-graphd-svc.default.svc.cluster.local&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="mi">9669</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;ONLINE&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;GRAPH&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;d113f4a&#34;</span><span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;2.6.2&#34;</span><span class="w"> </span><span class="o">|</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">+</span><span class="c1">---------------------------------------------------------------+------+----------+---------+--------------+---------+
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">Got</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">rows</span><span class="w"> </span><span class="p">(</span><span class="n">time</span><span class="w"> </span><span class="n">spent</span><span class="w"> </span><span class="mi">2072</span><span class="o">/</span><span class="mi">3403</span><span class="w"> </span><span class="n">us</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">Mon</span><span class="p">,</span><span class="w"> </span><span class="mi">14</span><span class="w"> </span><span class="n">Feb</span><span class="w"> </span><span class="mi">2022</span><span class="w"> </span><span class="mi">10</span><span class="p">:</span><span class="mi">03</span><span class="p">:</span><span class="mi">58</span><span class="w"> </span><span class="n">UTC</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">(</span><span class="n">root</span><span class="o">@</span><span class="n">nebula</span><span class="p">)</span><span class="w"> </span><span class="p">[(</span><span class="k">none</span><span class="p">)]</span><span class="o">&gt;</span><span class="w"> </span><span class="k">show</span><span class="w"> </span><span class="n">hosts</span><span class="w"> </span><span class="k">storage</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">+</span><span class="c1">------------------------------------------------------------------------+------+----------+-----------+--------------+---------+
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="o">|</span><span class="w"> </span><span class="k">Host</span><span class="w">                                                                   </span><span class="o">|</span><span class="w"> </span><span class="n">Port</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">Status</span><span class="w">   </span><span class="o">|</span><span class="w"> </span><span class="k">Role</span><span class="w">      </span><span class="o">|</span><span class="w"> </span><span class="n">Git</span><span class="w"> </span><span class="n">Info</span><span class="w"> </span><span class="n">Sha</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="k">Version</span><span class="w"> </span><span class="o">|</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">+</span><span class="c1">------------------------------------------------------------------------+------+----------+-----------+--------------+---------+
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;nebula-storaged-0.nebula-storaged-headless.default.svc.cluster.local&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="mi">9779</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;ONLINE&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;STORAGE&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;d113f4a&#34;</span><span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;2.6.2&#34;</span><span class="w"> </span><span class="o">|</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;nebula-storaged-1.nebula-storaged-headless.default.svc.cluster.local&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="mi">9779</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;ONLINE&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;STORAGE&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;d113f4a&#34;</span><span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;2.6.2&#34;</span><span class="w"> </span><span class="o">|</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;nebula-storaged-2.nebula-storaged-headless.default.svc.cluster.local&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="mi">9779</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;ONLINE&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;STORAGE&#34;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;d113f4a&#34;</span><span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="s2">&#34;2.6.2&#34;</span><span class="w"> </span><span class="o">|</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">+</span><span class="c1">------------------------------------------------------------------------+------+----------+-----------+--------------+---------+
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">Got</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="k">rows</span><span class="w"> </span><span class="p">(</span><span class="n">time</span><span class="w"> </span><span class="n">spent</span><span class="w"> </span><span class="mi">1603</span><span class="o">/</span><span class="mi">2979</span><span class="w"> </span><span class="n">us</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">Mon</span><span class="p">,</span><span class="w"> </span><span class="mi">14</span><span class="w"> </span><span class="n">Feb</span><span class="w"> </span><span class="mi">2022</span><span class="w"> </span><span class="mi">10</span><span class="p">:</span><span class="mi">05</span><span class="p">:</span><span class="mi">24</span><span class="w"> </span><span class="n">UTC</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>然而，因为前边提到的 Spark-Connector 通过 Meta Service 去获取 StorageD 的地址，且这个地址是服务发现而得，所以 Spark-Connector 实际上获取的 StorageD 地址就是上边的这种 headless 的服务地址，没法直接从外部访问。</p>
 <p>所以，我们在有条件的情况下，只需要让 Spark 运行在和 Nebula Cluster 相同的 K8s 网络里，一切就迎刃而解了，否则，我们需要：</p>
@@ -416,8 +425,8 @@ Mon, <span class="m">14</span> Feb <span class="m">2022</span> 08:22:33 UTC
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">curl -sL nebula-kind.siwei.io/install.sh <span class="p">|</span> bash
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">curl -sL nebula-kind.siwei.io/install.sh <span class="p">|</span> bash
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p><figure><a class="lightgallery" href="https://github.com/wey-gu/nebula-operator-kind/raw/main/images/install_success.webp" title="install_success" data-thumbnail="https://github.com/wey-gu/nebula-operator-kind/raw/main/images/install_success.webp">
         <img
@@ -440,9 +449,9 @@ Mon, <span class="m">14</span> Feb <span class="m">2022</span> 08:22:33 UTC
 </span><span class="lnt">2
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">kubectl create -f http://nebula-kind.siwei.io/deployment/spark.yaml
-kubectl wait pod --timeout=-1s --for=condition=Ready -l &#39;!job-name&#39;
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">kubectl create -f http://nebula-kind.siwei.io/deployment/spark.yaml
+</span></span><span class="line"><span class="cl">kubectl wait pod --timeout=-1s --for=condition=Ready -l &#39;!job-name&#39;
+</span></span></code></pre></td></tr></table>
 </div>
 </div><ul>
 <li>等上边的 wait 都 ready 之后，进入 spark 的 pod。</li>
@@ -452,8 +461,8 @@ kubectl wait pod --timeout=-1s --for=condition=Ready -l &#39;!job-name&#39;
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">kubectl exec -it deploy/spark-deployment -- bash
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">kubectl exec -it deploy/spark-deployment -- bash
+</span></span></code></pre></td></tr></table>
 </div>
 </div><ul>
 <li>下载 nebula-algorithm 比如 <code>2.6.2</code> 这个版本，更多版本请参考 <a href="https://github.com/vesoft-inc/nebula-algorithm/" target="_blank" rel="noopener noreferrer">https://github.com/vesoft-inc/nebula-algorithm/</a>。</li>
@@ -473,11 +482,11 @@ kubectl wait pod --timeout=-1s --for=condition=Ready -l &#39;!job-name&#39;
 </span><span class="lnt">4
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"># 下载 nebula-algorithm-2.6.2.jar
-wget https://repo1.maven.org/maven2/com/vesoft/nebula-algorithm/2.6.2/nebula-algorithm-2.6.2.jar
-# 下载 nebula-algorthm 配置文件
-wget https://github.com/vesoft-inc/nebula-algorithm/raw/v2.6/nebula-algorithm/src/main/resources/application.conf
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl"># 下载 nebula-algorithm-2.6.2.jar
+</span></span><span class="line"><span class="cl">wget https://repo1.maven.org/maven2/com/vesoft/nebula-algorithm/2.6.2/nebula-algorithm-2.6.2.jar
+</span></span><span class="line"><span class="cl"># 下载 nebula-algorthm 配置文件
+</span></span><span class="line"><span class="cl">wget https://github.com/vesoft-inc/nebula-algorithm/raw/v2.6/nebula-algorithm/src/main/resources/application.conf
+</span></span></code></pre></td></tr></table>
 </div>
 </div><ul>
 <li>修改Then we could change the config file of nebula-algorithm on meta and graph addresses:</li>
@@ -494,15 +503,15 @@ wget https://github.com/vesoft-inc/nebula-algorithm/raw/v2.6/nebula-algorithm/sr
 </span><span class="lnt">8
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">sed -i &#39;/^        metaAddress/c\        metaAddress: \&#34;nebula-metad-0.nebula-metad-headless.default.svc.cluster.local:9559\&#34;&#39; application.conf
-sed -i &#39;/^        graphAddress/c\        graphAddress: \&#34;nebula-graphd-0.nebula-graphd-svc.default.svc.cluster.local:9669\&#34;&#39; application.conf
-##### change space
-sed -i &#39;/^        space/c\        space: basketballplayer&#39; application.conf
-##### read data from nebula graph
-sed -i &#39;/^    source/c\    source: nebula&#39; application.conf
-##### execute algorithm: labelpropagation
-sed -i &#39;/^    executeAlgo/c\    executeAlgo: labelpropagation&#39; application.conf
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">sed -i &#39;/^        metaAddress/c\        metaAddress: \&#34;nebula-metad-0.nebula-metad-headless.default.svc.cluster.local:9559\&#34;&#39; application.conf
+</span></span><span class="line"><span class="cl">sed -i &#39;/^        graphAddress/c\        graphAddress: \&#34;nebula-graphd-0.nebula-graphd-svc.default.svc.cluster.local:9669\&#34;&#39; application.conf
+</span></span><span class="line"><span class="cl">##### change space
+</span></span><span class="line"><span class="cl">sed -i &#39;/^        space/c\        space: basketballplayer&#39; application.conf
+</span></span><span class="line"><span class="cl">##### read data from nebula graph
+</span></span><span class="line"><span class="cl">sed -i &#39;/^    source/c\    source: nebula&#39; application.conf
+</span></span><span class="line"><span class="cl">##### execute algorithm: labelpropagation
+</span></span><span class="line"><span class="cl">sed -i &#39;/^    executeAlgo/c\    executeAlgo: labelpropagation&#39; application.conf
+</span></span></code></pre></td></tr></table>
 </div>
 </div><ul>
 <li>执行 LPA 算法在  basketballplayer 图空间</li>
@@ -515,11 +524,11 @@ sed -i &#39;/^    executeAlgo/c\    executeAlgo: labelpropagation&#39; applicati
 </span><span class="lnt">4
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">/spark/bin/spark-submit --master &#34;local&#34; --conf spark.rpc.askTimeout=6000s \
-    --class com.vesoft.nebula.algorithm.Main \
-    nebula-algorithm-2.6.2.jar \
-    -p application.conf
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">/spark/bin/spark-submit --master &#34;local&#34; --conf spark.rpc.askTimeout=6000s \
+</span></span><span class="line"><span class="cl">    --class com.vesoft.nebula.algorithm.Main \
+</span></span><span class="line"><span class="cl">    nebula-algorithm-2.6.2.jar \
+</span></span><span class="line"><span class="cl">    -p application.conf
+</span></span></code></pre></td></tr></table>
 </div>
 </div><ul>
 <li>结果如下：</li>
@@ -537,16 +546,16 @@ sed -i &#39;/^    executeAlgo/c\    executeAlgo: labelpropagation&#39; applicati
 </span><span class="lnt">9
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback">bash-5.0# ls /tmp/count/
-_SUCCESS                                                  part-00000-5475f9f4-66b9-426b-b0c2-704f946e54d3-c000.csv
-bash-5.0# head /tmp/count/part-00000-5475f9f4-66b9-426b-b0c2-704f946e54d3-c000.csv
-_id,lpa
-1100,1104
-2200,2200
-2201,2201
-1101,1104
-2202,2202
-</code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">bash-5.0# ls /tmp/count/
+</span></span><span class="line"><span class="cl">_SUCCESS                                                  part-00000-5475f9f4-66b9-426b-b0c2-704f946e54d3-c000.csv
+</span></span><span class="line"><span class="cl">bash-5.0# head /tmp/count/part-00000-5475f9f4-66b9-426b-b0c2-704f946e54d3-c000.csv
+</span></span><span class="line"><span class="cl">_id,lpa
+</span></span><span class="line"><span class="cl">1100,1104
+</span></span><span class="line"><span class="cl">2200,2200
+</span></span><span class="line"><span class="cl">2201,2201
+</span></span><span class="line"><span class="cl">1101,1104
+</span></span><span class="line"><span class="cl">2202,2202
+</span></span></code></pre></td></tr></table>
 </div>
 </div><p>Happy Graphing!</p>
 <blockquote>
@@ -632,7 +641,7 @@ _id,lpa
     </div>
 
     <div class="post-info-more">
-        <section class="post-tags"><i class="fas fa-tags fa-fw"></i>&nbsp;<a href="/tags/nebula-graph/">Nebula Graph</a>,&nbsp;<a href="/tags/%E5%9B%BE%E6%95%B0%E6%8D%AE%E5%BA%93/">图数据库</a>,&nbsp;<a href="/tags/spark-connector/">Spark-Connector</a>,&nbsp;<a href="/tags/nebula-algorithm/">Nebula-Algorithm</a>,&nbsp;<a href="/tags/k8s/">k8s</a>,&nbsp;<a href="/tags/nebula-operator/">nebula-operator</a></section>
+        <section class="post-tags"><i class="fas fa-tags fa-fw"></i>&nbsp;<a href="/tags/nebula-graph/">Nebula Graph</a>,&nbsp;<a href="/tags/%E5%9B%BE%E6%95%B0%E6%8D%AE%E5%BA%93/">图数据库</a>,&nbsp;<a href="/tags/spark-connector/">Spark-Connector</a>,&nbsp;<a href="/tags/nebula-algorithm/">Nebula Algorithm</a>,&nbsp;<a href="/tags/k8s/">K8s</a>,&nbsp;<a href="/tags/nebula-operator/">Nebula Operator</a></section>
         <section>
             <span><a href="javascript:void(0);" onclick="window.history.back();">返回</a></span>&nbsp;|&nbsp;<span><a href="/">主页</a></span>
         </section>
@@ -646,7 +655,7 @@ _id,lpa
             </noscript></div></article></div>
         </main><footer class="footer">
         <div class="footer-container"><div class="footer-line">
-                    由 <a href="https://gohugo.io/" target="_blank" rel="noopener noreferrer" title="Hugo 0.91.2">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreferrer" title="DoIt 0.4.0"><i class="far fa-edit fa-fw"></i> DoIt</a>
+                    由 <a href="https://gohugo.io/" target="_blank" rel="noopener noreferrer" title="Hugo 0.125.6">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreferrer" title="DoIt 0.4.0"><i class="far fa-edit fa-fw"></i> DoIt</a>
                 </div><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2018 - 2024</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="https://siwei.io" target="_blank" rel="noopener noreferrer">Wey Gu</a></span>&nbsp;|&nbsp;<span class="license"><a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">CC BY-NC 4.0</a></span></div>
             <div class="footer-line"></div>
             <div class="footer-line">
