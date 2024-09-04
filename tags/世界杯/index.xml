@@ -39,14 +39,7 @@
 <h2 id="抓取数据" class="headerLink">
     <a href="#%e6%8a%93%e5%8f%96%e6%95%b0%e6%8d%ae" class="header-mark"></a>2 抓取数据</h2><p>我真试了一下，结果是：完全可以，而且似乎真的很容易。</p>
 <p>整个过程基本上我像是一个代码考试的面试官、或者是一个产品经理，提出我的需求，chatGPT 给出代码的实现。我们再试着跑起来代码，找到代码中不合理的地方，指出来、给出建议，chatGPT 就真的能理解我指出的点，并给出相应的修正，像是：</p>
-<p><figure><img
-        
-        loading="lazy"
-        src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/chatGPT-correction-process.webp"
-        srcset="/chatgpt-and-nebulagraph-predict-fifa-world-cup/chatGPT-correction-process.webp, /chatgpt-and-nebulagraph-predict-fifa-world-cup/chatGPT-correction-process.webp 1.5x, /chatgpt-and-nebulagraph-predict-fifa-world-cup/chatGPT-correction-process.webp 2x"
-        sizes="auto"
-        alt="/chatgpt-and-nebulagraph-predict-fifa-world-cup/chatGPT-correction-process.webp"
-        title="/chatgpt-and-nebulagraph-predict-fifa-world-cup/chatGPT-correction-process.webp" height="1806"   width="1426" ></figure></p>
+<p><img class="tw-inline" loading="lazy" src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/chatGPT-correction-process.webp"    height="1806" width="1426"></p>
 <p>这一全过程我就不在这里列出来了，不过我把生成的代码和整个讨论的过程都分享在<a href="https://gist.github.com/wey-gu/78cb28bee130966e7d6e9d573b51deff" target="_blank" rel="noopener noreferrer">这里</a>，感兴趣的同学可以去看看。</p>
 <p>最终生成的数据是一个 CSV 文件：</p>
 <ul>
@@ -58,25 +51,108 @@
 <p>它像这样，包含的信息有：球队、小组、编号、位置、球员名字、生日、年龄、参加国际比赛场次、进球数、服役俱乐部。</p>
 </li>
 </ul>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">Team,Group,No.,Pos.,Player,DOB,Age,Caps,Goals,Club
+<div class="code-block highlight is-open show-line-numbers  tw-group tw-my-2">
+  <div class="
+    code-block-title 
+    
+    tw-flex 
+    tw-flex-row 
+    tw-justify-between 
+    tw-w-full tw-bg-bgColor-secondary
+    ">      
+    <button 
+      class="
+        tw-select-none 
+        tw-mx-2 
+        tw-block
+        group-[.is-open]:tw-rotate-90
+        tw-transition-[transform] 
+        tw-duration-500 
+        tw-ease-in-out
+        print:!tw-hidden"
+      disabled
+      aria-hidden="true"><svg class="icon"
+    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --><path d="M285.476 272.971L91.132 467.314c-9.373 9.373-24.569 9.373-33.941 0l-22.667-22.667c-9.357-9.357-9.375-24.522-.04-33.901L188.505 256 34.484 101.255c-9.335-9.379-9.317-24.544.04-33.901l22.667-22.667c9.373-9.373 24.569-9.373 33.941 0L285.475 239.03c9.373 9.372 9.373 24.568.001 33.941z"/></svg></button>
+
+    <div class="code-block-title-bar tw-w-full">
+      <p class="tw-select-none !tw-my-1">CSV</p>
+    </div>
+    <div class="tw-flex">
+      <button 
+        class="
+          line-number-button
+          tw-select-none 
+          tw-mx-2 
+          tw-hidden 
+          group-[.is-open]:tw-block 
+          group-[.show-line-numbers]:tw-text-fgColor-link 
+          print:!tw-hidden" 
+        title="Toggle line numbers"><svg class="icon"
+    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --><path d="M61.77 401l17.5-20.15a19.92 19.92 0 0 0 5.07-14.19v-3.31C84.34 356 80.5 352 73 352H16a8 8 0 0 0-8 8v16a8 8 0 0 0 8 8h22.83a157.41 157.41 0 0 0-11 12.31l-5.61 7c-4 5.07-5.25 10.13-2.8 14.88l1.05 1.93c3 5.76 6.29 7.88 12.25 7.88h4.73c10.33 0 15.94 2.44 15.94 9.09 0 4.72-4.2 8.22-14.36 8.22a41.54 41.54 0 0 1-15.47-3.12c-6.49-3.88-11.74-3.5-15.6 3.12l-5.59 9.31c-3.72 6.13-3.19 11.72 2.63 15.94 7.71 4.69 20.38 9.44 37 9.44 34.16 0 48.5-22.75 48.5-44.12-.03-14.38-9.12-29.76-28.73-34.88zM496 224H176a16 16 0 0 0-16 16v32a16 16 0 0 0 16 16h320a16 16 0 0 0 16-16v-32a16 16 0 0 0-16-16zm0-160H176a16 16 0 0 0-16 16v32a16 16 0 0 0 16 16h320a16 16 0 0 0 16-16V80a16 16 0 0 0-16-16zm0 320H176a16 16 0 0 0-16 16v32a16 16 0 0 0 16 16h320a16 16 0 0 0 16-16v-32a16 16 0 0 0-16-16zM16 160h64a8 8 0 0 0 8-8v-16a8 8 0 0 0-8-8H64V40a8 8 0 0 0-8-8H32a8 8 0 0 0-7.14 4.42l-8 16A8 8 0 0 0 24 64h8v64H16a8 8 0 0 0-8 8v16a8 8 0 0 0 8 8zm-3.91 160H80a8 8 0 0 0 8-8v-16a8 8 0 0 0-8-8H41.32c3.29-10.29 48.34-18.68 48.34-56.44 0-29.06-25-39.56-44.47-39.56-21.36 0-33.8 10-40.46 18.75-4.37 5.59-3 10.84 2.8 15.37l8.58 6.88c5.61 4.56 11 2.47 16.12-2.44a13.44 13.44 0 0 1 9.46-3.84c3.33 0 9.28 1.56 9.28 8.75C51 248.19 0 257.31 0 304.59v4C0 316 5.08 320 12.09 320z"/></svg></button>
+
+      <button 
+        class="
+          wrap-code-button
+          tw-select-none 
+          tw-mx-2 
+          tw-hidden 
+          group-[.is-open]:tw-block 
+          group-[.is-wrap]:tw-text-fgColor-link 
+          print:!tw-hidden" 
+        title="Toggle code wrap"><svg class="icon"
+    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --><path d="M16 132h416c8.837 0 16-7.163 16-16V76c0-8.837-7.163-16-16-16H16C7.163 60 0 67.163 0 76v40c0 8.837 7.163 16 16 16zm0 160h416c8.837 0 16-7.163 16-16v-40c0-8.837-7.163-16-16-16H16c-8.837 0-16 7.163-16 16v40c0 8.837 7.163 16 16 16zm0 160h416c8.837 0 16-7.163 16-16v-40c0-8.837-7.163-16-16-16H16c-8.837 0-16 7.163-16 16v40c0 8.837 7.163 16 16 16z"/></svg></button>
+      
+      <button 
+        class="
+          copy-code-button
+          tw-select-none
+          tw-mx-2 
+          tw-hidden
+          group-[.is-open]:tw-block
+          hover:tw-text-fgColor-link 
+          print:!tw-hidden"
+        title="Copy code">
+          <span class="copy-icon tw-block"><svg class="icon"
+    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --><path d="M433.941 65.941l-51.882-51.882A48 48 0 0 0 348.118 0H176c-26.51 0-48 21.49-48 48v48H48c-26.51 0-48 21.49-48 48v320c0 26.51 21.49 48 48 48h224c26.51 0 48-21.49 48-48v-48h80c26.51 0 48-21.49 48-48V99.882a48 48 0 0 0-14.059-33.941zM266 464H54a6 6 0 0 1-6-6V150a6 6 0 0 1 6-6h74v224c0 26.51 21.49 48 48 48h96v42a6 6 0 0 1-6 6zm128-96H182a6 6 0 0 1-6-6V54a6 6 0 0 1 6-6h106v88c0 13.255 10.745 24 24 24h88v202a6 6 0 0 1-6 6zm6-256h-64V48h9.632c1.591 0 3.117.632 4.243 1.757l48.368 48.368a6 6 0 0 1 1.757 4.243V112z"/></svg></span>
+          <span class="check-icon tw-hidden"><svg class="icon"
+    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --><path d="M173.898 439.404l-166.4-166.4c-9.997-9.997-9.997-26.206 0-36.204l36.203-36.204c9.997-9.998 26.207-9.998 36.204 0L192 312.69 432.095 72.596c9.997-9.997 26.207-9.997 36.204 0l36.203 36.204c9.997 9.997 9.997 26.206 0 36.204l-294.4 294.401c-9.998 9.997-26.207 9.997-36.204-.001z"/></svg></span>
+      </button>
+        
+      <button 
+        class="
+          tw-select-none 
+          tw-mx-2 
+          tw-block 
+          group-[.is-open]:tw-hidden 
+          print:!tw-hidden" 
+        disabled
+        aria-hidden="true"><svg class="icon"
+    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --><path d="M328 256c0 39.8-32.2 72-72 72s-72-32.2-72-72 32.2-72 72-72 72 32.2 72 72zm104-72c-39.8 0-72 32.2-72 72s32.2 72 72 72 72-32.2 72-72-32.2-72-72-72zm-352 0c-39.8 0-72 32.2-72 72s32.2 72 72 72 72-32.2 72-72-32.2-72-72-72z"/></svg></button>
+    </div>
+  </div>
+  <pre style="counter-reset: codeblock;" class="tw-block tw-m-0 tw-p-0"><code 
+    id="codeblock-id-1" 
+    class="
+      chroma 
+      !tw-block 
+      tw-p-0
+      tw-m-0
+      tw-transition-[max-height] 
+      tw-duration-500 
+      tw-ease-in-out 
+      group-[.is-closed]:!tw-max-h-0 
+      group-[.is-wrap]:tw-text-wrap
+      tw-overflow-y-hidden
+      tw-overflow-x-auto
+      tw-scrollbar-thin
+      "><span class="line"><span class="cl">Team,Group,No.,Pos.,Player,DOB,Age,Caps,Goals,Club
 </span></span><span class="line"><span class="cl">Ecuador,A,1,1GK,Hernán Galíndez,(1987-03-30)30 March 1987,35,12,0,Aucas
 </span></span><span class="line"><span class="cl">Ecuador,A,2,2DF,Félix Torres,(1997-01-11)11 January 1997,25,17,2,Santos Laguna
 </span></span><span class="line"><span class="cl">Ecuador,A,3,2DF,Piero Hincapié,(2002-01-09)9 January 2002,20,21,1,Bayer Leverkusen
 </span></span><span class="line"><span class="cl">Ecuador,A,4,2DF,Robert Arboleda,(1991-10-22)22 October 1991,31,33,2,São Paulo
-</span></span><span class="line"><span class="cl">Ecuador,A,5,3MF,José Cifuentes,(1999-03-12)12 March 1999,23,11,0,Los Angeles FC
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">Ecuador,A,5,3MF,José Cifuentes,(1999-03-12)12 March 1999,23,11,0,Los Angeles FC</span></span></code></pre>
 </div>
-</div><ul>
+<ul>
 <li>手动删除了 CSV 表头 <a href="https://github.com/siwei-io/talks/files/10152974/world_cup_squads_no_headers.csv" target="_blank" rel="noopener noreferrer">world_cup_squads_no_headers.csv</a></li>
 </ul>
 <h2 id="图方法预测2022世界杯" class="headerLink">
@@ -101,101 +177,38 @@
 </ul>
 <p>而队员的年龄、参加国际场次（caps）、进球数（goals）则很自然作为 player 这一类点的属性。</p>
 <p>下图是这个 schema 在 NebulaGraph Studio/Explorer（后边称 Studio/Explorer） 中的截图：</p>
-<p><figure><img
-        
-        loading="lazy"
-        src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/schema_fifa.webp"
-        srcset="/chatgpt-and-nebulagraph-predict-fifa-world-cup/schema_fifa.webp, /chatgpt-and-nebulagraph-predict-fifa-world-cup/schema_fifa.webp 1.5x, /chatgpt-and-nebulagraph-predict-fifa-world-cup/schema_fifa.webp 2x"
-        sizes="auto"
-        alt="schema_fifa"
-        title="schema_fifa" height="2334"   width="4064" ></figure></p>
+<p><img class="tw-inline" loading="lazy" src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/schema_fifa.webp"   alt="schema_fifa" height="2334" width="4064"></p>
 <p>然后，我们可以在右上角把它保存，创建一个新的图空间，应用这个图建模到图空间里。</p>
 <blockquote>
 <p>注：参考文档 <a href="https://docs.nebula-graph.com.cn/3.3.0/nebula-explorer/db-management/draft/" target="_blank" rel="noopener noreferrer">https://docs.nebula-graph.com.cn/3.3.0/nebula-explorer/db-management/draft/</a></p>
 </blockquote>
 <h3 id="导入数据进-nebulagraph" class="headerLink">
     <a href="#%e5%af%bc%e5%85%a5%e6%95%b0%e6%8d%ae%e8%bf%9b-nebulagraph" class="header-mark"></a>3.2 导入数据进 NebulaGraph</h3><p>有了图建模，我们可以把之前的 CSV 文件（无表头版本）上传到 Studio 或者 Explorer 里，通过点、选关联不同的列到点边中的 vid 和属性：</p>
-<p><figure><img
-        
-        loading="lazy"
-        src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_config_mapping.webp"
-        srcset="/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_config_mapping.webp, /chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_config_mapping.webp 1.5x, /chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_config_mapping.webp 2x"
-        sizes="auto"
-        alt="/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_config_mapping.webp"
-        title="/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_config_mapping.webp" height="2334"   width="4064" ></figure></p>
+<p><img class="tw-inline" loading="lazy" src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_config_mapping.webp"    height="2334" width="4064"></p>
 <p>之后点击导入，就把整个图导入到 NebulaGraph 了，成功之后，我们还得到了整个csv &ndash;&gt; Nebula Importer 的关联配置文件：<a href="https://github.com/siwei-io/talks/files/10164014/config_fifa.yml.txt" target="_blank" rel="noopener noreferrer">nebula_importer_config_fifa.yml</a>，你可以直接拖拽整个配置，不用自己去配置它了。</p>
-<p><figure><img
-        
-        loading="lazy"
-        src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_log.webp"
-        srcset="/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_log.webp, /chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_log.webp 1.5x, /chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_log.webp 2x"
-        sizes="auto"
-        alt="/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_log.webp"
-        title="/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_log.webp" height="2334"   width="4064" ></figure></p>
+<p><img class="tw-inline" loading="lazy" src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_log.webp"    height="2334" width="4064"></p>
 <blockquote>
 <p>注：参考文档 <a href="https://docs.nebula-graph.com.cn/3.3.0/nebula-explorer/db-management/11.import-data/" target="_blank" rel="noopener noreferrer">https://docs.nebula-graph.com.cn/3.3.0/nebula-explorer/db-management/11.import-data/</a></p>
 </blockquote>
 <p>导入之后，我们可以在 schema 界面里查看数据统计，我们可以看到有 831 名球员参加了 2022 卡塔尔世界杯，他们服役在 295 个不同的俱乐部：</p>
-<p><figure><img
-        
-        loading="lazy"
-        src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/data_stats.webp"
-        srcset="/chatgpt-and-nebulagraph-predict-fifa-world-cup/data_stats.webp, /chatgpt-and-nebulagraph-predict-fifa-world-cup/data_stats.webp 1.5x, /chatgpt-and-nebulagraph-predict-fifa-world-cup/data_stats.webp 2x"
-        sizes="auto"
-        alt="/chatgpt-and-nebulagraph-predict-fifa-world-cup/data_stats.webp"
-        title="/chatgpt-and-nebulagraph-predict-fifa-world-cup/data_stats.webp" height="2334"   width="4064" ></figure></p>
+<p><img class="tw-inline" loading="lazy" src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/data_stats.webp"    height="2334" width="4064"></p>
 <blockquote>
 <p>注：参考文档 <a href="https://docs.nebula-graph.com.cn/3.3.0/nebula-explorer/db-management/10.create-schema/#_6" target="_blank" rel="noopener noreferrer">https://docs.nebula-graph.com.cn/3.3.0/nebula-explorer/db-management/10.create-schema/#_6</a></p>
 </blockquote>
 <h3 id="探索数据" class="headerLink">
     <a href="#%e6%8e%a2%e7%b4%a2%e6%95%b0%e6%8d%ae" class="header-mark"></a>3.3 探索数据</h3><h4 id="查询数据" class="headerLink">
     <a href="#%e6%9f%a5%e8%af%a2%e6%95%b0%e6%8d%ae" class="header-mark"></a>3.3.1 查询数据</h4><p>下面，我们试着把所有的数据展示出来看看吧，首先，借助 NebulaGraph Explorer，我用拖拽的方式画出来任意类型的点（TAG）和任意类型点（TAG）之间的边，这里我们知道所有的点都是至少包含在一个边里的，所以不会漏掉任何孤立的点。</p>
-<p><figure><img
-        
-        loading="lazy"
-        src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-0.webp"
-        srcset="/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-0.webp, /chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-0.webp 1.5x, /chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-0.webp 2x"
-        sizes="auto"
-        alt="/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-0.webp"
-        title="/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-0.webp" height="2146"   width="3320" ></figure></p>
+<p><img class="tw-inline" loading="lazy" src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-0.webp"    height="2146" width="3320"></p>
 <p>让它帮我生成查询的语句，这里，它默认 LIMIT 100 了，我们手动改大一些（ LIMIT 10000），让它在 Console 里执行。</p>
-<p><figure><img
-        
-        loading="lazy"
-        src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-1.webp"
-        srcset="/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-1.webp, /chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-1.webp 1.5x, /chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-1.webp 2x"
-        sizes="auto"
-        alt="/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-1.webp"
-        title="/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-1.webp" height="2146"   width="3320" ></figure></p>
+<p><img class="tw-inline" loading="lazy" src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-1.webp"    height="2146" width="3320"></p>
 <h4 id="初步观察数据" class="headerLink">
     <a href="#%e5%88%9d%e6%ad%a5%e8%a7%82%e5%af%9f%e6%95%b0%e6%8d%ae" class="header-mark"></a>3.3.2 初步观察数据</h4><p>结果渲染出来是这样子，可以看到它天然形成了一簇一簇的模式。</p>
-<p><figure><img
-        
-        loading="lazy"
-        src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/bird_view.webp"
-        srcset="/chatgpt-and-nebulagraph-predict-fifa-world-cup/bird_view.webp, /chatgpt-and-nebulagraph-predict-fifa-world-cup/bird_view.webp 1.5x, /chatgpt-and-nebulagraph-predict-fifa-world-cup/bird_view.webp 2x"
-        sizes="auto"
-        alt="/chatgpt-and-nebulagraph-predict-fifa-world-cup/bird_view.webp"
-        title="/chatgpt-and-nebulagraph-predict-fifa-world-cup/bird_view.webp" height="2334"   width="4064" ></figure></p>
+<p><img class="tw-inline" loading="lazy" src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/bird_view.webp"    height="2334" width="4064"></p>
 <p>这些外围、形成的簇多是一些由非传统意义上的有全球影响力的俱乐部，和非传统的足球厉害的国家队的球员组成，因为通常这些俱乐部只有一两个球员，而且他们还集中在一个国家队、地区，所以没有和很多其他球员、国家队产生连接。</p>
-<p><figure><img
-        
-        loading="lazy"
-        src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/edge_teams.webp"
-        srcset="/chatgpt-and-nebulagraph-predict-fifa-world-cup/edge_teams.webp, /chatgpt-and-nebulagraph-predict-fifa-world-cup/edge_teams.webp 1.5x, /chatgpt-and-nebulagraph-predict-fifa-world-cup/edge_teams.webp 2x"
-        sizes="auto"
-        alt="/chatgpt-and-nebulagraph-predict-fifa-world-cup/edge_teams.webp"
-        title="/chatgpt-and-nebulagraph-predict-fifa-world-cup/edge_teams.webp" height="1268"   width="1576" ></figure></p>
+<p><img class="tw-inline" loading="lazy" src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/edge_teams.webp"    height="1268" width="1576"></p>
 <h4 id="图算法辅助分析" class="headerLink">
     <a href="#%e5%9b%be%e7%ae%97%e6%b3%95%e8%be%85%e5%8a%a9%e5%88%86%e6%9e%90" class="header-mark"></a>3.3.3 图算法辅助分析</h4><p>在我点击了 Explorer 中的两个按钮之后（详细参考后边的文档链接），在浏览器里，我们可以看到整个图已经变成：</p>
-<p><figure><img
-        
-        loading="lazy"
-        src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/Barcelona.webp"
-        srcset="/chatgpt-and-nebulagraph-predict-fifa-world-cup/Barcelona.webp, /chatgpt-and-nebulagraph-predict-fifa-world-cup/Barcelona.webp 1.5x, /chatgpt-and-nebulagraph-predict-fifa-world-cup/Barcelona.webp 2x"
-        sizes="auto"
-        alt="/chatgpt-and-nebulagraph-predict-fifa-world-cup/Barcelona.webp"
-        title="/chatgpt-and-nebulagraph-predict-fifa-world-cup/Barcelona.webp" height="2334"   width="4064" ></figure></p>
+<p><img class="tw-inline" loading="lazy" src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/Barcelona.webp"    height="2334" width="4064"></p>
 <blockquote>
 <p>注：这部分功能可以参考文档 <a href="https://docs.nebula-graph.com.cn/3.3.0/nebula-explorer/graph-explorer/graph-algorithm/" target="_blank" rel="noopener noreferrer">https://docs.nebula-graph.com.cn/3.3.0/nebula-explorer/graph-explorer/graph-algorithm/</a></p>
 </blockquote>
@@ -216,58 +229,115 @@
 </ul>
 <h4 id="算法过程" class="headerLink">
     <a href="#%e7%ae%97%e6%b3%95%e8%bf%87%e7%a8%8b" class="header-mark"></a>3.4.1 算法过程</h4><p>首先，我们取出所有进球数超过 10，场均进球超过 0.2 的 (球员)-服役-&gt;(俱乐部) 的子图：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">MATCH ()-[e]-&gt;()
+<div class="code-block highlight is-open show-line-numbers  tw-group tw-my-2">
+  <div class="
+    code-block-title 
+    
+    tw-flex 
+    tw-flex-row 
+    tw-justify-between 
+    tw-w-full tw-bg-bgColor-secondary
+    ">      
+    <button 
+      class="
+        tw-select-none 
+        tw-mx-2 
+        tw-block
+        group-[.is-open]:tw-rotate-90
+        tw-transition-[transform] 
+        tw-duration-500 
+        tw-ease-in-out
+        print:!tw-hidden"
+      disabled
+      aria-hidden="true"><svg class="icon"
+    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --><path d="M285.476 272.971L91.132 467.314c-9.373 9.373-24.569 9.373-33.941 0l-22.667-22.667c-9.357-9.357-9.375-24.522-.04-33.901L188.505 256 34.484 101.255c-9.335-9.379-9.317-24.544.04-33.901l22.667-22.667c9.373-9.373 24.569-9.373 33.941 0L285.475 239.03c9.373 9.372 9.373 24.568.001 33.941z"/></svg></button>
+
+    <div class="code-block-title-bar tw-w-full">
+      <p class="tw-select-none !tw-my-1">cypher</p>
+    </div>
+    <div class="tw-flex">
+      <button 
+        class="
+          line-number-button
+          tw-select-none 
+          tw-mx-2 
+          tw-hidden 
+          group-[.is-open]:tw-block 
+          group-[.show-line-numbers]:tw-text-fgColor-link 
+          print:!tw-hidden" 
+        title="Toggle line numbers"><svg class="icon"
+    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --><path d="M61.77 401l17.5-20.15a19.92 19.92 0 0 0 5.07-14.19v-3.31C84.34 356 80.5 352 73 352H16a8 8 0 0 0-8 8v16a8 8 0 0 0 8 8h22.83a157.41 157.41 0 0 0-11 12.31l-5.61 7c-4 5.07-5.25 10.13-2.8 14.88l1.05 1.93c3 5.76 6.29 7.88 12.25 7.88h4.73c10.33 0 15.94 2.44 15.94 9.09 0 4.72-4.2 8.22-14.36 8.22a41.54 41.54 0 0 1-15.47-3.12c-6.49-3.88-11.74-3.5-15.6 3.12l-5.59 9.31c-3.72 6.13-3.19 11.72 2.63 15.94 7.71 4.69 20.38 9.44 37 9.44 34.16 0 48.5-22.75 48.5-44.12-.03-14.38-9.12-29.76-28.73-34.88zM496 224H176a16 16 0 0 0-16 16v32a16 16 0 0 0 16 16h320a16 16 0 0 0 16-16v-32a16 16 0 0 0-16-16zm0-160H176a16 16 0 0 0-16 16v32a16 16 0 0 0 16 16h320a16 16 0 0 0 16-16V80a16 16 0 0 0-16-16zm0 320H176a16 16 0 0 0-16 16v32a16 16 0 0 0 16 16h320a16 16 0 0 0 16-16v-32a16 16 0 0 0-16-16zM16 160h64a8 8 0 0 0 8-8v-16a8 8 0 0 0-8-8H64V40a8 8 0 0 0-8-8H32a8 8 0 0 0-7.14 4.42l-8 16A8 8 0 0 0 24 64h8v64H16a8 8 0 0 0-8 8v16a8 8 0 0 0 8 8zm-3.91 160H80a8 8 0 0 0 8-8v-16a8 8 0 0 0-8-8H41.32c3.29-10.29 48.34-18.68 48.34-56.44 0-29.06-25-39.56-44.47-39.56-21.36 0-33.8 10-40.46 18.75-4.37 5.59-3 10.84 2.8 15.37l8.58 6.88c5.61 4.56 11 2.47 16.12-2.44a13.44 13.44 0 0 1 9.46-3.84c3.33 0 9.28 1.56 9.28 8.75C51 248.19 0 257.31 0 304.59v4C0 316 5.08 320 12.09 320z"/></svg></button>
+
+      <button 
+        class="
+          wrap-code-button
+          tw-select-none 
+          tw-mx-2 
+          tw-hidden 
+          group-[.is-open]:tw-block 
+          group-[.is-wrap]:tw-text-fgColor-link 
+          print:!tw-hidden" 
+        title="Toggle code wrap"><svg class="icon"
+    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --><path d="M16 132h416c8.837 0 16-7.163 16-16V76c0-8.837-7.163-16-16-16H16C7.163 60 0 67.163 0 76v40c0 8.837 7.163 16 16 16zm0 160h416c8.837 0 16-7.163 16-16v-40c0-8.837-7.163-16-16-16H16c-8.837 0-16 7.163-16 16v40c0 8.837 7.163 16 16 16zm0 160h416c8.837 0 16-7.163 16-16v-40c0-8.837-7.163-16-16-16H16c-8.837 0-16 7.163-16 16v40c0 8.837 7.163 16 16 16z"/></svg></button>
+      
+      <button 
+        class="
+          copy-code-button
+          tw-select-none
+          tw-mx-2 
+          tw-hidden
+          group-[.is-open]:tw-block
+          hover:tw-text-fgColor-link 
+          print:!tw-hidden"
+        title="Copy code">
+          <span class="copy-icon tw-block"><svg class="icon"
+    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --><path d="M433.941 65.941l-51.882-51.882A48 48 0 0 0 348.118 0H176c-26.51 0-48 21.49-48 48v48H48c-26.51 0-48 21.49-48 48v320c0 26.51 21.49 48 48 48h224c26.51 0 48-21.49 48-48v-48h80c26.51 0 48-21.49 48-48V99.882a48 48 0 0 0-14.059-33.941zM266 464H54a6 6 0 0 1-6-6V150a6 6 0 0 1 6-6h74v224c0 26.51 21.49 48 48 48h96v42a6 6 0 0 1-6 6zm128-96H182a6 6 0 0 1-6-6V54a6 6 0 0 1 6-6h106v88c0 13.255 10.745 24 24 24h88v202a6 6 0 0 1-6 6zm6-256h-64V48h9.632c1.591 0 3.117.632 4.243 1.757l48.368 48.368a6 6 0 0 1 1.757 4.243V112z"/></svg></span>
+          <span class="check-icon tw-hidden"><svg class="icon"
+    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --><path d="M173.898 439.404l-166.4-166.4c-9.997-9.997-9.997-26.206 0-36.204l36.203-36.204c9.997-9.998 26.207-9.998 36.204 0L192 312.69 432.095 72.596c9.997-9.997 26.207-9.997 36.204 0l36.203 36.204c9.997 9.997 9.997 26.206 0 36.204l-294.4 294.401c-9.998 9.997-26.207 9.997-36.204-.001z"/></svg></span>
+      </button>
+        
+      <button 
+        class="
+          tw-select-none 
+          tw-mx-2 
+          tw-block 
+          group-[.is-open]:tw-hidden 
+          print:!tw-hidden" 
+        disabled
+        aria-hidden="true"><svg class="icon"
+    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --><path d="M328 256c0 39.8-32.2 72-72 72s-72-32.2-72-72 32.2-72 72-72 72 32.2 72 72zm104-72c-39.8 0-72 32.2-72 72s32.2 72 72 72 72-32.2 72-72-32.2-72-72-72zm-352 0c-39.8 0-72 32.2-72 72s32.2 72 72 72 72-32.2 72-72-32.2-72-72-72z"/></svg></button>
+    </div>
+  </div>
+  <pre style="counter-reset: codeblock;" class="tw-block tw-m-0 tw-p-0"><code 
+    id="codeblock-id-2" 
+    class="
+      chroma 
+      !tw-block 
+      tw-p-0
+      tw-m-0
+      tw-transition-[max-height] 
+      tw-duration-500 
+      tw-ease-in-out 
+      group-[.is-closed]:!tw-max-h-0 
+      group-[.is-wrap]:tw-text-wrap
+      tw-overflow-y-hidden
+      tw-overflow-x-auto
+      tw-scrollbar-thin
+      "><span class="line"><span class="cl">MATCH ()-[e]-&gt;()
 </span></span><span class="line"><span class="cl">WITH e LIMIT 10000
 </span></span><span class="line"><span class="cl">WITH e AS e WHERE e.goals &gt; 10 AND toFloat(e.goals)/e.caps &gt; 0.2
-</span></span><span class="line"><span class="cl">RETURN e
-</span></span></code></pre></td></tr></table>
+</span></span><span class="line"><span class="cl">RETURN e</span></span></code></pre>
 </div>
-</div><blockquote>
+<blockquote>
 <p>注：为了方便，我把进球数和出场数也作为了 serve 边上的属性了。</p>
 </blockquote>
-<p><figure><img
-        
-        loading="lazy"
-        src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/query_step0.webp"
-        srcset="/chatgpt-and-nebulagraph-predict-fifa-world-cup/query_step0.webp, /chatgpt-and-nebulagraph-predict-fifa-world-cup/query_step0.webp 1.5x, /chatgpt-and-nebulagraph-predict-fifa-world-cup/query_step0.webp 2x"
-        sizes="auto"
-        alt="/chatgpt-and-nebulagraph-predict-fifa-world-cup/query_step0.webp"
-        title="/chatgpt-and-nebulagraph-predict-fifa-world-cup/query_step0.webp" height="2334"   width="4064" ></figure></p>
+<p><img class="tw-inline" loading="lazy" src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/query_step0.webp"    height="2334" width="4064"></p>
 <p>然后，我们全选图上的所有点，点击左边的工具栏，选择出方向的 <code>belongto</code> 边，向外进行图拓展（遍历），同时选择将拓展得到的新点标记为旗帜的 icon：</p>
-<p><figure><img
-        
-        loading="lazy"
-        src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/treversal_step1.webp"
-        srcset="/chatgpt-and-nebulagraph-predict-fifa-world-cup/treversal_step1.webp, /chatgpt-and-nebulagraph-predict-fifa-world-cup/treversal_step1.webp 1.5x, /chatgpt-and-nebulagraph-predict-fifa-world-cup/treversal_step1.webp 2x"
-        sizes="auto"
-        alt="treversal_step1"
-        title="treversal_step1" height="2334"   width="4064" ></figure></p>
+<p><img class="tw-inline" loading="lazy" src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/treversal_step1.webp"   alt="treversal_step1" height="2334" width="4064"></p>
 <p>现在，我们获得了最终的子图，我们利用工具栏里的浏览器内的图算法功能，执行 BNC（Betweenness Centrality）</p>
-<p><figure><img
-        
-        loading="lazy"
-        src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_step2.webp"
-        srcset="/chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_step2.webp, /chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_step2.webp 1.5x, /chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_step2.webp 2x"
-        sizes="auto"
-        alt="bnc_step2"
-        title="bnc_step2" height="2334"   width="4064" ></figure></p>
+<p><img class="tw-inline" loading="lazy" src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_step2.webp"   alt="bnc_step2" height="2334" width="4064"></p>
 <p>然后，这个子图变成了这样子：</p>
-<p><figure><img
-        
-        loading="lazy"
-        src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_predict.webp"
-        srcset="/chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_predict.webp, /chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_predict.webp 1.5x, /chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_predict.webp 2x"
-        sizes="auto"
-        alt="bnc_predict"
-        title="bnc_predict" height="2334"   width="4064" ></figure></p>
+<p><img class="tw-inline" loading="lazy" src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_predict.webp"   alt="bnc_predict" height="2334" width="4064"></p>
 <h2 id="预测结果" class="headerLink">
     <a href="#%e9%a2%84%e6%b5%8b%e7%bb%93%e6%9e%9c" class="header-mark"></a>4 预测结果</h2><p>最终，我们根据 Betweenness Centrality 的值，排序，可以得到最终的获胜球队应该是：巴西 🇧🇷！</p>
 <p>其次是比利时、德国、英格兰、法国、阿根廷，让我们等两个礼拜回来看看预测结果是否准确吧 :D。</p>

@@ -46,7 +46,7 @@ GO 3 STEPS FROM "player100" OVER follow WHERE $$.player.age > 34 YIELD DISTINCT 
 
 语句经过了解析、验证、优化之后，最终的执行计划是， `Start -> Loop -> Start -> GetNeighbors -> Project -> Dedup -> Loop -> GetNeighbors -> Project -> GetVertices -> Project -> LeftJoin -> Filter -> Project -> Dedup -> Sort`，或者如下图所示。
 
-![go_n_steps](go_n_steps.svg)
+<img src="go_n_steps.svg" style="width: 100%; height: auto;">
 
 了解这个优化过程和最终执行计划意味着什么是调优查询、面向性能设计图建模的关键。
 

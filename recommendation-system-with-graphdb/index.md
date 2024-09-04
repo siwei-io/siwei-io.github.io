@@ -654,7 +654,7 @@ GNN 的方法中，图数据库只是一个可选项，而我给的 GNN 方法�
   - 当给定的用户推荐请求过来的时候，图库中以该用户为起点的子图会被获取（1.）、作为输入发送给推理接口（2.）
   - 推理接口把子图输入给之前训练的模型，获得该用户在子图中关联的新物件中的评分排序（3.）作为推荐结果
 
-![PinSAGE_RecommendationSystem](PinSAGE_RecommendationSystem.svg)
+<img src="PinSAGE_RecommendationSystem.svg" alt="PinSAGE_RecommendationSystem" style="width: 100%; height: auto;">
 
 篇幅关系，本章我就不给出端到端的实例代码了，后续有机会我会尽量做一个 demo 出来的。
 
