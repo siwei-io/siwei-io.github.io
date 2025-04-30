@@ -4,9 +4,7 @@
 
 # Hi, this is Wey :)
 
-I am a developer @***[vesoft](https://vesoft.com)*** working as Chief Evangelist of [NebulaGraph](https://nebula-graph.io/), the open source distributed Graph Database
-
-I create toolings and content for [NebulaGraph Database](https://github.com/vesoft-inc) to help Developers in the open source community.
+I am a developer @***[vesoft](https://vesoft.com)*** working as GenAI Lead && Chief Evangelist of [NebulaGraph](https://nebula-graph.io/), the open source distributed Graph Database
 
 I am working in open source and consider it is a privilege [^1]. It took me a couple of my early career years to figure out that my passion lies in *helping others with my thoughts & the tech/magic I have learned*.
 
