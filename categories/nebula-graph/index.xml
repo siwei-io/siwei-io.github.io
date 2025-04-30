@@ -4,7 +4,341 @@
         <link>https://siwei.io/categories/nebula-graph/</link>
         <description>Nebula Graph - 分类 - siwei.io</description>
         <generator>Hugo -- gohugo.io</generator><language>zh-cn</language><managingEditor>weyl.gu@gmail.com (Wey Gu)</managingEditor>
-            <webMaster>weyl.gu@gmail.com (Wey Gu)</webMaster><lastBuildDate>Tue, 15 Aug 2023 11:10:34 &#43;0800</lastBuildDate><atom:link href="https://siwei.io/categories/nebula-graph/" rel="self" type="application/rss+xml" /><item>
+            <webMaster>weyl.gu@gmail.com (Wey Gu)</webMaster><lastBuildDate>Fri, 28 Feb 2025 21:33:13 &#43;0800</lastBuildDate><atom:link href="https://siwei.io/categories/nebula-graph/" rel="self" type="application/rss+xml" /><item>
+    <title>Fusion Graphrag 2025</title>
+    <link>https://siwei.io/fusion-graphrag-2025/</link>
+    <pubDate>Fri, 28 Feb 2025 21:33:13 &#43;0800</pubDate><author>
+        <name>Wey Gu</name>
+    </author><guid>https://siwei.io/fusion-graphrag-2025/</guid>
+    <description><![CDATA[<div class="featured-image">
+                <img src="/fusion-graphrag-2025/featured-image.webp" referrerpolicy="no-referrer">
+            </div><h2 id="fusion-graphrag终极-rag-方案" class="headerLink">
+    <a href="#fusion-graphrag%e7%bb%88%e6%9e%81-rag-%e6%96%b9%e6%a1%88" class="header-mark"></a>1 Fusion GraphRAG：终极 RAG 方案</h2><blockquote>
+<p>本文分享我们团队在 GraphRAG 领域的探索与实践历程，介绍一下 FusionGraphRAG。</p>
+</blockquote>
+<p>本文将分享我们团队在 GraphRAG 领域的探索与实践历程。GraphRAG 是检索增强生成（RAG）技术的高级技术之一，旨在解决传统 RAG 的局限性。上周，我在 Twitter 上分享了<a href="https://x.com/wey_gu/status/1892828461322162223" target="_blank" rel="noopener noreferrer">关于 GraphRAG Indexing 模型蒸馏训练</a>的工作，收获了诸多积极反馈。本文应朋友们建议整理而成，涵盖我们自 2023 年 6 月以来在 GraphRAG 基础研究上的进展，以及对高级 RAG 和 Fusion GraphRAG 的理解与实践。</p>
+<h3 id="rag-与-graphrag-的缘起" class="headerLink">
+    <a href="#rag-%e4%b8%8e-graphrag-%e7%9a%84%e7%bc%98%e8%b5%b7" class="header-mark"></a>1.1 RAG 与 GraphRAG 的缘起</h3><h4 id="rag检索增强生成" class="headerLink">
+    <a href="#rag%e6%a3%80%e7%b4%a2%e5%a2%9e%e5%bc%ba%e7%94%9f%e6%88%90" class="header-mark"></a>1.1.1 RAG：检索增强生成</h4><p>过去两年来，生成式 AI 和大语言模型的飞速发展堪称人类技术史上的重要里程碑。它们赋予计算机前所未有的上下文学习和推理能力，使得许多专属人类的复杂任务得以自动化甚至超越。然而，如何高效利用这些模型完成具体任务，成为技术落地的关键。</p>
+<p>RAG（Retrieval Augmented Generation，检索增强生成）作为一种基础范式应运而生。其核心在于通过“检索”（Retrieval）增强“生成”（Generation）：</p>
+<ul>
+<li><strong>生成</strong>：将任务描述和领域知识（即提示词）输入大语言模型，生成相应的回答。</li>
+<li><strong>检索增强</strong>：利用检索技术为模型提供高度相关的上下文知识，从而提升生成质量。</li>
+</ul>
+<p>在 RAG 中，检索环节至关重要。根据应用场景的不同，RAG 可分为两类：</p>
+<ol>
+<li><strong>面向公共检索系统</strong>：如 Google 或学术搜索引擎，依赖大模型调用外部 API，适用于通用知识获取。市面上的代表性产品包括 Perplexity Search 和 DeepSeek。</li>
+<li><strong>面向私有领域知识</strong>：如企业内部的研发文档或研究报告，需结合智能文档处理（IDP）、知识索引（Index）和知识管理系统。此类场景对检索技术的精准性和深度提出了更高要求。</li>
+</ol>
+<h4 id="朴素的-rag" class="headerLink">
+    <a href="#%e6%9c%b4%e7%b4%a0%e7%9a%84-rag" class="header-mark"></a>1.1.2 朴素的 RAG</h4><p><img class="tw-inline" loading="lazy" src="/fusion-graphrag-2025/RAG_gif.gif"   alt="RAG_gif" height="732" width="800"></p>
+<p>对于非结构化或半结构化知识，朴素 RAG 的典型流程包括：</p>
+<ul>
+<li>将文档分割成块（Chunk）。</li>
+<li>通过向量化嵌入（Embedding）构建语义索引，或结合 BM25 全文索引实现检索。</li>
+<li>在任务执行时，基于任务需求直接检索或通过检索重写（如 HyDE）优化结果。</li>
+</ul>
+<p>然而，这种方法在知识组织上的局限性使其难以满足企业级需求，具体挑战将在下文详述。</p>
+<h4 id="rag-的挑战" class="headerLink">
+    <a href="#rag-%e7%9a%84%e6%8c%91%e6%88%98" class="header-mark"></a>1.1.3 RAG 的挑战</h4><p>朴素 RAG 在实际应用中面临以下难题：</p>
+<ul>
+<li><strong>大海捞针</strong>：分块假设知识分布均匀，但某些关键信息可能被稀释在无关内容中，导致召回失败。</li>
+<li><strong>穿针引线</strong>：线性分割破坏了知识间的关联，难以还原全局上下文。</li>
+<li><strong>宏观问题</strong>：基于分片和关键词的索引无法有效应对全局性问题，如“哪些话题最具创新性”。</li>
+<li><strong>文档理解不足</strong>：缺乏智能文档处理时，公式、表格等复杂信息无法被正确解析和索引，影响回答质量。</li>
+</ul>
+<h4 id="高级-rag" class="headerLink">
+    <a href="#%e9%ab%98%e7%ba%a7-rag" class="header-mark"></a>1.1.4 高级 RAG</h4><p>做好 RAG 并非一蹴而就，而是一个持续探索的过程。本质上，我们需要将对应用特点、RAG 技术特性以及知识本身的深刻理解，融入到 RAG 流水线的设计之中。</p>
+<p>下图展示了一个近期发布的高级 RAG 总结性工作的简化图例：<a href="https://github.com/bRAGAI/bRAG-langchain/raw/main/assets/img/rag-architecture.png" target="_blank" rel="noopener noreferrer">一个高级 RAG</a></p>
+<p><img class="tw-inline" loading="lazy" src="/fusion-graphrag-2025/rag-architecture.png"   alt="Attachment.png" height="1202" width="1586"></p>
+<p>可见，在现代高级的 RAG 方法中，数据持久化层包含 &ldquo;Graph DB&rdquo;（即图数据库，一种以图结构——“节点”和“边”为中心的数据库），而图数据库也正是本文主题 GraphRAG 的重要基础设施。</p>
+<p>现代图数据库能够以高效、可扩展的方式驱动多租户、超大数据规模、高并发场景下复杂关联关系（图数据）的持久化、查询、访问和计算。它是高级 RAG 系统、智能体记忆系统（Agent Memory）的重要骨干基础设施，如下图所示。面向关联关系的图状结构，与我们梳理知识的脑图、甚至大脑中的神经元结构都非常相似。这种并非偶然的结构相似性，正是高级 RAG 知识索引解决朴素 RAG 方法挑战的关键。</p>
+<p><img class="tw-inline" loading="lazy" src="/fusion-graphrag-2025/graph_gif.gif"   alt="graph_gif" height="753" width="800"></p>
+<p>常见的高级 RAG 方法，在特别的索引结构上，包括树状索引（Tree-RAG）、分层检索（Raptor）和图状索引（GraphRAG），其中 GraphRAG 是我们文章的重点。</p>
+<h4 id="graphrag" class="headerLink">
+    <a href="#graphrag" class="header-mark"></a>1.1.5 GraphRAG</h4><p>GraphRAG 这个方法最初是我们在 2023 年 8、9 月份开始，在 LlamaIndex 社区上持续做的一些工作和两次<a href="https://bit.ly/graph-rag-workshop" target="_blank" rel="noopener noreferrer">公开的 Webinar</a> 上提出，并给出了开源的实现和可复现的效果比较试验。</p>
+<p>在最初的 GraphRAG 参考实践中，我们给出了索引期基于大模型的同构图谱抽取的实现和查询区基于实体、关系语义的捞取与可配置的子图查询的知识召回，并比较了基于 Text-to-Query 方法的一些效果比较与结合方案的实现。现在，为了区隔之后 Graph-based RAG 方法的演进，我们把最初的 GraphRAG 叫做 SubGraph RAG。</p>
+<p>在当时的 workshop 上，我们分享过的两个观点是</p>
+<ul>
+<li>在与知识打交道的过程中，只用分片处理的方法、绕过 Graph（Knowledge Graph）一定是不够的，这也是我们做 GraphRAG 探索的初衷</li>
+<li>这个 GraphRAG 的方法仅仅是一个开始，我们在不断探索更多在 Graph 之上的探索、推理的策略</li>
+</ul>
+<p>随后，我们和 <a href="https://www.linkedin.com/feed/update/urn:li:activity:7198589556848263168/" target="_blank" rel="noopener noreferrer">Researcher: Diego</a> 一起讨论，做了图索引之上 Chain of Exploration 的工作，并在 PyCon China 2023 上第一次给出了做了 Chain of Exploration 的分享。</p>
+<p>之后，我们看到了非常多的 GraphRAG 相关工作被发表，比如 <a href="https://arxiv.org/abs/2310.10445" target="_blank" rel="noopener noreferrer">MIT 材料科学的两篇</a> 利用我们的工作的 MechGPT、海马体 RAG 利用 pagerank 权重的工作 <a href="https://arxiv.org/abs/2405.14831" target="_blank" rel="noopener noreferrer">HippoRAG</a>、<a href="https://arxiv.org/abs/2404.17723" target="_blank" rel="noopener noreferrer">LinkedIn 的利用 半结构化数据图建模的 RAG工作</a>都非常有启发性。</p>
+<p><img class="tw-inline" loading="lazy" src="/fusion-graphrag-2025/MechGPT.png"   alt="MechGPT" height="982" width="1344"></p>
+<p>当然，最让我们兴奋的工作是微软的 <a href="https://arxiv.org/html/2404.16130" target="_blank" rel="noopener noreferrer">GraphRAG: From Local to Global</a> 工作，他们充分探索了基于大模型抽取的知识图谱索引之上利用社区发现算法得到分级聚集结构下的全局性摘要，这些摘要是没有偏见的保有原始知识中天然聚集性质、重要性质的脉络知识，在回答带有宏观全局性的问题中效果非常好。</p>
+<p><img class="tw-inline" loading="lazy" src="/fusion-graphrag-2025/ms_paper.png"   alt="ms_paper" height="542" width="830"></p>
+<p>我们从这些后续的工作中受益匪浅，在与我们的客户 Graph based RAG 落地工作中，不断打磨、探索、累积了很多各个环节的优化、方法、策略。最终形成了我们称为 Fusion GraphRAG 的方案。</p>
+<h3 id="fusion-graphrag" class="headerLink">
+    <a href="#fusion-graphrag" class="header-mark"></a>1.2 Fusion GraphRAG</h3><p>Fusion GraphRAG 是我们团队在 GraphRAG 基础上的创新实践。它融合了高级 RAG 技术，通过图状结构存储文档层级、章节关系及特殊元素（如公式、表格），实现高效、灵活的检索。</p>
+<p><img class="tw-inline" loading="lazy" src="./FusionGraphRAG_GIF.gif"   alt="FusionGraphRAG_GIF"  ></p>
+<p>Fusion GraphRAG 的本质在于 Sota 的高级 RAG 方法融合、充分连接的元知识索引、充分打磨调优的 GraphRAG（可选索引）。</p>
+<ul>
+<li>
+<p>Fusion GraphRAG 通过在一个联通图谱内的“元知识”索引，清晰地揭示海量知识文档的内在关联，呈现从文件夹、文档、章节到段落、图表、公式的完整脉络，此为知识图谱的“元知识频谱”。</p>
+</li>
+<li>
+<p>在此基础上，用户可选择不同粒度的知识抽取方法（非必须），构建图谱结构的图索引，形成“增强图频谱”。</p>
+</li>
+<li>
+<p>进一步，用户可以对图索引和元知识层进行诸如图摘要、权重分配、时序/状语信息补充等增强操作，以提升知识检索和利用的效率。</p>
+</li>
+</ul>
+<blockquote>
+<p>附图 FusionGraphRAG 结构实例</p>
+</blockquote>
+<pre class="mermaid">graph TD
+
+%% ========= Style =========
+classDef metaLayer fill:#f9f9f9,stroke:#b3b3b3,stroke-width:1px,font-size:13px;
+classDef graphLayer fill:#c6dcff,stroke:#3f6fd9,stroke-width:1.4px,font-size:13px;
+classDef graphSubLayer fill:#e8f1ff,stroke:#3f6fd9,stroke-width:1px,font-size:13px;
+classDef enrichLayer fill:#fff9e8,stroke:#cfa514,stroke-width:1px,stroke-dasharray:4 4,font-size:13px;
+classDef nodeText font-size:13px;
+classDef queryFlow stroke:#444,stroke-dasharray:5 5;
+
+%% ========= 元知识层 =========
+subgraph MetaLayer["元知识层"]
+  F1["📂 发动机控制项目"]
+  F2["📂 高空失效案例库"]
+  D1["📄 ECU 设计说明"]
+  D2["📄 起动异常日志"]
+  D3["📄 案例：高原起动失败"]
+  F1 --> D1
+  F1 --> D2
+  F2 --> D3
+end
+
+%% 文档结构
+D1 --> S1A["系统简介"]
+S1A --> P1["1.1 接口说明"] --> L11["段落 1"] --> L12["段落 2"] --> L13["段落 3"]
+S1A --> P2["1.2 电压异常"] --> L21["段落 1"] --> L22["段落 2"]
+D1 --> S2A["硬件配置"]
+D2 --> S1B["故障描述"] --> B11["1.1 现象"]
+S1B --> B12["2.1 日志片段"]
+D2 --> S2B["操作记录"]
+D3 --> S1C["案例背景"] --> C11["1.1 4000 m 海拔"]
+S1C --> C12["2.1 逻辑异常"]
+D3 --> S2C["初步分析"]
+
+%% 多模态结构
+CH1["图：电压‑转速曲线"]
+TB1["表：指令时序"]
+FM1["公式：Q = αP√(T/R)"]
+L12 --> CH1
+L21 --> TB1
+L22 --> FM1
+
+%% ========= 图谱层 =========
+subgraph GraphLayer["图谱层"]
+  subgraph G1 ["电压故障社区"]
+    Fault1["故障：ECU 电压低"]
+    Sym1["症状：无法启动"]
+    T1["时点：2023‑07‑22"]
+    Env1["环境：4000 m"]
+  end
+  subgraph G2 ["操作流程社区"]
+    Proc1["流程：更换模块"]
+    Act1["措施：旁路供电"]
+    Role1["角色：维修工程师"]
+  end
+end
+
+class G1,G2 graphSubLayer
+
+CH1 --> Fault1
+TB1 --> Proc1
+FM1 --> Proc1
+L13 --> Fault1
+L22 --> Proc1
+B11 --> Sym1
+B12 --> Act1
+C11 --> Env1
+Fault1 -->|引发| Sym1
+Sym1 -->|定位| Fault1
+Proc1 -->|解决| Fault1
+Fault1 -->|发生于| T1
+Proc1 -->|执行| Role1
+Sym1 -->|受环境| Env1
+Act1 -->|关联| Proc1
+
+%% ========= 知识增强层 =========
+subgraph EnrichLayer["知识增强层"]
+  Sum1['社区摘要：电压故障']
+  Sum2['社区摘要：操作流程']
+  ChapSum1['章节摘要：系统简介']
+  SeqEdge['时序增强']
+  Rank['重要度评分']
+end
+
+G1 -->|摘要| Sum1
+G2 -->|摘要| Sum2
+SeqEdge --> GraphLayer
+S1A --> ChapSum1
+
+%% Style apply
+class F1,F2,D1,D2,D3,S1A,S2A,S1B,S2B,S1C,S2C,P1,P2,L11,L12,L13,L21,L22,B11,B12,C11,C12 metaLayer
+class CH1,TB1,FM1 metaLayer
+class Fault1,Proc1,Sym1,T1,Role1,Env1,Act1 graphLayer
+class Sum1,Sum2,ChapSum1,Rank,SeqEdge enrichLayer
+class F1,F2,D1,D2,D3,S1A,S2A,S1B,S2B,S1C,S2C,P1,P2,L11,L12,L13,L21,L22,B11,B12,C11,C12,CH1,TB1,FM1,Fault1,Proc1,Sym1,T1,Role1,Env1,Act1,Sum1,Sum2,ChapSum1,Rank,SeqEdge nodeText
+</pre><h3 id="fusion-graphrag-实现私域-deep-research" class="headerLink">
+    <a href="#fusion-graphrag-%e5%ae%9e%e7%8e%b0%e7%a7%81%e5%9f%9f-deep-research" class="header-mark"></a>1.3 Fusion GraphRAG 实现私域 Deep Research</h3><p>Fusion GraphRAG 融合了先进的 IDP 技术与 RAG 索引方法，并将提取的多模态知识有机地关联为图状结构，从而精确映射真实世界知识的内在逻辑。依托高性能、支持图语义与向量检索的现代图数据库作为持久化底层，Fusion GraphRAG 能在这一统一图谱上实现面向元知识层次与图谱增强的高级检索。</p>
+<p>例如：</p>
+<ul>
+<li><strong>多层级知识检索：</strong>
+通过我们提出的 “Chain of Exploration” 检索器——一个能自主在图谱中探索并查找任务相关知识的智能 Agent，Fusion GraphRAG 可以在同时包含文件夹、文件层级以及章节（附摘要）结构信息的图谱上，既完成传统基于 Chunk 的检索任务，又能支持基于分层结构实现的脑图式 RAG 检索。（注：此方法不依赖昂贵的图谱抽取技术，后续将探讨如何进一步降低抽取成本。）</li>
+<li><strong>全局与局部深度分析：</strong>
+通过引入图抽取与图社区摘要等增强手段，“Chain of Exploration” 能够在图谱上按需执行全局搜索以解决宏观问题，同时进行针对多个知识点的精准局部检索，甚至对涉及复杂关联的深度问题（如关键知识间路径查找）进行分析。</li>
+<li><strong>多 Agent 协同：</strong>
+利用 Fusion GraphRAG 构建多 Agent 系统，可以将一整套算法与行为准则封装为一个专用的 Fusion GraphRAG Agent，此 Agent 可作为另一 RAG Agent 的召回计划生成器，在少而精的专业知识（know-how）构建的 Fusion Graph Index 指引下，自动规划出基于海量知识库的复杂查询方案。这为构建私有领域的自主学习 Deep Research/Action Agent 提供了有力支撑。</li>
+<li><strong>私有知识库内的深度研究：</strong>
+在 Fusion GraphRAG 之上，我们可以轻松实现针对私有知识库的 Deep Researcher。依托天然的知识连接与索引，再结合针对 “Chain of Exploration” Agent 的优化提示工程，以及类似 DeepSeek R1 的推理模型，就能实现类似 Deep Researcher 的 RAG 召回效果，为深度研究提供强大动力。</li>
+</ul>
+<h3 id="回到-graphrag-时间线" class="headerLink">
+    <a href="#%e5%9b%9e%e5%88%b0-graphrag-%e6%97%b6%e9%97%b4%e7%ba%bf" class="header-mark"></a>1.4 回到 GraphRAG 时间线</h3><p>在我们的视角下，GraphRAG 正在不断演进，下面简要梳理这一发展历程：</p>
+<ul>
+<li><strong>GraphRAG - 2023-08</strong>
+NebulaGraph 在 LlamaIndex 社区首次提出并实现了基本的 GraphRAG 模型。</li>
+<li><strong>GraphRAG with Community Summary - 2024-04</strong>
+微软在论文中提出了基于社区发现算法实现全局摘要的 GraphRAG 方法，为图谱检索提供了新的思路。</li>
+<li><strong>Fusion GraphRAG</strong>
+<ul>
+<li>融合了文档层级、章节层级、以及文中各类特殊元素（如公式、表格、图表）的多频谱混合图状索引；</li>
+<li>支持可选的知识抽取与知识增强（包括社区摘要、时序增强等），构建混合层级结构查询、全局图召回、知识频谱图谱召回以及（可选） Chain of Exploration 检索；</li>
+<li>同时支持将公共知识图谱、现有知识图谱以及图状数据中的 Chain of Exploration 召回方法进行融合。</li>
+</ul>
+</li>
+</ul>
+<h3 id="图抽取" class="headerLink">
+    <a href="#%e5%9b%be%e6%8a%bd%e5%8f%96" class="header-mark"></a>1.5 图抽取</h3><p>需要指出的是，在大模型时代，对原始知识进行类似知识图谱的抽取并非 Fusion GraphRAG 的必选项，因为并非所有 RAG 任务都需要细粒度的“知识预习”。图抽取的代价较高，目前多数公开方案成本也不低。</p>
+<blockquote>
+<p>注：LazyGraphRAG 的相关工作同样值得关注，它提供了另一种优化思路。</p>
+</blockquote>
+<blockquote>
+<p>附：Fusion GraphRAG 的索引及增强流程示意图</p>
+</blockquote>
+<p><img class="tw-inline" loading="lazy" src="/Users/weyl/projects/GenAI/blog_1/FusionGraphRAG.png"   alt="FusionGraphRAG"  ></p>
+<h3 id="让图抽取成为默认策略" class="headerLink">
+    <a href="#%e8%ae%a9%e5%9b%be%e6%8a%bd%e5%8f%96%e6%88%90%e4%b8%ba%e9%bb%98%e8%ae%a4%e7%ad%96%e7%95%a5" class="header-mark"></a>1.6 让图抽取成为默认策略</h3><p>高质量的 GraphRAG 索引虽然效果显著，但成本昂贵。我们的终极目标是让图抽取的成本降低到与 Embedding 类似的水平，实现大规模普及。</p>
+<p>实际上，AI 技术社区（包括我们自身）已经在朝这一方向不断努力：利用 NER 模型、更小型（例如 Phi 系列）的 LLM 进行 SFT、小规模 LLM 的 few shot 方案、尽可能的可编程方法，甚至融合 NER 与 LLM 的多种方案，都是当前探索的方向。最近，我们也看到了一些令人振奋的曙光！</p>
+<p>本质上，我们探索的基于 LLM 的抽取方法都采用了不同形式的 CoT（思维链）策略。近期，DeepSeek-MATH 论文中首次提出的 GRPO 方法在 DeepSeek R0 中用于冷启动获取 Think-aloud（思考过程）的深度 CoT 能力表现非常出色。同时，我们注意到基于 Qwen2.5（小尺寸 0.5b 模型）进行 GRPO 训练，在需要强推理能力的任务（例如数学问题）上，通过大约 200 步训练就能获得令人满意的效果。</p>
+<p>结合这些观察，我们开展了如下探索：</p>
+<ul>
+<li><strong>数据收集与预处理：</strong>
+利用 DeepSeek R1，在挑选的最新原始知识数据（晚于模型 cut-off date）的基础上进行抽取任务，并开启 <code>&lt;think&gt;</code> 模式，收集高质量的 CoT 与图抽取的 Ground Truth，筛选掉质量不合格或思考过程过长的样本，作为训练数据。</li>
+<li><strong>奖励机制设计：</strong>
+基于开源社区中针对数学问题推理训练的 GRPO 奖励函数，我们设计了奖励高质量推理过程和高质量抽取结果的奖励函数。这两项奖励均依托高质量、低成本的指令大模型进行评估打分。</li>
+</ul>
+<p>在一块 A100 显卡上经过约 200 步训练后，我们初步评估结果显示：基于 Qwen2.5-3b 的小尺寸抽取模型在引入 GRPO 训练后，其性能已经超越了 GPT-4o-mini。以下是各模型的对比结果：</p>
+<table>
+<thead>
+<tr>
+<th><strong>Criterion</strong></th>
+<th><strong>qwen2.5-3b</strong></th>
+<th><strong>qwen2.5-3b-GPRO</strong></th>
+<th><strong>gpt-4o-mini</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Accuracy</strong></td>
+<td>⭐⭐☆☆☆</td>
+<td>⭐⭐⭐☆☆</td>
+<td>⭐⭐☆☆☆</td>
+</tr>
+<tr>
+<td><strong>Completeness</strong></td>
+<td>⭐⭐☆☆☆</td>
+<td>⭐⭐⭐⭐☆</td>
+<td>⭐⭐⭐☆☆</td>
+</tr>
+<tr>
+<td><strong>Coherence</strong></td>
+<td>⭐⭐☆☆☆</td>
+<td>⭐⭐⭐☆☆</td>
+<td>⭐⭐☆☆☆</td>
+</tr>
+<tr>
+<td><strong>Relevance</strong></td>
+<td>⭐⭐⭐☆☆</td>
+<td>⭐⭐⭐⭐☆</td>
+<td>⭐⭐⭐☆☆</td>
+</tr>
+</tbody>
+</table>
+<p>正如当初推出首个 GraphRAG 开源实现时一样，这项工作仅仅是个起点。它证明了图抽取技术成本正在不断降低，未来我们有望大胆应用于更多场景，实现大规模的知识 GraphRAG。与此同时，这个方法也为特定领域范式数据抽取质量的提升提供了经济可行的方案。</p>
+<blockquote>
+<p>训练数据、合成过程以及训练流程均已开源：https://github.com/wey-gu/grpo-graph-extraction 。</p>
+</blockquote>
+<p><img class="tw-inline" loading="lazy" src="/fusion-graphrag-2025/training.png"   alt="training" height="634" width="3602"></p>
+<h3 id="rag-应用落地的挑战" class="headerLink">
+    <a href="#rag-%e5%ba%94%e7%94%a8%e8%90%bd%e5%9c%b0%e7%9a%84%e6%8c%91%e6%88%98" class="header-mark"></a>1.7 RAG 应用落地的挑战</h3><p>众所周知，RAG 更多的是一种技术和功能，而非一个完整的产品。在企业级应用中，产品形态本身所面临的挑战，往往远超技术或原理上的难题。</p>
+<p>举个例子，Excel 电子表格软件凭借其公式计算和数据可视化功能，为会计和企业数据处理领域带来了颠覆性的变革。理论上，只需学习 Excel 中的各类公式和图表功能，就能获得大量实战经验，成为专业的数据分析师。但实际上，我们观察到，大多数企业员工仅仅熟悉 Excel 的基本操作，而许多昂贵且高级的 SaaS 产品，其功能实际上也不过是 Excel 部分能力的延伸。</p>
+<p>如果基于 RAG 能力构建的企业产品，只是一个具备强大应用编排和知识库索引能力的“无代码”平台，那么这样的平台很可能只能在企业内部的少部分用户或团队中落地。大部分宝贵的领域知识仍停留在个人或小圈子中，无法以智能高效的方式被全面激活和利用。</p>
+<p>为了解决这一问题，我们基于 FusionGraphRAG 与 Agentic RAG 技术，打造了一个全新的高级知识库与低门槛应用平台 —— NebulaGraph AI 应用平台（内部命名为 “Catalyst”，即催化剂）。该平台的核心设计理念包括：</p>
+<ul>
+<li><strong>无需构建复杂 Workflow：</strong> 用户不需要自行搭建工作流。</li>
+<li><strong>无需编写繁琐 Prompt：</strong> 用户无需学习复杂的指令语法。</li>
+<li><strong>简化知识定义：</strong> 用户只需将对私有知识的理解转化为对不同“知识篮子”的定义。</li>
+<li><strong>智能对话交互：</strong> 用户通过与我们的“元智能体”交流，传达解决问题的方法。</li>
+</ul>
+<p>这种设计大幅降低了使用门槛，使得企业内部的知识能够被更高效、更智能地激活与应用，真正实现“插上翅膀”的飞跃。</p>
+<h3 id="ai-应用平台" class="headerLink">
+    <a href="#ai-%e5%ba%94%e7%94%a8%e5%b9%b3%e5%8f%b0" class="header-mark"></a>1.8 AI 应用平台</h3><p>在这个平台中，企业用户可以将成百上千个文档轻松归入各自的知识“篮子”，并为每个篮子选择适合的“预学习”——即索引模式：</p>
+<p><img class="tw-inline" loading="lazy" src="/fusion-graphrag-2025/index_selection.png"   alt="index_selection" height="1580" width="2648"></p>
+<ul>
+<li><strong>知识探索</strong>
+用户可以随时在各个知识篮子中进行探索，快速定位所需信息，直观理解知识集合内的知识分布、深浅、特种。</li>
+</ul>
+<p><img class="tw-inline" loading="lazy" src="/fusion-graphrag-2025/GraphExplore.png"   alt="GraphExplore" height="1604" width="2662"></p>
+<ul>
+<li>
+<p><strong>智能应用生成</strong>
+用户无需亲手编写复杂的 prompt，只需通过对话的方式与平台互动，即可生成各种类型的智能应用、迭代沉淀应用的 prompt。例如：</p>
+<ul>
+<li>
+<p>“帮我构建一个投研报告生成助手”</p>
+</li>
+<li>
+<p>“我要做一个 xx 申报助手”</p>
+</li>
+<li>
+<p>“基于我所有的周报知识，构建一个 yy 领域回答助手，我想放到钉钉签名上，免得别人来烦我关于 yy 的问题”
+……</p>
+</li>
+</ul>
+<p>平台内置了生成智能体应用的“元智能体”，让对话即成为开发工具。</p>
+</li>
+</ul>
+<p><img class="tw-inline" loading="lazy" src="/fusion-graphrag-2025/MetaAgent.png"   alt="MetaAgent" height="1644" width="2862"></p>
+<ul>
+<li><strong>问答搜索应用</strong>
+平台支持构建问答型搜索应用，帮助用户快速获得精确答案。</li>
+</ul>
+<p><img class="tw-inline" loading="lazy" src="/fusion-graphrag-2025/search_app.png"   alt="search_app" height="1830" width="3172"></p>
+<ul>
+<li><strong>知识溯源</strong>
+同时，针对问答应用，基于连接的知识溯源，追踪答案的来源，确保信息透明可靠。</li>
+</ul>
+<p><img class="tw-inline" loading="lazy" src="/fusion-graphrag-2025/search_app_1.png"   alt="search_app_1" height="1822" width="3180"></p>
+<h3 id="总结" class="headerLink">
+    <a href="#%e6%80%bb%e7%bb%93" class="header-mark"></a>1.9 总结</h3><p>GraphRAG 的发展代表了 RAG 技术从基础检索向高级知识管理的演进。通过解决传统 RAG 在知识稀释、关联丢失和宏观问题上的挑战，GraphRAG 为企业级应用提供了更高效、灵活的解决方案。我们团队开发的 Fusion GraphRAG 融合了智能文档处理（IDP）、多层次知识索引和图状结构，将知识的内在关联映射到检索过程中，显著提升了复杂任务的处理能力。</p>
+<p>在实践中，我们通过优化图抽取成本（R1 知识蒸馏、 GRPO 方法、 Qwen2.5-3B 规模上的工作，并开源出来。），让 GraphRAG 技术更具经济可行性，使其能够广泛应用于企业知识管理和智能应用平台。</p>
+<p>未来，我们相信 GraphRAG 将成为高级 RAG 和智能体记忆（Agent Memory）的核心基础设施，推动深层研究和智能决策的进一步发展。NebulaGraph AI 应用平台的推出，正是这一愿景的初步实现。</p>
+<p>最后，对于 GraphRAG，这是 Sherman 和我们 GenAI team 每一位同学共同相信的观点：</p>
+<ul>
+<li>
+<p>狭义的 “GraphRAG”、甚至 “SubGraph RAG”，在特定场景仍然有优势，我们可以按需应用这个技术组合</p>
+</li>
+<li>
+<p>Deep Research, Deep Search 的形态与 Graph-based RAG 方法，尤其是 Fusion GraphRAG 可以形成很好的互补</p>
+</li>
+<li>
+<p>Graph Infra 是高级 RAG/Agent Memory 中不可绕过的结构与方法（Graph is inevitable in Advanced RAG），是以向量为基础的 RAG 的重要演进与互补</p>
+</li>
+</ul>]]></description>
+</item><item>
     <title>Graph RAG: 知识图谱结合 LLM 的检索增强</title>
     <link>https://siwei.io/graph-rag/</link>
     <pubDate>Tue, 15 Aug 2023 11:10:34 &#43;0800</pubDate><author>
@@ -10521,429 +10855,6 @@
 <p>社交网络作为天然的图结构，非常适合用图的技术来存储、查询、计算、分析与可视化去解决其上的各式各样的问题，NebulaGraph 的强大处理能力和可视化能力使得我们已知很多公司在使用它作为社交领域的图存储、计算层，这其中包括：网易游戏、微信、Line、Soul、快手和知乎等等很多行业领先的团队，希望大家通过本章能对社交领域的图技术应有有一个初步的认识。</p>
 <blockquote>
 <p>题图版权：by <a href="https://unsplash.com/photos/IBaVuZsJJTo" target="_blank" rel="noopener noreferrer">Ryoji</a></p>
-</blockquote>]]></description>
-</item><item>
-    <title>chatGPT 加 NebulaGraph 预测 2022 世界杯冠军球队</title>
-    <link>https://siwei.io/chatgpt-and-nebulagraph-predict-fifa-world-cup/</link>
-    <pubDate>Tue, 06 Dec 2022 18:01:55 &#43;0800</pubDate><author>
-        <name>Wey Gu</name>
-    </author><guid>https://siwei.io/chatgpt-and-nebulagraph-predict-fifa-world-cup/</guid>
-    <description><![CDATA[<div class="featured-image">
-                <img src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/featured-image.webp" referrerpolicy="no-referrer">
-            </div><blockquote>
-<p>一次利用 chatGPT 给出数据抓取代码，借助 NebulaGraph 图数据库与图算法预测体育赛事的尝试。</p>
-</blockquote>
-<!--
-
-> chatGPT and Nebulagraph Predict Fifa World Cup
-
-[TOC]
-
--->
-<h2 id="蹭热度" class="headerLink">
-    <a href="#%e8%b9%ad%e7%83%ad%e5%ba%a6" class="header-mark"></a>1 蹭热度</h2><p>最近因为世界杯进行时，被这篇 <a href="https://cambridge-intelligence.com/fifa-world-cup-2022-prediction/" target="_blank" rel="noopener noreferrer">Cambridge Intelligence</a> 的文章启发（仅仅利用有限的信息量和条件，借助图算法的方法做合理的冠军预测），讨论到也可以试着用 NebulaGraph 玩玩冠军预测，还能顺道科普一波图库技术和图算法。</p>
-<p>本来想着几个小时撸出来一个方案，被数据集的收集劝退了，我是是在懒得去 <a href="https://en.wikipedia.org/wiki/2022_FIFA_World_Cup_squads" target="_blank" rel="noopener noreferrer">wikepedia</a> 里抓取出来需要的数据，索性就按下放了几天。</p>
-<p>同时，另一个热潮是最近 OpenAI 发布了 chatGPT 服务，它可以实现各种语言可是实现的复杂任务设计包括：</p>
-<ul>
-<li>随时帮你实现一段什么样的代码</li>
-<li>模拟成任意一个 prompt 界面：shell、python、virtual machine、甚至你创造的语言</li>
-<li>假设、带入你给定的人设，和你聊天</li>
-<li>写诗歌、rap、散文</li>
-<li>找出一段代码的 bug</li>
-<li>解释一段复杂的正则表达式的含义</li>
-</ul>
-<p>chatGPT 的上下文能力、理解力到的前所未有的程度以至于所有人都在讨论新的工作方式：如何掌握让机器帮助我们完成任务。</p>
-<p>所以，当我试过让 chatGPT 帮我写复杂的图数据库查询语句、解释复杂图查询语句的含义、解释一大段 <em>Bison</em> 代码含义之后我才意识到：为什么不让 chatGPT 帮我写好抓取数据的代码呢？</p>
-<h2 id="抓取数据" class="headerLink">
-    <a href="#%e6%8a%93%e5%8f%96%e6%95%b0%e6%8d%ae" class="header-mark"></a>2 抓取数据</h2><p>我真试了一下，结果是：完全可以，而且似乎真的很容易。</p>
-<p>整个过程基本上我像是一个代码考试的面试官、或者是一个产品经理，提出我的需求，chatGPT 给出代码的实现。我们再试着跑起来代码，找到代码中不合理的地方，指出来、给出建议，chatGPT 就真的能理解我指出的点，并给出相应的修正，像是：</p>
-<p><img class="tw-inline" loading="lazy" src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/chatGPT-correction-process.webp"    height="1806" width="1426"></p>
-<p>这一全过程我就不在这里列出来了，不过我把生成的代码和整个讨论的过程都分享在<a href="https://gist.github.com/wey-gu/78cb28bee130966e7d6e9d573b51deff" target="_blank" rel="noopener noreferrer">这里</a>，感兴趣的同学可以去看看。</p>
-<p>最终生成的数据是一个 CSV 文件：</p>
-<ul>
-<li>
-<p>代码生成的文件 <a href="https://github.com/siwei-io/talks/files/10152775/world_cup_squads.csv" target="_blank" rel="noopener noreferrer">world_cup_squads.csv</a></p>
-</li>
-<li>
-<p>手动修改、分开了生日和年龄的列 <a href="https://github.com/siwei-io/talks/files/10152923/world_cup_squads.csv" target="_blank" rel="noopener noreferrer">world_cup_squads_v0.csv</a></p>
-<p>它像这样，包含的信息有：球队、小组、编号、位置、球员名字、生日、年龄、参加国际比赛场次、进球数、服役俱乐部。</p>
-</li>
-</ul>
-<div class="code-block highlight is-open show-line-numbers  tw-group tw-my-2">
-  <div class="
-    code-block-title 
-    
-    tw-flex 
-    tw-flex-row 
-    tw-justify-between 
-    tw-w-full tw-bg-bgColor-secondary
-    ">      
-    <button 
-      class="
-        tw-select-none 
-        tw-mx-2 
-        tw-block
-        group-[.is-open]:tw-rotate-90
-        tw-transition-[transform] 
-        tw-duration-500 
-        tw-ease-in-out
-        print:!tw-hidden"
-      disabled
-      aria-hidden="true"><svg class="icon"
-    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --><path d="M285.476 272.971L91.132 467.314c-9.373 9.373-24.569 9.373-33.941 0l-22.667-22.667c-9.357-9.357-9.375-24.522-.04-33.901L188.505 256 34.484 101.255c-9.335-9.379-9.317-24.544.04-33.901l22.667-22.667c9.373-9.373 24.569-9.373 33.941 0L285.475 239.03c9.373 9.372 9.373 24.568.001 33.941z"/></svg></button>
-
-    <div class="code-block-title-bar tw-w-full">
-      <p class="tw-select-none !tw-my-1">CSV</p>
-    </div>
-    <div class="tw-flex">
-      <button 
-        class="
-          line-number-button
-          tw-select-none 
-          tw-mx-2 
-          tw-hidden 
-          group-[.is-open]:tw-block 
-          group-[.show-line-numbers]:tw-text-fgColor-link 
-          print:!tw-hidden" 
-        title="Toggle line numbers"><svg class="icon"
-    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --><path d="M61.77 401l17.5-20.15a19.92 19.92 0 0 0 5.07-14.19v-3.31C84.34 356 80.5 352 73 352H16a8 8 0 0 0-8 8v16a8 8 0 0 0 8 8h22.83a157.41 157.41 0 0 0-11 12.31l-5.61 7c-4 5.07-5.25 10.13-2.8 14.88l1.05 1.93c3 5.76 6.29 7.88 12.25 7.88h4.73c10.33 0 15.94 2.44 15.94 9.09 0 4.72-4.2 8.22-14.36 8.22a41.54 41.54 0 0 1-15.47-3.12c-6.49-3.88-11.74-3.5-15.6 3.12l-5.59 9.31c-3.72 6.13-3.19 11.72 2.63 15.94 7.71 4.69 20.38 9.44 37 9.44 34.16 0 48.5-22.75 48.5-44.12-.03-14.38-9.12-29.76-28.73-34.88zM496 224H176a16 16 0 0 0-16 16v32a16 16 0 0 0 16 16h320a16 16 0 0 0 16-16v-32a16 16 0 0 0-16-16zm0-160H176a16 16 0 0 0-16 16v32a16 16 0 0 0 16 16h320a16 16 0 0 0 16-16V80a16 16 0 0 0-16-16zm0 320H176a16 16 0 0 0-16 16v32a16 16 0 0 0 16 16h320a16 16 0 0 0 16-16v-32a16 16 0 0 0-16-16zM16 160h64a8 8 0 0 0 8-8v-16a8 8 0 0 0-8-8H64V40a8 8 0 0 0-8-8H32a8 8 0 0 0-7.14 4.42l-8 16A8 8 0 0 0 24 64h8v64H16a8 8 0 0 0-8 8v16a8 8 0 0 0 8 8zm-3.91 160H80a8 8 0 0 0 8-8v-16a8 8 0 0 0-8-8H41.32c3.29-10.29 48.34-18.68 48.34-56.44 0-29.06-25-39.56-44.47-39.56-21.36 0-33.8 10-40.46 18.75-4.37 5.59-3 10.84 2.8 15.37l8.58 6.88c5.61 4.56 11 2.47 16.12-2.44a13.44 13.44 0 0 1 9.46-3.84c3.33 0 9.28 1.56 9.28 8.75C51 248.19 0 257.31 0 304.59v4C0 316 5.08 320 12.09 320z"/></svg></button>
-
-      <button 
-        class="
-          wrap-code-button
-          tw-select-none 
-          tw-mx-2 
-          tw-hidden 
-          group-[.is-open]:tw-block 
-          group-[.is-wrap]:tw-text-fgColor-link 
-          print:!tw-hidden" 
-        title="Toggle code wrap"><svg class="icon"
-    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --><path d="M16 132h416c8.837 0 16-7.163 16-16V76c0-8.837-7.163-16-16-16H16C7.163 60 0 67.163 0 76v40c0 8.837 7.163 16 16 16zm0 160h416c8.837 0 16-7.163 16-16v-40c0-8.837-7.163-16-16-16H16c-8.837 0-16 7.163-16 16v40c0 8.837 7.163 16 16 16zm0 160h416c8.837 0 16-7.163 16-16v-40c0-8.837-7.163-16-16-16H16c-8.837 0-16 7.163-16 16v40c0 8.837 7.163 16 16 16z"/></svg></button>
-      
-      <button 
-        class="
-          copy-code-button
-          tw-select-none
-          tw-mx-2 
-          tw-hidden
-          group-[.is-open]:tw-block
-          hover:tw-text-fgColor-link 
-          print:!tw-hidden"
-        title="Copy code">
-          <span class="copy-icon tw-block"><svg class="icon"
-    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --><path d="M433.941 65.941l-51.882-51.882A48 48 0 0 0 348.118 0H176c-26.51 0-48 21.49-48 48v48H48c-26.51 0-48 21.49-48 48v320c0 26.51 21.49 48 48 48h224c26.51 0 48-21.49 48-48v-48h80c26.51 0 48-21.49 48-48V99.882a48 48 0 0 0-14.059-33.941zM266 464H54a6 6 0 0 1-6-6V150a6 6 0 0 1 6-6h74v224c0 26.51 21.49 48 48 48h96v42a6 6 0 0 1-6 6zm128-96H182a6 6 0 0 1-6-6V54a6 6 0 0 1 6-6h106v88c0 13.255 10.745 24 24 24h88v202a6 6 0 0 1-6 6zm6-256h-64V48h9.632c1.591 0 3.117.632 4.243 1.757l48.368 48.368a6 6 0 0 1 1.757 4.243V112z"/></svg></span>
-          <span class="check-icon tw-hidden"><svg class="icon"
-    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --><path d="M173.898 439.404l-166.4-166.4c-9.997-9.997-9.997-26.206 0-36.204l36.203-36.204c9.997-9.998 26.207-9.998 36.204 0L192 312.69 432.095 72.596c9.997-9.997 26.207-9.997 36.204 0l36.203 36.204c9.997 9.997 9.997 26.206 0 36.204l-294.4 294.401c-9.998 9.997-26.207 9.997-36.204-.001z"/></svg></span>
-      </button>
-        
-      <button 
-        class="
-          tw-select-none 
-          tw-mx-2 
-          tw-block 
-          group-[.is-open]:tw-hidden 
-          print:!tw-hidden" 
-        disabled
-        aria-hidden="true"><svg class="icon"
-    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --><path d="M328 256c0 39.8-32.2 72-72 72s-72-32.2-72-72 32.2-72 72-72 72 32.2 72 72zm104-72c-39.8 0-72 32.2-72 72s32.2 72 72 72 72-32.2 72-72-32.2-72-72-72zm-352 0c-39.8 0-72 32.2-72 72s32.2 72 72 72 72-32.2 72-72-32.2-72-72-72z"/></svg></button>
-    </div>
-  </div>
-  <pre style="counter-reset: codeblock;" class="tw-block tw-m-0 tw-p-0"><code 
-    id="codeblock-id-1" 
-    class="
-      chroma 
-      !tw-block 
-      tw-p-0
-      tw-m-0
-      tw-transition-[max-height] 
-      tw-duration-500 
-      tw-ease-in-out 
-      group-[.is-closed]:!tw-max-h-0 
-      group-[.is-wrap]:tw-text-wrap
-      tw-overflow-y-hidden
-      tw-overflow-x-auto
-      tw-scrollbar-thin
-      "><span class="line"><span class="cl">Team,Group,No.,Pos.,Player,DOB,Age,Caps,Goals,Club
-</span></span><span class="line"><span class="cl">Ecuador,A,1,1GK,Hernán Galíndez,(1987-03-30)30 March 1987,35,12,0,Aucas
-</span></span><span class="line"><span class="cl">Ecuador,A,2,2DF,Félix Torres,(1997-01-11)11 January 1997,25,17,2,Santos Laguna
-</span></span><span class="line"><span class="cl">Ecuador,A,3,2DF,Piero Hincapié,(2002-01-09)9 January 2002,20,21,1,Bayer Leverkusen
-</span></span><span class="line"><span class="cl">Ecuador,A,4,2DF,Robert Arboleda,(1991-10-22)22 October 1991,31,33,2,São Paulo
-</span></span><span class="line"><span class="cl">Ecuador,A,5,3MF,José Cifuentes,(1999-03-12)12 March 1999,23,11,0,Los Angeles FC</span></span></code></pre>
-</div>
-<ul>
-<li>手动删除了 CSV 表头 <a href="https://github.com/siwei-io/talks/files/10152974/world_cup_squads_no_headers.csv" target="_blank" rel="noopener noreferrer">world_cup_squads_no_headers.csv</a></li>
-</ul>
-<h2 id="图方法预测2022世界杯" class="headerLink">
-    <a href="#%e5%9b%be%e6%96%b9%e6%b3%95%e9%a2%84%e6%b5%8b2022%e4%b8%96%e7%95%8c%e6%9d%af" class="header-mark"></a>3 图方法预测2022世界杯</h2><h3 id="图建模" class="headerLink">
-    <a href="#%e5%9b%be%e5%bb%ba%e6%a8%a1" class="header-mark"></a>3.1 图建模</h3><blockquote>
-<p>前提，本文使用 NebulaGraph 和 NebulaGraph Explorer，你可以在阿里云上免费申请半个月的试用，入口链接是👉🏻 <a href="http://c.nxw.so/d52oz" target="_blank" rel="noopener noreferrer">http://c.nxw.so/d52oz</a> ，不要被这个陌生的短链接域名吓到，它只是帮助我们统计有多少同学通过这里访问到 <a href="https://market.aliyun.com" target="_blank" rel="noopener noreferrer">https://market.aliyun.com</a> 而已。</p>
-</blockquote>
-<p>图建模（Graph Modeling）是把真实世界信息以”点&ndash;&gt;边“的图形式去抽象与表示。</p>
-<p>这里，我们根据公共领域能够容易获得信息、把它映射成如下的点与边：</p>
-<p>点：</p>
-<ul>
-<li>player（球员）</li>
-<li>team（球队）</li>
-<li>group（小组）</li>
-<li>club（俱乐部）</li>
-</ul>
-<p>边：</p>
-<ul>
-<li>groupedin（球队属于哪一小组）</li>
-<li>belongto（队员属于国家队）</li>
-<li>serve（队员在俱乐部服役）</li>
-</ul>
-<p>而队员的年龄、参加国际场次（caps）、进球数（goals）则很自然作为 player 这一类点的属性。</p>
-<p>下图是这个 schema 在 NebulaGraph Studio/Explorer（后边称 Studio/Explorer） 中的截图：</p>
-<p><img class="tw-inline" loading="lazy" src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/schema_fifa.webp"   alt="schema_fifa" height="2334" width="4064"></p>
-<p>然后，我们可以在右上角把它保存，创建一个新的图空间，应用这个图建模到图空间里。</p>
-<blockquote>
-<p>注：参考文档 <a href="https://docs.nebula-graph.com.cn/3.3.0/nebula-explorer/db-management/draft/" target="_blank" rel="noopener noreferrer">https://docs.nebula-graph.com.cn/3.3.0/nebula-explorer/db-management/draft/</a></p>
-</blockquote>
-<h3 id="导入数据进-nebulagraph" class="headerLink">
-    <a href="#%e5%af%bc%e5%85%a5%e6%95%b0%e6%8d%ae%e8%bf%9b-nebulagraph" class="header-mark"></a>3.2 导入数据进 NebulaGraph</h3><p>有了图建模，我们可以把之前的 CSV 文件（无表头版本）上传到 Studio 或者 Explorer 里，通过点、选关联不同的列到点边中的 vid 和属性：</p>
-<p><img class="tw-inline" loading="lazy" src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_config_mapping.webp"    height="2334" width="4064"></p>
-<p>之后点击导入，就把整个图导入到 NebulaGraph 了，成功之后，我们还得到了整个csv &ndash;&gt; Nebula Importer 的关联配置文件：<a href="https://github.com/siwei-io/talks/files/10164014/config_fifa.yml.txt" target="_blank" rel="noopener noreferrer">nebula_importer_config_fifa.yml</a>，你可以直接拖拽整个配置，不用自己去配置它了。</p>
-<p><img class="tw-inline" loading="lazy" src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/importer_log.webp"    height="2334" width="4064"></p>
-<blockquote>
-<p>注：参考文档 <a href="https://docs.nebula-graph.com.cn/3.3.0/nebula-explorer/db-management/11.import-data/" target="_blank" rel="noopener noreferrer">https://docs.nebula-graph.com.cn/3.3.0/nebula-explorer/db-management/11.import-data/</a></p>
-</blockquote>
-<p>导入之后，我们可以在 schema 界面里查看数据统计，我们可以看到有 831 名球员参加了 2022 卡塔尔世界杯，他们服役在 295 个不同的俱乐部：</p>
-<p><img class="tw-inline" loading="lazy" src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/data_stats.webp"    height="2334" width="4064"></p>
-<blockquote>
-<p>注：参考文档 <a href="https://docs.nebula-graph.com.cn/3.3.0/nebula-explorer/db-management/10.create-schema/#_6" target="_blank" rel="noopener noreferrer">https://docs.nebula-graph.com.cn/3.3.0/nebula-explorer/db-management/10.create-schema/#_6</a></p>
-</blockquote>
-<h3 id="探索数据" class="headerLink">
-    <a href="#%e6%8e%a2%e7%b4%a2%e6%95%b0%e6%8d%ae" class="header-mark"></a>3.3 探索数据</h3><h4 id="查询数据" class="headerLink">
-    <a href="#%e6%9f%a5%e8%af%a2%e6%95%b0%e6%8d%ae" class="header-mark"></a>3.3.1 查询数据</h4><p>下面，我们试着把所有的数据展示出来看看吧，首先，借助 NebulaGraph Explorer，我用拖拽的方式画出来任意类型的点（TAG）和任意类型点（TAG）之间的边，这里我们知道所有的点都是至少包含在一个边里的，所以不会漏掉任何孤立的点。</p>
-<p><img class="tw-inline" loading="lazy" src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-0.webp"    height="2146" width="3320"></p>
-<p>让它帮我生成查询的语句，这里，它默认 LIMIT 100 了，我们手动改大一些（ LIMIT 10000），让它在 Console 里执行。</p>
-<p><img class="tw-inline" loading="lazy" src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/query-builder-1.webp"    height="2146" width="3320"></p>
-<h4 id="初步观察数据" class="headerLink">
-    <a href="#%e5%88%9d%e6%ad%a5%e8%a7%82%e5%af%9f%e6%95%b0%e6%8d%ae" class="header-mark"></a>3.3.2 初步观察数据</h4><p>结果渲染出来是这样子，可以看到它天然形成了一簇一簇的模式。</p>
-<p><img class="tw-inline" loading="lazy" src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/bird_view.webp"    height="2334" width="4064"></p>
-<p>这些外围、形成的簇多是一些由非传统意义上的有全球影响力的俱乐部，和非传统的足球厉害的国家队的球员组成，因为通常这些俱乐部只有一两个球员，而且他们还集中在一个国家队、地区，所以没有和很多其他球员、国家队产生连接。</p>
-<p><img class="tw-inline" loading="lazy" src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/edge_teams.webp"    height="1268" width="1576"></p>
-<h4 id="图算法辅助分析" class="headerLink">
-    <a href="#%e5%9b%be%e7%ae%97%e6%b3%95%e8%be%85%e5%8a%a9%e5%88%86%e6%9e%90" class="header-mark"></a>3.3.3 图算法辅助分析</h4><p>在我点击了 Explorer 中的两个按钮之后（详细参考后边的文档链接），在浏览器里，我们可以看到整个图已经变成：</p>
-<p><img class="tw-inline" loading="lazy" src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/Barcelona.webp"    height="2334" width="4064"></p>
-<blockquote>
-<p>注：这部分功能可以参考文档 <a href="https://docs.nebula-graph.com.cn/3.3.0/nebula-explorer/graph-explorer/graph-algorithm/" target="_blank" rel="noopener noreferrer">https://docs.nebula-graph.com.cn/3.3.0/nebula-explorer/graph-explorer/graph-algorithm/</a></p>
-</blockquote>
-<p>这里，利用到了两个图算法来分析这里的洞察：</p>
-<ol>
-<li>利用点的出入度，改变他们的显示大小突出重要程度</li>
-<li>利用 Louvain 算法区分点的社区分割</li>
-</ol>
-<p>可以看到红色的大点是鼎鼎大名的巴塞罗那，而它的球员们也被红色标记了。</p>
-<h3 id="预测冠军算法" class="headerLink">
-    <a href="#%e9%a2%84%e6%b5%8b%e5%86%a0%e5%86%9b%e7%ae%97%e6%b3%95" class="header-mark"></a>3.4 预测冠军算法</h3><p>为了能充分利用图的魔法（与图上的隐含条件、信息），我的思路是选择一种利用链接进行节点重要程度分析的图算法，找出拥有更高重要性的点，对他们全局迭代、排序，从而获得前几名的国家队排名。</p>
-<p>这些方法其实就体现在厉害的球员同时拥有更大的社区、连接度，同时，为了增加传统强队之间的区分度，我准备把出场率、进球数的信息也考虑进来。</p>
-<p>最终，我的算法是：</p>
-<ul>
-<li>取出所有的 (球员)-服役-&gt;(俱乐部) 的关系，过滤其中进球数过少、单场进球过少的球员（以平衡一些弱队的老球员带来的过大影响）</li>
-<li>从所有过滤之后的球员中向外探索，获得国家队</li>
-<li>在以上的子图上运行 Betweenness Centrality 算法，计算节点重要度评分</li>
-</ul>
-<h4 id="算法过程" class="headerLink">
-    <a href="#%e7%ae%97%e6%b3%95%e8%bf%87%e7%a8%8b" class="header-mark"></a>3.4.1 算法过程</h4><p>首先，我们取出所有进球数超过 10，场均进球超过 0.2 的 (球员)-服役-&gt;(俱乐部) 的子图：</p>
-<div class="code-block highlight is-open show-line-numbers  tw-group tw-my-2">
-  <div class="
-    code-block-title 
-    
-    tw-flex 
-    tw-flex-row 
-    tw-justify-between 
-    tw-w-full tw-bg-bgColor-secondary
-    ">      
-    <button 
-      class="
-        tw-select-none 
-        tw-mx-2 
-        tw-block
-        group-[.is-open]:tw-rotate-90
-        tw-transition-[transform] 
-        tw-duration-500 
-        tw-ease-in-out
-        print:!tw-hidden"
-      disabled
-      aria-hidden="true"><svg class="icon"
-    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --><path d="M285.476 272.971L91.132 467.314c-9.373 9.373-24.569 9.373-33.941 0l-22.667-22.667c-9.357-9.357-9.375-24.522-.04-33.901L188.505 256 34.484 101.255c-9.335-9.379-9.317-24.544.04-33.901l22.667-22.667c9.373-9.373 24.569-9.373 33.941 0L285.475 239.03c9.373 9.372 9.373 24.568.001 33.941z"/></svg></button>
-
-    <div class="code-block-title-bar tw-w-full">
-      <p class="tw-select-none !tw-my-1">cypher</p>
-    </div>
-    <div class="tw-flex">
-      <button 
-        class="
-          line-number-button
-          tw-select-none 
-          tw-mx-2 
-          tw-hidden 
-          group-[.is-open]:tw-block 
-          group-[.show-line-numbers]:tw-text-fgColor-link 
-          print:!tw-hidden" 
-        title="Toggle line numbers"><svg class="icon"
-    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --><path d="M61.77 401l17.5-20.15a19.92 19.92 0 0 0 5.07-14.19v-3.31C84.34 356 80.5 352 73 352H16a8 8 0 0 0-8 8v16a8 8 0 0 0 8 8h22.83a157.41 157.41 0 0 0-11 12.31l-5.61 7c-4 5.07-5.25 10.13-2.8 14.88l1.05 1.93c3 5.76 6.29 7.88 12.25 7.88h4.73c10.33 0 15.94 2.44 15.94 9.09 0 4.72-4.2 8.22-14.36 8.22a41.54 41.54 0 0 1-15.47-3.12c-6.49-3.88-11.74-3.5-15.6 3.12l-5.59 9.31c-3.72 6.13-3.19 11.72 2.63 15.94 7.71 4.69 20.38 9.44 37 9.44 34.16 0 48.5-22.75 48.5-44.12-.03-14.38-9.12-29.76-28.73-34.88zM496 224H176a16 16 0 0 0-16 16v32a16 16 0 0 0 16 16h320a16 16 0 0 0 16-16v-32a16 16 0 0 0-16-16zm0-160H176a16 16 0 0 0-16 16v32a16 16 0 0 0 16 16h320a16 16 0 0 0 16-16V80a16 16 0 0 0-16-16zm0 320H176a16 16 0 0 0-16 16v32a16 16 0 0 0 16 16h320a16 16 0 0 0 16-16v-32a16 16 0 0 0-16-16zM16 160h64a8 8 0 0 0 8-8v-16a8 8 0 0 0-8-8H64V40a8 8 0 0 0-8-8H32a8 8 0 0 0-7.14 4.42l-8 16A8 8 0 0 0 24 64h8v64H16a8 8 0 0 0-8 8v16a8 8 0 0 0 8 8zm-3.91 160H80a8 8 0 0 0 8-8v-16a8 8 0 0 0-8-8H41.32c3.29-10.29 48.34-18.68 48.34-56.44 0-29.06-25-39.56-44.47-39.56-21.36 0-33.8 10-40.46 18.75-4.37 5.59-3 10.84 2.8 15.37l8.58 6.88c5.61 4.56 11 2.47 16.12-2.44a13.44 13.44 0 0 1 9.46-3.84c3.33 0 9.28 1.56 9.28 8.75C51 248.19 0 257.31 0 304.59v4C0 316 5.08 320 12.09 320z"/></svg></button>
-
-      <button 
-        class="
-          wrap-code-button
-          tw-select-none 
-          tw-mx-2 
-          tw-hidden 
-          group-[.is-open]:tw-block 
-          group-[.is-wrap]:tw-text-fgColor-link 
-          print:!tw-hidden" 
-        title="Toggle code wrap"><svg class="icon"
-    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --><path d="M16 132h416c8.837 0 16-7.163 16-16V76c0-8.837-7.163-16-16-16H16C7.163 60 0 67.163 0 76v40c0 8.837 7.163 16 16 16zm0 160h416c8.837 0 16-7.163 16-16v-40c0-8.837-7.163-16-16-16H16c-8.837 0-16 7.163-16 16v40c0 8.837 7.163 16 16 16zm0 160h416c8.837 0 16-7.163 16-16v-40c0-8.837-7.163-16-16-16H16c-8.837 0-16 7.163-16 16v40c0 8.837 7.163 16 16 16z"/></svg></button>
-      
-      <button 
-        class="
-          copy-code-button
-          tw-select-none
-          tw-mx-2 
-          tw-hidden
-          group-[.is-open]:tw-block
-          hover:tw-text-fgColor-link 
-          print:!tw-hidden"
-        title="Copy code">
-          <span class="copy-icon tw-block"><svg class="icon"
-    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --><path d="M433.941 65.941l-51.882-51.882A48 48 0 0 0 348.118 0H176c-26.51 0-48 21.49-48 48v48H48c-26.51 0-48 21.49-48 48v320c0 26.51 21.49 48 48 48h224c26.51 0 48-21.49 48-48v-48h80c26.51 0 48-21.49 48-48V99.882a48 48 0 0 0-14.059-33.941zM266 464H54a6 6 0 0 1-6-6V150a6 6 0 0 1 6-6h74v224c0 26.51 21.49 48 48 48h96v42a6 6 0 0 1-6 6zm128-96H182a6 6 0 0 1-6-6V54a6 6 0 0 1 6-6h106v88c0 13.255 10.745 24 24 24h88v202a6 6 0 0 1-6 6zm6-256h-64V48h9.632c1.591 0 3.117.632 4.243 1.757l48.368 48.368a6 6 0 0 1 1.757 4.243V112z"/></svg></span>
-          <span class="check-icon tw-hidden"><svg class="icon"
-    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --><path d="M173.898 439.404l-166.4-166.4c-9.997-9.997-9.997-26.206 0-36.204l36.203-36.204c9.997-9.998 26.207-9.998 36.204 0L192 312.69 432.095 72.596c9.997-9.997 26.207-9.997 36.204 0l36.203 36.204c9.997 9.997 9.997 26.206 0 36.204l-294.4 294.401c-9.998 9.997-26.207 9.997-36.204-.001z"/></svg></span>
-      </button>
-        
-      <button 
-        class="
-          tw-select-none 
-          tw-mx-2 
-          tw-block 
-          group-[.is-open]:tw-hidden 
-          print:!tw-hidden" 
-        disabled
-        aria-hidden="true"><svg class="icon"
-    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --><path d="M328 256c0 39.8-32.2 72-72 72s-72-32.2-72-72 32.2-72 72-72 72 32.2 72 72zm104-72c-39.8 0-72 32.2-72 72s32.2 72 72 72 72-32.2 72-72-32.2-72-72-72zm-352 0c-39.8 0-72 32.2-72 72s32.2 72 72 72 72-32.2 72-72-32.2-72-72-72z"/></svg></button>
-    </div>
-  </div>
-  <pre style="counter-reset: codeblock;" class="tw-block tw-m-0 tw-p-0"><code 
-    id="codeblock-id-2" 
-    class="
-      chroma 
-      !tw-block 
-      tw-p-0
-      tw-m-0
-      tw-transition-[max-height] 
-      tw-duration-500 
-      tw-ease-in-out 
-      group-[.is-closed]:!tw-max-h-0 
-      group-[.is-wrap]:tw-text-wrap
-      tw-overflow-y-hidden
-      tw-overflow-x-auto
-      tw-scrollbar-thin
-      "><span class="line"><span class="cl">MATCH ()-[e]-&gt;()
-</span></span><span class="line"><span class="cl">WITH e LIMIT 10000
-</span></span><span class="line"><span class="cl">WITH e AS e WHERE e.goals &gt; 10 AND toFloat(e.goals)/e.caps &gt; 0.2
-</span></span><span class="line"><span class="cl">RETURN e</span></span></code></pre>
-</div>
-<blockquote>
-<p>注：为了方便，我把进球数和出场数也作为了 serve 边上的属性了。</p>
-</blockquote>
-<p><img class="tw-inline" loading="lazy" src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/query_step0.webp"    height="2334" width="4064"></p>
-<p>然后，我们全选图上的所有点，点击左边的工具栏，选择出方向的 <code>belongto</code> 边，向外进行图拓展（遍历），同时选择将拓展得到的新点标记为旗帜的 icon：</p>
-<p><img class="tw-inline" loading="lazy" src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/treversal_step1.webp"   alt="treversal_step1" height="2334" width="4064"></p>
-<p>现在，我们获得了最终的子图，我们利用工具栏里的浏览器内的图算法功能，执行 BNC（Betweenness Centrality）</p>
-<p><img class="tw-inline" loading="lazy" src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_step2.webp"   alt="bnc_step2" height="2334" width="4064"></p>
-<p>然后，这个子图变成了这样子：</p>
-<p><img class="tw-inline" loading="lazy" src="/chatgpt-and-nebulagraph-predict-fifa-world-cup/bnc_predict.webp"   alt="bnc_predict" height="2334" width="4064"></p>
-<h2 id="预测结果" class="headerLink">
-    <a href="#%e9%a2%84%e6%b5%8b%e7%bb%93%e6%9e%9c" class="header-mark"></a>4 预测结果</h2><p>最终，我们根据 Betweenness Centrality 的值，排序，可以得到最终的获胜球队应该是：巴西 🇧🇷！</p>
-<p>其次是比利时、德国、英格兰、法国、阿根廷，让我们等两个礼拜回来看看预测结果是否准确吧 :D。</p>
-<p>注：排序数据（其中还有非参赛球队的点）</p>
-<table>
-<thead>
-<tr>
-<th>Vertex</th>
-<th><strong>Betweenness Centrality</strong></th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>Brazil</strong>🇧🇷</td>
-<td>3499</td>
-</tr>
-<tr>
-<td><strong>Paris Saint-Germain</strong></td>
-<td>3073.3333333333300</td>
-</tr>
-<tr>
-<td><strong>Neymar</strong></td>
-<td>3000</td>
-</tr>
-<tr>
-<td><strong>Tottenham Hotspur</strong></td>
-<td>2740</td>
-</tr>
-<tr>
-<td><strong>Belgium</strong>🇧🇪</td>
-<td>2587.833333333330</td>
-</tr>
-<tr>
-<td><strong>Richarlison</strong></td>
-<td>2541</td>
-</tr>
-<tr>
-<td><strong>Kevin De Bruyne</strong></td>
-<td>2184</td>
-</tr>
-<tr>
-<td><strong>Manchester City</strong></td>
-<td>2125</td>
-</tr>
-<tr>
-<td><strong>İlkay Gündoğan</strong></td>
-<td>2064</td>
-</tr>
-<tr>
-<td><strong>Germany</strong>🇩🇪</td>
-<td>2046</td>
-</tr>
-<tr>
-<td><strong>Harry Kane (captain</strong></td>
-<td>1869</td>
-</tr>
-<tr>
-<td><strong>England</strong>🏴󠁧󠁢󠁥󠁮󠁧󠁿</td>
-<td>1864</td>
-</tr>
-<tr>
-<td><strong>France</strong>🇫🇷</td>
-<td>1858.6666666666700</td>
-</tr>
-<tr>
-<td><strong>Argentina</strong>🇦🇷</td>
-<td>1834.6666666666700</td>
-</tr>
-<tr>
-<td><strong>Bayern Munich</strong></td>
-<td>1567</td>
-</tr>
-<tr>
-<td><strong>Kylian Mbappé</strong></td>
-<td>1535.3333333333300</td>
-</tr>
-<tr>
-<td><strong>Lionel Messi (captain</strong></td>
-<td>1535.3333333333300</td>
-</tr>
-<tr>
-<td><strong>Gabriel Jesus</strong></td>
-<td>1344</td>
-</tr>
-</tbody>
-</table>
-<blockquote>
-<p>题图：这个文章的图也是用 OpenAI DALL-E 2 生成，并用 DALL-E 2 Outpainting 扩充的，<a href="https://user-images.githubusercontent.com/1651790/205881462-ff007725-e270-4b1e-9062-7702f01021c1.png" target="_blank" rel="noopener noreferrer">原图</a>。</p>
 </blockquote>]]></description>
 </item></channel>
 </rss>

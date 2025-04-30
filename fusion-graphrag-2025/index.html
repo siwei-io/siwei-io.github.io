@@ -1,0 +1,743 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noodp" /><title>Fusion Graphrag 2025 - siwei.io</title><meta name="Description" content="本文将分享我们团队在 GraphRAG 领域的探索与实践历程。GraphRAG 是检索增强生成（RAG）技术的高级技术之一，旨在解决传统 RAG 的局限性。上周，我在 Twitter 上分享了[关于 GraphRAG Indexing 模型蒸馏训练](https://x.com/wey_gu/status/1892828461322162223)的工作，收获了诸多积极反馈。本文应朋友们建议整理而成，涵盖我们自 2023 年 6 月以来在 GraphRAG 基础研究上的进展，以及对高级 RAG 和 Fusion GraphRAG 的理解与实践。"><meta property="og:title" content="Fusion Graphrag 2025" />
+<meta property="og:description" content="本文将分享我们团队在 GraphRAG 领域的探索与实践历程。GraphRAG 是检索增强生成（RAG）技术的高级技术之一，旨在解决传统 RAG 的局限性。上周，我在 Twitter 上分享了[关于 GraphRAG Indexing 模型蒸馏训练](https://x.com/wey_gu/status/1892828461322162223)的工作，收获了诸多积极反馈。本文应朋友们建议整理而成，涵盖我们自 2023 年 6 月以来在 GraphRAG 基础研究上的进展，以及对高级 RAG 和 Fusion GraphRAG 的理解与实践。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://siwei.io/fusion-graphrag-2025/" /><meta property="og:image" content="https://siwei.io/fusion-graphrag-2025/featured-image.webp" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2025-02-28T21:33:13+08:00" />
+<meta property="article:modified_time" content="2025-02-28T21:33:13+08:00" /><meta property="og:site_name" content="siwei.io" />
+
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:image" content="https://siwei.io/fusion-graphrag-2025/featured-image.webp" /><meta name="twitter:title" content="Fusion Graphrag 2025"/>
+<meta name="twitter:description" content="本文将分享我们团队在 GraphRAG 领域的探索与实践历程。GraphRAG 是检索增强生成（RAG）技术的高级技术之一，旨在解决传统 RAG 的局限性。上周，我在 Twitter 上分享了[关于 GraphRAG Indexing 模型蒸馏训练](https://x.com/wey_gu/status/1892828461322162223)的工作，收获了诸多积极反馈。本文应朋友们建议整理而成，涵盖我们自 2023 年 6 月以来在 GraphRAG 基础研究上的进展，以及对高级 RAG 和 Fusion GraphRAG 的理解与实践。"/>
+<meta name="twitter:site" content="@wey_gu"/>
+<meta name="application-name" content="DoIt">
+<meta name="apple-mobile-web-app-title" content="DoIt">
+
+<meta name="theme-color" content="#f8f8f8"><meta name="msapplication-TileColor" content="#da532c"><meta name="twitter:creator" content="@wey_gu" /><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="manifest" href="/site.webmanifest">
+
+<link rel="canonical" href="https://siwei.io/fusion-graphrag-2025/" /><link rel="prev" href="https://siwei.io/graph-rag/" />
+<link rel="stylesheet" href="/css/main.min.css"><link rel="stylesheet" href="/css/style.min.css">
+    
+    
+    
+    <meta name="baidu-site-verification" content="code-4R67zl7SwH" /><script type="application/ld+json">{"@context": "https://schema.org","@type": "BlogPosting",
+        "headline": "Fusion Graphrag 2025",
+        "inLanguage": "zh-cn",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "https://siwei.io/fusion-graphrag-2025/"
+        },"image": [{
+                            "@type": "ImageObject",
+                            "url": "https://siwei.io/fusion-graphrag-2025/featured-image.webp",
+                            "width":  1736 ,
+                            "height":  892 
+                        },{
+                            "@type": "ImageObject",
+                            "url": "https://siwei.io/fusion-graphrag-2025/featured-image.webp",
+                            "width":  1736 ,
+                            "height":  892 
+                        }],"genre": "posts","keywords":["GenAI","GraphRAG","RAG","FusionGraphRAG"],"wordcount":  809 ,
+        "url": "https://siwei.io/fusion-graphrag-2025/","datePublished": "2025-02-28T21:33:13+08:00","dateModified": "2025-02-28T21:33:13+08:00","publisher": {
+            "@type": "Organization",
+            "name": "Wey Gu","logo": "https://siwei.io/images/site-feature-image.webp"},"author": {
+                "@type": "Person",
+                "name": "Wey Gu",
+                "url": "https://siwei.io"
+            },"description": "本文将分享我们团队在 GraphRAG 领域的探索与实践历程。GraphRAG 是检索增强生成（RAG）技术的高级技术之一，旨在解决传统 RAG 的局限性。上周，我在 Twitter 上分享了[关于 GraphRAG Indexing 模型蒸馏训练](https://x.com/wey_gu/status/1892828461322162223)的工作，收获了诸多积极反馈。本文应朋友们建议整理而成，涵盖我们自 2023 年 6 月以来在 GraphRAG 基础研究上的进展，以及对高级 RAG 和 Fusion GraphRAG 的理解与实践。"
+    }</script></head>
+
+
+<body data-instant-intensity="viewport" ><script type="text/javascript">
+        function setTheme(theme) {
+          document.body.setAttribute('theme', theme); 
+          document.documentElement.className = theme;
+          document.documentElement.style.setProperty('color-scheme', theme === 'light' ? 'light' : 'dark');
+          if (theme === 'light') {
+            document.documentElement.classList.remove('tw-dark')
+          } else {
+            document.documentElement.classList.add('tw-dark')
+          }
+          window.theme = theme;   
+          window.isDark = window.theme !== 'light' 
+        }
+        function saveTheme(theme) {window.localStorage && localStorage.setItem('theme', theme);}
+        function getMeta(metaName) {const metas = document.getElementsByTagName('meta'); for (let i = 0; i < metas.length; i++) if (metas[i].getAttribute('name') === metaName) return metas[i]; return '';}
+        if (window.localStorage && localStorage.getItem('theme')) {
+            let theme = localStorage.getItem('theme');
+            if (theme === 'light' || theme === 'dark') {
+            setTheme(theme);
+            } else {
+                if ((window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                    setTheme('dark');
+                } else {
+                    setTheme('light');
+                }
+            }
+         } else { 
+            if ('auto' === 'light' || 'auto' === 'dark') 
+                setTheme('auto'), saveTheme('auto'); 
+            else saveTheme('auto'), window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light');
+        }
+        let metaColors = {'light': '#f8f8f8','dark': '#161b22'}
+        getMeta('theme-color').content = metaColors[document.body.getAttribute('theme')];
+        window.switchThemeEventSet = new Set()
+    </script>
+    <div id="back-to-top"></div>
+    <div id="mask"></div><div class="wrapper"><header class="desktop print:!tw-hidden" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/" title="siwei.io"><span class="tw-mr-1"><i class='fas fa-code-branch'></i></span>siwei.io</a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item"
+                    href="/about/" > 关于 </a><a class="menu-item"
+                    href="/projects/" > 项目 </a><a class="menu-item"
+                    href="/sketch-notes/" > 手绘 </a><a class="menu-item"
+                    href="/posts/" > 博客 </a><a class="menu-item"
+                    href="/talk/" > 演讲 </a><a class="menu-item"
+                    href="/cources/" > 课程 </a><a class="menu-item"
+                    href="https://vesoft.com/cn/careers/" 
+                    rel="noopener noreferrer" target="_blank" > 招聘 </a><a class="menu-item"
+                    href="/about/#%E8%81%94%E7%B3%BB%E6%88%91" > 联系 </a><a class="menu-item"
+                    href="/path/" > 学习路径 </a><a class="menu-item"
+                    href="/podcast/" > 播客 </a><span class="menu-item delimiter"></span><button class="menu-item language" aria-label="选择语言"><svg class="icon"
+    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --><path d="M285.476 272.971L91.132 467.314c-9.373 9.373-24.569 9.373-33.941 0l-22.667-22.667c-9.357-9.357-9.375-24.522-.04-33.901L188.505 256 34.484 101.255c-9.335-9.379-9.317-24.544.04-33.901l22.667-22.667c9.373-9.373 24.569-9.373 33.941 0L285.475 239.03c9.373 9.372 9.373 24.568.001 33.941z"/></svg>
+                    <select class="language-select" aria-label="选择语言" id="language-select-desktop"
+                        onchange="location = this.value;"><option value="/fusion-graphrag-2025/"  selected></option></select>
+                </button><span class="menu-item search" id="search-desktop">
+                    <input type="text"
+                        placeholder="搜索文章标题或内容..."
+                        id="search-input-desktop">
+                    <button class="search-button search-toggle" id="search-toggle-desktop" title="搜索">
+                        <svg class="icon"
+    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --><path d="M505 442.7L405.3 343c-4.5-4.5-10.6-7-17-7H372c27.6-35.3 44-79.7 44-128C416 93.1 322.9 0 208 0S0 93.1 0 208s93.1 208 208 208c48.3 0 92.7-16.4 128-44v16.3c0 6.4 2.5 12.5 7 17l99.7 99.7c9.4 9.4 24.6 9.4 33.9 0l28.3-28.3c9.4-9.4 9.4-24.6.1-34zM208 336c-70.7 0-128-57.2-128-128 0-70.7 57.2-128 128-128 70.7 0 128 57.2 128 128 0 70.7-57.2 128-128 128z"/></svg>
+                    </button>
+                    <button class="search-button search-clear" id="search-clear-desktop" title="清空">
+                        <svg class="icon"
+    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --><path d="M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm121.6 313.1c4.7 4.7 4.7 12.3 0 17L338 377.6c-4.7 4.7-12.3 4.7-17 0L256 312l-65.1 65.6c-4.7 4.7-12.3 4.7-17 0L134.4 338c-4.7-4.7-4.7-12.3 0-17l65.6-65-65.6-65.1c-4.7-4.7-4.7-12.3 0-17l39.6-39.6c4.7-4.7 12.3-4.7 17 0l65 65.7 65.1-65.6c4.7-4.7 12.3-4.7 17 0l39.6 39.6c4.7 4.7 4.7 12.3 0 17L312 256l65.6 65.1z"/></svg>
+                    </button>
+                    <span class="search-button search-loading tw-animate-spin" id="search-loading-desktop">
+                        <svg class="icon"
+    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --><path d="M304 48c0 26.51-21.49 48-48 48s-48-21.49-48-48 21.49-48 48-48 48 21.49 48 48zm-48 368c-26.51 0-48 21.49-48 48s21.49 48 48 48 48-21.49 48-48-21.49-48-48-48zm208-208c-26.51 0-48 21.49-48 48s21.49 48 48 48 48-21.49 48-48-21.49-48-48-48zM96 256c0-26.51-21.49-48-48-48S0 229.49 0 256s21.49 48 48 48 48-21.49 48-48zm12.922 99.078c-26.51 0-48 21.49-48 48s21.49 48 48 48 48-21.49 48-48c0-26.509-21.491-48-48-48zm294.156 0c-26.51 0-48 21.49-48 48s21.49 48 48 48 48-21.49 48-48c0-26.509-21.49-48-48-48zM108.922 60.922c-26.51 0-48 21.49-48 48s21.49 48 48 48 48-21.49 48-48-21.491-48-48-48z"/></svg>
+                    </span>
+                </span><button class="menu-item theme-select" aria-label="切换主题">
+                    <svg class="icon"
+    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --><path d="M8 256c0 136.966 111.033 248 248 248s248-111.034 248-248S392.966 8 256 8 8 119.033 8 256zm248 184V72c101.705 0 184 82.311 184 184 0 101.705-82.311 184-184 184z"/></svg>
+                    <select class="color-theme-select" id="theme-select-desktop" aria-label="切换主题">
+                        <option value="light">浅色</option>
+                        <option value="dark">深色</option>
+                        <option value="auto">跟随系统</option>
+                    </select>
+                </button></div>
+        </div>
+    </div>
+</header><header class="mobile print:!tw-hidden" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="/" title="siwei.io"><span class="tw-mr-1"><i class='fas fa-code-branch'></i></span>siwei.io</a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><div class="search-wrapper">
+                <div class="search mobile" id="search-mobile">
+                    <input type="text"
+                        placeholder="搜索文章标题或内容..."
+                        id="search-input-mobile">
+                    <button class="search-button search-toggle tw-h-10" id="search-toggle-mobile" title="搜索">
+                        <svg class="icon"
+    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --><path d="M505 442.7L405.3 343c-4.5-4.5-10.6-7-17-7H372c27.6-35.3 44-79.7 44-128C416 93.1 322.9 0 208 0S0 93.1 0 208s93.1 208 208 208c48.3 0 92.7-16.4 128-44v16.3c0 6.4 2.5 12.5 7 17l99.7 99.7c9.4 9.4 24.6 9.4 33.9 0l28.3-28.3c9.4-9.4 9.4-24.6.1-34zM208 336c-70.7 0-128-57.2-128-128 0-70.7 57.2-128 128-128 70.7 0 128 57.2 128 128 0 70.7-57.2 128-128 128z"/></svg>
+                    </button>
+                    <button class="search-button search-clear" id="search-clear-mobile" title="清空">
+                        <svg class="icon"
+    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --><path d="M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm121.6 313.1c4.7 4.7 4.7 12.3 0 17L338 377.6c-4.7 4.7-12.3 4.7-17 0L256 312l-65.1 65.6c-4.7 4.7-12.3 4.7-17 0L134.4 338c-4.7-4.7-4.7-12.3 0-17l65.6-65-65.6-65.1c-4.7-4.7-4.7-12.3 0-17l39.6-39.6c4.7-4.7 12.3-4.7 17 0l65 65.7 65.1-65.6c4.7-4.7 12.3-4.7 17 0l39.6 39.6c4.7 4.7 4.7 12.3 0 17L312 256l65.6 65.1z"/></svg>
+                    </button>
+                    <span class="search-button search-loading tw-animate-spin" id="search-loading-mobile">
+                        <svg class="icon"
+    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --><path d="M304 48c0 26.51-21.49 48-48 48s-48-21.49-48-48 21.49-48 48-48 48 21.49 48 48zm-48 368c-26.51 0-48 21.49-48 48s21.49 48 48 48 48-21.49 48-48-21.49-48-48-48zm208-208c-26.51 0-48 21.49-48 48s21.49 48 48 48 48-21.49 48-48-21.49-48-48-48zM96 256c0-26.51-21.49-48-48-48S0 229.49 0 256s21.49 48 48 48 48-21.49 48-48zm12.922 99.078c-26.51 0-48 21.49-48 48s21.49 48 48 48 48-21.49 48-48c0-26.509-21.491-48-48-48zm294.156 0c-26.51 0-48 21.49-48 48s21.49 48 48 48 48-21.49 48-48c0-26.509-21.49-48-48-48zM108.922 60.922c-26.51 0-48 21.49-48 48s21.49 48 48 48 48-21.49 48-48-21.491-48-48-48z"/></svg>
+                    </span>
+                </div>
+                <button class="search-cancel" id="search-cancel-mobile">
+                    取消
+                </button>
+            </div><a class="menu-item" href="/about/" title="" >关于</a><a class="menu-item" href="/projects/" title="" >项目</a><a class="menu-item" href="/sketch-notes/" title="" >手绘</a><a class="menu-item" href="/posts/" title="" >博客</a><a class="menu-item" href="/talk/" title="" >演讲</a><a class="menu-item" href="/cources/" title="" >课程</a><a class="menu-item" href="https://vesoft.com/cn/careers/" title="" 
+                rel="noopener noreferrer" target="_blank" >招聘</a><a class="menu-item" href="/about/#%E8%81%94%E7%B3%BB%E6%88%91" title="" >联系</a><a class="menu-item" href="/path/" title="" >学习路径</a><a class="menu-item" href="/podcast/" title="" >播客</a><button class="menu-item theme-select tw-w-full" aria-label="切换主题">
+                <svg class="icon"
+    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --><path d="M8 256c0 136.966 111.033 248 248 248s248-111.034 248-248S392.966 8 256 8 8 119.033 8 256zm248 184V72c101.705 0 184 82.311 184 184 0 101.705-82.311 184-184 184z"/></svg>
+                <select class="color-theme-select" id="theme-select-mobile" aria-label="切换主题">
+                    <option value="light">浅色</option>
+                    <option value="dark">深色</option>
+                    <option value="auto">跟随系统</option>
+                </select>
+            </button><button class="menu-item tw-w-full" title=""><svg class="icon"
+    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --><path d="M285.476 272.971L91.132 467.314c-9.373 9.373-24.569 9.373-33.941 0l-22.667-22.667c-9.357-9.357-9.375-24.522-.04-33.901L188.505 256 34.484 101.255c-9.335-9.379-9.317-24.544.04-33.901l22.667-22.667c9.373-9.373 24.569-9.373 33.941 0L285.475 239.03c9.373 9.372 9.373 24.568.001 33.941z"/></svg>
+                <select class="language-select" title="" onchange="location = this.value;"><option value="/fusion-graphrag-2025/"  selected></option></select>
+            </button></div>
+    </div>
+</header>
+<div class="search-dropdown desktop">
+    <div id="search-dropdown-desktop"></div>
+</div>
+<div class="search-dropdown mobile">
+    <div id="search-dropdown-mobile"></div>
+</div><main class="main">
+            <div class="container"><div class="toc print:!tw-hidden" id="toc-auto">
+        <h2 class="toc-title">目录</h2>
+        <div class="toc-content" id="toc-content-auto"><nav id="TableOfContents">
+  <ol>
+    <li><a href="#fusion-graphrag终极-rag-方案">Fusion GraphRAG：终极 RAG 方案</a>
+      <ol>
+        <li><a href="#rag-与-graphrag-的缘起">RAG 与 GraphRAG 的缘起</a>
+          <ol>
+            <li><a href="#rag检索增强生成">RAG：检索增强生成</a></li>
+            <li><a href="#朴素的-rag">朴素的 RAG</a></li>
+            <li><a href="#rag-的挑战">RAG 的挑战</a></li>
+            <li><a href="#高级-rag">高级 RAG</a></li>
+            <li><a href="#graphrag">GraphRAG</a></li>
+          </ol>
+        </li>
+        <li><a href="#fusion-graphrag">Fusion GraphRAG</a></li>
+        <li><a href="#fusion-graphrag-实现私域-deep-research">Fusion GraphRAG 实现私域 Deep Research</a></li>
+        <li><a href="#回到-graphrag-时间线">回到 GraphRAG 时间线</a></li>
+        <li><a href="#图抽取">图抽取</a></li>
+        <li><a href="#让图抽取成为默认策略">让图抽取成为默认策略</a></li>
+        <li><a href="#rag-应用落地的挑战">RAG 应用落地的挑战</a></li>
+        <li><a href="#ai-应用平台">AI 应用平台</a></li>
+        <li><a href="#总结">总结</a></li>
+      </ol>
+    </li>
+  </ol>
+</nav></div>
+    </div><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC", "true")</script><article class="page single print:!tw-w-full print:!tw-max-w-none print:!tw-m-0 print:!tw-p-0"><h1 class="single-title">Fusion Graphrag 2025</h1><div class="post-meta">
+            <div class="post-meta-line">
+                <span class="post-author"><img class="tw-inline-block tw-max-h-4 tw-rounded-full tw-translate-y-[-2px] tw-mr-1"  src="/images/avatar_wey.webp"   alt="Wey Gu avatar" height="16" width="16"><a href="https://siwei.io" title="Author" target="_blank" rel="noopener noreferrer author" class="author">Wey Gu</a>
+                </span>&nbsp;<span class="post-category">收录于 </span>&nbsp;<span class="post-category">类别 <a href=""><svg class="icon"
+    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --><path d="M464 128H272l-54.63-54.63c-6-6-14.14-9.37-22.63-9.37H48C21.49 64 0 85.49 0 112v288c0 26.51 21.49 48 48 48h416c26.51 0 48-21.49 48-48V176c0-26.51-21.49-48-48-48zm0 272H48V112h140.12l54.63 54.63c6 6 14.14 9.37 22.63 9.37H464v224z"/></svg></a>&nbsp;<a href="/categories/genai/"><svg class="icon"
+    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --><path d="M464 128H272l-54.63-54.63c-6-6-14.14-9.37-22.63-9.37H48C21.49 64 0 85.49 0 112v288c0 26.51 21.49 48 48 48h416c26.51 0 48-21.49 48-48V176c0-26.51-21.49-48-48-48zm0 272H48V112h140.12l54.63 54.63c6 6 14.14 9.37 22.63 9.37H464v224z"/></svg>GenAI</a></span></div>
+            <div class="post-meta-line"><svg class="icon"
+    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --><path d="M148 288h-40c-6.6 0-12-5.4-12-12v-40c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12zm108-12v-40c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12h40c6.6 0 12-5.4 12-12zm96 0v-40c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12h40c6.6 0 12-5.4 12-12zm-96 96v-40c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12h40c6.6 0 12-5.4 12-12zm-96 0v-40c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12h40c6.6 0 12-5.4 12-12zm192 0v-40c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12h40c6.6 0 12-5.4 12-12zm96-260v352c0 26.5-21.5 48-48 48H48c-26.5 0-48-21.5-48-48V112c0-26.5 21.5-48 48-48h48V12c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v52h128V12c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v52h48c26.5 0 48 21.5 48 48zm-48 346V160H48v298c0 3.3 2.7 6 6 6h340c3.3 0 6-2.7 6-6z"/></svg>&nbsp;<time datetime="2025-02-28">2025-02-28</time>&nbsp;<svg class="icon"
+    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --><path d="M402.3 344.9l32-32c5-5 13.7-1.5 13.7 5.7V464c0 26.5-21.5 48-48 48H48c-26.5 0-48-21.5-48-48V112c0-26.5 21.5-48 48-48h273.5c7.1 0 10.7 8.6 5.7 13.7l-32 32c-1.5 1.5-3.5 2.3-5.7 2.3H48v352h352V350.5c0-2.1.8-4.1 2.3-5.6zm156.6-201.8L296.3 405.7l-90.4 10c-26.2 2.9-48.5-19.2-45.6-45.6l10-90.4L432.9 17.1c22.9-22.9 59.9-22.9 82.7 0l43.2 43.2c22.9 22.9 22.9 60 .1 82.8zM460.1 174L402 115.9 216.2 301.8l-7.3 65.3 65.3-7.3L460.1 174zm64.8-79.7l-43.2-43.2c-4.1-4.1-10.8-4.1-14.8 0L436 82l58.1 58.1 30.9-30.9c4-4.2 4-10.8-.1-14.9z"/></svg>&nbsp;<time datetime="2025-02-28">2025-02-28</time>&nbsp;<svg class="icon"
+    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --><path d="M497.9 142.1l-46.1 46.1c-4.7 4.7-12.3 4.7-17 0l-111-111c-4.7-4.7-4.7-12.3 0-17l46.1-46.1c18.7-18.7 49.1-18.7 67.9 0l60.1 60.1c18.8 18.7 18.8 49.1 0 67.9zM284.2 99.8L21.6 362.4.4 483.9c-2.9 16.4 11.4 30.6 27.8 27.8l121.5-21.3 262.6-262.6c4.7-4.7 4.7-12.3 0-17l-111-111c-4.8-4.7-12.4-4.7-17.1 0zM124.1 339.9c-5.5-5.5-5.5-14.3 0-19.8l154-154c5.5-5.5 14.3-5.5 19.8 0s5.5 14.3 0 19.8l-154 154c-5.5 5.5-14.3 5.5-19.8 0zM88 424h48v36.3l-64.5 11.3-31.1-31.1L51.7 376H88v48z"/></svg>&nbsp;约 809 字&nbsp;<svg class="icon"
+    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --><path d="M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 448c-110.5 0-200-89.5-200-200S145.5 56 256 56s200 89.5 200 200-89.5 200-200 200zm61.8-104.4l-84.9-61.7c-3.1-2.3-4.9-5.9-4.9-9.7V116c0-6.6 5.4-12 12-12h32c6.6 0 12 5.4 12 12v141.7l66.8 48.6c5.4 3.9 6.5 11.4 2.6 16.8L334.6 349c-3.9 5.3-11.4 6.5-16.8 2.6z"/></svg>&nbsp;预计阅读 4 分钟&nbsp;</div>
+        </div><div class="featured-image"><img  loading="eager" src="/fusion-graphrag-2025/featured-image.webp"   alt="本文将分享我们团队在 GraphRAG 领域的探索与实践历程。GraphRAG 是检索增强生成（RAG）技术的高级技术之一，旨在解决传统 RAG 的局限性。上周，我在 Twitter 上分享了[关于 GraphRAG Indexing 模型蒸馏训练](https://x.com/wey_gu/status/1892828461322162223)的工作，收获了诸多积极反馈。本文应朋友们建议整理而成，涵盖我们自 2023 年 6 月以来在 GraphRAG 基础研究上的进展，以及对高级 RAG 和 Fusion GraphRAG 的理解与实践。" height="892" width="1736"></div><div class="details toc print:!tw-block" id="toc-static"  kept="">
+                <div class="details-summary toc-title">
+                    <span>目录</span>
+                    <span class="details-icon"><svg class="icon"
+    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 512"><!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --><path d="M224.3 273l-136 136c-9.4 9.4-24.6 9.4-33.9 0l-22.6-22.6c-9.4-9.4-9.4-24.6 0-33.9l96.4-96.4-96.4-96.4c-9.4-9.4-9.4-24.6 0-33.9L54.3 103c9.4-9.4 24.6-9.4 33.9 0l136 136c9.5 9.4 9.5 24.6.1 34z"/></svg></span>
+                </div>
+                <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ol>
+    <li><a href="#fusion-graphrag终极-rag-方案">Fusion GraphRAG：终极 RAG 方案</a>
+      <ol>
+        <li><a href="#rag-与-graphrag-的缘起">RAG 与 GraphRAG 的缘起</a>
+          <ol>
+            <li><a href="#rag检索增强生成">RAG：检索增强生成</a></li>
+            <li><a href="#朴素的-rag">朴素的 RAG</a></li>
+            <li><a href="#rag-的挑战">RAG 的挑战</a></li>
+            <li><a href="#高级-rag">高级 RAG</a></li>
+            <li><a href="#graphrag">GraphRAG</a></li>
+          </ol>
+        </li>
+        <li><a href="#fusion-graphrag">Fusion GraphRAG</a></li>
+        <li><a href="#fusion-graphrag-实现私域-deep-research">Fusion GraphRAG 实现私域 Deep Research</a></li>
+        <li><a href="#回到-graphrag-时间线">回到 GraphRAG 时间线</a></li>
+        <li><a href="#图抽取">图抽取</a></li>
+        <li><a href="#让图抽取成为默认策略">让图抽取成为默认策略</a></li>
+        <li><a href="#rag-应用落地的挑战">RAG 应用落地的挑战</a></li>
+        <li><a href="#ai-应用平台">AI 应用平台</a></li>
+        <li><a href="#总结">总结</a></li>
+      </ol>
+    </li>
+  </ol>
+</nav></div>
+            </div><div class="content" id="content"><h2 id="fusion-graphrag终极-rag-方案" class="headerLink">
+    <a href="#fusion-graphrag%e7%bb%88%e6%9e%81-rag-%e6%96%b9%e6%a1%88" class="header-mark"></a>1 Fusion GraphRAG：终极 RAG 方案</h2><blockquote>
+<p>本文分享我们团队在 GraphRAG 领域的探索与实践历程，介绍一下 FusionGraphRAG。</p>
+</blockquote>
+<p>本文将分享我们团队在 GraphRAG 领域的探索与实践历程。GraphRAG 是检索增强生成（RAG）技术的高级技术之一，旨在解决传统 RAG 的局限性。上周，我在 Twitter 上分享了<a href="https://x.com/wey_gu/status/1892828461322162223" target="_blank" rel="noopener noreferrer">关于 GraphRAG Indexing 模型蒸馏训练</a>的工作，收获了诸多积极反馈。本文应朋友们建议整理而成，涵盖我们自 2023 年 6 月以来在 GraphRAG 基础研究上的进展，以及对高级 RAG 和 Fusion GraphRAG 的理解与实践。</p>
+<h3 id="rag-与-graphrag-的缘起" class="headerLink">
+    <a href="#rag-%e4%b8%8e-graphrag-%e7%9a%84%e7%bc%98%e8%b5%b7" class="header-mark"></a>1.1 RAG 与 GraphRAG 的缘起</h3><h4 id="rag检索增强生成" class="headerLink">
+    <a href="#rag%e6%a3%80%e7%b4%a2%e5%a2%9e%e5%bc%ba%e7%94%9f%e6%88%90" class="header-mark"></a>1.1.1 RAG：检索增强生成</h4><p>过去两年来，生成式 AI 和大语言模型的飞速发展堪称人类技术史上的重要里程碑。它们赋予计算机前所未有的上下文学习和推理能力，使得许多专属人类的复杂任务得以自动化甚至超越。然而，如何高效利用这些模型完成具体任务，成为技术落地的关键。</p>
+<p>RAG（Retrieval Augmented Generation，检索增强生成）作为一种基础范式应运而生。其核心在于通过“检索”（Retrieval）增强“生成”（Generation）：</p>
+<ul>
+<li><strong>生成</strong>：将任务描述和领域知识（即提示词）输入大语言模型，生成相应的回答。</li>
+<li><strong>检索增强</strong>：利用检索技术为模型提供高度相关的上下文知识，从而提升生成质量。</li>
+</ul>
+<p>在 RAG 中，检索环节至关重要。根据应用场景的不同，RAG 可分为两类：</p>
+<ol>
+<li><strong>面向公共检索系统</strong>：如 Google 或学术搜索引擎，依赖大模型调用外部 API，适用于通用知识获取。市面上的代表性产品包括 Perplexity Search 和 DeepSeek。</li>
+<li><strong>面向私有领域知识</strong>：如企业内部的研发文档或研究报告，需结合智能文档处理（IDP）、知识索引（Index）和知识管理系统。此类场景对检索技术的精准性和深度提出了更高要求。</li>
+</ol>
+<h4 id="朴素的-rag" class="headerLink">
+    <a href="#%e6%9c%b4%e7%b4%a0%e7%9a%84-rag" class="header-mark"></a>1.1.2 朴素的 RAG</h4><p><img class="tw-inline" loading="lazy" src="/fusion-graphrag-2025/RAG_gif.gif"   alt="RAG_gif" height="732" width="800"></p>
+<p>对于非结构化或半结构化知识，朴素 RAG 的典型流程包括：</p>
+<ul>
+<li>将文档分割成块（Chunk）。</li>
+<li>通过向量化嵌入（Embedding）构建语义索引，或结合 BM25 全文索引实现检索。</li>
+<li>在任务执行时，基于任务需求直接检索或通过检索重写（如 HyDE）优化结果。</li>
+</ul>
+<p>然而，这种方法在知识组织上的局限性使其难以满足企业级需求，具体挑战将在下文详述。</p>
+<h4 id="rag-的挑战" class="headerLink">
+    <a href="#rag-%e7%9a%84%e6%8c%91%e6%88%98" class="header-mark"></a>1.1.3 RAG 的挑战</h4><p>朴素 RAG 在实际应用中面临以下难题：</p>
+<ul>
+<li><strong>大海捞针</strong>：分块假设知识分布均匀，但某些关键信息可能被稀释在无关内容中，导致召回失败。</li>
+<li><strong>穿针引线</strong>：线性分割破坏了知识间的关联，难以还原全局上下文。</li>
+<li><strong>宏观问题</strong>：基于分片和关键词的索引无法有效应对全局性问题，如“哪些话题最具创新性”。</li>
+<li><strong>文档理解不足</strong>：缺乏智能文档处理时，公式、表格等复杂信息无法被正确解析和索引，影响回答质量。</li>
+</ul>
+<h4 id="高级-rag" class="headerLink">
+    <a href="#%e9%ab%98%e7%ba%a7-rag" class="header-mark"></a>1.1.4 高级 RAG</h4><p>做好 RAG 并非一蹴而就，而是一个持续探索的过程。本质上，我们需要将对应用特点、RAG 技术特性以及知识本身的深刻理解，融入到 RAG 流水线的设计之中。</p>
+<p>下图展示了一个近期发布的高级 RAG 总结性工作的简化图例：<a href="https://github.com/bRAGAI/bRAG-langchain/raw/main/assets/img/rag-architecture.png" target="_blank" rel="noopener noreferrer">一个高级 RAG</a></p>
+<p><img class="tw-inline" loading="lazy" src="/fusion-graphrag-2025/rag-architecture.png"   alt="Attachment.png" height="1202" width="1586"></p>
+<p>可见，在现代高级的 RAG 方法中，数据持久化层包含 &ldquo;Graph DB&rdquo;（即图数据库，一种以图结构——“节点”和“边”为中心的数据库），而图数据库也正是本文主题 GraphRAG 的重要基础设施。</p>
+<p>现代图数据库能够以高效、可扩展的方式驱动多租户、超大数据规模、高并发场景下复杂关联关系（图数据）的持久化、查询、访问和计算。它是高级 RAG 系统、智能体记忆系统（Agent Memory）的重要骨干基础设施，如下图所示。面向关联关系的图状结构，与我们梳理知识的脑图、甚至大脑中的神经元结构都非常相似。这种并非偶然的结构相似性，正是高级 RAG 知识索引解决朴素 RAG 方法挑战的关键。</p>
+<p><img class="tw-inline" loading="lazy" src="/fusion-graphrag-2025/graph_gif.gif"   alt="graph_gif" height="753" width="800"></p>
+<p>常见的高级 RAG 方法，在特别的索引结构上，包括树状索引（Tree-RAG）、分层检索（Raptor）和图状索引（GraphRAG），其中 GraphRAG 是我们文章的重点。</p>
+<h4 id="graphrag" class="headerLink">
+    <a href="#graphrag" class="header-mark"></a>1.1.5 GraphRAG</h4><p>GraphRAG 这个方法最初是我们在 2023 年 8、9 月份开始，在 LlamaIndex 社区上持续做的一些工作和两次<a href="https://bit.ly/graph-rag-workshop" target="_blank" rel="noopener noreferrer">公开的 Webinar</a> 上提出，并给出了开源的实现和可复现的效果比较试验。</p>
+<p>在最初的 GraphRAG 参考实践中，我们给出了索引期基于大模型的同构图谱抽取的实现和查询区基于实体、关系语义的捞取与可配置的子图查询的知识召回，并比较了基于 Text-to-Query 方法的一些效果比较与结合方案的实现。现在，为了区隔之后 Graph-based RAG 方法的演进，我们把最初的 GraphRAG 叫做 SubGraph RAG。</p>
+<p>在当时的 workshop 上，我们分享过的两个观点是</p>
+<ul>
+<li>在与知识打交道的过程中，只用分片处理的方法、绕过 Graph（Knowledge Graph）一定是不够的，这也是我们做 GraphRAG 探索的初衷</li>
+<li>这个 GraphRAG 的方法仅仅是一个开始，我们在不断探索更多在 Graph 之上的探索、推理的策略</li>
+</ul>
+<p>随后，我们和 <a href="https://www.linkedin.com/feed/update/urn:li:activity:7198589556848263168/" target="_blank" rel="noopener noreferrer">Researcher: Diego</a> 一起讨论，做了图索引之上 Chain of Exploration 的工作，并在 PyCon China 2023 上第一次给出了做了 Chain of Exploration 的分享。</p>
+<p>之后，我们看到了非常多的 GraphRAG 相关工作被发表，比如 <a href="https://arxiv.org/abs/2310.10445" target="_blank" rel="noopener noreferrer">MIT 材料科学的两篇</a> 利用我们的工作的 MechGPT、海马体 RAG 利用 pagerank 权重的工作 <a href="https://arxiv.org/abs/2405.14831" target="_blank" rel="noopener noreferrer">HippoRAG</a>、<a href="https://arxiv.org/abs/2404.17723" target="_blank" rel="noopener noreferrer">LinkedIn 的利用 半结构化数据图建模的 RAG工作</a>都非常有启发性。</p>
+<p><img class="tw-inline" loading="lazy" src="/fusion-graphrag-2025/MechGPT.png"   alt="MechGPT" height="982" width="1344"></p>
+<p>当然，最让我们兴奋的工作是微软的 <a href="https://arxiv.org/html/2404.16130" target="_blank" rel="noopener noreferrer">GraphRAG: From Local to Global</a> 工作，他们充分探索了基于大模型抽取的知识图谱索引之上利用社区发现算法得到分级聚集结构下的全局性摘要，这些摘要是没有偏见的保有原始知识中天然聚集性质、重要性质的脉络知识，在回答带有宏观全局性的问题中效果非常好。</p>
+<p><img class="tw-inline" loading="lazy" src="/fusion-graphrag-2025/ms_paper.png"   alt="ms_paper" height="542" width="830"></p>
+<p>我们从这些后续的工作中受益匪浅，在与我们的客户 Graph based RAG 落地工作中，不断打磨、探索、累积了很多各个环节的优化、方法、策略。最终形成了我们称为 Fusion GraphRAG 的方案。</p>
+<h3 id="fusion-graphrag" class="headerLink">
+    <a href="#fusion-graphrag" class="header-mark"></a>1.2 Fusion GraphRAG</h3><p>Fusion GraphRAG 是我们团队在 GraphRAG 基础上的创新实践。它融合了高级 RAG 技术，通过图状结构存储文档层级、章节关系及特殊元素（如公式、表格），实现高效、灵活的检索。</p>
+<p><img class="tw-inline" loading="lazy" src="./FusionGraphRAG_GIF.gif"   alt="FusionGraphRAG_GIF"  ></p>
+<p>Fusion GraphRAG 的本质在于 Sota 的高级 RAG 方法融合、充分连接的元知识索引、充分打磨调优的 GraphRAG（可选索引）。</p>
+<ul>
+<li>
+<p>Fusion GraphRAG 通过在一个联通图谱内的“元知识”索引，清晰地揭示海量知识文档的内在关联，呈现从文件夹、文档、章节到段落、图表、公式的完整脉络，此为知识图谱的“元知识频谱”。</p>
+</li>
+<li>
+<p>在此基础上，用户可选择不同粒度的知识抽取方法（非必须），构建图谱结构的图索引，形成“增强图频谱”。</p>
+</li>
+<li>
+<p>进一步，用户可以对图索引和元知识层进行诸如图摘要、权重分配、时序/状语信息补充等增强操作，以提升知识检索和利用的效率。</p>
+</li>
+</ul>
+<blockquote>
+<p>附图 FusionGraphRAG 结构实例</p>
+</blockquote>
+<pre class="mermaid">graph TD
+
+%% ========= Style =========
+classDef metaLayer fill:#f9f9f9,stroke:#b3b3b3,stroke-width:1px,font-size:13px;
+classDef graphLayer fill:#c6dcff,stroke:#3f6fd9,stroke-width:1.4px,font-size:13px;
+classDef graphSubLayer fill:#e8f1ff,stroke:#3f6fd9,stroke-width:1px,font-size:13px;
+classDef enrichLayer fill:#fff9e8,stroke:#cfa514,stroke-width:1px,stroke-dasharray:4 4,font-size:13px;
+classDef nodeText font-size:13px;
+classDef queryFlow stroke:#444,stroke-dasharray:5 5;
+
+%% ========= 元知识层 =========
+subgraph MetaLayer["元知识层"]
+  F1["📂 发动机控制项目"]
+  F2["📂 高空失效案例库"]
+  D1["📄 ECU 设计说明"]
+  D2["📄 起动异常日志"]
+  D3["📄 案例：高原起动失败"]
+  F1 --> D1
+  F1 --> D2
+  F2 --> D3
+end
+
+%% 文档结构
+D1 --> S1A["系统简介"]
+S1A --> P1["1.1 接口说明"] --> L11["段落 1"] --> L12["段落 2"] --> L13["段落 3"]
+S1A --> P2["1.2 电压异常"] --> L21["段落 1"] --> L22["段落 2"]
+D1 --> S2A["硬件配置"]
+D2 --> S1B["故障描述"] --> B11["1.1 现象"]
+S1B --> B12["2.1 日志片段"]
+D2 --> S2B["操作记录"]
+D3 --> S1C["案例背景"] --> C11["1.1 4000 m 海拔"]
+S1C --> C12["2.1 逻辑异常"]
+D3 --> S2C["初步分析"]
+
+%% 多模态结构
+CH1["图：电压‑转速曲线"]
+TB1["表：指令时序"]
+FM1["公式：Q = αP√(T/R)"]
+L12 --> CH1
+L21 --> TB1
+L22 --> FM1
+
+%% ========= 图谱层 =========
+subgraph GraphLayer["图谱层"]
+  subgraph G1 ["电压故障社区"]
+    Fault1["故障：ECU 电压低"]
+    Sym1["症状：无法启动"]
+    T1["时点：2023‑07‑22"]
+    Env1["环境：4000 m"]
+  end
+  subgraph G2 ["操作流程社区"]
+    Proc1["流程：更换模块"]
+    Act1["措施：旁路供电"]
+    Role1["角色：维修工程师"]
+  end
+end
+
+class G1,G2 graphSubLayer
+
+CH1 --> Fault1
+TB1 --> Proc1
+FM1 --> Proc1
+L13 --> Fault1
+L22 --> Proc1
+B11 --> Sym1
+B12 --> Act1
+C11 --> Env1
+Fault1 -->|引发| Sym1
+Sym1 -->|定位| Fault1
+Proc1 -->|解决| Fault1
+Fault1 -->|发生于| T1
+Proc1 -->|执行| Role1
+Sym1 -->|受环境| Env1
+Act1 -->|关联| Proc1
+
+%% ========= 知识增强层 =========
+subgraph EnrichLayer["知识增强层"]
+  Sum1['社区摘要：电压故障']
+  Sum2['社区摘要：操作流程']
+  ChapSum1['章节摘要：系统简介']
+  SeqEdge['时序增强']
+  Rank['重要度评分']
+end
+
+G1 -->|摘要| Sum1
+G2 -->|摘要| Sum2
+SeqEdge --> GraphLayer
+S1A --> ChapSum1
+
+%% Style apply
+class F1,F2,D1,D2,D3,S1A,S2A,S1B,S2B,S1C,S2C,P1,P2,L11,L12,L13,L21,L22,B11,B12,C11,C12 metaLayer
+class CH1,TB1,FM1 metaLayer
+class Fault1,Proc1,Sym1,T1,Role1,Env1,Act1 graphLayer
+class Sum1,Sum2,ChapSum1,Rank,SeqEdge enrichLayer
+class F1,F2,D1,D2,D3,S1A,S2A,S1B,S2B,S1C,S2C,P1,P2,L11,L12,L13,L21,L22,B11,B12,C11,C12,CH1,TB1,FM1,Fault1,Proc1,Sym1,T1,Role1,Env1,Act1,Sum1,Sum2,ChapSum1,Rank,SeqEdge nodeText
+</pre><h3 id="fusion-graphrag-实现私域-deep-research" class="headerLink">
+    <a href="#fusion-graphrag-%e5%ae%9e%e7%8e%b0%e7%a7%81%e5%9f%9f-deep-research" class="header-mark"></a>1.3 Fusion GraphRAG 实现私域 Deep Research</h3><p>Fusion GraphRAG 融合了先进的 IDP 技术与 RAG 索引方法，并将提取的多模态知识有机地关联为图状结构，从而精确映射真实世界知识的内在逻辑。依托高性能、支持图语义与向量检索的现代图数据库作为持久化底层，Fusion GraphRAG 能在这一统一图谱上实现面向元知识层次与图谱增强的高级检索。</p>
+<p>例如：</p>
+<ul>
+<li><strong>多层级知识检索：</strong>
+通过我们提出的 “Chain of Exploration” 检索器——一个能自主在图谱中探索并查找任务相关知识的智能 Agent，Fusion GraphRAG 可以在同时包含文件夹、文件层级以及章节（附摘要）结构信息的图谱上，既完成传统基于 Chunk 的检索任务，又能支持基于分层结构实现的脑图式 RAG 检索。（注：此方法不依赖昂贵的图谱抽取技术，后续将探讨如何进一步降低抽取成本。）</li>
+<li><strong>全局与局部深度分析：</strong>
+通过引入图抽取与图社区摘要等增强手段，“Chain of Exploration” 能够在图谱上按需执行全局搜索以解决宏观问题，同时进行针对多个知识点的精准局部检索，甚至对涉及复杂关联的深度问题（如关键知识间路径查找）进行分析。</li>
+<li><strong>多 Agent 协同：</strong>
+利用 Fusion GraphRAG 构建多 Agent 系统，可以将一整套算法与行为准则封装为一个专用的 Fusion GraphRAG Agent，此 Agent 可作为另一 RAG Agent 的召回计划生成器，在少而精的专业知识（know-how）构建的 Fusion Graph Index 指引下，自动规划出基于海量知识库的复杂查询方案。这为构建私有领域的自主学习 Deep Research/Action Agent 提供了有力支撑。</li>
+<li><strong>私有知识库内的深度研究：</strong>
+在 Fusion GraphRAG 之上，我们可以轻松实现针对私有知识库的 Deep Researcher。依托天然的知识连接与索引，再结合针对 “Chain of Exploration” Agent 的优化提示工程，以及类似 DeepSeek R1 的推理模型，就能实现类似 Deep Researcher 的 RAG 召回效果，为深度研究提供强大动力。</li>
+</ul>
+<h3 id="回到-graphrag-时间线" class="headerLink">
+    <a href="#%e5%9b%9e%e5%88%b0-graphrag-%e6%97%b6%e9%97%b4%e7%ba%bf" class="header-mark"></a>1.4 回到 GraphRAG 时间线</h3><p>在我们的视角下，GraphRAG 正在不断演进，下面简要梳理这一发展历程：</p>
+<ul>
+<li><strong>GraphRAG - 2023-08</strong>
+NebulaGraph 在 LlamaIndex 社区首次提出并实现了基本的 GraphRAG 模型。</li>
+<li><strong>GraphRAG with Community Summary - 2024-04</strong>
+微软在论文中提出了基于社区发现算法实现全局摘要的 GraphRAG 方法，为图谱检索提供了新的思路。</li>
+<li><strong>Fusion GraphRAG</strong>
+<ul>
+<li>融合了文档层级、章节层级、以及文中各类特殊元素（如公式、表格、图表）的多频谱混合图状索引；</li>
+<li>支持可选的知识抽取与知识增强（包括社区摘要、时序增强等），构建混合层级结构查询、全局图召回、知识频谱图谱召回以及（可选） Chain of Exploration 检索；</li>
+<li>同时支持将公共知识图谱、现有知识图谱以及图状数据中的 Chain of Exploration 召回方法进行融合。</li>
+</ul>
+</li>
+</ul>
+<h3 id="图抽取" class="headerLink">
+    <a href="#%e5%9b%be%e6%8a%bd%e5%8f%96" class="header-mark"></a>1.5 图抽取</h3><p>需要指出的是，在大模型时代，对原始知识进行类似知识图谱的抽取并非 Fusion GraphRAG 的必选项，因为并非所有 RAG 任务都需要细粒度的“知识预习”。图抽取的代价较高，目前多数公开方案成本也不低。</p>
+<blockquote>
+<p>注：LazyGraphRAG 的相关工作同样值得关注，它提供了另一种优化思路。</p>
+</blockquote>
+<blockquote>
+<p>附：Fusion GraphRAG 的索引及增强流程示意图</p>
+</blockquote>
+<p><img class="tw-inline" loading="lazy" src="/Users/weyl/projects/GenAI/blog_1/FusionGraphRAG.png"   alt="FusionGraphRAG"  ></p>
+<h3 id="让图抽取成为默认策略" class="headerLink">
+    <a href="#%e8%ae%a9%e5%9b%be%e6%8a%bd%e5%8f%96%e6%88%90%e4%b8%ba%e9%bb%98%e8%ae%a4%e7%ad%96%e7%95%a5" class="header-mark"></a>1.6 让图抽取成为默认策略</h3><p>高质量的 GraphRAG 索引虽然效果显著，但成本昂贵。我们的终极目标是让图抽取的成本降低到与 Embedding 类似的水平，实现大规模普及。</p>
+<p>实际上，AI 技术社区（包括我们自身）已经在朝这一方向不断努力：利用 NER 模型、更小型（例如 Phi 系列）的 LLM 进行 SFT、小规模 LLM 的 few shot 方案、尽可能的可编程方法，甚至融合 NER 与 LLM 的多种方案，都是当前探索的方向。最近，我们也看到了一些令人振奋的曙光！</p>
+<p>本质上，我们探索的基于 LLM 的抽取方法都采用了不同形式的 CoT（思维链）策略。近期，DeepSeek-MATH 论文中首次提出的 GRPO 方法在 DeepSeek R0 中用于冷启动获取 Think-aloud（思考过程）的深度 CoT 能力表现非常出色。同时，我们注意到基于 Qwen2.5（小尺寸 0.5b 模型）进行 GRPO 训练，在需要强推理能力的任务（例如数学问题）上，通过大约 200 步训练就能获得令人满意的效果。</p>
+<p>结合这些观察，我们开展了如下探索：</p>
+<ul>
+<li><strong>数据收集与预处理：</strong>
+利用 DeepSeek R1，在挑选的最新原始知识数据（晚于模型 cut-off date）的基础上进行抽取任务，并开启 <code>&lt;think&gt;</code> 模式，收集高质量的 CoT 与图抽取的 Ground Truth，筛选掉质量不合格或思考过程过长的样本，作为训练数据。</li>
+<li><strong>奖励机制设计：</strong>
+基于开源社区中针对数学问题推理训练的 GRPO 奖励函数，我们设计了奖励高质量推理过程和高质量抽取结果的奖励函数。这两项奖励均依托高质量、低成本的指令大模型进行评估打分。</li>
+</ul>
+<p>在一块 A100 显卡上经过约 200 步训练后，我们初步评估结果显示：基于 Qwen2.5-3b 的小尺寸抽取模型在引入 GRPO 训练后，其性能已经超越了 GPT-4o-mini。以下是各模型的对比结果：</p>
+<table>
+<thead>
+<tr>
+<th><strong>Criterion</strong></th>
+<th><strong>qwen2.5-3b</strong></th>
+<th><strong>qwen2.5-3b-GPRO</strong></th>
+<th><strong>gpt-4o-mini</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Accuracy</strong></td>
+<td>⭐⭐☆☆☆</td>
+<td>⭐⭐⭐☆☆</td>
+<td>⭐⭐☆☆☆</td>
+</tr>
+<tr>
+<td><strong>Completeness</strong></td>
+<td>⭐⭐☆☆☆</td>
+<td>⭐⭐⭐⭐☆</td>
+<td>⭐⭐⭐☆☆</td>
+</tr>
+<tr>
+<td><strong>Coherence</strong></td>
+<td>⭐⭐☆☆☆</td>
+<td>⭐⭐⭐☆☆</td>
+<td>⭐⭐☆☆☆</td>
+</tr>
+<tr>
+<td><strong>Relevance</strong></td>
+<td>⭐⭐⭐☆☆</td>
+<td>⭐⭐⭐⭐☆</td>
+<td>⭐⭐⭐☆☆</td>
+</tr>
+</tbody>
+</table>
+<p>正如当初推出首个 GraphRAG 开源实现时一样，这项工作仅仅是个起点。它证明了图抽取技术成本正在不断降低，未来我们有望大胆应用于更多场景，实现大规模的知识 GraphRAG。与此同时，这个方法也为特定领域范式数据抽取质量的提升提供了经济可行的方案。</p>
+<blockquote>
+<p>训练数据、合成过程以及训练流程均已开源：https://github.com/wey-gu/grpo-graph-extraction 。</p>
+</blockquote>
+<p><img class="tw-inline" loading="lazy" src="/fusion-graphrag-2025/training.png"   alt="training" height="634" width="3602"></p>
+<h3 id="rag-应用落地的挑战" class="headerLink">
+    <a href="#rag-%e5%ba%94%e7%94%a8%e8%90%bd%e5%9c%b0%e7%9a%84%e6%8c%91%e6%88%98" class="header-mark"></a>1.7 RAG 应用落地的挑战</h3><p>众所周知，RAG 更多的是一种技术和功能，而非一个完整的产品。在企业级应用中，产品形态本身所面临的挑战，往往远超技术或原理上的难题。</p>
+<p>举个例子，Excel 电子表格软件凭借其公式计算和数据可视化功能，为会计和企业数据处理领域带来了颠覆性的变革。理论上，只需学习 Excel 中的各类公式和图表功能，就能获得大量实战经验，成为专业的数据分析师。但实际上，我们观察到，大多数企业员工仅仅熟悉 Excel 的基本操作，而许多昂贵且高级的 SaaS 产品，其功能实际上也不过是 Excel 部分能力的延伸。</p>
+<p>如果基于 RAG 能力构建的企业产品，只是一个具备强大应用编排和知识库索引能力的“无代码”平台，那么这样的平台很可能只能在企业内部的少部分用户或团队中落地。大部分宝贵的领域知识仍停留在个人或小圈子中，无法以智能高效的方式被全面激活和利用。</p>
+<p>为了解决这一问题，我们基于 FusionGraphRAG 与 Agentic RAG 技术，打造了一个全新的高级知识库与低门槛应用平台 —— NebulaGraph AI 应用平台（内部命名为 “Catalyst”，即催化剂）。该平台的核心设计理念包括：</p>
+<ul>
+<li><strong>无需构建复杂 Workflow：</strong> 用户不需要自行搭建工作流。</li>
+<li><strong>无需编写繁琐 Prompt：</strong> 用户无需学习复杂的指令语法。</li>
+<li><strong>简化知识定义：</strong> 用户只需将对私有知识的理解转化为对不同“知识篮子”的定义。</li>
+<li><strong>智能对话交互：</strong> 用户通过与我们的“元智能体”交流，传达解决问题的方法。</li>
+</ul>
+<p>这种设计大幅降低了使用门槛，使得企业内部的知识能够被更高效、更智能地激活与应用，真正实现“插上翅膀”的飞跃。</p>
+<h3 id="ai-应用平台" class="headerLink">
+    <a href="#ai-%e5%ba%94%e7%94%a8%e5%b9%b3%e5%8f%b0" class="header-mark"></a>1.8 AI 应用平台</h3><p>在这个平台中，企业用户可以将成百上千个文档轻松归入各自的知识“篮子”，并为每个篮子选择适合的“预学习”——即索引模式：</p>
+<p><img class="tw-inline" loading="lazy" src="/fusion-graphrag-2025/index_selection.png"   alt="index_selection" height="1580" width="2648"></p>
+<ul>
+<li><strong>知识探索</strong>
+用户可以随时在各个知识篮子中进行探索，快速定位所需信息，直观理解知识集合内的知识分布、深浅、特种。</li>
+</ul>
+<p><img class="tw-inline" loading="lazy" src="/fusion-graphrag-2025/GraphExplore.png"   alt="GraphExplore" height="1604" width="2662"></p>
+<ul>
+<li>
+<p><strong>智能应用生成</strong>
+用户无需亲手编写复杂的 prompt，只需通过对话的方式与平台互动，即可生成各种类型的智能应用、迭代沉淀应用的 prompt。例如：</p>
+<ul>
+<li>
+<p>“帮我构建一个投研报告生成助手”</p>
+</li>
+<li>
+<p>“我要做一个 xx 申报助手”</p>
+</li>
+<li>
+<p>“基于我所有的周报知识，构建一个 yy 领域回答助手，我想放到钉钉签名上，免得别人来烦我关于 yy 的问题”
+……</p>
+</li>
+</ul>
+<p>平台内置了生成智能体应用的“元智能体”，让对话即成为开发工具。</p>
+</li>
+</ul>
+<p><img class="tw-inline" loading="lazy" src="/fusion-graphrag-2025/MetaAgent.png"   alt="MetaAgent" height="1644" width="2862"></p>
+<ul>
+<li><strong>问答搜索应用</strong>
+平台支持构建问答型搜索应用，帮助用户快速获得精确答案。</li>
+</ul>
+<p><img class="tw-inline" loading="lazy" src="/fusion-graphrag-2025/search_app.png"   alt="search_app" height="1830" width="3172"></p>
+<ul>
+<li><strong>知识溯源</strong>
+同时，针对问答应用，基于连接的知识溯源，追踪答案的来源，确保信息透明可靠。</li>
+</ul>
+<p><img class="tw-inline" loading="lazy" src="/fusion-graphrag-2025/search_app_1.png"   alt="search_app_1" height="1822" width="3180"></p>
+<h3 id="总结" class="headerLink">
+    <a href="#%e6%80%bb%e7%bb%93" class="header-mark"></a>1.9 总结</h3><p>GraphRAG 的发展代表了 RAG 技术从基础检索向高级知识管理的演进。通过解决传统 RAG 在知识稀释、关联丢失和宏观问题上的挑战，GraphRAG 为企业级应用提供了更高效、灵活的解决方案。我们团队开发的 Fusion GraphRAG 融合了智能文档处理（IDP）、多层次知识索引和图状结构，将知识的内在关联映射到检索过程中，显著提升了复杂任务的处理能力。</p>
+<p>在实践中，我们通过优化图抽取成本（R1 知识蒸馏、 GRPO 方法、 Qwen2.5-3B 规模上的工作，并开源出来。），让 GraphRAG 技术更具经济可行性，使其能够广泛应用于企业知识管理和智能应用平台。</p>
+<p>未来，我们相信 GraphRAG 将成为高级 RAG 和智能体记忆（Agent Memory）的核心基础设施，推动深层研究和智能决策的进一步发展。NebulaGraph AI 应用平台的推出，正是这一愿景的初步实现。</p>
+<p>最后，对于 GraphRAG，这是 Sherman 和我们 GenAI team 每一位同学共同相信的观点：</p>
+<ul>
+<li>
+<p>狭义的 “GraphRAG”、甚至 “SubGraph RAG”，在特定场景仍然有优势，我们可以按需应用这个技术组合</p>
+</li>
+<li>
+<p>Deep Research, Deep Search 的形态与 Graph-based RAG 方法，尤其是 Fusion GraphRAG 可以形成很好的互补</p>
+</li>
+<li>
+<p>Graph Infra 是高级 RAG/Agent Memory 中不可绕过的结构与方法（Graph is inevitable in Advanced RAG），是以向量为基础的 RAG 的重要演进与互补</p>
+</li>
+</ul></div>
+
+        
+
+
+<h2>相关内容</h2>
+<div class="related-container">
+    <div class="related-item-container">
+            <div class="related-image">
+                <a href="/graph-rag/"><img   src="/graph-rag/featured-image.webp"   alt="本文将分享我们团队在 GraphRAG 领域的探索与实践历程。GraphRAG 是检索增强生成（RAG）技术的高级技术之一，旨在解决传统 RAG 的局限性。上周，我在 Twitter 上分享了[关于 GraphRAG Indexing 模型蒸馏训练](https://x.com/wey_gu/status/1892828461322162223)的工作，收获了诸多积极反馈。本文应朋友们建议整理而成，涵盖我们自 2023 年 6 月以来在 GraphRAG 基础研究上的进展，以及对高级 RAG 和 Fusion GraphRAG 的理解与实践。" height="200" width="400"></a>
+            </div><h2 class="related-title">
+                <a href="/graph-rag/">Graph RAG: 知识图谱结合 LLM 的检索增强</a>
+            </h2>
+        </div>
+    <div class="related-item-container">
+            <h2 class="related-title">
+                <a href="/demos/graph-rag/">Demo：NebulaGraph 的 Graph RAG</a>
+            </h2>
+        </div>
+    
+
+</div>
+
+<div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>更新于 2025-02-28</span>
+            </div>
+            <div class="post-info-license"></div>
+        </div>
+        <div class="post-info-line print:!tw-hidden">
+            <div class="post-info-md"><span><a class="link-to-mardown" href=/fusion-graphrag-2025/index.md target="_blank" rel="noopener noreferrer">阅读原始文档</a>
+                    </span><span>|&nbsp;<a class="link-to-report" href=https://github.com/siwei-io/siwei-io.github.io/issues/new?title=[bug]%20Fusion+Graphrag+2025&body=|Field|Value|%0A|-|-|%0A|Title|Fusion+Graphrag+2025|%0A|Url|https://siwei.io/fusion-graphrag-2025/|%0A|Filename|posts/fusion-graphrag-2025/index.md| target="_blank" rel="noopener noreferrer">报告问题</a>
+                    </span></div>
+            <div class="post-info-share"><button title="分享到 Twitter" data-sharer="twitter" data-url="https://siwei.io/fusion-graphrag-2025/" data-title="Fusion Graphrag 2025" data-via="wey_gu" data-hashtags="GenAI,GraphRAG,RAG,FusionGraphRAG"><svg class="icon"
+    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --><path d="M459.37 151.716c.325 4.548.325 9.097.325 13.645 0 138.72-105.583 298.558-298.558 298.558-59.452 0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055 0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421 0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391 0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04 0-57.828 46.782-104.934 104.934-104.934 30.213 0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253z"/></svg></button><button title="分享到 Facebook" data-sharer="facebook" data-url="https://siwei.io/fusion-graphrag-2025/" data-hashtag="GenAI"><svg class="icon"
+    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --><path d="M504 256C504 119 393 8 256 8S8 119 8 256c0 123.78 90.69 226.38 209.25 245V327.69h-63V256h63v-54.64c0-62.15 37-96.48 93.67-96.48 27.14 0 55.52 4.84 55.52 4.84v61h-31.28c-30.8 0-40.41 19.12-40.41 38.73V256h68.78l-11 71.69h-57.78V501C413.31 482.38 504 379.78 504 256z"/></svg></button><button title="分享到 Hacker News" data-sharer="hackernews" data-url="https://siwei.io/fusion-graphrag-2025/" data-title="Fusion Graphrag 2025"><svg class="icon"
+    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --><path d="M0 32v448h448V32H0zm21.2 197.2H21c.1-.1.2-.3.3-.4 0 .1 0 .3-.1.4zm218 53.9V384h-31.4V281.3L128 128h37.3c52.5 98.3 49.2 101.2 59.3 125.6 12.3-27 5.8-24.4 60.6-125.6H320l-80.8 155.1z"/></svg></button><button title="分享到 Line" data-sharer="line" data-url="https://siwei.io/fusion-graphrag-2025/" data-title="Fusion Graphrag 2025"><svg class="icon" role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><title>LINE</title><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .627.285.627.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63.346 0 .628.285.628.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.282.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg></button><button title="分享到 微博" data-sharer="weibo" data-url="https://siwei.io/fusion-graphrag-2025/" data-title="Fusion Graphrag 2025" data-image="featured-image.webp" data-ralateuid="siweigu"><svg class="icon"
+    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --><path d="M407 177.6c7.6-24-13.4-46.8-37.4-41.7-22 4.8-28.8-28.1-7.1-32.8 50.1-10.9 92.3 37.1 76.5 84.8-6.8 21.2-38.8 10.8-32-10.3zM214.8 446.7C108.5 446.7 0 395.3 0 310.4c0-44.3 28-95.4 76.3-143.7C176 67 279.5 65.8 249.9 161c-4 13.1 12.3 5.7 12.3 6 79.5-33.6 140.5-16.8 114 51.4-3.7 9.4 1.1 10.9 8.3 13.1 135.7 42.3 34.8 215.2-169.7 215.2zm143.7-146.3c-5.4-55.7-78.5-94-163.4-85.7-84.8 8.6-148.8 60.3-143.4 116s78.5 94 163.4 85.7c84.8-8.6 148.8-60.3 143.4-116zM347.9 35.1c-25.9 5.6-16.8 43.7 8.3 38.3 72.3-15.2 134.8 52.8 111.7 124-7.4 24.2 29.1 37 37.4 12 31.9-99.8-55.1-195.9-157.4-174.3zm-78.5 311c-17.1 38.8-66.8 60-109.1 46.3-40.8-13.1-58-53.4-40.3-89.7 17.7-35.4 63.1-55.4 103.4-45.1 42 10.8 63.1 50.2 46 88.5zm-86.3-30c-12.9-5.4-30 .3-38 12.9-8.3 12.9-4.3 28 8.6 34 13.1 6 30.8.3 39.1-12.9 8-13.1 3.7-28.3-9.7-34zm32.6-13.4c-5.1-1.7-11.4.6-14.3 5.4-2.9 5.1-1.4 10.6 3.7 12.9 5.1 2 11.7-.3 14.6-5.4 2.8-5.2 1.1-10.9-4-12.9z"/></svg></button><button title="分享到 Telegram" data-sharer="telegram" data-url="https://siwei.io/fusion-graphrag-2025/" data-title="Fusion Graphrag 2025" data-web><svg class="icon"
+    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --><path d="M446.7 98.6l-67.6 318.8c-5.1 22.5-18.4 28.1-37.3 17.5l-103-75.9-49.7 47.8c-5.5 5.5-10.1 10.1-20.7 10.1l7.4-104.9 190.9-172.5c8.3-7.4-1.8-11.5-12.9-4.1L117.8 284 16.2 252.2c-22.1-6.9-22.5-22.1 4.6-32.7L418.2 66.4c18.4-6.9 34.5 4.1 28.5 32.2z"/></svg></button></div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section class="post-tags"><svg class="icon"
+    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --><path d="M497.941 225.941L286.059 14.059A48 48 0 0 0 252.118 0H48C21.49 0 0 21.49 0 48v204.118a48 48 0 0 0 14.059 33.941l211.882 211.882c18.744 18.745 49.136 18.746 67.882 0l204.118-204.118c18.745-18.745 18.745-49.137 0-67.882zM112 160c-26.51 0-48-21.49-48-48s21.49-48 48-48 48 21.49 48 48-21.49 48-48 48zm513.941 133.823L421.823 497.941c-18.745 18.745-49.137 18.745-67.882 0l-.36-.36L527.64 323.522c16.999-16.999 26.36-39.6 26.36-63.64s-9.362-46.641-26.36-63.64L331.397 0h48.721a48 48 0 0 1 33.941 14.059l211.882 211.882c18.745 18.745 18.745 49.137 0 67.882z"/></svg>&nbsp;<a href="/tags/genai/">GenAI</a>,&nbsp;<a href="/tags/graphrag/">GraphRAG</a>,&nbsp;<a href="/tags/rag/">RAG</a>,&nbsp;<a href="/tags/fusiongraphrag/">FusionGraphRAG</a></section>
+        <section class="print:!tw-hidden">
+            <span><button class="tw-text-fgColor-link-muted hover:tw-text-fgColor-link-muted-hover" onclick="window.history.back();">返回</button></span>&nbsp;|&nbsp;<span><a href="/">主页</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav print:tw-hidden"><a href="/graph-rag/" class="prev" rel="prev" title="Graph RAG: 知识图谱结合 LLM 的检索增强"><svg class="icon"
+    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 512"><!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --><path d="M31.7 239l136-136c9.4-9.4 24.6-9.4 33.9 0l22.6 22.6c9.4 9.4 9.4 24.6 0 33.9L127.9 256l96.4 96.4c9.4 9.4 9.4 24.6 0 33.9L201.7 409c-9.4 9.4-24.6 9.4-33.9 0l-136-136c-9.5-9.4-9.5-24.6-.1-34z"/></svg>Graph RAG: 知识图谱结合 LLM 的检索增强</a></div>
+</div>
+<div id="comments" class="print:!tw-hidden tw-pt-32 tw-pb-8"><div id="giscus"></div><noscript>
+                Please enable JavaScript to view the comments powered by <a href="https://giscus.app/">giscus</a>.
+            </noscript></div></article></div>
+        </main><footer class="footer">
+        <div class="footer-container"><div class="footer-line">
+                    由 <a href="https://gohugo.io/" target="_blank" rel="noopener noreferrer" title="Hugo 0.122.0">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href="https://github.com/HEIGE-PCloud/DoIt" target="_blank" rel="noopener noreferrer" title="DoIt 0.4.0"><svg class="icon"
+    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --><path d="M402.3 344.9l32-32c5-5 13.7-1.5 13.7 5.7V464c0 26.5-21.5 48-48 48H48c-26.5 0-48-21.5-48-48V112c0-26.5 21.5-48 48-48h273.5c7.1 0 10.7 8.6 5.7 13.7l-32 32c-1.5 1.5-3.5 2.3-5.7 2.3H48v352h352V350.5c0-2.1.8-4.1 2.3-5.6zm156.6-201.8L296.3 405.7l-90.4 10c-26.2 2.9-48.5-19.2-45.6-45.6l10-90.4L432.9 17.1c22.9-22.9 59.9-22.9 82.7 0l43.2 43.2c22.9 22.9 22.9 60 .1 82.8zM460.1 174L402 115.9 216.2 301.8l-7.3 65.3 65.3-7.3L460.1 174zm64.8-79.7l-43.2-43.2c-4.1-4.1-10.8-4.1-14.8 0L436 82l58.1 58.1 30.9-30.9c4-4.2 4-10.8-.1-14.9z"/></svg> DoIt</a>
+                </div><div class="footer-line"><svg class="icon"
+    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --><path d="M256 8C119.033 8 8 119.033 8 256s111.033 248 248 248 248-111.033 248-248S392.967 8 256 8zm0 448c-110.532 0-200-89.451-200-200 0-110.531 89.451-200 200-200 110.532 0 200 89.451 200 200 0 110.532-89.451 200-200 200zm107.351-101.064c-9.614 9.712-45.53 41.396-104.065 41.396-82.43 0-140.484-61.425-140.484-141.567 0-79.152 60.275-139.401 139.762-139.401 55.531 0 88.738 26.62 97.593 34.779a11.965 11.965 0 0 1 1.936 15.322l-18.155 28.113c-3.841 5.95-11.966 7.282-17.499 2.921-8.595-6.776-31.814-22.538-61.708-22.538-48.303 0-77.916 35.33-77.916 80.082 0 41.589 26.888 83.692 78.277 83.692 32.657 0 56.843-19.039 65.726-27.225 5.27-4.857 13.596-4.039 17.82 1.738l19.865 27.17a11.947 11.947 0 0 1-1.152 15.518z"/></svg>2018 - 2025<span class="author">&nbsp;<a href="https://siwei.io" target="_blank" rel="noopener noreferrer">Wey Gu</a></span>&nbsp;|&nbsp;<span class="license"><a rel="license external nofollow noopener noreffer" href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">CC BY-NC 4.0</a></span></div>
+            <div class="footer-line"></div>
+            <div class="footer-line">
+            </div>
+        </div><script>
+                    if('serviceWorker' in navigator) {
+                        navigator.serviceWorker
+                            .register('/sw.min.js', { scope: '/' })
+                            .then(function(registration) {
+                            });
+                
+                        navigator.serviceWorker
+                            .ready
+                            .then(function(registration) {
+                            });
+                    }
+                </script></footer></div>
+
+    <div id="fixed-buttons" class="print:!tw-hidden"><a href="#back-to-top" id="back-to-top-button" class="fixed-button tw-transition-opacity tw-opacity-0" title="回到顶部">
+            <svg class="icon"
+    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --><path d="M34.9 289.5l-22.2-22.2c-9.4-9.4-9.4-24.6 0-33.9L207 39c9.4-9.4 24.6-9.4 33.9 0l194.3 194.3c9.4 9.4 9.4 24.6 0 33.9L413 289.4c-9.5 9.5-25 9.3-34.3-.4L264 168.6V456c0 13.3-10.7 24-24 24h-32c-13.3 0-24-10.7-24-24V168.6L69.2 289.1c-9.3 9.8-24.8 10-34.3.4z"/></svg>
+        </a><a href="#comments" id="view-comments" class="fixed-button" title="查看评论">
+            <svg class="icon"
+    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --><path d="M256 32C114.6 32 0 125.1 0 240c0 49.6 21.4 95 57 130.7C44.5 421.1 2.7 466 2.2 466.5c-2.2 2.3-2.8 5.7-1.5 8.7S4.8 480 8 480c66.3 0 116-31.8 140.6-51.4 32.7 12.3 69 19.4 107.4 19.4 141.4 0 256-93.1 256-208S397.4 32 256 32z"/></svg>
+        </a></div><script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({ startOnLoad: true, theme: (window.theme === 'dark' ? 'dark' : 'default') });
+</script><link rel="stylesheet" href="/lib/katex/katex.min.css"><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/katex/copy-tex.min.css">
+        <noscript><link rel="stylesheet" href="/lib/katex/copy-tex.min.css"></noscript>
+<script>window.config={"autocomplete.min.js":"/lib/autocomplete/autocomplete.min.js","comment":{"giscus":{"darkTheme":"dark","dataCategory":"Comments","dataCategoryId":"DIC_kwDOFhiy8c4CQeuu","dataEmitMetadata":"1","dataInputPosition":"bottom","dataLang":"en","dataLoading":"lazy","dataMapping":"title","dataReactionsEnabled":"1","dataRepo":"siwei-io/siwei-io.github.io","dataRepoId":"MDEwOlJlcG9zaXRvcnkzNzA3MTc0MjU=","dataStrict":"1","lightTheme":"light"}},"fuse.min.js":"/lib/fuse/fuse.min.js","math":{"delimiters":[{"display":true,"left":"$$","right":"$$"},{"display":true,"left":"\\[","right":"\\]"},{"display":false,"left":"$","right":"$"},{"display":false,"left":"\\(","right":"\\)"}],"strict":false},"search":{"distance":100,"findAllMatches":false,"fuseIndexURL":"/index.json","highlightTag":"em","ignoreFieldNorm":false,"ignoreLocation":true,"isCaseSensitive":false,"location":0,"maxResultLength":10,"minMatchCharLength":2,"noResultsFound":"没有找到结果","snippetLength":300,"threshold":0.1,"type":"fuse","useExtendedSearch":false},"sharerjs":true,"table":{"sort":true}};</script><script
+    src="/lib/tablesort/tablesort.min.js"
+    
+  ></script><script
+    src="/lib/sharer/sharer.min.js"
+    
+  ></script><script
+    src="/lib/katex/katex.min.js"
+    
+      defer
+    
+  ></script><script
+    src="/lib/katex/auto-render.min.js"
+    
+      defer
+    
+  ></script><script
+    src="/lib/katex/copy-tex.min.js"
+    
+      defer
+    
+  ></script><script
+    src="/lib/katex/mhchem.min.js"
+    
+      defer
+    
+  ></script><script
+    src="/js/katex.min.js"
+    
+      defer
+    
+  ></script><script
+    src="/js/theme.min.js"
+    
+      defer
+    
+  ></script><script
+    src="/js/giscus.min.js"
+    
+      defer
+    
+  ></script><script type="text/javascript">
+            window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());
+            gtag('config', 'G-DYTTVYCRS2', { 'anonymize_ip': true });
+        </script><script
+    src="https://www.googletagmanager.com/gtag/js?id=G-DYTTVYCRS2"
+    async
+  ></script>
+    
+    <script type="speculationrules">
+        {
+          "prerender": [
+            {
+              "where": { "href_matches": "/*" },
+              "eagerness": "moderate"
+            }
+          ]
+        }
+    </script>
+      
+</body>
+
+</html>
