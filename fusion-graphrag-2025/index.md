@@ -1,9 +1,5 @@
-# Fusion Graphrag 2025
+# Fusion GraphRAG Introduced
 
-
-
-
-## Fusion GraphRAG：终极 RAG 方案
 
 
 
@@ -248,7 +244,9 @@ Fusion GraphRAG 融合了先进的 IDP 技术与 RAG 索引方法，并将提取
 
 > 附：Fusion GraphRAG 的索引及增强流程示意图
 
-![FusionGraphRAG](/Users/weyl/projects/GenAI/blog_1/FusionGraphRAG.png)
+
+
+![FusionGraphRAG](FusionGraphRAG.png)
 
 
 

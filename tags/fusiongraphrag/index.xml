@@ -5,21 +5,20 @@
         <description>FusionGraphRAG - 标签 - siwei.io</description>
         <generator>Hugo -- gohugo.io</generator><language>zh-cn</language><managingEditor>weyl.gu@gmail.com (Wey Gu)</managingEditor>
             <webMaster>weyl.gu@gmail.com (Wey Gu)</webMaster><lastBuildDate>Fri, 28 Feb 2025 21:33:13 &#43;0800</lastBuildDate><atom:link href="https://siwei.io/tags/fusiongraphrag/" rel="self" type="application/rss+xml" /><item>
-    <title>Fusion Graphrag 2025</title>
+    <title>Fusion GraphRAG Introduced</title>
     <link>https://siwei.io/fusion-graphrag-2025/</link>
     <pubDate>Fri, 28 Feb 2025 21:33:13 &#43;0800</pubDate><author>
         <name>Wey Gu</name>
     </author><guid>https://siwei.io/fusion-graphrag-2025/</guid>
     <description><![CDATA[<div class="featured-image">
                 <img src="/fusion-graphrag-2025/featured-image.webp" referrerpolicy="no-referrer">
-            </div><h2 id="fusion-graphrag终极-rag-方案" class="headerLink">
-    <a href="#fusion-graphrag%e7%bb%88%e6%9e%81-rag-%e6%96%b9%e6%a1%88" class="header-mark"></a>1 Fusion GraphRAG：终极 RAG 方案</h2><blockquote>
+            </div><blockquote>
 <p>本文分享我们团队在 GraphRAG 领域的探索与实践历程，介绍一下 FusionGraphRAG。</p>
 </blockquote>
 <p>本文将分享我们团队在 GraphRAG 领域的探索与实践历程。GraphRAG 是检索增强生成（RAG）技术的高级技术之一，旨在解决传统 RAG 的局限性。上周，我在 Twitter 上分享了<a href="https://x.com/wey_gu/status/1892828461322162223" target="_blank" rel="noopener noreferrer">关于 GraphRAG Indexing 模型蒸馏训练</a>的工作，收获了诸多积极反馈。本文应朋友们建议整理而成，涵盖我们自 2023 年 6 月以来在 GraphRAG 基础研究上的进展，以及对高级 RAG 和 Fusion GraphRAG 的理解与实践。</p>
 <h3 id="rag-与-graphrag-的缘起" class="headerLink">
-    <a href="#rag-%e4%b8%8e-graphrag-%e7%9a%84%e7%bc%98%e8%b5%b7" class="header-mark"></a>1.1 RAG 与 GraphRAG 的缘起</h3><h4 id="rag检索增强生成" class="headerLink">
-    <a href="#rag%e6%a3%80%e7%b4%a2%e5%a2%9e%e5%bc%ba%e7%94%9f%e6%88%90" class="header-mark"></a>1.1.1 RAG：检索增强生成</h4><p>过去两年来，生成式 AI 和大语言模型的飞速发展堪称人类技术史上的重要里程碑。它们赋予计算机前所未有的上下文学习和推理能力，使得许多专属人类的复杂任务得以自动化甚至超越。然而，如何高效利用这些模型完成具体任务，成为技术落地的关键。</p>
+    <a href="#rag-%e4%b8%8e-graphrag-%e7%9a%84%e7%bc%98%e8%b5%b7" class="header-mark"></a>0.1 RAG 与 GraphRAG 的缘起</h3><h4 id="rag检索增强生成" class="headerLink">
+    <a href="#rag%e6%a3%80%e7%b4%a2%e5%a2%9e%e5%bc%ba%e7%94%9f%e6%88%90" class="header-mark"></a>0.1.1 RAG：检索增强生成</h4><p>过去两年来，生成式 AI 和大语言模型的飞速发展堪称人类技术史上的重要里程碑。它们赋予计算机前所未有的上下文学习和推理能力，使得许多专属人类的复杂任务得以自动化甚至超越。然而，如何高效利用这些模型完成具体任务，成为技术落地的关键。</p>
 <p>RAG（Retrieval Augmented Generation，检索增强生成）作为一种基础范式应运而生。其核心在于通过“检索”（Retrieval）增强“生成”（Generation）：</p>
 <ul>
 <li><strong>生成</strong>：将任务描述和领域知识（即提示词）输入大语言模型，生成相应的回答。</li>
@@ -31,7 +30,7 @@
 <li><strong>面向私有领域知识</strong>：如企业内部的研发文档或研究报告，需结合智能文档处理（IDP）、知识索引（Index）和知识管理系统。此类场景对检索技术的精准性和深度提出了更高要求。</li>
 </ol>
 <h4 id="朴素的-rag" class="headerLink">
-    <a href="#%e6%9c%b4%e7%b4%a0%e7%9a%84-rag" class="header-mark"></a>1.1.2 朴素的 RAG</h4><p><img class="tw-inline" loading="lazy" src="/fusion-graphrag-2025/RAG_gif.gif"   alt="RAG_gif" height="732" width="800"></p>
+    <a href="#%e6%9c%b4%e7%b4%a0%e7%9a%84-rag" class="header-mark"></a>0.1.2 朴素的 RAG</h4><p><img class="tw-inline" loading="lazy" src="/fusion-graphrag-2025/RAG_gif.gif"   alt="RAG_gif" height="732" width="800"></p>
 <p>对于非结构化或半结构化知识，朴素 RAG 的典型流程包括：</p>
 <ul>
 <li>将文档分割成块（Chunk）。</li>
@@ -40,7 +39,7 @@
 </ul>
 <p>然而，这种方法在知识组织上的局限性使其难以满足企业级需求，具体挑战将在下文详述。</p>
 <h4 id="rag-的挑战" class="headerLink">
-    <a href="#rag-%e7%9a%84%e6%8c%91%e6%88%98" class="header-mark"></a>1.1.3 RAG 的挑战</h4><p>朴素 RAG 在实际应用中面临以下难题：</p>
+    <a href="#rag-%e7%9a%84%e6%8c%91%e6%88%98" class="header-mark"></a>0.1.3 RAG 的挑战</h4><p>朴素 RAG 在实际应用中面临以下难题：</p>
 <ul>
 <li><strong>大海捞针</strong>：分块假设知识分布均匀，但某些关键信息可能被稀释在无关内容中，导致召回失败。</li>
 <li><strong>穿针引线</strong>：线性分割破坏了知识间的关联，难以还原全局上下文。</li>
@@ -48,7 +47,7 @@
 <li><strong>文档理解不足</strong>：缺乏智能文档处理时，公式、表格等复杂信息无法被正确解析和索引，影响回答质量。</li>
 </ul>
 <h4 id="高级-rag" class="headerLink">
-    <a href="#%e9%ab%98%e7%ba%a7-rag" class="header-mark"></a>1.1.4 高级 RAG</h4><p>做好 RAG 并非一蹴而就，而是一个持续探索的过程。本质上，我们需要将对应用特点、RAG 技术特性以及知识本身的深刻理解，融入到 RAG 流水线的设计之中。</p>
+    <a href="#%e9%ab%98%e7%ba%a7-rag" class="header-mark"></a>0.1.4 高级 RAG</h4><p>做好 RAG 并非一蹴而就，而是一个持续探索的过程。本质上，我们需要将对应用特点、RAG 技术特性以及知识本身的深刻理解，融入到 RAG 流水线的设计之中。</p>
 <p>下图展示了一个近期发布的高级 RAG 总结性工作的简化图例：<a href="https://github.com/bRAGAI/bRAG-langchain/raw/main/assets/img/rag-architecture.png" target="_blank" rel="noopener noreferrer">一个高级 RAG</a></p>
 <p><img class="tw-inline" loading="lazy" src="/fusion-graphrag-2025/rag-architecture.png"   alt="Attachment.png" height="1202" width="1586"></p>
 <p>可见，在现代高级的 RAG 方法中，数据持久化层包含 &ldquo;Graph DB&rdquo;（即图数据库，一种以图结构——“节点”和“边”为中心的数据库），而图数据库也正是本文主题 GraphRAG 的重要基础设施。</p>
@@ -56,7 +55,7 @@
 <p><img class="tw-inline" loading="lazy" src="/fusion-graphrag-2025/graph_gif.gif"   alt="graph_gif" height="753" width="800"></p>
 <p>常见的高级 RAG 方法，在特别的索引结构上，包括树状索引（Tree-RAG）、分层检索（Raptor）和图状索引（GraphRAG），其中 GraphRAG 是我们文章的重点。</p>
 <h4 id="graphrag" class="headerLink">
-    <a href="#graphrag" class="header-mark"></a>1.1.5 GraphRAG</h4><p>GraphRAG 这个方法最初是我们在 2023 年 8、9 月份开始，在 LlamaIndex 社区上持续做的一些工作和两次<a href="https://bit.ly/graph-rag-workshop" target="_blank" rel="noopener noreferrer">公开的 Webinar</a> 上提出，并给出了开源的实现和可复现的效果比较试验。</p>
+    <a href="#graphrag" class="header-mark"></a>0.1.5 GraphRAG</h4><p>GraphRAG 这个方法最初是我们在 2023 年 8、9 月份开始，在 LlamaIndex 社区上持续做的一些工作和两次<a href="https://bit.ly/graph-rag-workshop" target="_blank" rel="noopener noreferrer">公开的 Webinar</a> 上提出，并给出了开源的实现和可复现的效果比较试验。</p>
 <p>在最初的 GraphRAG 参考实践中，我们给出了索引期基于大模型的同构图谱抽取的实现和查询区基于实体、关系语义的捞取与可配置的子图查询的知识召回，并比较了基于 Text-to-Query 方法的一些效果比较与结合方案的实现。现在，为了区隔之后 Graph-based RAG 方法的演进，我们把最初的 GraphRAG 叫做 SubGraph RAG。</p>
 <p>在当时的 workshop 上，我们分享过的两个观点是</p>
 <ul>
@@ -70,7 +69,7 @@
 <p><img class="tw-inline" loading="lazy" src="/fusion-graphrag-2025/ms_paper.png"   alt="ms_paper" height="542" width="830"></p>
 <p>我们从这些后续的工作中受益匪浅，在与我们的客户 Graph based RAG 落地工作中，不断打磨、探索、累积了很多各个环节的优化、方法、策略。最终形成了我们称为 Fusion GraphRAG 的方案。</p>
 <h3 id="fusion-graphrag" class="headerLink">
-    <a href="#fusion-graphrag" class="header-mark"></a>1.2 Fusion GraphRAG</h3><p>Fusion GraphRAG 是我们团队在 GraphRAG 基础上的创新实践。它融合了高级 RAG 技术，通过图状结构存储文档层级、章节关系及特殊元素（如公式、表格），实现高效、灵活的检索。</p>
+    <a href="#fusion-graphrag" class="header-mark"></a>0.2 Fusion GraphRAG</h3><p>Fusion GraphRAG 是我们团队在 GraphRAG 基础上的创新实践。它融合了高级 RAG 技术，通过图状结构存储文档层级、章节关系及特殊元素（如公式、表格），实现高效、灵活的检索。</p>
 <p><img class="tw-inline" loading="lazy" src="./FusionGraphRAG_GIF.gif"   alt="FusionGraphRAG_GIF"  ></p>
 <p>Fusion GraphRAG 的本质在于 Sota 的高级 RAG 方法融合、充分连接的元知识索引、充分打磨调优的 GraphRAG（可选索引）。</p>
 <ul>
@@ -183,7 +182,7 @@ class Fault1,Proc1,Sym1,T1,Role1,Env1,Act1 graphLayer
 class Sum1,Sum2,ChapSum1,Rank,SeqEdge enrichLayer
 class F1,F2,D1,D2,D3,S1A,S2A,S1B,S2B,S1C,S2C,P1,P2,L11,L12,L13,L21,L22,B11,B12,C11,C12,CH1,TB1,FM1,Fault1,Proc1,Sym1,T1,Role1,Env1,Act1,Sum1,Sum2,ChapSum1,Rank,SeqEdge nodeText
 </pre><h3 id="fusion-graphrag-实现私域-deep-research" class="headerLink">
-    <a href="#fusion-graphrag-%e5%ae%9e%e7%8e%b0%e7%a7%81%e5%9f%9f-deep-research" class="header-mark"></a>1.3 Fusion GraphRAG 实现私域 Deep Research</h3><p>Fusion GraphRAG 融合了先进的 IDP 技术与 RAG 索引方法，并将提取的多模态知识有机地关联为图状结构，从而精确映射真实世界知识的内在逻辑。依托高性能、支持图语义与向量检索的现代图数据库作为持久化底层，Fusion GraphRAG 能在这一统一图谱上实现面向元知识层次与图谱增强的高级检索。</p>
+    <a href="#fusion-graphrag-%e5%ae%9e%e7%8e%b0%e7%a7%81%e5%9f%9f-deep-research" class="header-mark"></a>0.3 Fusion GraphRAG 实现私域 Deep Research</h3><p>Fusion GraphRAG 融合了先进的 IDP 技术与 RAG 索引方法，并将提取的多模态知识有机地关联为图状结构，从而精确映射真实世界知识的内在逻辑。依托高性能、支持图语义与向量检索的现代图数据库作为持久化底层，Fusion GraphRAG 能在这一统一图谱上实现面向元知识层次与图谱增强的高级检索。</p>
 <p>例如：</p>
 <ul>
 <li><strong>多层级知识检索：</strong>
@@ -196,7 +195,7 @@ class F1,F2,D1,D2,D3,S1A,S2A,S1B,S2B,S1C,S2C,P1,P2,L11,L12,L13,L21,L22,B11,B12,C
 在 Fusion GraphRAG 之上，我们可以轻松实现针对私有知识库的 Deep Researcher。依托天然的知识连接与索引，再结合针对 “Chain of Exploration” Agent 的优化提示工程，以及类似 DeepSeek R1 的推理模型，就能实现类似 Deep Researcher 的 RAG 召回效果，为深度研究提供强大动力。</li>
 </ul>
 <h3 id="回到-graphrag-时间线" class="headerLink">
-    <a href="#%e5%9b%9e%e5%88%b0-graphrag-%e6%97%b6%e9%97%b4%e7%ba%bf" class="header-mark"></a>1.4 回到 GraphRAG 时间线</h3><p>在我们的视角下，GraphRAG 正在不断演进，下面简要梳理这一发展历程：</p>
+    <a href="#%e5%9b%9e%e5%88%b0-graphrag-%e6%97%b6%e9%97%b4%e7%ba%bf" class="header-mark"></a>0.4 回到 GraphRAG 时间线</h3><p>在我们的视角下，GraphRAG 正在不断演进，下面简要梳理这一发展历程：</p>
 <ul>
 <li><strong>GraphRAG - 2023-08</strong>
 NebulaGraph 在 LlamaIndex 社区首次提出并实现了基本的 GraphRAG 模型。</li>
@@ -211,16 +210,16 @@ NebulaGraph 在 LlamaIndex 社区首次提出并实现了基本的 GraphRAG 模�
 </li>
 </ul>
 <h3 id="图抽取" class="headerLink">
-    <a href="#%e5%9b%be%e6%8a%bd%e5%8f%96" class="header-mark"></a>1.5 图抽取</h3><p>需要指出的是，在大模型时代，对原始知识进行类似知识图谱的抽取并非 Fusion GraphRAG 的必选项，因为并非所有 RAG 任务都需要细粒度的“知识预习”。图抽取的代价较高，目前多数公开方案成本也不低。</p>
+    <a href="#%e5%9b%be%e6%8a%bd%e5%8f%96" class="header-mark"></a>0.5 图抽取</h3><p>需要指出的是，在大模型时代，对原始知识进行类似知识图谱的抽取并非 Fusion GraphRAG 的必选项，因为并非所有 RAG 任务都需要细粒度的“知识预习”。图抽取的代价较高，目前多数公开方案成本也不低。</p>
 <blockquote>
 <p>注：LazyGraphRAG 的相关工作同样值得关注，它提供了另一种优化思路。</p>
 </blockquote>
 <blockquote>
 <p>附：Fusion GraphRAG 的索引及增强流程示意图</p>
 </blockquote>
-<p><img class="tw-inline" loading="lazy" src="/Users/weyl/projects/GenAI/blog_1/FusionGraphRAG.png"   alt="FusionGraphRAG"  ></p>
+<p><img class="tw-inline" loading="lazy" src="/fusion-graphrag-2025/FusionGraphRAG.png"   alt="FusionGraphRAG" height="3840" width="2710"></p>
 <h3 id="让图抽取成为默认策略" class="headerLink">
-    <a href="#%e8%ae%a9%e5%9b%be%e6%8a%bd%e5%8f%96%e6%88%90%e4%b8%ba%e9%bb%98%e8%ae%a4%e7%ad%96%e7%95%a5" class="header-mark"></a>1.6 让图抽取成为默认策略</h3><p>高质量的 GraphRAG 索引虽然效果显著，但成本昂贵。我们的终极目标是让图抽取的成本降低到与 Embedding 类似的水平，实现大规模普及。</p>
+    <a href="#%e8%ae%a9%e5%9b%be%e6%8a%bd%e5%8f%96%e6%88%90%e4%b8%ba%e9%bb%98%e8%ae%a4%e7%ad%96%e7%95%a5" class="header-mark"></a>0.6 让图抽取成为默认策略</h3><p>高质量的 GraphRAG 索引虽然效果显著，但成本昂贵。我们的终极目标是让图抽取的成本降低到与 Embedding 类似的水平，实现大规模普及。</p>
 <p>实际上，AI 技术社区（包括我们自身）已经在朝这一方向不断努力：利用 NER 模型、更小型（例如 Phi 系列）的 LLM 进行 SFT、小规模 LLM 的 few shot 方案、尽可能的可编程方法，甚至融合 NER 与 LLM 的多种方案，都是当前探索的方向。最近，我们也看到了一些令人振奋的曙光！</p>
 <p>本质上，我们探索的基于 LLM 的抽取方法都采用了不同形式的 CoT（思维链）策略。近期，DeepSeek-MATH 论文中首次提出的 GRPO 方法在 DeepSeek R0 中用于冷启动获取 Think-aloud（思考过程）的深度 CoT 能力表现非常出色。同时，我们注意到基于 Qwen2.5（小尺寸 0.5b 模型）进行 GRPO 训练，在需要强推理能力的任务（例如数学问题）上，通过大约 200 步训练就能获得令人满意的效果。</p>
 <p>结合这些观察，我们开展了如下探索：</p>
@@ -273,7 +272,7 @@ NebulaGraph 在 LlamaIndex 社区首次提出并实现了基本的 GraphRAG 模�
 </blockquote>
 <p><img class="tw-inline" loading="lazy" src="/fusion-graphrag-2025/training.png"   alt="training" height="634" width="3602"></p>
 <h3 id="rag-应用落地的挑战" class="headerLink">
-    <a href="#rag-%e5%ba%94%e7%94%a8%e8%90%bd%e5%9c%b0%e7%9a%84%e6%8c%91%e6%88%98" class="header-mark"></a>1.7 RAG 应用落地的挑战</h3><p>众所周知，RAG 更多的是一种技术和功能，而非一个完整的产品。在企业级应用中，产品形态本身所面临的挑战，往往远超技术或原理上的难题。</p>
+    <a href="#rag-%e5%ba%94%e7%94%a8%e8%90%bd%e5%9c%b0%e7%9a%84%e6%8c%91%e6%88%98" class="header-mark"></a>0.7 RAG 应用落地的挑战</h3><p>众所周知，RAG 更多的是一种技术和功能，而非一个完整的产品。在企业级应用中，产品形态本身所面临的挑战，往往远超技术或原理上的难题。</p>
 <p>举个例子，Excel 电子表格软件凭借其公式计算和数据可视化功能，为会计和企业数据处理领域带来了颠覆性的变革。理论上，只需学习 Excel 中的各类公式和图表功能，就能获得大量实战经验，成为专业的数据分析师。但实际上，我们观察到，大多数企业员工仅仅熟悉 Excel 的基本操作，而许多昂贵且高级的 SaaS 产品，其功能实际上也不过是 Excel 部分能力的延伸。</p>
 <p>如果基于 RAG 能力构建的企业产品，只是一个具备强大应用编排和知识库索引能力的“无代码”平台，那么这样的平台很可能只能在企业内部的少部分用户或团队中落地。大部分宝贵的领域知识仍停留在个人或小圈子中，无法以智能高效的方式被全面激活和利用。</p>
 <p>为了解决这一问题，我们基于 FusionGraphRAG 与 Agentic RAG 技术，打造了一个全新的高级知识库与低门槛应用平台 —— NebulaGraph AI 应用平台（内部命名为 “Catalyst”，即催化剂）。该平台的核心设计理念包括：</p>
@@ -285,7 +284,7 @@ NebulaGraph 在 LlamaIndex 社区首次提出并实现了基本的 GraphRAG 模�
 </ul>
 <p>这种设计大幅降低了使用门槛，使得企业内部的知识能够被更高效、更智能地激活与应用，真正实现“插上翅膀”的飞跃。</p>
 <h3 id="ai-应用平台" class="headerLink">
-    <a href="#ai-%e5%ba%94%e7%94%a8%e5%b9%b3%e5%8f%b0" class="header-mark"></a>1.8 AI 应用平台</h3><p>在这个平台中，企业用户可以将成百上千个文档轻松归入各自的知识“篮子”，并为每个篮子选择适合的“预学习”——即索引模式：</p>
+    <a href="#ai-%e5%ba%94%e7%94%a8%e5%b9%b3%e5%8f%b0" class="header-mark"></a>0.8 AI 应用平台</h3><p>在这个平台中，企业用户可以将成百上千个文档轻松归入各自的知识“篮子”，并为每个篮子选择适合的“预学习”——即索引模式：</p>
 <p><img class="tw-inline" loading="lazy" src="/fusion-graphrag-2025/index_selection.png"   alt="index_selection" height="1580" width="2648"></p>
 <ul>
 <li><strong>知识探索</strong>
@@ -323,7 +322,7 @@ NebulaGraph 在 LlamaIndex 社区首次提出并实现了基本的 GraphRAG 模�
 </ul>
 <p><img class="tw-inline" loading="lazy" src="/fusion-graphrag-2025/search_app_1.png"   alt="search_app_1" height="1822" width="3180"></p>
 <h3 id="总结" class="headerLink">
-    <a href="#%e6%80%bb%e7%bb%93" class="header-mark"></a>1.9 总结</h3><p>GraphRAG 的发展代表了 RAG 技术从基础检索向高级知识管理的演进。通过解决传统 RAG 在知识稀释、关联丢失和宏观问题上的挑战，GraphRAG 为企业级应用提供了更高效、灵活的解决方案。我们团队开发的 Fusion GraphRAG 融合了智能文档处理（IDP）、多层次知识索引和图状结构，将知识的内在关联映射到检索过程中，显著提升了复杂任务的处理能力。</p>
+    <a href="#%e6%80%bb%e7%bb%93" class="header-mark"></a>0.9 总结</h3><p>GraphRAG 的发展代表了 RAG 技术从基础检索向高级知识管理的演进。通过解决传统 RAG 在知识稀释、关联丢失和宏观问题上的挑战，GraphRAG 为企业级应用提供了更高效、灵活的解决方案。我们团队开发的 Fusion GraphRAG 融合了智能文档处理（IDP）、多层次知识索引和图状结构，将知识的内在关联映射到检索过程中，显著提升了复杂任务的处理能力。</p>
 <p>在实践中，我们通过优化图抽取成本（R1 知识蒸馏、 GRPO 方法、 Qwen2.5-3B 规模上的工作，并开源出来。），让 GraphRAG 技术更具经济可行性，使其能够广泛应用于企业知识管理和智能应用平台。</p>
 <p>未来，我们相信 GraphRAG 将成为高级 RAG 和智能体记忆（Agent Memory）的核心基础设施，推动深层研究和智能决策的进一步发展。NebulaGraph AI 应用平台的推出，正是这一愿景的初步实现。</p>
 <p>最后，对于 GraphRAG，这是 Sherman 和我们 GenAI team 每一位同学共同相信的观点：</p>
